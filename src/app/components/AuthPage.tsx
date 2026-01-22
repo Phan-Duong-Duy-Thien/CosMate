@@ -1,8 +1,12 @@
 import { useState } from 'react';
+// Import file resources vừa tạo ở Bước 1
+// Lưu ý chỉnh lại đường dẫn '../constants/resources' cho đúng với nơi bạn lưu file
+import { RESOURCES, type Language } from '@/app/components/ui/resources'; 
+
 import { ImageWithFallback } from '@/app/components/figma/ImageWithFallback';
 import { Input } from '@/app/components/ui/input';
 import { Button } from '@/app/components/ui/button';
-import { Sparkles, Mail, Lock, User, ShoppingBag, Store, Check } from 'lucide-react';
+import { Sparkles, Mail, Lock, User, ShoppingBag, Store, Check, Globe } from 'lucide-react';
 
 interface AuthPageProps {
   onLogin?: () => void;
@@ -16,6 +20,19 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
+  
+  // State ngôn ngữ: Mặc định là Tiếng Việt ('VI')
+  const [currentLang, setCurrentLang] = useState<Language>('VI');
+
+  // Lấy bộ từ điển tương ứng
+  const text = RESOURCES[currentLang];
+
+  // Hàm chuyển đổi ngôn ngữ xoay vòng: VI -> EN -> JA -> VI
+  const toggleLanguage = () => {
+    if (currentLang === 'VI') setCurrentLang('EN');
+    else if (currentLang === 'EN') setCurrentLang('JA');
+    else setCurrentLang('VI');
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,7 +42,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen flex">
+    <div className="min-h-screen flex font-sans"> 
       {/* Left Side - Illustration */}
       <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gradient-to-br from-[#e6d9ff] via-[#ffd9e8] to-[#c8f4e8]">
         <div className="absolute inset-0 flex items-center justify-center p-12">
@@ -35,7 +52,6 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               alt="Cosplay convention"
               className="w-full h-full object-cover rounded-3xl shadow-2xl"
             />
-            {/* Decorative Elements */}
             <div className="absolute top-8 left-8 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
               <div className="flex items-center gap-3">
                 <Sparkles className="w-6 h-6 text-[#d4c5f9]" />
@@ -45,7 +61,6 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                 </div>
               </div>
             </div>
-            {/* Stats Card */}
             <div className="absolute bottom-8 right-8 bg-white/90 backdrop-blur-sm rounded-2xl px-6 py-4 shadow-lg">
               <div className="grid grid-cols-3 gap-6 text-center">
                 <div>
@@ -67,9 +82,23 @@ export function AuthPage({ onLogin }: AuthPageProps) {
       </div>
 
       {/* Right Side - Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-white overflow-y-auto relative">
+        
+        {/* Nút Đổi Ngôn Ngữ */}
+        <div className="absolute top-6 right-6 z-10">
+          <Button
+            variant="ghost" 
+            size="sm"
+            onClick={toggleLanguage}
+            className="flex items-center gap-2 text-gray-600 hover:text-[#d4c5f9] hover:bg-[#d4c5f9]/10 rounded-full px-3 transition-all border border-gray-100"
+          >
+            <Globe className="w-4 h-4" />
+            {/* Hiển thị tên ngôn ngữ hiện tại */}
+            <span className="font-medium min-w-[70px] text-right">{text.langName}</span>
+          </Button>
+        </div>
+
         <div className="w-full max-w-md space-y-8 py-8">
-          {/* Logo for mobile */}
           <div className="lg:hidden text-center mb-8">
             <div className="inline-flex items-center gap-2 text-2xl font-bold">
               <Sparkles className="w-8 h-8 text-[#d4c5f9]" />
@@ -81,24 +110,21 @@ export function AuthPage({ onLogin }: AuthPageProps) {
 
           {/* Header */}
           <div className="text-center space-y-2">
-            <h1 className="text-3xl text-gray-900">
-              {isLogin ? 'Welcome back to CosMate' : 'Join the CosMate Community'}
+            <h1 className="text-3xl text-gray-900 font-bold">
+              {isLogin ? text.welcomeBack : text.joinCommunity}
             </h1>
             <p className="text-gray-600">
-              {isLogin 
-                ? 'Login to continue your cosplay journey' 
-                : 'Create an account to start your cosplay journey'}
+              {isLogin ? text.loginDesc : text.signupDesc}
             </p>
           </div>
 
-          {/* Role Selection - Only for Sign Up */}
+          {/* Role Selection */}
           {!isLogin && (
             <div className="space-y-3">
               <label className="block text-sm font-medium text-gray-700 text-center">
-                Choose your role
+                {text.chooseRole}
               </label>
               <div className="grid grid-cols-2 gap-4">
-                {/* Renter Card */}
                 <button
                   type="button"
                   onClick={() => setSelectedRole('renter')}
@@ -122,13 +148,12 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                       }`} />
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-gray-900">I want to Rent</div>
-                      <div className="text-xs text-gray-500 mt-1">Browse & rent costumes</div>
+                      <div className="font-medium text-gray-900">{text.renter}</div>
+                      <div className="text-xs text-gray-500 mt-1">{text.renterDesc}</div>
                     </div>
                   </div>
                 </button>
 
-                {/* Lender Card */}
                 <button
                   type="button"
                   onClick={() => setSelectedRole('lender')}
@@ -152,8 +177,8 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                       }`} />
                     </div>
                     <div className="text-center">
-                      <div className="font-medium text-gray-900">I want to Lend</div>
-                      <div className="text-xs text-gray-500 mt-1">List & earn from costumes</div>
+                      <div className="font-medium text-gray-900">{text.lender}</div>
+                      <div className="text-xs text-gray-500 mt-1">{text.lenderDesc}</div>
                     </div>
                   </div>
                 </button>
@@ -161,13 +186,14 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             </div>
           )}
 
-          {/* Social Login Buttons */}
+          {/* Social Buttons */}
           <div className="space-y-3">
             <Button
               type="button"
               variant="outline"
               className="w-full h-12 rounded-xl border-2 hover:border-[#d4c5f9] hover:bg-[#d4c5f9]/5"
             >
+              {/* Google Icon SVG */}
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path
                   fill="currentColor"
@@ -186,7 +212,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                   d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
                 />
               </svg>
-              Continue with Google
+              {text.google}
             </Button>
 
             <Button
@@ -194,10 +220,11 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               variant="outline"
               className="w-full h-12 rounded-xl border-2 hover:border-[#ffb6d9] hover:bg-[#ffb6d9]/5"
             >
+               {/* Facebook Icon SVG */}
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
               </svg>
-              Continue with Facebook
+              {text.facebook}
             </Button>
           </div>
 
@@ -207,7 +234,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               <div className="w-full border-t border-gray-200"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-gray-500">Or continue with email</span>
+              <span className="px-4 bg-white text-gray-500">{text.orEmail}</span>
             </div>
           </div>
 
@@ -216,14 +243,14 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             {!isLogin && (
               <div className="space-y-2">
                 <label htmlFor="name" className="block text-sm font-medium text-gray-700">
-                  Full Name
+                  {text.fullName}
                 </label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                   <Input
                     id="name"
                     type="text"
-                    placeholder="Enter your full name"
+                    placeholder={text.enterName}
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="pl-12"
@@ -235,14 +262,14 @@ export function AuthPage({ onLogin }: AuthPageProps) {
 
             <div className="space-y-2">
               <label htmlFor="email" className="block text-sm font-medium text-gray-700">
-                Email Address
+                {text.emailAddr}
               </label>
               <div className="relative">
                 <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
                 <Input
                   id="email"
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder={text.enterEmail}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-12"
@@ -254,14 +281,14 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Password
+                  {text.password}
                 </label>
                 {isLogin && (
                   <button
                     type="button"
                     className="text-sm text-[#d4c5f9] hover:text-[#c4b5e9] transition-colors"
                   >
-                    Forgot password?
+                    {text.forgotPass}
                   </button>
                 )}
               </div>
@@ -270,7 +297,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                 <Input
                   id="password"
                   type="password"
-                  placeholder="Enter your password"
+                  placeholder={text.enterPass}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   className="pl-12"
@@ -288,13 +315,13 @@ export function AuthPage({ onLogin }: AuthPageProps) {
                   required
                 />
                 <label htmlFor="terms" className="ml-2 text-sm text-gray-600">
-                  I agree to the{' '}
+                  {text.agree}{' '}
                   <a href="#" className="text-[#d4c5f9] hover:underline">
-                    Terms of Service
+                    {text.terms}
                   </a>{' '}
-                  and{' '}
+                  {text.and}{' '}
                   <a href="#" className="text-[#d4c5f9] hover:underline">
-                    Privacy Policy
+                    {text.privacy}
                   </a>
                 </label>
               </div>
@@ -305,7 +332,7 @@ export function AuthPage({ onLogin }: AuthPageProps) {
               className="w-full h-12 rounded-xl text-white shadow-lg hover:shadow-xl transition-all text-base"
               style={{ background: 'linear-gradient(135deg, #d4c5f9, #ffb6d9)' }}
             >
-              {isLogin ? 'Login' : 'Create Account'}
+              {isLogin ? text.loginBtn : text.createBtn}
             </Button>
           </form>
 
@@ -318,13 +345,13 @@ export function AuthPage({ onLogin }: AuthPageProps) {
             >
               {isLogin ? (
                 <>
-                  Don't have an account?{' '}
-                  <span className="text-[#d4c5f9] font-medium hover:underline">Sign up</span>
+                  {text.noAccount}{' '}
+                  <span className="text-[#d4c5f9] font-medium hover:underline">{text.signupLink}</span>
                 </>
               ) : (
                 <>
-                  Already have an account?{' '}
-                  <span className="text-[#d4c5f9] font-medium hover:underline">Login</span>
+                  {text.haveAccount}{' '}
+                  <span className="text-[#d4c5f9] font-medium hover:underline">{text.loginLink}</span>
                 </>
               )}
             </button>
