@@ -1,12 +1,121 @@
-import { Outlet } from "react-router-dom"
+import * as React from "react"
+import { Outlet, useSearchParams } from "react-router-dom"
+import {
+  ChevronDown,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Search,
+  ShoppingCart,
+  User,
+  Youtube,
+} from "lucide-react"
+
+import { Button } from "@shared/components/Button"
+import { DropdownMenu } from "@shared/components/DropdownMenu"
+import { Input } from "@shared/components/Input"
+import { cn } from "@/lib/utils"
 
 export default function CosplayerSiteLayout() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [isScrolled, setIsScrolled] = React.useState(false)
+  const searchValue = searchParams.get("q") ?? ""
+
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
+
+  const handleSearchChange = (value: string) => {
+    const next = new URLSearchParams(searchParams)
+    if (value.trim()) {
+      next.set("q", value)
+    } else {
+      next.delete("q")
+    }
+    setSearchParams(next, { replace: true })
+  }
+
   return (
     <div className="flex min-h-screen flex-col bg-[#F9FAFB] text-[#111827]">
-      <header className="border-b border-[#E5E7EB] bg-white">
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-          <div className="text-lg font-semibold">CosMate</div>
-          <div className="text-sm text-[#6B7280]">Header Placeholder</div>
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full border-b border-transparent bg-white/90 backdrop-blur-md transition-shadow",
+          isScrolled && "border-slate-100 shadow-md"
+        )}
+      >
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
+          <div className="text-xl font-semibold text-pink-500">CosMate</div>
+          <nav className="hidden items-center gap-2 lg:flex">
+            <Button variant="ghost" size="sm">
+              Trang chủ
+            </Button>
+            <DropdownMenu
+              triggerLabel="Thuê đồ Cosplay"
+              triggerIcon={<ChevronDown className="h-4 w-4" />}
+              items={[
+                { label: "Anime" },
+                { label: "Game" },
+                { label: "Manga" },
+              ]}
+            />
+            <Button variant="ghost" size="sm">
+              Thuê phụ kiện
+            </Button>
+            <Button variant="ghost" size="sm">
+              Hướng dẫn &amp; Quy định
+            </Button>
+            <Button variant="ghost" size="sm">
+              Tích điểm – Đổi quà
+            </Button>
+          </nav>
+          <div className="flex items-center gap-3">
+            <div className="relative hidden w-64 md:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                aria-label="Tìm kiếm trang phục"
+                placeholder="Tìm kiếm trang phục…"
+                className="pl-9"
+                value={searchValue}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  handleSearchChange(event.target.value)
+                }
+              />
+            </div>
+            <button
+              type="button"
+              aria-label="Giỏ hàng"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
+            </button>
+            <button
+              type="button"
+              aria-label="Tài khoản"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+            >
+              <User className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        <div className="mx-auto w-full max-w-6xl px-4 pb-4 md:hidden">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              aria-label="Tìm kiếm trang phục"
+              placeholder="Tìm kiếm trang phục…"
+              className="pl-9"
+              value={searchValue}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleSearchChange(event.target.value)
+              }
+            />
+          </div>
         </div>
       </header>
 
@@ -14,10 +123,77 @@ export default function CosplayerSiteLayout() {
         <Outlet />
       </main>
 
-      <footer className="border-t border-[#E5E7EB] bg-white">
-        <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 text-sm text-[#6B7280]">
-          <span>© 2026 CosMate</span>
-          <span>Footer Placeholder</span>
+      <footer className="mt-16 bg-slate-900 text-slate-200">
+        <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 md:grid-cols-4">
+          <div className="space-y-4">
+            <div className="text-xl font-semibold text-pink-300">CosMate</div>
+            <p className="text-sm text-slate-300">
+              Nền tảng thuê đồ cosplay pastel, cute và tiện lợi cho mọi lễ hội.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Instagram"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Instagram className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Facebook"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Facebook className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Youtube"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Youtube className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">Cosplay</h3>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li>Thuê trang phục</li>
+              <li>Thuê phụ kiện</li>
+              <li>Combo Photoshoot</li>
+              <li>Shop nổi bật</li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">
+              Hướng dẫn &amp; Quy định
+            </h3>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li>Quy trình thuê</li>
+              <li>Chính sách hủy</li>
+              <li>Điều khoản sử dụng</li>
+              <li>Hỗ trợ khách hàng</li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">Liên hệ</h3>
+            <div className="space-y-2 text-sm text-slate-300">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-pink-300" />
+                22 Lê Duẩn, Quận 1, TP.HCM
+              </div>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-pink-300" />
+                0902 888 222
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-pink-300" />
+                hello@cosmate.vn
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+          © 2024 CosMate. All rights reserved.
         </div>
       </footer>
     </div>
