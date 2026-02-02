@@ -51,27 +51,34 @@ export default function CosplayerSiteLayout() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
           <div className="text-xl font-semibold text-pink-500">CosMate</div>
           <nav className="hidden items-center gap-2 lg:flex">
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Trang chủ
             </Button>
             <DropdownMenu
               triggerLabel="Thuê đồ Cosplay"
               triggerIcon={<ChevronDown className="h-4 w-4" />}
+              triggerClassName="whitespace-nowrap"
               items={[
                 { label: "Anime" },
                 { label: "Game" },
                 { label: "Manga" },
               ]}
             />
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Thuê phụ kiện
             </Button>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Hướng dẫn &amp; Quy định
             </Button>
-            <Button variant="ghost" size="sm">
-              Tích điểm – Đổi quà
-            </Button>
+            <DropdownMenu
+              triggerLabel="Dịch vụ"
+              triggerIcon={<ChevronDown className="h-4 w-4" />}
+              triggerClassName="whitespace-nowrap"
+              items={[
+                { label: "Thuê Photographer" },
+                { label: "Thuê Staff" },
+              ]}
+            />
           </nav>
           <div className="flex items-center gap-3">
             <div className="relative hidden w-64 md:block">
