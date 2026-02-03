@@ -130,7 +130,7 @@ export default function CosplayerSiteLayout() {
         <Outlet />
       </main>
 
-      <footer className="mt-16 bg-slate-900 text-slate-200">
+      <footer className=" bg-slate-900 text-slate-200">
         <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 md:grid-cols-4">
           <div className="space-y-4">
             <div className="text-xl font-semibold text-pink-300">CosMate</div>

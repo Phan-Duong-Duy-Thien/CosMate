@@ -3,6 +3,10 @@ import { Route, Routes } from "react-router-dom"
 import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
 import LoginPage from "@/features/auth/pages/LoginPage"
 import CosplayerRegPage from "@/features/auth/pages/CosplayerRegPage"
+import ProviderRegPage from "@/features/auth/pages/ProviderRegPage"
+import StaffRegPage from "@/features/auth/pages/StaffRegPage"
+import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
+import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 import HomePage from "@/features/general/pages/HomePage"
 
 export default function AppRoutes() {
@@ -11,7 +15,11 @@ export default function AppRoutes() {
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />} />
         <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<CosplayerRegPage />} />
+        <Route path="register" element={<RegisterRoleSelectPage />} />
+        <Route path="register/cosplayer" element={<CosplayerRegPage />} />
+        <Route path="register/provider" element={<ProviderRegPage />} />
+        <Route path="register/staff" element={<StaffRegPage />} />
+        <Route path="register/photographer" element={<PhotographerRegPage />} />
       </Route>
     </Routes>
   )
