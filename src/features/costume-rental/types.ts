@@ -6,6 +6,8 @@ export type BrandType = "brand" | "non_brand" | "tu_may" | "freestyle"
 
 export type RentalPurpose = "test" | "fes_shoot" | "event"
 
+export type SizeKey = "xs" | "s" | "m" | "l" | "xl" | "freesize"
+
 export type RegionKey = "hcm" | "hn" | "dn" | "ct" | "hp"
 
 export type SortKey =
@@ -54,6 +56,7 @@ export interface CostumeItem {
   hasAccessories: boolean
   accessoryCount?: number
   accessoryOptions: AccessoryOption[]
+  sizeOptions: SizeKey[]
   createdAt: string
   description: string
   details: DetailItem[]

@@ -1,6 +1,6 @@
 import { Info, Star } from "lucide-react"
 
-import type { CostumeItem, QuoteBreakdown, RentalPurpose } from "../../types"
+import type { CostumeItem, QuoteBreakdown, RentalPurpose, SizeKey } from "../../types"
 import { Button } from "@/shared/components/Button"
 import { cn } from "@/lib/utils"
 import { PriceBreakdownCard } from "./PriceBreakdownCard"
@@ -8,11 +8,13 @@ import { PriceBreakdownCard } from "./PriceBreakdownCard"
 interface PurchasePanelProps {
   costume: CostumeItem
   purpose: RentalPurpose
+  size: SizeKey | null
   days: number
   startDate: string
   accessoryIds: string[]
   quote: QuoteBreakdown
   onPurposeChange: (purpose: RentalPurpose) => void
+  onSizeChange: (size: SizeKey) => void
   onDaysChange: (days: number) => void
   onStartDateChange: (date: string) => void
   onToggleAccessory: (id: string) => void
@@ -34,14 +36,25 @@ const brandTypeLabels: Record<CostumeItem["brandType"], string> = {
   freestyle: "Freestyle",
 }
 
+const sizeLabels: Record<SizeKey, string> = {
+  xs: "XS",
+  s: "S",
+  m: "M",
+  l: "L",
+  xl: "XL",
+  freesize: "Freesize",
+}
+
 export const PurchasePanel = ({
   costume,
   purpose,
+  size,
   days,
   startDate,
   accessoryIds,
   quote,
   onPurposeChange,
+  onSizeChange,
   onDaysChange,
   onStartDateChange,
   onToggleAccessory,
@@ -85,6 +98,29 @@ export const PurchasePanel = ({
               )}
             >
               {purposeLabels[item]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <p className="font-semibold text-slate-700">
+          Kích thước <span className="text-pink-500">*</span>
+        </p>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {costume.sizeOptions.map((sizeKey) => (
+            <button
+              key={sizeKey}
+              type="button"
+              onClick={() => onSizeChange(sizeKey)}
+              className={cn(
+                "rounded-full border px-4 py-2 text-sm font-medium",
+                size === sizeKey
+                  ? "border-pink-200 bg-pink-100 text-pink-700"
+                  : "border-slate-200 bg-white text-slate-600"
+              )}
+            >
+              {sizeLabels[sizeKey]}
             </button>
           ))}
         </div>

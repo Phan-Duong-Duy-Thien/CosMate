@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 
 import { costumeItems } from "../mocks/costumes.mock"
 import { shops } from "../mocks/shops.mock"
-import type { QuoteBreakdown, RentalPurpose, UIState } from "../types"
+import type { QuoteBreakdown, RentalPurpose, SizeKey, UIState } from "../types"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
@@ -63,6 +63,7 @@ export default function CostumeDetailPage() {
   )
 
   const [purpose, setPurpose] = React.useState<RentalPurpose>("fes_shoot")
+  const [size, setSize] = React.useState<SizeKey | null>(null)
   const [days, setDays] = React.useState(1)
   const [startDate, setStartDate] = React.useState("")
   const [accessoryIds, setAccessoryIds] = React.useState<string[]>([])
@@ -71,6 +72,7 @@ export default function CostumeDetailPage() {
   const [showTerms, setShowTerms] = React.useState(false)
 
   React.useEffect(() => {
+    setSize(null)
     setDays(1)
     setStartDate("")
     setAccessoryIds([])
@@ -93,6 +95,7 @@ export default function CostumeDetailPage() {
         return
       }
       setPurpose(costume.rentalPurposes[1] ?? costume.rentalPurposes[0])
+      setSize(costume.sizeOptions[0] ?? null)
       setUiState("success")
     }, delay)
     return () => window.clearTimeout(timer)
@@ -142,6 +145,10 @@ export default function CostumeDetailPage() {
 
   const handleRentNow = () => {
     if (!costume) return
+    if (!size) {
+      alert("Vui lòng chọn kích thước.")
+      return
+    }
     if (costume.isAdult18) {
       const confirmed = window.confirm(
         "Trang phục này dành cho người trên 18 tuổi. Bạn có muốn tiếp tục?"
@@ -227,11 +234,13 @@ export default function CostumeDetailPage() {
           <PurchasePanel
             costume={costume}
             purpose={purpose}
+            size={size}
             days={days}
             startDate={startDate}
             accessoryIds={accessoryIds}
             quote={quote}
             onPurposeChange={setPurpose}
+            onSizeChange={setSize}
             onDaysChange={setDays}
             onStartDateChange={setStartDate}
             onToggleAccessory={handleToggleAccessory}

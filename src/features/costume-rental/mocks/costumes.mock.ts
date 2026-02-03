@@ -1,4 +1,4 @@
-import type { BrandType, CostumeItem, RentalPurpose } from "../types"
+import type { BrandType, CostumeItem, RentalPurpose, SizeKey } from "../types"
 
 type BaseCostume = Omit<
   CostumeItem,
@@ -12,6 +12,7 @@ type BaseCostume = Omit<
   | "deposit"
   | "laundryFee"
   | "accessoryOptions"
+  | "sizeOptions"
   | "reviewCount"
   | "rentalsCount"
 >
@@ -798,6 +799,14 @@ const resolveBrandType = (index: number): BrandType => {
   return "brand"
 }
 
+const resolveSizeOptions = (index: number): SizeKey[] => {
+  const pick = index % 4
+  if (pick === 0) return ["freesize"]
+  if (pick === 1) return ["s", "m"]
+  if (pick === 2) return ["m", "l", "xl"]
+  return ["xs", "s", "m", "l"]
+}
+
 export const costumeItems: CostumeItem[] = baseCostumes.map((item, index) => {
   const brandType = resolveBrandType(index)
   const base = item.priceMin
@@ -810,6 +819,7 @@ export const costumeItems: CostumeItem[] = baseCostumes.map((item, index) => {
         })
       )
     : []
+  const sizeOptions = resolveSizeOptions(index)
 
   return {
     ...item,
@@ -825,7 +835,7 @@ export const costumeItems: CostumeItem[] = baseCostumes.map((item, index) => {
       "Bộ đồ được chăm sóc kỹ lưỡng, phù hợp nhiều dịp chụp ảnh và sự kiện. Vải mềm, dễ vận động và lên hình rất đẹp. Có thể phối thêm phụ kiện theo sở thích.",
     details: [
       { label: "Chất liệu", value: "Taffeta cao cấp, ren mềm" },
-      { label: "Kích thước", value: "S - M - L" },
+      { label: "Kích thước", value: sizeOptions.map((s) => s.toUpperCase()).join(" - ") },
       {
         label: "Bao gồm",
         value: item.hasAccessories
@@ -844,5 +854,6 @@ export const costumeItems: CostumeItem[] = baseCostumes.map((item, index) => {
     deposit: Math.round(item.priceMax * 2),
     laundryFee: 50 + (index % 4) * 40,
     accessoryOptions,
+    sizeOptions,
   }
 })
