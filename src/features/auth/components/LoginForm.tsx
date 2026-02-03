@@ -1,4 +1,5 @@
 import { Form, Input } from "antd"
+import { Lock, Mail } from "lucide-react"
 
 import type { LoginFormValues } from "../types"
 import { AuthForm } from "./AuthForm"
@@ -33,7 +34,8 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder="Enter your email"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
 
@@ -50,7 +52,8 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder="Enter your password"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
     </AuthForm>

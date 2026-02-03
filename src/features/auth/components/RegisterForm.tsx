@@ -1,4 +1,5 @@
 import { Form, Input } from "antd"
+import { Lock, Mail, User } from "lucide-react"
 
 import type { RegisterFormValues } from "../types"
 import { AuthForm } from "./AuthForm"
@@ -30,7 +31,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder="Enter your full name"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
 
@@ -47,7 +49,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder="Enter your email"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
 
@@ -64,7 +67,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder="Create a password"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
 
@@ -89,7 +93,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder="Re-enter your password"
           size="large"
           disabled={submitting}
-          className="h-11"
+          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
         />
       </Form.Item>
     </AuthForm>
