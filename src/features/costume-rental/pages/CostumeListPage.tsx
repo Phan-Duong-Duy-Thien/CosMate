@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useNavigate } from "react-router-dom"
 
 import { costumeItems } from "../mocks/costumes.mock"
 import { shops } from "../mocks/shops.mock"
@@ -60,6 +61,7 @@ export default function CostumeListPage() {
   const [uiState, setUiState] = React.useState<UIState>("loading")
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [errorMessage, setErrorMessage] = React.useState("")
+  const navigate = useNavigate()
 
   const brands = React.useMemo(
     () => Array.from(new Set(costumeItems.map((item) => item.brand))).sort(),
@@ -289,6 +291,7 @@ export default function CostumeListPage() {
                   costumes={pagedItems}
                   wishlistIds={wishlistIds}
                   onToggleWishlist={handleToggleWishlist}
+                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
                 />
                 <Pagination
                   currentPage={displayPage}

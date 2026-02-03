@@ -1,6 +1,22 @@
-import type { CostumeItem } from "../types"
+import type { BrandType, CostumeItem, RentalPurpose } from "../types"
 
-export const costumeItems: CostumeItem[] = [
+type BaseCostume = Omit<
+  CostumeItem,
+  | "videoUrl"
+  | "brandType"
+  | "brandName"
+  | "details"
+  | "description"
+  | "rentalPurposes"
+  | "basePriceByPurpose"
+  | "deposit"
+  | "laundryFee"
+  | "accessoryOptions"
+  | "reviewCount"
+  | "rentalsCount"
+>
+
+const baseCostumes: BaseCostume[] = [
   {
     id: "costume-001",
     name: "Bộ đồng phục Học viện ma thuật",
@@ -765,3 +781,68 @@ export const costumeItems: CostumeItem[] = [
     createdAt: "2025-12-14",
   },
 ]
+
+const accessoryPool = [
+  { id: "wig", name: "Wig", price: 50 },
+  { id: "weapon", name: "Vũ khí", price: 80 },
+  { id: "props", name: "Props", price: 40 },
+]
+
+const purposes: RentalPurpose[] = ["test", "fes_shoot", "event"]
+
+const resolveBrandType = (index: number): BrandType => {
+  const pick = index % 5
+  if (pick === 0) return "tu_may"
+  if (pick === 1) return "freestyle"
+  if (pick === 2) return "non_brand"
+  return "brand"
+}
+
+export const costumeItems: CostumeItem[] = baseCostumes.map((item, index) => {
+  const brandType = resolveBrandType(index)
+  const base = item.priceMin
+  const accessoryCount = item.accessoryCount ?? 0
+  const accessoryOptions = item.hasAccessories
+    ? accessoryPool.slice(0, Math.min(accessoryCount, accessoryPool.length)).map(
+        (option, optionIndex) => ({
+          ...option,
+          id: `${item.id}-${option.id}-${optionIndex}`,
+        })
+      )
+    : []
+
+  return {
+    ...item,
+    reviewCount: 80 + index * 6,
+    rentalsCount: 120 + index * 9,
+    brandType,
+    brandName: brandType === "brand" ? item.brand : undefined,
+    videoUrl:
+      index < 10
+        ? "https://www.w3schools.com/html/mov_bbb.mp4"
+        : undefined,
+    description:
+      "Bộ đồ được chăm sóc kỹ lưỡng, phù hợp nhiều dịp chụp ảnh và sự kiện. Vải mềm, dễ vận động và lên hình rất đẹp. Có thể phối thêm phụ kiện theo sở thích.",
+    details: [
+      { label: "Chất liệu", value: "Taffeta cao cấp, ren mềm" },
+      { label: "Kích thước", value: "S - M - L" },
+      {
+        label: "Bao gồm",
+        value: item.hasAccessories
+          ? "Trang phục + phụ kiện cơ bản"
+          : "Trang phục chính + đai lưng",
+      },
+      { label: "Tình trạng", value: item.isAvailable ? "Còn hàng" : "Đặt trước" },
+      { label: "Phù hợp", value: "1m55 - 1m75" },
+    ],
+    rentalPurposes: purposes,
+    basePriceByPurpose: {
+      test: Math.max(120, Math.round(base * 0.8)),
+      fes_shoot: base,
+      event: Math.round(base * 1.2),
+    },
+    deposit: Math.round(item.priceMax * 2),
+    laundryFee: 50 + (index % 4) * 40,
+    accessoryOptions,
+  }
+})

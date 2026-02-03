@@ -10,14 +10,27 @@ interface CostumeCardProps {
   costume: CostumeItem
   isWishlisted: boolean
   onToggleWishlist: (costumeId: string) => void
+  onViewDetail: (costumeId: string) => void
 }
 
 export const CostumeCard = ({
   costume,
   isWishlisted,
   onToggleWishlist,
+  onViewDetail,
 }: CostumeCardProps) => (
-  <Card className="group overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+  <Card
+    role="button"
+    tabIndex={0}
+    onClick={() => onViewDetail(costume.id)}
+    onKeyDown={(event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        onViewDetail(costume.id)
+      }
+    }}
+    className="group overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+  >
     <div className="relative">
       <img
         src={costume.images[0]}
@@ -46,7 +59,10 @@ export const CostumeCard = ({
           "absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
           isWishlisted && "text-pink-500"
         )}
-        onClick={() => onToggleWishlist(costume.id)}
+        onClick={(event) => {
+          event.stopPropagation()
+          onToggleWishlist(costume.id)
+        }}
       >
         <Heart className={cn("h-4 w-4", isWishlisted && "fill-pink-500")} />
       </button>
@@ -71,7 +87,15 @@ export const CostumeCard = ({
       <div className="text-lg font-semibold text-pink-600">
         {costume.priceMin}k – {costume.priceMax}k
       </div>
-      <Button variant="soft" size="sm" className="w-full">
+      <Button
+        variant="soft"
+        size="sm"
+        className="w-full"
+        onClick={(event) => {
+          event.stopPropagation()
+          onViewDetail(costume.id)
+        }}
+      >
         Xem chi tiết
       </Button>
     </div>

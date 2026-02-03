@@ -1,5 +1,17 @@
 import type { Shop } from "../types"
 
+const defaultRules = [
+  "Giữ sạch trang phục, tránh dính màu lạ.",
+  "Không tự ý chỉnh sửa form hoặc cắt may.",
+  "Trả đúng hẹn để tránh phí phát sinh.",
+]
+
+const defaultTerms =
+  "Trang phục được kiểm tra trước và sau khi giao. Các hư hỏng phát sinh do người thuê sẽ được xử lý theo mức độ. Shop ưu tiên hỗ trợ đổi size nếu còn hàng."
+
+const defaultPoliciesSummary =
+  "Hỗ trợ đổi lịch 1 lần miễn phí trước 24h. Hoàn cọc sau khi kiểm tra trong 24-48h."
+
 export const shops: Shop[] = [
   {
     id: "shop-aurora",
@@ -12,6 +24,9 @@ export const shops: Shop[] = [
     responseRate: 98,
     responseTimeText: "trong 5 phút",
     region: "hcm",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-otaku",
@@ -24,6 +39,9 @@ export const shops: Shop[] = [
     responseRate: 96,
     responseTimeText: "trong 8 phút",
     region: "hn",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-noir",
@@ -36,6 +54,9 @@ export const shops: Shop[] = [
     responseRate: 95,
     responseTimeText: "trong 12 phút",
     region: "hcm",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-moonlight",
@@ -48,6 +69,9 @@ export const shops: Shop[] = [
     responseRate: 97,
     responseTimeText: "trong 6 phút",
     region: "dn",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-pastel",
@@ -60,6 +84,9 @@ export const shops: Shop[] = [
     responseRate: 93,
     responseTimeText: "trong 15 phút",
     region: "ct",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-cherry",
@@ -72,6 +99,9 @@ export const shops: Shop[] = [
     responseRate: 96,
     responseTimeText: "trong 9 phút",
     region: "hn",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-nebula",
@@ -84,6 +114,9 @@ export const shops: Shop[] = [
     responseRate: 94,
     responseTimeText: "trong 10 phút",
     region: "dn",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-cosmate",
@@ -96,6 +129,9 @@ export const shops: Shop[] = [
     responseRate: 99,
     responseTimeText: "trong 4 phút",
     region: "hcm",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
   {
     id: "shop-starlit",
@@ -108,5 +144,8 @@ export const shops: Shop[] = [
     responseRate: 92,
     responseTimeText: "trong 18 phút",
     region: "hp",
+    rules: defaultRules,
+    terms: defaultTerms,
+    policiesSummary: defaultPoliciesSummary,
   },
 ]
