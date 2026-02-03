@@ -65,7 +65,7 @@ export default function CosplayerSiteLayout() {
               ]}
             />
             <Button variant="ghost" size="sm" className="whitespace-nowrap">
-              Thuê phụ kiện
+              Quiz
             </Button>
             <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Hướng dẫn &amp; Quy định
@@ -165,7 +165,7 @@ export default function CosplayerSiteLayout() {
             <h3 className="text-base font-semibold text-white">Cosplay</h3>
             <ul className="space-y-2 text-sm text-slate-300">
               <li>Thuê trang phục</li>
-              <li>Thuê phụ kiện</li>
+            
               <li>Combo Photoshoot</li>
               <li>Shop nổi bật</li>
             </ul>

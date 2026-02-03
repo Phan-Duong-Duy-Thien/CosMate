@@ -5,6 +5,7 @@ export const bannerSlides: BannerSlide[] = [
     id: "slide-game",
     title: "Trang phục theo Game",
     subtitle: "Hóa thân thành nhân vật game yêu thích chỉ trong 1 click",
+    actionType: "tag",
     tag: "game",
     pill: "Bộ sưu tập mới",
     ctaLabel: "Xem ngay",
@@ -14,12 +15,24 @@ export const bannerSlides: BannerSlide[] = [
   {
     id: "slide-anime",
     title: "Trang phục theo Anime",
-    subtitle: "Tỏa sáng tại mọi lễ hội với cosplay chuẩn anime",
+    subtitle: "Khám phá bộ sưu tập cosplay anime mới nhất",
+    actionType: "tag",
     tag: "anime",
     pill: "Bộ sưu tập mới",
     ctaLabel: "Xem ngay",
     imageUrl:
       "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
+  },
+  {
+    id: "slide-quiz",
+    title: "Bạn hợp cosplay nhân vật nào nhất?",
+    subtitle: "Trả lời 5 câu hỏi nhanh để khám phá vibe nhân vật phù hợp với bạn.",
+    hint: "⏱ Mất ~1 phút • Gợi ý trang phục & shop phù hợp",
+    actionType: "quiz",
+    pill: "Quiz nhanh",
+    ctaLabel: "Làm quiz ngay",
+    imageUrl:
+      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?auto=format&fit=crop&w=1400&q=80",
   },
 ]
 

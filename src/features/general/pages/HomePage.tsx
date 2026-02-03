@@ -3,10 +3,11 @@ import { useSearchParams } from "react-router-dom"
 
 import { HeroCarousel } from "../components/home/HeroCarousel"
 import { ProductSection } from "../components/home/ProductSection"
+import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
 import { TagChips } from "../components/home/TagChips"
 import { bannerSlides, products, shops, tagList } from "../mocks/home.mock"
-import type { TagKey, UIState } from "./home.types"
+import type { BannerSlide, TagKey, UIState } from "./home.types"
 import { Button } from "@/shared/components/Button"
 
 const HomePage = () => {
@@ -14,6 +15,7 @@ const HomePage = () => {
   const [uiState, setUiState] = React.useState<UIState>("loading")
   const [activeTag, setActiveTag] = React.useState<TagKey>("anime")
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
+  const [isQuizOpen, setIsQuizOpen] = React.useState(false)
   const productSectionRef = React.useRef<HTMLDivElement>(null)
 
   React.useEffect(() => {
@@ -63,11 +65,17 @@ const HomePage = () => {
   const displayState: UIState =
     uiState === "success" && filteredProducts.length === 0 ? "empty" : uiState
 
-  const handleCtaClick = (tag: TagKey) => {
-    setActiveTag(tag)
-    window.requestAnimationFrame(() => {
-      productSectionRef.current?.scrollIntoView({ behavior: "smooth" })
-    })
+  const handleCtaClick = (slide: BannerSlide) => {
+    if (slide.actionType === "quiz") {
+      setIsQuizOpen(true)
+      return
+    }
+    if (slide.tag) {
+      setActiveTag(slide.tag)
+      window.requestAnimationFrame(() => {
+        productSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+      })
+    }
   }
 
   const handleToggleWishlist = (productId: string) => {
@@ -91,6 +99,16 @@ const HomePage = () => {
         className="pb-12 [&_[data-reveal=true]]:translate-y-6 [&_[data-reveal=true]]:opacity-0 [&_[data-reveal=true]]:transition-all [&_[data-reveal=true]]:duration-700 [&_[data-reveal=true][data-visible=true]]:translate-y-0 [&_[data-reveal=true][data-visible=true]]:opacity-100 motion-reduce:[&_[data-reveal=true]]:translate-y-0 motion-reduce:[&_[data-reveal=true]]:opacity-100"
       >
         <HeroCarousel slides={bannerSlides} onCtaClick={handleCtaClick} />
+        <QuizModal
+          open={isQuizOpen}
+          onOpenChange={setIsQuizOpen}
+          onApplyResult={(tag) => {
+            setActiveTag(tag)
+            window.requestAnimationFrame(() => {
+              productSectionRef.current?.scrollIntoView({ behavior: "smooth" })
+            })
+          }}
+        />
         <TagChips
           tags={tagList}
           activeTag={activeTag}

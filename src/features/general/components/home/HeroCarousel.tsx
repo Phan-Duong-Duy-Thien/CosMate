@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils"
 
 interface HeroCarouselProps {
   slides: BannerSlide[]
-  onCtaClick: (tag: BannerSlide["tag"]) => void
+  onCtaClick: (slide: BannerSlide) => void
 }
 
 const usePrefersReducedMotion = () => {
@@ -27,6 +27,11 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
   const [activeIndex, setActiveIndex] = React.useState(0)
   const [paused, setPaused] = React.useState(false)
   const prefersReducedMotion = usePrefersReducedMotion()
+  const dragState = React.useRef({
+    startX: 0,
+    dragging: false,
+    pointerId: -1,
+  })
 
   React.useEffect(() => {
     if (prefersReducedMotion || paused) return
@@ -36,15 +41,61 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
     return () => window.clearInterval(interval)
   }, [paused, prefersReducedMotion, slides.length])
 
+  const handlePointerDown = (
+    event: React.PointerEvent<HTMLDivElement>
+  ) => {
+    const target = event.target as HTMLElement
+    if (target.closest("button, a, input, textarea, select")) {
+      return
+    }
+    dragState.current = {
+      startX: event.clientX,
+      dragging: true,
+      pointerId: event.pointerId,
+    }
+    setPaused(true)
+    event.currentTarget.setPointerCapture(event.pointerId)
+  }
+
+  const handlePointerMove = (event: React.PointerEvent<HTMLDivElement>) => {
+    if (!dragState.current.dragging) return
+    const delta = event.clientX - dragState.current.startX
+    const threshold = 35
+    if (Math.abs(delta) < threshold) return
+    if (delta > 0) {
+      setActiveIndex((prev) => (prev - 1 + slides.length) % slides.length)
+    } else {
+      setActiveIndex((prev) => (prev + 1) % slides.length)
+    }
+    dragState.current.startX = event.clientX
+  }
+
+  const handlePointerEnd = (event: React.PointerEvent<HTMLDivElement>) => {
+    dragState.current.dragging = false
+    setPaused(false)
+    if (dragState.current.pointerId !== -1) {
+      event.currentTarget.releasePointerCapture(dragState.current.pointerId)
+    }
+    dragState.current.pointerId = -1
+  }
+
   return (
     <section
       className="mx-auto w-full max-w-6xl px-4 pt-8"
       data-reveal="true"
     >
       <div
-        className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pink-100 via-white to-purple-100 shadow-xl transition-transform duration-500 ease-out hover:-translate-y-1"
+        role="region"
+        aria-roledescription="carousel"
+        aria-label="Banner CosMate"
+        className="relative select-none overflow-hidden rounded-3xl shadow-xl transition-transform duration-500 ease-out hover:-translate-y-1 touch-pan-y"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerEnd}
+        onPointerLeave={handlePointerEnd}
+        onPointerCancel={handlePointerEnd}
       >
         {slides.map((slide, index) => {
           const isActive = index === activeIndex
@@ -52,13 +103,18 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
             <div
               key={slide.id}
               className={cn(
-                "absolute inset-0 grid items-center gap-8 px-8 py-10 md:grid-cols-[1.2fr_1fr]",
+                "absolute inset-0",
                 isActive ? "opacity-100" : "pointer-events-none opacity-0"
               )}
               style={{ transition: "opacity 600ms ease" }}
               aria-hidden={!isActive}
             >
-              <div className="space-y-5">
+              <div
+                className="absolute inset-0 bg-cover bg-center"
+                style={{ backgroundImage: `url(${slide.imageUrl})` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/70 to-transparent" />
+              <div className="relative grid h-full items-center gap-6 px-8 py-10 md:w-2/3">
                 <Badge className="inline-flex items-center gap-2 bg-white/80 text-pink-600">
                   <Sparkles className="h-4 w-4" />
                   {slide.pill}
@@ -69,10 +125,20 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
                 <p className="text-base text-slate-600 md:text-lg">
                   {slide.subtitle}
                 </p>
+                {slide.hint && (
+                  <p className="text-sm font-medium text-pink-500">
+                    {slide.hint}
+                  </p>
+                )}
                 <Button
                   size="pill"
-                  className="w-full bg-gradient-to-r from-pink-400 to-purple-400 text-white shadow-md hover:from-pink-500 hover:to-purple-500 sm:w-auto"
-                  onClick={() => onCtaClick(slide.tag)}
+                  className={cn(
+                    "w-full shadow-md sm:w-auto",
+                    slide.actionType === "quiz"
+                      ? "bg-gradient-to-r from-pink-400 to-purple-400 text-white hover:from-pink-500 hover:to-purple-500"
+                      : "bg-pink-500 text-white hover:bg-pink-600"
+                  )}
+                  onClick={() => onCtaClick(slide)}
                 >
                   {slide.ctaLabel}
                 </Button>
@@ -92,13 +158,6 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
                     />
                   ))}
                 </div>
-              </div>
-              <div className="hidden md:block">
-                <img
-                  src={slide.imageUrl}
-                  alt={slide.title}
-                  className="h-72 w-full rounded-3xl object-cover shadow-lg"
-                />
               </div>
             </div>
           )

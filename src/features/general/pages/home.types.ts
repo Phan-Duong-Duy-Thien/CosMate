@@ -6,11 +6,15 @@ export type TagKey =
   | "new"
   | "adult"
 
+export type BannerSlideAction = "tag" | "quiz"
+
 export interface BannerSlide {
   id: string
   title: string
   subtitle: string
-  tag: TagKey
+  hint?: string
+  actionType: BannerSlideAction
+  tag?: TagKey
   pill: string
   ctaLabel: string
   imageUrl: string
