@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { CosplayerGallery } from '@features/profile/components/CosplayerGallery';
-import type { GalleryItem } from '@features/profile/types';
+import { CosplayerGallery } from './CosplayerGallery';
+import type { GalleryItem } from '../types';
 import { Heart, Star, Sparkles, MessageCircle } from 'lucide-react';
 
 interface CosplayerMainContentProps {

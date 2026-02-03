@@ -1,9 +1,11 @@
-import { Button } from 'antd'
+import { Routes, Route, Navigate } from 'react-router-dom'
+import CosplayerProfilePage from '../features/profile/pages/CosplayerProfilePage'
 
 export default function App() {
   return (
-    <div className="p-6">
-      <Button type="primary">AntD Button</Button>
-    </div>
+    <Routes>
+      <Route path="/" element={<Navigate to="/profile" replace />} />
+      <Route path="/profile" element={<CosplayerProfilePage />} />
+    </Routes>
   )
 }
