@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Outlet, useSearchParams } from "react-router-dom"
+import { Outlet, useNavigate, useSearchParams } from "react-router-dom"
 import {
   ChevronDown,
   Facebook,
@@ -19,6 +19,7 @@ import { Input } from "@shared/components/Input"
 import { cn } from "@/lib/utils"
 
 export default function CosplayerSiteLayout() {
+  const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
@@ -104,7 +105,8 @@ export default function CosplayerSiteLayout() {
             <button
               type="button"
               aria-label="Tài khoản"
-              className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-pink-100 text-pink-600 transition-all duration-200 ease-out hover:scale-105 hover:bg-pink-200 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => navigate("/profile")}
             >
               <User className="h-4 w-4" />
             </button>
