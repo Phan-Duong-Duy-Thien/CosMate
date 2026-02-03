@@ -1,135 +1,208 @@
-import React, { useState } from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { CosplayerGallery } from '@features/profile/components/CosplayerGallery';
-import type { GalleryItem } from '@features/profile/types';
-import { Heart, Star, Sparkles, MessageCircle } from 'lucide-react';
+import * as React from "react"
+import { Outlet, useSearchParams } from "react-router-dom"
+import {
+  ChevronDown,
+  Facebook,
+  Instagram,
+  Mail,
+  MapPin,
+  Phone,
+  Search,
+  ShoppingCart,
+  User,
+  Youtube,
+} from "lucide-react"
 
-interface CosplayerMainContentProps {
-  galleryItems: GalleryItem[];
-}
+import { Button } from "@shared/components/Button"
+import { DropdownMenu } from "@shared/components/DropdownMenu"
+import { Input } from "@shared/components/Input"
+import { cn } from "@/lib/utils"
 
-export const CosplayerMainContent: React.FC<CosplayerMainContentProps> = ({ galleryItems }) => {
-  const [activeTab, setActiveTab] = useState('My Gallery');
+export default function CosplayerSiteLayout() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [isScrolled, setIsScrolled] = React.useState(false)
+  const searchValue = searchParams.get("q") ?? ""
 
-  const tabs = ['My Gallery', 'Favorite Concepts', 'Reviews'];
+  React.useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 10)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [])
 
-  const favorites = [
-    { title: 'Cyberpunk Tokyo', count: 12, color: '#E0D7FF' },
-    { title: 'Fantasy Forest', count: 8, color: '#FFD7E5' },
-    { title: 'Gothic Lolita', count: 5, color: '#D7FFE0' },
-  ];
+  const handleSearchChange = (value: string) => {
+    const next = new URLSearchParams(searchParams)
+    if (value.trim()) {
+      next.set("q", value)
+    } else {
+      next.delete("q")
+    }
+    setSearchParams(next, { replace: true })
+  }
 
   return (
-    <div className="flex-1 min-w-0">
-      {/* Navigation Tabs */}
-      <div className="flex items-center gap-10 border-b border-[#F0E6FF] mb-10 px-4">
-        {tabs.map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab)}
-            className={`relative py-6 text-sm font-black transition-all ${
-              activeTab === tab ? 'text-[#4A3B6B]' : 'text-[#A090C5] hover:text-[#8E7AB5]'
-            }`}
-          >
-            {tab}
-            {activeTab === tab && (
-              <motion.div
-                layoutId="activeTabIndicator"
-                className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-[#B59DFF] to-[#FFD7E5] rounded-t-full"
+    <div className="flex min-h-screen flex-col bg-[#F9FAFB] text-[#111827]">
+      <header
+        className={cn(
+          "sticky top-0 z-50 w-full border-b border-transparent bg-white/90 backdrop-blur-md transition-shadow",
+          isScrolled && "border-slate-100 shadow-md"
+        )}
+      >
+        <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
+          <div className="text-xl font-semibold text-pink-500">CosMate</div>
+          <nav className="hidden items-center gap-2 lg:flex">
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+              Trang chủ
+            </Button>
+            <DropdownMenu
+              triggerLabel="Thuê đồ Cosplay"
+              triggerIcon={<ChevronDown className="h-4 w-4" />}
+              triggerClassName="whitespace-nowrap"
+              items={[
+                { label: "Anime" },
+                { label: "Game" },
+                { label: "Manga" },
+              ]}
+            />
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+              Quiz
+            </Button>
+            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+              Hướng dẫn &amp; Quy định
+            </Button>
+            <DropdownMenu
+              triggerLabel="Dịch vụ"
+              triggerIcon={<ChevronDown className="h-4 w-4" />}
+              triggerClassName="whitespace-nowrap"
+              items={[
+                { label: "Thuê Photographer" },
+                { label: "Thuê Staff" },
+              ]}
+            />
+          </nav>
+          <div className="flex items-center gap-3">
+            <div className="relative hidden w-64 md:block">
+              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+              <Input
+                aria-label="Tìm kiếm trang phục"
+                placeholder="Tìm kiếm trang phục…"
+                className="pl-9"
+                value={searchValue}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                  handleSearchChange(event.target.value)
+                }
               />
-            )}
-          </button>
-        ))}
-      </div>
+            </div>
+            <button
+              type="button"
+              aria-label="Giỏ hàng"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+            >
+              <ShoppingCart className="h-5 w-5" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
+            </button>
+            <button
+              type="button"
+              aria-label="Tài khoản"
+              className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-100 text-pink-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+            >
+              <User className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+        <div className="mx-auto w-full max-w-6xl px-4 pb-4 md:hidden">
+          <div className="relative">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              aria-label="Tìm kiếm trang phục"
+              placeholder="Tìm kiếm trang phục…"
+              className="pl-9"
+              value={searchValue}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                handleSearchChange(event.target.value)
+              }
+            />
+          </div>
+        </div>
+      </header>
 
-      {/* Tab Content */}
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          transition={{ duration: 0.3 }}
-        >
-          {activeTab === 'My Gallery' && (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-xl font-black text-[#4A3B6B] flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#B59DFF]" />
-                  Past Shoots
-                </h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-[#A090C5] uppercase tracking-widest mr-2">Sort by</span>
-                  <select className="bg-transparent text-xs font-bold text-[#4A3B6B] border-none focus:ring-0 cursor-pointer">
-                    <option>Latest</option>
-                    <option>Popular</option>
-                  </select>
-                </div>
+      <main className="flex-1">
+        <Outlet />
+      </main>
+
+      <footer className="mt-16 bg-slate-900 text-slate-200">
+        <div className="mx-auto grid w-full max-w-6xl gap-8 px-4 py-12 md:grid-cols-4">
+          <div className="space-y-4">
+            <div className="text-xl font-semibold text-pink-300">CosMate</div>
+            <p className="text-sm text-slate-300">
+              Nền tảng thuê đồ cosplay pastel, cute và tiện lợi cho mọi lễ hội.
+            </p>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                aria-label="Instagram"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Instagram className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Facebook"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Facebook className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                aria-label="Youtube"
+                className="rounded-full bg-slate-800 p-2 hover:bg-pink-400"
+              >
+                <Youtube className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">Cosplay</h3>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li>Thuê trang phục</li>
+            
+              <li>Combo Photoshoot</li>
+              <li>Shop nổi bật</li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">
+              Hướng dẫn &amp; Quy định
+            </h3>
+            <ul className="space-y-2 text-sm text-slate-300">
+              <li>Quy trình thuê</li>
+              <li>Chính sách hủy</li>
+              <li>Điều khoản sử dụng</li>
+              <li>Hỗ trợ khách hàng</li>
+            </ul>
+          </div>
+          <div className="space-y-3">
+            <h3 className="text-base font-semibold text-white">Liên hệ</h3>
+            <div className="space-y-2 text-sm text-slate-300">
+              <div className="flex items-center gap-2">
+                <MapPin className="h-4 w-4 text-pink-300" />
+                22 Lê Duẩn, Quận 1, TP.HCM
               </div>
-              <CosplayerGallery items={galleryItems} />
-            </div>
-          )}
-
-          {activeTab === 'Favorite Concepts' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-              {favorites.map((concept, idx) => (
-                <motion.div
-                  key={idx}
-                  whileHover={{ y: -8 }}
-                  className="bg-white rounded-[2rem] p-8 border border-[#F0E6FF] shadow-sm hover:shadow-xl transition-all"
-                >
-                  <div className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6" style={{ backgroundColor: concept.color }}>
-                    <Heart className="w-8 h-8 text-[#4A3B6B]" />
-                  </div>
-                  <h3 className="text-xl font-black text-[#4A3B6B] mb-2">{concept.title}</h3>
-                  <p className="text-[#8E7AB5] text-sm font-bold mb-6">{concept.count} items saved</p>
-                  <button className="w-full py-3 bg-[#F5F1FF] text-[#8E7AB5] font-black text-xs rounded-xl hover:bg-[#B59DFF] hover:text-white transition-all">
-                    View Collection
-                  </button>
-                </motion.div>
-              ))}
-              <div className="border-2 border-dashed border-[#F0E6FF] rounded-[2rem] flex flex-col items-center justify-center p-8 text-[#A090C5] hover:border-[#B59DFF] transition-colors cursor-pointer group">
-                <div className="w-12 h-12 rounded-full bg-[#F5F1FF] flex items-center justify-center mb-4 group-hover:bg-[#B59DFF] transition-colors">
-                  <span className="text-2xl font-bold group-hover:text-white">+</span>
-                </div>
-                <span className="text-sm font-bold">New Concept</span>
+              <div className="flex items-center gap-2">
+                <Phone className="h-4 w-4 text-pink-300" />
+                0902 888 222
+              </div>
+              <div className="flex items-center gap-2">
+                <Mail className="h-4 w-4 text-pink-300" />
+                hello@cosmate.vn
               </div>
             </div>
-          )}
-
-          {activeTab === 'Reviews' && (
-            <div className="space-y-6 max-w-2xl">
-              {[1, 2].map((i) => (
-                <div key={i} className="bg-white rounded-[2rem] p-8 border border-[#F0E6FF] shadow-sm">
-                  <div className="flex justify-between items-start mb-6">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-2xl bg-[#E0D7FF] flex items-center justify-center font-black text-[#4A3B6B]">
-                        {i === 1 ? 'DK' : 'AS'}
-                      </div>
-                      <div>
-                        <h4 className="font-black text-[#4A3B6B]">{i === 1 ? 'Do Ky Dung' : 'Alex Studio'}</h4>
-                        <div className="flex gap-1">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className="w-3 h-3 fill-[#FFD700] text-[#FFD700]" />
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <span className="text-xs font-bold text-[#A090C5]">Jan 20, 2026</span>
-                  </div>
-                  <p className="text-[#6B5A94] text-sm leading-relaxed italic mb-4">
-                    "Miku is an amazing cosplayer to work with. She brings so much energy and professional preparation to every shoot. Her poses are natural and she understands lighting perfectly."
-                  </p>
-                  <div className="flex items-center gap-2">
-                    <MessageCircle className="w-4 h-4 text-[#B59DFF]" />
-                    <span className="text-[10px] font-black text-[#B59DFF] uppercase tracking-widest">Photographer Endorsement</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </motion.div>
-      </AnimatePresence>
+          </div>
+        </div>
+        <div className="border-t border-slate-800 py-4 text-center text-xs text-slate-400">
+          © 2024 CosMate. All rights reserved.
+        </div>
+      </footer>
     </div>
-  );
-};
+  )
+}
