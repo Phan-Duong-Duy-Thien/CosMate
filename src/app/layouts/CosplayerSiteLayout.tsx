@@ -22,7 +22,6 @@ export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
-  const navigate = useNavigate()
   const searchValue = searchParams.get("q") ?? ""
 
   React.useEffect(() => {
