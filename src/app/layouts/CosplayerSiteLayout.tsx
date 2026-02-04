@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Outlet, useSearchParams } from "react-router-dom"
+import { Outlet, useNavigate, useSearchParams } from "react-router-dom"
 import {
   ChevronDown,
   Facebook,
@@ -21,6 +21,7 @@ import { cn } from "@/lib/utils"
 export default function CosplayerSiteLayout() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
+  const navigate = useNavigate()
   const searchValue = searchParams.get("q") ?? ""
 
   React.useEffect(() => {
@@ -51,19 +52,35 @@ export default function CosplayerSiteLayout() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
           <div className="text-xl font-semibold text-pink-500">CosMate</div>
           <nav className="hidden items-center gap-2 lg:flex">
-            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="whitespace-nowrap"
+              onClick={() => navigate("/")}
+            >
               Trang chủ
             </Button>
-            <DropdownMenu
-              triggerLabel="Thuê đồ Cosplay"
-              triggerIcon={<ChevronDown className="h-4 w-4" />}
-              triggerClassName="whitespace-nowrap"
-              items={[
-                { label: "Anime" },
-                { label: "Game" },
-                { label: "Manga" },
-              ]}
-            />
+            <div className="flex items-center gap-1">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="whitespace-nowrap"
+                onClick={() => navigate("/costumes")}
+              >
+                Thuê đồ Cosplay
+              </Button>
+              <DropdownMenu
+                triggerLabel=""
+                triggerAriaLabel="Danh mục Thuê đồ Cosplay"
+                triggerIcon={<ChevronDown className="h-4 w-4" />}
+                triggerClassName="px-2"
+                items={[
+                  { label: "Anime" },
+                  { label: "Game" },
+                  { label: "Manga" },
+                ]}
+              />
+            </div>
             <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Quiz
             </Button>

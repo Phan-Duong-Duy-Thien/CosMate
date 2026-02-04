@@ -9,7 +9,8 @@ export interface DropdownMenuItem {
 }
 
 export interface DropdownMenuProps {
-  triggerLabel: string
+  triggerLabel?: string
+  triggerAriaLabel?: string
   items: DropdownMenuItem[]
   triggerIcon?: React.ReactNode
   className?: string
@@ -18,7 +19,8 @@ export interface DropdownMenuProps {
 }
 
 export const DropdownMenu = ({
-  triggerLabel,
+  triggerLabel = "",
+  triggerAriaLabel,
   items,
   triggerIcon,
   className,
@@ -58,6 +60,7 @@ export const DropdownMenu = ({
         className={cn("gap-1 text-slate-700 hover:text-pink-600", triggerClassName)}
         aria-haspopup="menu"
         aria-expanded={open}
+        aria-label={triggerAriaLabel ?? triggerLabel}
         onClick={() => setOpen((prev) => !prev)}
       >
         {triggerLabel}
