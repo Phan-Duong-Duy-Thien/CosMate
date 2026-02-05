@@ -92,7 +92,10 @@ export default function CosplayerSiteLayout() {
               triggerIcon={<ChevronDown className="h-4 w-4" />}
               triggerClassName="whitespace-nowrap"
               items={[
-                { label: "Thuê Photographer" },
+                {
+                  label: "Thuê Photographer",
+                  onSelect: () => navigate("/photographer"),
+                },
                 { label: "Thuê Staff" },
               ]}
             />
