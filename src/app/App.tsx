@@ -1,9 +1,5 @@
-import { Button } from 'antd'
+import AppRoutes from "@/app/routes"
 
 export default function App() {
-  return (
-    <div className="p-6">
-      <Button type="primary">AntD Button</Button>
-    </div>
-  )
+  return <AppRoutes />
 }
