@@ -13,7 +13,8 @@ import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
-
+import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
+import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
 export default function AppRoutes() {
   return (
     <Routes>
@@ -24,6 +25,8 @@ export default function AppRoutes() {
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
+        <Route path="staffs" element={<StaffsListingPage />} />
+        <Route path="staff/:staffId" element={<StaffProfilePage />} />
         <Route path="login" element={<LoginPage />} />
         <Route path="register" element={<RegisterRoleSelectPage />} />
         <Route path="register/cosplayer" element={<CosplayerRegPage />} />
