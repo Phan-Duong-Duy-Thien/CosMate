@@ -22,7 +22,7 @@ export function ListingFilterBar() {
 
       <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
         {/* Location Dropdown - Khu vực */}
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
               <MapPin className="w-4 h-4 text-[#B59DFF]" />
@@ -38,7 +38,7 @@ export function ListingFilterBar() {
         </DropdownMenu>
 
         {/* Price Dropdown - Mức giá (Đã đổi sang VND) */}
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
               <DollarSign className="w-4 h-4 text-[#FFD7E5]" />
@@ -54,7 +54,7 @@ export function ListingFilterBar() {
         </DropdownMenu>
 
         {/* Date Dropdown - Lịch trống */}
-        <DropdownMenu>
+        <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
               <Calendar className="w-4 h-4 text-[#B8E8C5]" />
@@ -74,7 +74,7 @@ export function ListingFilterBar() {
         {/* Sort By - Sắp xếp */}
         <div className="flex items-center gap-2 text-sm">
           <span className="text-gray-400 whitespace-nowrap">Sắp xếp:</span>
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button className="flex items-center gap-1 font-bold text-[#4A3B6B] hover:text-[#B59DFF] transition-colors">
                 Đề xuất

@@ -5,16 +5,18 @@ import { motion } from 'motion/react';
 
 export default function PhotographerProfilePage() {
   const photographerData = {
-    name: "Do Ky Dung",
-    title: "Cosplay & Portrait Photographer",
+    name: "Đỗ Kỳ Dũng",
+    title: "Nhiếp ảnh gia Cosplay & Chân dung",
     avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=300",
-    bio: "Hi, I'm Dung! A specialized photographer for cosplayers in Vietnam. I love capturing the magic of characters through creative lighting and cinematic angles.",
+    // Bio viết lại văn phong thân thiện, chuyên nghiệp
+    bio: "Chào bạn, mình là Dũng! Một nhiếp ảnh gia chuyên chụp Cosplay tại Việt Nam. Mình đam mê việc tái hiện vẻ đẹp kỳ ảo của các nhân vật thông qua ánh sáng sáng tạo và những góc máy đậm chất điện ảnh.",
     jobs: 100,
     rating: 5.0,
     reviewsCount: 52,
     responseRate: "98%",
-    location: "Ho Chi Minh City, Vietnam",
-    skills: ["NightShoot", "Studio", "VFX", "Street Photography", "Cinematic"]
+    location: "TP. Hồ Chí Minh",
+    // Việt hóa các kỹ năng
+    skills: ["Chụp đêm", "Studio", "Kỹ xảo VFX", "Chụp đường phố", "Điện ảnh"]
   };
 
   const portfolioItems = [
@@ -22,47 +24,47 @@ export default function PhotographerProfilePage() {
       id: "p1",
       url: "https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=800",
       title: "Genshin Impact - Raiden Shogun",
-      category: "Outdoor Fantasy",
+      category: "Fantasy Ngoại cảnh",
       likes: "1.2k",
       views: "15k"
     },
     {
       id: "p2",
       url: "https://images.unsplash.com/photo-1560932763-0ad9298a995f?auto=format&fit=crop&q=80&w=800",
-      title: "Neon Cyberpunk Portrait",
-      category: "Night Shoot",
+      title: "Chân dung Cyberpunk Neon",
+      category: "Chụp đêm",
       likes: "856",
       views: "12k"
     },
     {
       id: "p3",
       url: "https://images.unsplash.com/photo-1621446173275-27427183ef28?auto=format&fit=crop&q=80&w=800",
-      title: "Ancient Forest Spirit",
-      category: "VFX / Fantasy",
+      title: "Tinh linh Rừng cổ",
+      category: "Kỹ xảo / Fantasy",
       likes: "2.1k",
       views: "25k"
     },
     {
       id: "p4",
       url: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?auto=format&fit=crop&q=80&w=800",
-      title: "Modern Tech-wear Cosplay",
-      category: "Street Style",
+      title: "Cosplay Tech-wear hiện đại",
+      category: "Phong cách đường phố",
       likes: "945",
       views: "8k"
     },
     {
       id: "p5",
       url: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?auto=format&fit=crop&q=80&w=800",
-      title: "Gothic Cathedral Shoot",
-      category: "Cinematic",
+      title: "Bộ ảnh Thánh đường Gothic",
+      category: "Điện ảnh (Cinematic)",
       likes: "1.5k",
       views: "18k"
     },
     {
       id: "p6",
       url: "https://images.unsplash.com/photo-1627137504228-a2990a274515?auto=format&fit=crop&q=80&w=800",
-      title: "Samurai Duel in Snow",
-      category: "Studio / FX",
+      title: "Quyết đấu Samurai trong tuyết",
+      category: "Studio / Hiệu ứng",
       likes: "3.2k",
       views: "42k"
     }
@@ -92,13 +94,13 @@ export default function PhotographerProfilePage() {
         </div>
 
         <div className="relative z-10">
-          {/* Breadcrumbs */}
+          {/* Breadcrumbs (Đường dẫn) */}
           <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-10 px-4" aria-label="Breadcrumb">
-            <Link to="/" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Services</Link>
+            <Link to="/" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Dịch vụ</Link>
             <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-            <Link to="/photographers" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Photographers</Link>
+            <Link to="/photographers" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Nhiếp ảnh gia</Link>
             <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-            <span className="text-[#4A3B6B] font-bold" aria-current="page">Profile</span>
+            <span className="text-[#4A3B6B] font-bold" aria-current="page">Hồ sơ</span>
           </nav>
 
           {/* 2-Column Layout */}
