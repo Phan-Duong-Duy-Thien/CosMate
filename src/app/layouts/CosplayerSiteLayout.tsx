@@ -94,7 +94,7 @@ export default function CosplayerSiteLayout() {
               items={[
                 {
                   label: "Thuê Photographer",
-                  onSelect: () => navigate("/photographer"),
+                  onSelect: () => navigate("/photographers"),
                 },
                 { label: "Thuê Staff" },
               ]}
