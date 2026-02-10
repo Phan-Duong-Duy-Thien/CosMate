@@ -1,5 +1,9 @@
+import type { UserRole } from '@/types/auth';
+
+// ============ LOGIN TYPES ============
+
 export type LoginFormValues = {
-  email: string
+  usernameOrEmail: string
   password: string
 }
 
@@ -8,9 +12,38 @@ export type EmailLoginPayload = {
   password: string
 }
 
+export type LoginRequest = {
+  usernameOrEmail: string
+  password: string
+}
+
+export type LoginResult = {
+  token: string
+  tokenType: string
+}
+
+export type LoginResponse = {
+  code: number
+  message: string
+  result: LoginResult
+}
+
+// JWT Payload Type
+export type JwtPayload = {
+  sub?: string
+  exp?: number
+  iat?: number
+  roles?: string[]
+  [key: string]: unknown
+}
+
+// ============ REGISTER TYPES ============
+
 export type RegisterFormValues = {
+  username: string
   fullName: string
   email: string
+  phone: string
   password: string
   confirmPassword: string
 }
@@ -19,4 +52,30 @@ export type EmailRegisterPayload = {
   fullName: string
   email: string
   password: string
+}
+
+// API Contract Types for Register
+export type RegisterRequest = {
+  username: string
+  email: string
+  password: string
+  phone: string
+  fullName: string
+  role: UserRole
+}
+
+export type RegisterResult = {
+  id: number
+  username: string
+  email: string
+  fullName: string
+  avatarUrl: string | null
+  phone: string
+  status: string
+}
+
+export type RegisterResponse = {
+  code: number
+  message: string
+  result: RegisterResult
 }

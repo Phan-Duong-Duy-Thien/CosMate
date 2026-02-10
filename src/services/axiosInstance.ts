@@ -21,10 +21,11 @@ const axiosInstance = axios.create({
  */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('cosmate_access_token');
+    const tokenType = localStorage.getItem('cosmate_token_type') || 'Bearer';
     
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `${tokenType} ${token}`;
     }
     
     return config;
@@ -54,9 +55,9 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
+          localStorage.removeItem('cosmate_access_token');
+          localStorage.removeItem('cosmate_token_type');
+          localStorage.removeItem('cosmate_roles');
           
           // Only redirect if not already on login page
           if (!window.location.pathname.includes('/login')) {
