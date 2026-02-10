@@ -1,5 +1,5 @@
 import { Form, Input } from "antd"
-import { Lock, Mail, User } from "lucide-react"
+import { Lock, Mail, Phone, User } from "lucide-react"
 
 import type { RegisterFormValues } from "../types"
 import { AuthForm } from "./AuthForm"
@@ -21,6 +21,24 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
       submitting={submitting}
       formError={formError}
     >
+      <Form.Item
+        className="mb-0"
+        label="Username"
+        name="username"
+        rules={[
+          { required: true, message: "Username is required." },
+          { min: 3, message: "Username must be at least 3 characters." },
+        ]}
+      >
+        <Input
+          placeholder="Choose a username"
+          size="large"
+          disabled={submitting}
+          prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
+        />
+      </Form.Item>
+
       <Form.Item
         className="mb-0"
         label="Full name"
@@ -50,6 +68,27 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           size="large"
           disabled={submitting}
           prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+          className="h-11 rounded-full px-4"
+        />
+      </Form.Item>
+
+      <Form.Item
+        className="mb-0"
+        label="Phone"
+        name="phone"
+        rules={[
+          { required: true, message: "Phone number is required." },
+          { 
+            pattern: /^0\d{9}$/, 
+            message: "Phone must start with 0 and have 10 digits." 
+          },
+        ]}
+      >
+        <Input
+          placeholder="0xxxxxxxxx"
+          size="large"
+          disabled={submitting}
+          prefix={<Phone className="h-4 w-4 text-[#9CA3AF]" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
