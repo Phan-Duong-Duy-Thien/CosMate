@@ -13,7 +13,16 @@ export function saveAuth(authData: LoginResult): void {
 
   // Decode JWT and save roles
   const payload = decodeJwtPayload(authData.token);
-  const roles = payload?.roles || [];
+  
+  // Support both "roles" (array) and "role" (string) from JWT
+  let roles: string[] = [];
+  if (payload?.roles && Array.isArray(payload.roles)) {
+    roles = payload.roles;
+  } else if (payload?.role && typeof payload.role === 'string') {
+    roles = [payload.role];
+  }
+  
+  console.log('💾 Decoded JWT roles:', roles);
   localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
 }
 

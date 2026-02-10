@@ -1,5 +1,6 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { clearAuth } from '@/features/auth/services/tokenStorage';
 
 /**
  * Configured Axios instance for CosMate API
@@ -55,9 +56,7 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('cosmate_access_token');
-          localStorage.removeItem('cosmate_token_type');
-          localStorage.removeItem('cosmate_roles');
+          clearAuth();
           
           // Only redirect if not already on login page
           if (!window.location.pathname.includes('/login')) {

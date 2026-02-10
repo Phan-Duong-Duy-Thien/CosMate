@@ -1,12 +1,17 @@
 import { Route, Routes } from "react-router-dom"
 
 import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
+import { ProtectedRoute } from "@/app/routes/ProtectedRoute"
+import NoPermissionPage from "@/app/pages/NoPermissionPage"
+import { ROLE } from "@/types/auth"
+
 import LoginPage from "@/features/auth/pages/LoginPage"
 import CosplayerRegPage from "@/features/auth/pages/CosplayerRegPage"
 import ProviderRegPage from "@/features/auth/pages/ProviderRegPage"
 import StaffRegPage from "@/features/auth/pages/StaffRegPage"
 import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
+
 import HomePage from "@/features/general/pages/HomePage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
@@ -15,9 +20,14 @@ import PhotographerProfilePage from "@/features/photographer-booking/pages/Photo
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
 import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
+
+import AdminHomePage from "@/features/admin/pages/AdminHomePage"
+import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
+
 export default function AppRoutes() {
   return (
     <Routes>
+      {/* Public + Cosplayer Site Routes */}
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />} />
         <Route path="costumes" element={<CostumeListPage />} />
@@ -34,6 +44,21 @@ export default function AppRoutes() {
         <Route path="register/staff" element={<StaffRegPage />} />
         <Route path="register/photographer" element={<PhotographerRegPage />} />
       </Route>
+
+      {/* Admin Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN]} />}>
+        <Route path="/admin" element={<AdminHomePage />} />
+        {/* TODO: Add more admin routes here */}
+      </Route>
+
+      {/* Provider Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER]} />}>
+        <Route path="/provider" element={<ProviderHomePage />} />
+        {/* TODO: Add more provider routes here */}
+      </Route>
+
+      {/* Global Error Pages */}
+      <Route path="/no-permission" element={<NoPermissionPage />} />
     </Routes>
   )
 }

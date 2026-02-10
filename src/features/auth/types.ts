@@ -33,7 +33,8 @@ export type JwtPayload = {
   sub?: string
   exp?: number
   iat?: number
-  roles?: string[]
+  roles?: string[]  // Some backends use "roles" as array
+  role?: string     // Some backends use "role" as string
   [key: string]: unknown
 }
 
