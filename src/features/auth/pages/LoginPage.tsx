@@ -1,17 +1,37 @@
 import { Loader2 } from "lucide-react"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 import loginHero from "@/assets/react.svg"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ROLE } from "@/types/auth"
 import { useLogin } from "../hooks/useLogin"
 import { AuthLayout } from "../layout/AuthLayout"
 import { LoginForm } from "../components/LoginForm"
+import type { LoginFormValues } from "../types"
 
 export default function LoginPage() {
-  const { submitting, googleLoading, formError, handleEmailLogin, handleGoogleLogin } =
-    useLogin()
+  const { submitting, googleLoading, formError, handleEmailLogin, handleGoogleLogin } = useLogin()
+  const navigate = useNavigate()
+
+  const onLoginSubmit = async (values: LoginFormValues) => {
+    const roles = await handleEmailLogin(values)
+    
+    if (roles) {
+      // Role-based redirect
+      if (roles.includes(ROLE.ADMIN)) {
+        console.log("🔐 Admin detected, redirecting to /admin")
+        navigate("/admin")
+      } else if (roles.includes(ROLE.PROVIDER)) {
+        console.log("🏪 Provider detected, redirecting to /provider")
+        navigate("/provider")
+      } else {
+        console.log("👤 Regular user, redirecting to /")
+        navigate("/")
+      }
+    }
+  }
 
   return (
     <AuthLayout
@@ -95,7 +115,7 @@ export default function LoginPage() {
         </div>
 
         <LoginForm
-          onSubmit={handleEmailLogin}
+          onSubmit={onLoginSubmit}
           submitting={submitting}
           formError={formError}
         />

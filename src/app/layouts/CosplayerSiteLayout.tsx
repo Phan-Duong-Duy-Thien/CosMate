@@ -96,7 +96,8 @@ export default function CosplayerSiteLayout() {
                   label: "Thuê Photographer",
                   onSelect: () => navigate("/photographers"),
                 },
-                { label: "Thuê Staff" },
+                { label: "Thuê Staff", 
+                  onSelect: () => navigate("/staffs") },
               ]}
             />
           </nav>

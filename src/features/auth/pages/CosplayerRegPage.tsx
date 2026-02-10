@@ -5,12 +5,13 @@ import registerHero from "@/assets/react.svg"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
+import { ROLE } from "@/types/auth"
 import { useRegister } from "../hooks/useRegister"
 import { AuthLayout } from "../layout/AuthLayout"
 import { RegisterForm } from "../components/RegisterForm"
 
 export default function CosplayerRegPage() {
-  const { submitting, formError, handleRegister } = useRegister()
+  const { submitting, formError, handleRegister } = useRegister(ROLE.COSPLAYER)
 
   return (
     <AuthLayout

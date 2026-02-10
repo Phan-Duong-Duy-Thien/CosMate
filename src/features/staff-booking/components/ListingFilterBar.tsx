@@ -1,12 +1,12 @@
 import { Search, MapPin, DollarSign, Calendar, ChevronDown } from 'lucide-react';
-import { Input } from '@/features/photographer-booking/components/ui/input';
-import { Button } from '@/features/photographer-booking/components/ui/button';
+import { Input } from '@/features/staff-booking/components/ui/input';
+import { Button } from '@/features/staff-booking/components/ui/button';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/features/photographer-booking/components/ui/dropdown-menu';
+} from '@/features/staff-booking/components/ui/dropdown-menu';
 
 export function ListingFilterBar() {
   return (
@@ -37,7 +37,7 @@ export function ListingFilterBar() {
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Price Dropdown - Mức giá (Đổi sang VND) */}
+        {/* Price Dropdown - Mức giá (Đã đổi sang VND) */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">

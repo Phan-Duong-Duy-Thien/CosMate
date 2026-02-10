@@ -23,15 +23,14 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
     >
       <Form.Item
         className="mb-0"
-        label="Email"
-        name="email"
+        label="Email or Username"
+        name="usernameOrEmail"
         rules={[
-          { required: true, message: "Email is required." },
-          { type: "email", message: "Enter a valid email address." },
+          { required: true, message: "Email or username is required." },
         ]}
       >
         <Input
-          placeholder="Enter your email"
+          placeholder="Enter your email or username"
           size="large"
           disabled={submitting}
           prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}

@@ -9,7 +9,7 @@ interface ProfileMainContentProps {
 }
 
 export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfolioItems }) => {
-  // Mặc định tab đầu tiên được chọn
+  // Mặc định chọn tab đầu tiên
   const [activeTab, setActiveTab] = useState('Portfolio');
 
   const tabs = ['Portfolio', 'Gói dịch vụ', 'Đánh giá', 'Điều khoản'];
@@ -17,20 +17,20 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
   const services = [
     {
       id: 1,
-      title: 'Đi Fes Tiêu chuẩn',
+      title: 'Đi Fes Cơ Bản',
       price: '500.000đ',
       duration: '2 Giờ',
       deposit: '30%',
-      features: ['10 ảnh chỉnh sửa chất lượng cao', 'Hỗ trợ đạo cụ cơ bản', 'Trả ảnh demo trong ngày'],
+      features: ['10 ảnh chỉnh sửa cao cấp', 'Hỗ trợ đạo cụ cơ bản', 'Trả ảnh demo trong ngày'],
       color: '#E0D7FF',
     },
     {
       id: 2,
-      title: 'Chân dung Điện ảnh',
+      title: 'Chân dung Cinematic',
       price: '1.200.000đ',
       duration: '4 Giờ',
       deposit: '40%',
-      features: ['25 ảnh retouch chuyên sâu', 'Hỗ trợ ánh sáng (Light)', 'Giao toàn bộ file gốc', 'Chỉnh sửa hiệu ứng VFX'],
+      features: ['25 ảnh retouch kỹ', 'Hỗ trợ ánh sáng (Light)', 'Giao toàn bộ file gốc', 'Chỉnh sửa hiệu ứng VFX'],
       color: '#FFD7E5',
     },
     {
@@ -39,7 +39,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
       price: '2.500.000đ',
       duration: 'Cả ngày',
       deposit: '50%',
-      features: ['Chỉnh sửa không giới hạn', 'Bao gồm phí thuê Studio', 'Quay video hậu trường (BTS)', 'Giao ảnh siêu tốc'],
+      features: ['Chỉnh sửa không giới hạn', 'Bao gồm phí thuê Studio', 'Quay video hậu trường (BTS)', 'Trả ảnh siêu tốc'],
       color: '#D7FFE0',
     }
   ];
@@ -51,7 +51,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
       avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
       rating: 5,
       date: '2 tuần trước',
-      comment: 'Dũng chụp siêu có tâm! Anh ấy thực sự hiểu style "anime" mà mình muốn. Ánh sáng đánh rất đẹp và Dũng hướng dẫn pose dáng nhiệt tình dù đây là lần đầu mình đi chụp.',
+      comment: 'Dũng làm việc cực có tâm! Anh ấy thực sự hiểu style "anime" mà mình muốn. Ánh sáng đánh rất đẹp và Dũng hướng dẫn pose dáng nhiệt tình dù đây là lần đầu mình đi chụp.',
     },
     {
       id: 2,
@@ -59,7 +59,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
       avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
       rating: 5,
       date: '1 tháng trước',
-      comment: 'Nhiếp ảnh gia đỉnh nhất mình từng làm việc cho bộ ảnh Cyberpunk. Kỹ năng hậu kỳ (edit) quá xuất sắc. Rất đáng tiền, mọi người nên book nhé!',
+      comment: 'Staff hỗ trợ tốt nhất mình từng làm việc cho bộ ảnh Cyberpunk. Kỹ năng hậu kỳ (edit) quá đỉnh. Rất đáng tiền, mọi người nên book nhé!',
     }
   ];
 
@@ -167,7 +167,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                     Đặt cọc & Hủy lịch
                   </h3>
                   <p className="text-sm text-[#6B5A94] leading-relaxed">
-                    Yêu cầu đặt cọc không hoàn lại để xác nhận lịch chụp. Nếu hủy lịch trước 48 giờ, bạn được hỗ trợ dời lịch 01 lần mà không mất cọc.
+                    Khách hàng cần đặt cọc để giữ lịch chụp (không hoàn lại). Nếu hủy lịch trước 48 giờ, bạn được hỗ trợ dời lịch 01 lần mà không mất cọc.
                   </p>
                 </section>
                 <section>
@@ -176,7 +176,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                     Quyền sử dụng hình ảnh
                   </h3>
                   <p className="text-sm text-[#6B5A94] leading-relaxed">
-                    Hình ảnh chỉ sử dụng cho mục đích cá nhân và đăng portfolio. Nếu sử dụng cho mục đích thương mại, vui lòng liên hệ để thỏa thuận phí bản quyền.
+                    Hình ảnh chỉ sử dụng cho mục đích cá nhân và portfolio. Nếu sử dụng cho mục đích thương mại, vui lòng liên hệ để thỏa thuận phí bản quyền.
                   </p>
                 </section>
               </div>

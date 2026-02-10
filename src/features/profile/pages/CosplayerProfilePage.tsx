@@ -1,5 +1,6 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
+import { clearAuth } from "@/features/auth/services/tokenStorage"
 import { ProfileSidebarCard } from "../components/ProfileSidebarCard"
 import { ProfileActions } from "../components/ProfileActions"
 import { EditProfileModal } from "../components/EditProfileModal"
@@ -110,15 +111,6 @@ const SORT_OPTIONS: { value: SortOption; label: string }[] = [
   { value: "popular", label: "Popular" },
 ]
 
-function clearAuthStorage() {
-  try {
-    localStorage.removeItem("accessToken")
-    localStorage.removeItem("refreshToken")
-  } catch {
-    // ignore
-  }
-}
-
 export default function CosplayerProfilePage() {
   const navigate = useNavigate()
   const [profile, setProfile] = React.useState<MockProfile>(INITIAL_MOCK_PROFILE)
@@ -144,7 +136,7 @@ export default function CosplayerProfilePage() {
   }, [sort])
 
   const handleLogout = () => {
-    clearAuthStorage()
+    clearAuth()
     navigate("/login")
   }
 

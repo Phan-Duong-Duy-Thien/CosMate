@@ -1,10 +1,11 @@
 import { Link } from 'react-router-dom';
-import { PhotographerCard } from '@/features/photographer-booking/components/PhotographerCard';
-import { ListingFilterBar } from '@/features/photographer-booking/components/ListingFilterBar';
-import { Button } from '@/features/photographer-booking/components/ui/button';
+import { StaffCard } from '@/features/staff-booking/components/StaffCard';
+import { ListingFilterBar } from '@/features/staff-booking/components/ListingFilterBar';
+import { Button } from '@/features/staff-booking/components/ui/button';
 import { motion } from 'motion/react';
 
-const PHOTOGRAPHERS = [
+// Dữ liệu giả lập (đã Việt hóa)
+const STAFF_LIST = [
   {
     id: '1',
     name: 'Đỗ Kỳ Dũng',
@@ -14,7 +15,7 @@ const PHOTOGRAPHERS = [
     rating: 5.0,
     reviewsCount: 52,
     startingPrice: '500.000đ',
-    tags: ['Cổ trang', 'Cosplay', 'Ngoại cảnh']
+    tags: ['Trang điểm', 'Tạo mẫu Wig', 'Cosplay'] 
   },
   {
     id: '2',
@@ -25,7 +26,7 @@ const PHOTOGRAPHERS = [
     rating: 4.9,
     reviewsCount: 128,
     startingPrice: '750.000đ',
-    tags: ['Fantasy', 'VFX', 'Cinematic']
+    tags: ['May trang phục', 'Làm đạo cụ', 'Fantasy']
   },
   {
     id: '3',
@@ -36,7 +37,7 @@ const PHOTOGRAPHERS = [
     rating: 4.8,
     reviewsCount: 84,
     startingPrice: '400.000đ',
-    tags: ['Studio', 'Chân dung', 'Tối giản']
+    tags: ['Trợ lý', 'Hỗ trợ ánh sáng', 'Stylist']
   },
   {
     id: '4',
@@ -47,7 +48,7 @@ const PHOTOGRAPHERS = [
     rating: 5.0,
     reviewsCount: 31,
     startingPrice: '1.000.000đ',
-    tags: ['Cyberpunk', 'Chụp đêm', 'Neon']
+    tags: ['Trang điểm SFX', 'Hiệu ứng', 'Neon Style']
   },
   {
     id: '5',
@@ -58,7 +59,7 @@ const PHOTOGRAPHERS = [
     rating: 4.7,
     reviewsCount: 45,
     startingPrice: '600.000đ',
-    tags: ['Đường phố', 'Chân dung', 'Urban']
+    tags: ['Stylist', 'Thời trang', 'Đường phố']
   },
   {
     id: '6',
@@ -69,11 +70,11 @@ const PHOTOGRAPHERS = [
     rating: 4.9,
     reviewsCount: 67,
     startingPrice: '550.000đ',
-    tags: ['Anime', 'Sắc nét', 'Hành động']
+    tags: ['Đạo cụ kiếm', 'Làm giáp', 'Hành động']
   }
 ];
 
-export default function PhotographersListingPage() {
+export default function StaffListingPage() {
   return (
     <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto py-12 px-6 lg:px-8 w-full">
@@ -81,7 +82,7 @@ export default function PhotographersListingPage() {
         <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-6 px-4" aria-label="Breadcrumb">
           <Link to="/" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Dịch vụ</Link>
           <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-          <span className="text-[#4A3B6B] font-bold" aria-current="page">Nhiếp ảnh gia</span>
+          <span className="text-[#4A3B6B] font-bold" aria-current="page">Staffs</span>
         </nav>
         
         {/* Header Section */}
@@ -93,7 +94,7 @@ export default function PhotographersListingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-4xl font-bold text-[#4A3B6B] mb-2"
               >
-                Tìm Kiếm Tầm Nhìn
+                Tìm Đội Ngũ Hỗ Trợ
               </motion.h1>
               <motion.p 
                 initial={{ opacity: 0, x: -20 }}
@@ -101,11 +102,11 @@ export default function PhotographersListingPage() {
                 transition={{ delay: 0.1 }}
                 className="text-gray-500 text-lg"
               >
-                Khám phá và đặt lịch với những nhiếp ảnh gia Cosplay hàng đầu cộng đồng.
+                Khám phá và đặt lịch các chuyên gia hỗ trợ Cosplay tốt nhất trong cộng đồng.
               </motion.p>
             </div>
             <div className="text-sm font-medium text-gray-400">
-              Hiển thị <span className="text-[#4A3B6B] font-bold">428</span> nhiếp ảnh gia
+              Hiển thị <span className="text-[#4A3B6B] font-bold">428</span> nhân sự
             </div>
           </div>
 
@@ -114,8 +115,8 @@ export default function PhotographersListingPage() {
 
         {/* Grid Area */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {PHOTOGRAPHERS.map((photographer) => (
-            <PhotographerCard key={photographer.id} {...photographer} />
+          {STAFF_LIST.map((staffMember) => (
+            <StaffCard key={staffMember.id} {...staffMember} />
           ))}
         </section>
 
@@ -125,7 +126,7 @@ export default function PhotographersListingPage() {
             variant="outline" 
             className="rounded-full px-12 py-6 border-2 border-gray-100 hover:border-[#d4c5f9] hover:bg-[#F8F7FF] transition-all font-bold text-[#4A3B6B]"
           >
-            Xem thêm
+            Xem thêm nhân sự
           </Button>
           <div className="flex items-center gap-4 text-sm text-gray-400">
             <button className="hover:text-[#B59DFF] transition-colors">Trước</button>
