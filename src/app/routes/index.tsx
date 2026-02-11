@@ -51,12 +51,6 @@ export default function AppRoutes() {
         {/* TODO: Add more admin routes here */}
       </Route>
 
-      {/* Provider Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER]} />}>
-        <Route path="/provider" element={<ProviderHomePage />} />
-        {/* TODO: Add more provider routes here */}
-      </Route>
-
       {/* Provider Rental Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}>
         <Route path="/provider-rental" element={<ProviderHomePage />} />
