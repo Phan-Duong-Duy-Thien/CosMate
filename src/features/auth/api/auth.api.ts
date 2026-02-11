@@ -7,7 +7,12 @@ import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } f
  * @returns Login response with token
  */
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
-  const response = await axiosInstance.post<LoginResponse>('/auth/login', payload);
+  // TEMP DEBUG: Verify final URL
+  console.log('🔧 [auth.api] login baseURL =', axiosInstance.defaults.baseURL);
+  console.log('🔧 [auth.api] login endpoint =', '/api/auth/login');
+  console.log('🔧 [auth.api] final URL =', axiosInstance.defaults.baseURL + '/api/auth/login');
+  
+  const response = await axiosInstance.post<LoginResponse>('/api/auth/login', payload);
   return response.data;
 }
 
@@ -17,6 +22,6 @@ export async function login(payload: LoginRequest): Promise<LoginResponse> {
  * @returns Registration response with user data
  */
 export async function register(payload: RegisterRequest): Promise<RegisterResponse> {
-  const response = await axiosInstance.post<RegisterResponse>('/auth/register', payload);
+  const response = await axiosInstance.post<RegisterResponse>('/api/auth/register', payload);
   return response.data;
 }

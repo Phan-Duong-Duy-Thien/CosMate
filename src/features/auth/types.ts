@@ -30,7 +30,9 @@ export type LoginResponse = {
 
 // JWT Payload Type
 export type JwtPayload = {
-  sub?: string
+  sub?: string      // User ID (string format)
+  id?: number       // User ID (number format, some backends)
+  userId?: number   // User ID (alternative field name)
   exp?: number
   iat?: number
   roles?: string[]  // Some backends use "roles" as array

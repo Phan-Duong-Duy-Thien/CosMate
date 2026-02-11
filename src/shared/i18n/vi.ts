@@ -106,6 +106,79 @@ export const VI = {
       reports: "Báo cáo",
       settings: "Cài đặt",
     },
+    
+    users: {
+      pageTitle: "Quản lý người dùng",
+      
+      columns: {
+        id: "ID",
+        username: "Tên đăng nhập",
+        email: "Email",
+        fullName: "Họ tên",
+        phone: "SĐT",
+        roles: "Vai trò",
+        status: "Trạng thái",
+        createdAt: "Ngày tạo",
+        actions: "Hành động",
+      },
+      
+      toolbar: {
+        search: "Tìm kiếm theo tên, email, SĐT...",
+        filterRole: "Lọc theo vai trò",
+        filterStatus: "Lọc theo trạng thái",
+        refresh: "Làm mới",
+        allRoles: "Tất cả vai trò",
+        allStatuses: "Tất cả trạng thái",
+      },
+      
+      actions: {
+        viewDetail: "Xem chi tiết",
+        lock: "Khoá",
+        unlock: "Mở khoá",
+        ban: "Ban",
+        unban: "Mở ban",
+      },
+      
+      detail: {
+        title: "Chi tiết người dùng",
+        userId: "ID người dùng",
+        basicInfo: "Thông tin cơ bản",
+        accountInfo: "Thông tin tài khoản",
+        noData: "—",
+        actionsTitle: "Hành động",
+        
+        statusHint: {
+          active: "Bạn có thể khoá hoặc ban tài khoản này.",
+          inactive: "Tài khoản đang bị khoá. Bạn có thể mở khoá để kích hoạt lại.",
+          banned: "Tài khoản đang bị ban. Bạn có thể mở ban để kích hoạt lại.",
+        },
+      },
+      
+      confirm: {
+        lockTitle: "Xác nhận khoá người dùng",
+        lockMessage: "Bạn có chắc chắn muốn khoá người dùng này? Họ sẽ không thể đăng nhập.",
+        unlockTitle: "Xác nhận mở khoá người dùng",
+        unlockMessage: "Bạn có chắc chắn muốn mở khoá người dùng này?",
+        banTitle: "Xác nhận ban người dùng",
+        banMessage: "Bạn có chắc chắn muốn ban người dùng này? Đây là hành động nghiêm trọng.",
+        unbanTitle: "Xác nhận mở ban người dùng",
+        unbanMessage: "Bạn có chắc chắn muốn mở ban người dùng này?",
+        ok: "Xác nhận",
+        cancel: "Huỷ",
+      },
+      
+      messages: {
+        lockSuccess: "Đã khoá người dùng thành công",
+        unlockSuccess: "Đã mở khoá người dùng thành công",
+        banSuccess: "Đã ban người dùng thành công",
+        unbanSuccess: "Đã mở ban người dùng thành công",
+        actionError: "Có lỗi xảy ra khi thực hiện hành động",
+        fetchError: "Không thể tải danh sách người dùng",
+        noPermission: "Không có quyền thực hiện hành động này",
+        cannotManageSelf: "Bạn không thể thao tác với chính mình.",
+        cannotManageAdmin: "Bạn không thể thao tác với tài khoản quản trị (ADMIN/SUPERADMIN).",
+      },
+    },
   },
 
   /**
@@ -202,7 +275,6 @@ export const VI = {
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
       },
     },
-  },
   },
 
   /**
@@ -323,7 +395,7 @@ export const VI = {
       },
     },
   },
-} as const;
+};
 
 /**
  * Type helper for accessing VI dictionary keys with autocomplete

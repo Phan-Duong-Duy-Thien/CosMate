@@ -92,3 +92,32 @@ export function getRoles(): string[] {
   const rolesJson = localStorage.getItem(ROLES_KEY);
   return rolesJson ? JSON.parse(rolesJson) : [];
 }
+
+/**
+ * Get current user ID from JWT token
+ * Returns null if token is missing or invalid
+ */
+export function getUserId(): number | null {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
+
+  const payload = decodeJwtPayload(token);
+  if (!payload) return null;
+
+  // JWT typically stores user ID in "sub" field
+  if (payload.sub && typeof payload.sub === 'string') {
+    const id = parseInt(payload.sub, 10);
+    return isNaN(id) ? null : id;
+  }
+
+  // Some backends might use "userId" or "id" field
+  if (payload.userId && typeof payload.userId === 'number') {
+    return payload.userId;
+  }
+
+  if (payload.id && typeof payload.id === 'number') {
+    return payload.id;
+  }
+
+  return null;
+}

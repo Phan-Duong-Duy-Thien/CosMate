@@ -22,6 +22,7 @@ import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
 import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
 
 import AdminHomePage from "@/features/admin/pages/AdminHomePage"
+import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 
 export default function AppRoutes() {
@@ -48,7 +49,7 @@ export default function AppRoutes() {
       {/* Admin Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN]} />}>
         <Route path="/admin" element={<AdminHomePage />} />
-        {/* TODO: Add more admin routes here */}
+        <Route path="/admin/users" element={<AdminUsersPage />} />
       </Route>
 
       {/* Provider Rental Routes (Protected) */}

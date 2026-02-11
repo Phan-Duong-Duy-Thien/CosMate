@@ -7,14 +7,19 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
  * - Automatically adds auth token to requests
  * - Handles 401 errors (auto logout)
  * - Centralized error handling
+ * - baseURL has no /api prefix - endpoints must specify their own prefix
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// TEMP DEBUG: Verify baseURL configuration
+console.log('🔧 [axiosInstance] baseURL =', axiosInstance.defaults.baseURL);
+console.log('🔧 [axiosInstance] env var =', import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Request Interceptor
