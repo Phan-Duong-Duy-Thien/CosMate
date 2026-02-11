@@ -57,6 +57,12 @@ export default function AppRoutes() {
         {/* TODO: Add more provider routes here */}
       </Route>
 
+      {/* Provider Rental Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}>
+        <Route path="/provider-rental" element={<ProviderHomePage />} />
+        {/* TODO: Add more provider rental routes here */}
+      </Route>
+
       {/* Global Error Pages */}
       <Route path="/no-permission" element={<NoPermissionPage />} />
     </Routes>

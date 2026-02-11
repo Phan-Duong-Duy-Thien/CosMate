@@ -6,9 +6,11 @@ import { ShieldX } from 'lucide-react';
  * Global "No Permission" Page
  * 
  * Shown when user tries to access a route they don't have permission for
+ * or when their provider type is not yet supported
  * 
  * TRIGGERED BY:
  * - ProtectedRoute component when role check fails
+ * - Login redirect for unsupported provider types (PROVIDER_PHOTOGRAPH, PROVIDER_EVENT_STAFF)
  * - Manual navigation to /no-permission
  */
 export default function NoPermissionPage() {
@@ -28,7 +30,7 @@ export default function NoPermissionPage() {
         icon={<ShieldX size={64} color="#faad14" />}
         status="warning"
         title="Access Denied"
-        subTitle="You don't have permission to access this page. Please contact your administrator if you believe this is an error."
+        subTitle="You don't have permission to access this page. This feature may not be available yet for your account type. Please contact support if you believe this is an error."
         extra={[
           <Button type="primary" key="home" onClick={() => navigate('/')}>
             Go to Home

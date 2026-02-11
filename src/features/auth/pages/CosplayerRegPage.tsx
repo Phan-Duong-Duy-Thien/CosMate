@@ -52,7 +52,7 @@ export default function CosplayerRegPage() {
       <div className="flex w-full flex-col justify-center gap-[clamp(16px,2vw,24px)] px-[clamp(24px,4vw,48px)] py-[clamp(24px,4vw,48px)]">
         <div className="space-y-2 text-center">
           <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
-            Create your CosMate account
+            Create Cosplayer Account
           </h1>
           <p className="text-sm text-[#6B7280] sm:text-base">
             Join the community and start your cosplay journey.

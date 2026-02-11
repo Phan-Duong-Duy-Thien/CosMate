@@ -11,7 +11,7 @@ import { AuthLayout } from "../layout/AuthLayout"
 import { RegisterForm } from "../components/RegisterForm"
 
 export default function PhotographerRegPage() {
-  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER)
+  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER_PHOTOGRAPH)
 
   return (
     <AuthLayout

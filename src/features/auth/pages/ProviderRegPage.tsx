@@ -11,7 +11,7 @@ import { AuthLayout } from "../layout/AuthLayout"
 import { RegisterForm } from "../components/RegisterForm"
 
 export default function ProviderRegPage() {
-  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER)
+  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER_RENTAL)
 
   return (
     <AuthLayout
@@ -52,10 +52,10 @@ export default function ProviderRegPage() {
       <div className="flex w-full flex-col justify-center gap-[clamp(16px,2vw,24px)] px-[clamp(24px,4vw,48px)] py-[clamp(24px,4vw,48px)]">
         <div className="space-y-2 text-center">
           <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
-            Create Provider Account
+            Create Rental Provider Account
           </h1>
           <p className="text-sm text-[#6B7280] sm:text-base">
-            Join as a costume provider and start listing your rentals.
+            Join as a costume rental provider and start listing your rentals.
           </p>
         </div>
 

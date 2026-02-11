@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import { message } from "antd"
 
+import { ROLE } from "@/types/auth"
 import { loginWithGoogle } from "@/services/authService"
 import type { LoginFormValues } from "../types"
 import { login } from "../api/auth.api"
@@ -37,7 +38,7 @@ export function useLogin() {
       saveAuth(response.result)
       console.log("💾 Token saved successfully")
 
-      // Get roles from decoded JWT
+      // Get user roles for redirect
       const roles = getRoles()
       console.log("👤 User roles:", roles)
 
