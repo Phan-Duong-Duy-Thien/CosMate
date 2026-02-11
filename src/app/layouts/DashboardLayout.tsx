@@ -4,6 +4,7 @@ import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User } from 'lucide-react';
 import { clearAuth } from '@/features/auth/services/tokenStorage';
+import { VI } from '@/shared/i18n/vi';
 
 const { Header, Sider, Content } = Layout;
 
@@ -108,7 +109,7 @@ export function DashboardLayout({
     {
       key: 'profile',
       icon: <User size={16} />,
-      label: 'Profile',
+      label: VI.common.user.profile,
       onClick: () => console.log('TODO: Navigate to profile'),
     },
     {
@@ -117,7 +118,7 @@ export function DashboardLayout({
     {
       key: 'logout',
       icon: <LogOut size={16} />,
-      label: 'Logout',
+      label: VI.common.actions.logout,
       danger: true,
       onClick: handleLogout,
     },

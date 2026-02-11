@@ -4,6 +4,7 @@ import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
 import type { MockProfile } from "../types"
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 
 const BIO_MAX_LENGTH = 160
 
@@ -35,7 +36,7 @@ export function EditProfileModal({
   const validate = (): boolean => {
     const next: Record<string, string> = {}
     if (!draft.name?.trim()) next.displayName = "Display name is required"
-    if (!draft.username?.trim()) next.username = "Username is required"
+    if (!draft.username?.trim()) next.username = VI.profile.validation.usernameRequired
     if (draft.bio && draft.bio.length > BIO_MAX_LENGTH)
       next.bio = `Bio must be ${BIO_MAX_LENGTH} characters or less`
     setErrors(next)
@@ -204,7 +205,7 @@ export function EditProfileModal({
                   value={tagInput}
                   onChange={(e) => setTagInput(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                  placeholder="Add tag"
+                  placeholder={VI.profile.placeholders.addTag}
                   className="w-28"
                 />
                 <Button type="button" variant="outline" size="sm" onClick={addTag}>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { message } from "antd"
 
 import type { UserRole } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 import type { RegisterFormValues } from "../types"
 import { register } from "../api/auth.api"
 
@@ -33,20 +34,20 @@ export function useRegister(role: UserRole) {
       // Check response code (0 means success)
       if (response.code !== 0) {
         console.warn("⚠️ Registration failed with code:", response.code, response.message)
-        setFormError(response.message || "Registration failed. Please try again.")
+        setFormError(response.message || VI.auth.register.messages.registrationFailed)
         return
       }
 
       console.log("🎉 Registration successful, navigating to login...")
 
       // Show success message
-      message.success("Account created successfully! Please login to continue.")
+      message.success(VI.auth.register.messages.registrationSuccess)
 
       // Navigate to login page (no auto-login, no token in response)
       navigate("/login")
     } catch (error) {
       console.error("❌ Registration error:", error)
-      setFormError("Unable to create account. Please try again.")
+      setFormError(VI.auth.register.messages.unableToRegister)
     } finally {
       setSubmitting(false)
     }

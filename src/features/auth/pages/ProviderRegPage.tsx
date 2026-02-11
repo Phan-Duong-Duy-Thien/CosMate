@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 import { useRegister } from "../hooks/useRegister"
 import { AuthLayout } from "../layout/AuthLayout"
 import { RegisterForm } from "../components/RegisterForm"
@@ -98,12 +99,12 @@ export default function ProviderRegPage() {
 
         <div className="flex flex-col gap-2 text-center text-sm text-[#6B7280]">
           <span>
-            Already have an account?{" "}
+            {VI.auth.register.haveAccount}{" "}
             <Link
               to="/login"
               className="font-medium text-[#7C3AED] hover:text-[#6D28D9]"
             >
-              Sign in
+              {VI.auth.register.signIn}
             </Link>
           </span>
         </div>

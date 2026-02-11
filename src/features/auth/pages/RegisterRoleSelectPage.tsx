@@ -2,6 +2,7 @@ import { ChevronRight } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import { AuthLayout } from "../layout/AuthLayout"
+import { VI } from "@/shared/i18n/vi"
 
 type RoleOption = {
   title: string
@@ -11,23 +12,23 @@ type RoleOption = {
 
 const ROLE_OPTIONS: RoleOption[] = [
   {
-    title: "Cosplayer",
-    description: "Create a cosplay profile and rent costumes.",
+    title: VI.auth.register.roleSelect.cosplayer.title,
+    description: VI.auth.register.roleSelect.cosplayer.description,
     path: "/register/cosplayer",
   },
   {
-    title: "Provider",
-    description: "List costumes and manage rentals.",
+    title: VI.auth.register.roleSelect.provider.title,
+    description: VI.auth.register.roleSelect.provider.description,
     path: "/register/provider",
   },
   {
-    title: "Event Staff",
-    description: "Support events and manage staffing.",
+    title: VI.auth.register.roleSelect.staff.title,
+    description: VI.auth.register.roleSelect.staff.description,
     path: "/register/staff",
   },
   {
-    title: "Photographer",
-    description: "Offer photo services to cosplayers.",
+    title: VI.auth.register.roleSelect.photographer.title,
+    description: VI.auth.register.roleSelect.photographer.description,
     path: "/register/photographer",
   },
 ]
@@ -41,10 +42,10 @@ export default function RegisterRoleSelectPage() {
         <div className="flex w-full flex-col gap-[clamp(16px,2vw,24px)]">
           <div className="space-y-2 text-center">
             <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
-              Choose your role
+              {VI.auth.register.roleSelect.title}
             </h1>
             <p className="text-sm text-[#6B7280] sm:text-base">
-              Select the account type you want to create
+              {VI.auth.register.roleSelect.subtitle}
             </p>
           </div>
 

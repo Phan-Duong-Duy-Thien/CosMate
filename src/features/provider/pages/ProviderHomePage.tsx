@@ -3,6 +3,7 @@ import { Package, ShoppingBag, Calendar, Star } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '../constants/sidebar';
+import { VI } from '@/shared/i18n/vi';
 
 export default function ProviderHomePage() {
   // Convert provider sidebar items to DashboardLayout format
@@ -19,25 +20,25 @@ export default function ProviderHomePage() {
   // TODO: Fetch real stats from API when implemented
   const stats = [
     {
-      title: 'Active Listings',
+      title: VI.provider.dashboard.stats.activeListings,
       value: 24,
       icon: <Package size={24} />,
       color: '#7C3AED',
     },
     {
-      title: 'Pending Bookings',
+      title: VI.provider.dashboard.stats.pendingBookings,
       value: 8,
       icon: <ShoppingBag size={24} />,
       color: '#EC4899',
     },
     {
-      title: 'Upcoming Schedule',
+      title: VI.provider.dashboard.stats.upcomingSchedule,
       value: 15,
       icon: <Calendar size={24} />,
       color: '#10B981',
     },
     {
-      title: 'Average Rating',
+      title: VI.provider.dashboard.stats.averageRating,
       value: 4.8,
       icon: <Star size={24} />,
       color: '#F59E0B',
@@ -46,11 +47,11 @@ export default function ProviderHomePage() {
   ];
 
   return (
-    <DashboardLayout title="Provider Dashboard" sidebarItems={sidebarItems} brandName="CosMate Provider">
+    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider">
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>Welcome back, Provider!</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboard.welcome}</h2>
         <p style={{ color: '#6B7280', fontSize: 14 }}>
-          Manage your services, bookings, and schedule from here.
+          {VI.provider.dashboard.overview}
         </p>
       </div>
 
@@ -96,23 +97,23 @@ export default function ProviderHomePage() {
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card
-            title="Recent Bookings"
+            title={VI.provider.dashboard.sections.recentBookings}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
             <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
-              TODO: Display recent booking requests and status updates
+              {VI.provider.dashboard.sections.recentBookingsPlaceholder}
             </p>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card
-            title="Performance Overview"
+            title={VI.provider.dashboard.sections.performanceOverview}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
             <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
-              TODO: Display charts for bookings, revenue, and ratings over time
+              {VI.provider.dashboard.sections.performancePlaceholder}
             </p>
           </Card>
         </Col>
@@ -122,15 +123,14 @@ export default function ProviderHomePage() {
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col span={24}>
           <Card
-            title="Quick Tips"
+            title={VI.provider.dashboard.sections.quickTips}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
             <ul style={{ color: '#6B7280', marginBottom: 0 }}>
-              <li>Keep your service listings up to date with accurate descriptions and photos</li>
-              <li>Respond to booking requests within 24 hours to improve your rating</li>
-              <li>Update your availability calendar regularly to avoid scheduling conflicts</li>
-              <li>Encourage satisfied customers to leave reviews</li>
+              {VI.provider.dashboard.tips.map((tip, index) => (
+                <li key={index}>{tip}</li>
+              ))}
             </ul>
           </Card>
         </Col>

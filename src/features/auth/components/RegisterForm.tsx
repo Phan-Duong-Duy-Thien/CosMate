@@ -3,6 +3,7 @@ import { Lock, Mail, Phone, User } from "lucide-react"
 
 import type { RegisterFormValues } from "../types"
 import { AuthForm } from "./AuthForm"
+import { VI } from "@/shared/i18n/vi"
 
 type RegisterFormProps = {
   onSubmit: (values: RegisterFormValues) => void | Promise<void>
@@ -17,21 +18,21 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
     <AuthForm<RegisterFormValues>
       form={form}
       onFinish={onSubmit}
-      submitLabel="Create account"
+      submitLabel={VI.auth.register.createAccount}
       submitting={submitting}
       formError={formError}
     >
       <Form.Item
         className="mb-0"
-        label="Username"
+        label={VI.auth.register.username}
         name="username"
         rules={[
-          { required: true, message: "Username is required." },
-          { min: 3, message: "Username must be at least 3 characters." },
+          { required: true, message: VI.auth.register.validation.usernameRequired },
+          { min: 3, message: VI.auth.register.validation.usernameMinLength },
         ]}
       >
         <Input
-          placeholder="Choose a username"
+          placeholder={VI.auth.register.usernamePlaceholder}
           size="large"
           disabled={submitting}
           prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
@@ -41,12 +42,12 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
 
       <Form.Item
         className="mb-0"
-        label="Full name"
+        label={VI.auth.register.fullName}
         name="fullName"
-        rules={[{ required: true, message: "Full name is required." }]}
+        rules={[{ required: true, message: VI.auth.register.validation.fullNameRequired }]}
       >
         <Input
-          placeholder="Enter your full name"
+          placeholder={VI.auth.register.fullNamePlaceholder}
           size="large"
           disabled={submitting}
           prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
@@ -56,15 +57,15 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
 
       <Form.Item
         className="mb-0"
-        label="Email"
+        label={VI.auth.register.email}
         name="email"
         rules={[
-          { required: true, message: "Email is required." },
-          { type: "email", message: "Enter a valid email address." },
+          { required: true, message: VI.auth.register.validation.emailRequired },
+          { type: "email", message: VI.auth.register.validation.emailInvalid },
         ]}
       >
         <Input
-          placeholder="Enter your email"
+          placeholder={VI.auth.register.emailPlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
@@ -74,18 +75,18 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
 
       <Form.Item
         className="mb-0"
-        label="Phone"
+        label={VI.auth.register.phone}
         name="phone"
         rules={[
-          { required: true, message: "Phone number is required." },
+          { required: true, message: VI.auth.register.validation.phoneRequired },
           { 
             pattern: /^0\d{9}$/, 
-            message: "Phone must start with 0 and have 10 digits." 
+            message: VI.auth.register.validation.phoneInvalid 
           },
         ]}
       >
         <Input
-          placeholder="0xxxxxxxxx"
+          placeholder={VI.auth.register.phonePlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Phone className="h-4 w-4 text-[#9CA3AF]" />}
@@ -95,15 +96,15 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
 
       <Form.Item
         className="mb-0"
-        label="Password"
+        label={VI.auth.register.password}
         name="password"
         rules={[
-          { required: true, message: "Password is required." },
-          { min: 6, message: "Password must be at least 6 characters." },
+          { required: true, message: VI.auth.register.validation.passwordRequired },
+          { min: 6, message: VI.auth.register.validation.passwordMinLength },
         ]}
       >
         <Input.Password
-          placeholder="Create a password"
+          placeholder={VI.auth.register.passwordPlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
@@ -113,23 +114,23 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
 
       <Form.Item
         className="mb-0"
-        label="Confirm password"
+        label={VI.auth.register.confirmPassword}
         name="confirmPassword"
         dependencies={["password"]}
         rules={[
-          { required: true, message: "Confirm your password." },
+          { required: true, message: VI.auth.register.validation.confirmPasswordRequired },
           ({ getFieldValue }) => ({
             validator(_, value) {
               if (!value || getFieldValue("password") === value) {
                 return Promise.resolve()
               }
-              return Promise.reject(new Error("Passwords do not match."))
+              return Promise.reject(new Error(VI.auth.register.validation.passwordMismatch))
             },
           }),
         ]}
       >
         <Input.Password
-          placeholder="Re-enter your password"
+          placeholder={VI.auth.register.confirmPasswordPlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}

@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Result } from 'antd';
 import { ShieldX } from 'lucide-react';
+import { VI } from '@/shared/i18n/vi';
 
 /**
  * Global "No Permission" Page
@@ -29,14 +30,14 @@ export default function NoPermissionPage() {
       <Result
         icon={<ShieldX size={64} color="#faad14" />}
         status="warning"
-        title="Access Denied"
-        subTitle="You don't have permission to access this page. This feature may not be available yet for your account type. Please contact support if you believe this is an error."
+        title={VI.common.permission.accessDenied}
+        subTitle={VI.common.permission.noPermissionMessage}
         extra={[
           <Button type="primary" key="home" onClick={() => navigate('/')}>
-            Go to Home
+            {VI.common.permission.goHome}
           </Button>,
           <Button key="login" onClick={() => navigate('/login')}>
-            Go to Login
+            {VI.common.permission.goLogin}
           </Button>,
         ]}
       />
