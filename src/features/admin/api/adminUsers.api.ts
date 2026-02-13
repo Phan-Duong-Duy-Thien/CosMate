@@ -6,13 +6,23 @@
  */
 
 import axiosInstance from '@/services/axiosInstance';
-import type { AdminUser, ApiResponse, ApiResponseVoid } from '../types';
+import type { AdminUser, AdminUserProfile, ApiResponse, ApiResponseVoid } from '../types';
 
 /**
  * Fetch all users
  */
 export async function getUsers(): Promise<ApiResponse<AdminUser[]>> {
   const response = await axiosInstance.get<ApiResponse<AdminUser[]>>('/api/users');
+  return response.data;
+}
+
+/**
+ * Fetch user profile by ID (includes avatarUrl)
+ */
+export async function getUserProfile(userId: number): Promise<ApiResponse<AdminUserProfile>> {
+  const response = await axiosInstance.get<ApiResponse<AdminUserProfile>>(
+    `/api/users/${userId}/profile`
+  );
   return response.data;
 }
 

@@ -5,10 +5,10 @@
  * Handles data fetching, filtering, and user actions
  */
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { message } from 'antd';
 import * as adminUsersService from '../services/adminUsers.service';
-import type { AdminUser, UserActionType } from '../types';
+import type { AdminUser, AdminUserProfile, UserActionType } from '../types';
 import { VI } from '@/shared/i18n/vi';
 
 export function useAdminUsers() {
@@ -24,6 +24,12 @@ export function useAdminUsers() {
   
   // Action state
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
+
+  // Modal profile state (detail fetched from GET /api/users/{id}/profile)
+  const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
+  const [profile, setProfile] = useState<AdminUserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const profileRequestIdRef = useRef(0);
 
   /**
    * Fetch users from backend
@@ -81,6 +87,43 @@ export function useAdminUsers() {
       return true;
     });
   }, [users, searchText, roleFilter, statusFilter]);
+
+  /**
+   * Open profile modal: set selectedUserId and fetch profile.
+   * Stale request guard: quick row switching won't show wrong profile.
+   */
+  const openProfile = useCallback((userId: number) => {
+    setProfile(null);
+    setSelectedUserId(userId);
+    const requestId = ++profileRequestIdRef.current;
+    setProfileLoading(true);
+    adminUsersService
+      .getUserProfile(userId)
+      .then((data) => {
+        if (requestId === profileRequestIdRef.current) {
+          setProfile(data);
+        }
+      })
+      .catch((err) => {
+        if (requestId === profileRequestIdRef.current) {
+          message.error(err instanceof Error ? err.message : VI.admin.users.messages.fetchError);
+        }
+      })
+      .finally(() => {
+        if (requestId === profileRequestIdRef.current) {
+          setProfileLoading(false);
+        }
+      });
+  }, []);
+
+  /**
+   * Close profile modal: clear profile state.
+   */
+  const closeProfile = useCallback(() => {
+    setSelectedUserId(null);
+    setProfile(null);
+    setProfileLoading(false);
+  }, []);
 
   /**
    * Execute a user action (ban/unban/lock/unlock)
@@ -142,5 +185,12 @@ export function useAdminUsers() {
     runAction,
     actionLoadingId,
     refetch: fetchUsers,
+    
+    // Modal profile (GET /api/users/{id}/profile)
+    selectedUserId,
+    profile,
+    profileLoading,
+    openProfile,
+    closeProfile,
   };
 }

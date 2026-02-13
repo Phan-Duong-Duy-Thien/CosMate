@@ -45,9 +45,14 @@ export default function AdminUsersPage() {
     runAction,
     actionLoadingId,
     refetch,
+    selectedUserId,
+    profile,
+    profileLoading,
+    openProfile,
+    closeProfile,
   } = useAdminUsers();
 
-  // Detail drawer state
+  // Detail modal state (selectedUser from list: roles + permission lookup)
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
@@ -70,11 +75,12 @@ export default function AdminUsersPage() {
   ).sort();
 
   /**
-   * Handle view detail action
+   * Handle view detail: open modal and fetch profile from GET /api/users/{id}/profile
    */
   const handleViewDetail = (user: AdminUser) => {
     setSelectedUser(user);
     setDrawerOpen(true);
+    openProfile(user.id);
   };
 
   /**
@@ -106,9 +112,9 @@ export default function AdminUsersPage() {
       cancelText: VI.admin.users.confirm.cancel,
       onOk: async () => {
         await runAction(actionType, user.id);
-        // Close modal after successful action
         setDrawerOpen(false);
         setSelectedUser(null);
+        closeProfile();
       },
     });
   };
@@ -143,11 +149,17 @@ export default function AdminUsersPage() {
       okType: userIsBanned ? 'default' : 'danger',
       onOk: async () => {
         await runAction(actionType, user.id);
-        // Close modal after successful action
         setDrawerOpen(false);
         setSelectedUser(null);
+        closeProfile();
       },
     });
+  };
+
+  const handleCloseDetail = () => {
+    setDrawerOpen(false);
+    setSelectedUser(null);
+    closeProfile();
   };
 
   /**
@@ -339,17 +351,20 @@ export default function AdminUsersPage() {
         rowClassName="admin-user-row"
       />
 
-      {/* Detail Modal */}
+      {/* Detail Modal: profile from GET /api/users/{id}/profile, roles from list */}
       <UserDetailDrawer
         open={drawerOpen}
-        user={selectedUser}
-        onClose={() => setDrawerOpen(false)}
-        onBanToggle={(userId, isBanned) => {
-          const user = filteredUsers.find((u) => u.id === userId);
+        selectedUserId={selectedUserId ?? null}
+        profile={profile}
+        profileLoading={profileLoading}
+        rolesFromList={selectedUser?.roles}
+        onClose={handleCloseDetail}
+        onBanToggle={(userId) => {
+          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
           if (user) handleBanToggle(user);
         }}
-        onLockToggle={(userId, isLocked) => {
-          const user = filteredUsers.find((u) => u.id === userId);
+        onLockToggle={(userId) => {
+          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
           if (user) handleLockToggle(user);
         }}
         actionLoading={actionLoadingId !== null}

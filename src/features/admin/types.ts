@@ -3,7 +3,7 @@
  */
 
 /**
- * Admin user model from backend
+ * Admin user model from backend (list response)
  */
 export interface AdminUser {
   id: number;
@@ -14,6 +14,19 @@ export interface AdminUser {
   status: string;
   roles: string[];
   createdAt: string;
+}
+
+/**
+ * User profile from GET /api/users/{id}/profile (includes avatarUrl)
+ */
+export interface AdminUserProfile {
+  id: number;
+  username: string;
+  email: string;
+  fullName: string | null;
+  avatarUrl: string | null;
+  phone: string | null;
+  status: 'ACTIVE' | 'BANNED' | 'INACTIVE' | string;
 }
 
 /**

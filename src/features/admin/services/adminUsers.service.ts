@@ -6,7 +6,7 @@
  */
 
 import * as api from '../api/adminUsers.api';
-import type { AdminUser } from '../types';
+import type { AdminUser, AdminUserProfile } from '../types';
 
 /**
  * List all users
@@ -17,6 +17,20 @@ export async function listUsers(): Promise<AdminUser[]> {
   
   if (response.code !== 0) {
     throw new Error(response.message || 'Không thể tải danh sách người dùng');
+  }
+  
+  return response.result;
+}
+
+/**
+ * Get user profile by ID (includes avatarUrl)
+ * @throws Error if API call fails or returns non-zero code
+ */
+export async function getUserProfile(userId: number): Promise<AdminUserProfile> {
+  const response = await api.getUserProfile(userId);
+  
+  if (response.code !== 0) {
+    throw new Error(response.message || 'Không thể tải thông tin người dùng');
   }
   
   return response.result;
