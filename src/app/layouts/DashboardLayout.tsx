@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User } from 'lucide-react';
-import { clearAuth } from '@/features/auth/services/tokenStorage';
+import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 
 const { Header, Sider, Content } = Layout;
@@ -102,6 +102,7 @@ export function DashboardLayout({
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
+    window.location.reload();
   };
 
   // User dropdown menu items

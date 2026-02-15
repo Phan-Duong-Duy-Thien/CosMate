@@ -9,20 +9,35 @@ import {
   Phone,
   Search,
   ShoppingCart,
-  User,
   Youtube,
 } from "lucide-react"
+import { Button as AntButton, Dropdown, Avatar } from "antd"
+import type { MenuProps } from "antd"
 
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
 import { cn } from "@/lib/utils"
+import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
+
+  const loggedIn = isAuthenticated()
+
+  const handleLogout = () => {
+    clearAuth()
+    navigate("/login")
+    window.location.reload()
+  }
+
+  const userMenuItems: MenuProps["items"] = [
+    { key: "profile", label: "Trang cá nhân", onClick: () => navigate("/profile") },
+    { key: "logout", label: "Đăng xuất", danger: true, onClick: handleLogout },
+  ]
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -122,14 +137,22 @@ export default function CosplayerSiteLayout() {
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
             </button>
-            <button
-              type="button"
-              aria-label="Tài khoản"
-              className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-pink-100 text-pink-600 transition-all duration-200 ease-out hover:scale-105 hover:bg-pink-200 hover:shadow-md active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => navigate("/profile")}
-            >
-              <User className="h-4 w-4" />
-            </button>
+            {loggedIn ? (
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]}>
+                <div className="cursor-pointer" style={{ display: "inline-flex" }}>
+                  <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
+                    {/* optional: first letter of username if available later */}
+                  </Avatar>
+                </div>
+              </Dropdown>
+            ) : (
+              <>
+                <AntButton onClick={() => navigate("/login")}>Đăng nhập</AntButton>
+                <AntButton type="primary" onClick={() => navigate("/register")}>
+                  Đăng ký
+                </AntButton>
+              </>
+            )}
           </div>
         </div>
         <div className="mx-auto w-full max-w-6xl px-4 pb-4 md:hidden">
