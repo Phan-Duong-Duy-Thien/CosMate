@@ -1,19 +1,25 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import { clearAuth } from '@/features/auth/services/tokenStorage';
 
 /**
  * Configured Axios instance for CosMate API
  * - Automatically adds auth token to requests
  * - Handles 401 errors (auto logout)
  * - Centralized error handling
+ * - baseURL has no /api prefix - endpoints must specify their own prefix
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 15000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
+
+// TEMP DEBUG: Verify baseURL configuration
+console.log('🔧 [axiosInstance] baseURL =', axiosInstance.defaults.baseURL);
+console.log('🔧 [axiosInstance] env var =', import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Request Interceptor
@@ -21,10 +27,11 @@ const axiosInstance = axios.create({
  */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('cosmate_access_token');
+    const tokenType = localStorage.getItem('cosmate_token_type') || 'Bearer';
     
     if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `${tokenType} ${token}`;
     }
     
     return config;
@@ -54,9 +61,7 @@ axiosInstance.interceptors.response.use(
       switch (status) {
         case 401:
           // Unauthorized - clear token and redirect to login
-          localStorage.removeItem('accessToken');
-          localStorage.removeItem('refreshToken');
-          localStorage.removeItem('user');
+          clearAuth();
           
           // Only redirect if not already on login page
           if (!window.location.pathname.includes('/login')) {
