@@ -224,15 +224,15 @@ export default function ProviderCostumeListPage() {
           </div>
         ),
     },
-    {
-      title: 'Tên trang phục',
-      dataIndex: 'name',
-      key: 'name',
-    },
-    {
-      title: 'Kích cỡ',
-      dataIndex: 'size',
-      key: 'size',
+  {
+    title: 'Tên trang phục',
+    dataIndex: 'name',
+    key: 'name',
+  },
+  {
+    title: 'Kích cỡ',
+    dataIndex: 'size',
+    key: 'size',
       width: 90,
     },
     {
@@ -240,14 +240,14 @@ export default function ProviderCostumeListPage() {
       dataIndex: 'numberOfItems',
       key: 'numberOfItems',
       width: 100,
-    },
-    {
-      title: 'Giá / ngày',
-      dataIndex: 'pricePerDay',
-      key: 'pricePerDay',
+  },
+  {
+    title: 'Giá / ngày',
+    dataIndex: 'pricePerDay',
+    key: 'pricePerDay',
       width: 140,
-      render: (v: number) => `${v.toLocaleString('vi-VN')} VNĐ`,
-    },
+    render: (v: number) => `${v.toLocaleString('vi-VN')} VNĐ`,
+  },
     {
       title: 'Tiền đặt cọc',
       dataIndex: 'depositAmount',
@@ -255,10 +255,10 @@ export default function ProviderCostumeListPage() {
       width: 140,
       render: (v: number) => `${v.toLocaleString('vi-VN')}VNĐ`,
     },
-    {
-      title: 'Trạng thái',
-      dataIndex: 'status',
-      key: 'status',
+  {
+    title: 'Trạng thái',
+    dataIndex: 'status',
+    key: 'status',
       width: 120,
       render: (status: CostumeStatus) => (
         <Tag color={getStatusTagColor(status)}>{getStatusLabel(status)}</Tag>
@@ -285,17 +285,17 @@ export default function ProviderCostumeListPage() {
             Sửa
           </Button>
         </Space>
-      ),
-    },
-  ]
+    ),
+  },
+]
 
   return (
     <>
-      <DashboardLayout
-        title="Danh sách trang phục"
-        sidebarItems={sidebarItems}
-        brandName="CosMate Provider"
-      >
+    <DashboardLayout
+      title="Danh sách trang phục"
+      sidebarItems={sidebarItems}
+      brandName="CosMate Provider"
+    >
         {/* Header row */}
         <div
           style={{
@@ -308,19 +308,19 @@ export default function ProviderCostumeListPage() {
           <Title level={3} style={{ margin: 0 }}>
             Danh sách trang phục
           </Title>
-          <Space>
+        <Space>
             <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
               Làm mới
             </Button>
-            <Button
-              type="primary"
+          <Button
+            type="primary"
               icon={<PlusOutlined />}
-              onClick={() => navigate('/provider-rental/costumes/create')}
-            >
+            onClick={() => navigate('/provider-rental/costumes/create')}
+          >
               Tạo trang phục mới
-            </Button>
-          </Space>
-        </div>
+          </Button>
+        </Space>
+      </div>
 
         {providerId === null && (
           <Alert
@@ -335,7 +335,7 @@ export default function ProviderCostumeListPage() {
         )}
 
         <Table<Costume>
-          columns={columns}
+        columns={columns}
           dataSource={costumes}
           rowKey="id"
           loading={isLoading}
@@ -345,10 +345,10 @@ export default function ProviderCostumeListPage() {
             showSizeChanger: true,
             pageSizeOptions: ['10', '20', '50'],
           }}
-          bordered={false}
-          style={{ borderRadius: 8 }}
-        />
-      </DashboardLayout>
+        bordered={false}
+        style={{ borderRadius: 8 }}
+      />
+    </DashboardLayout>
 
       {/* View-only detail modal */}
       <CostumeDetailModal
