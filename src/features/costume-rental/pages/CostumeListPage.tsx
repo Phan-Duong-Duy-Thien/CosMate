@@ -1,10 +1,10 @@
-﻿import * as React from "react"
+import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { FilterState, SortKey }from "../types"
+import type { FilterState, SortKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
-import { SortBar } from "../components/SortBar"
+import { SortBar }from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
@@ -21,11 +21,11 @@ const tagOptions = [
 ]
 
 const regionOptions = [
-  { key: "hcm", label: "TP. Ho Chi Minh" },
-  { key: "hn", label: "Ha Noi" },
-  { key: "dn", label: "Da Nang" },
-  { key: "ct", label: "Can Tho" },
-  { key: "hp", label: "Hai Phong" },
+  { key: "hcm", label: "TP. Hồ Chí Minh" },
+  { key: "hn", label: "Hà Nội" },
+  { key: "dn", label: "Đà Nẵng" },
+  { key: "ct", label: "Cần Thơ" },
+  { key: "hp", label: "Hải Phòng" },
 ]
 
 const initialFilters: FilterState = {
@@ -48,9 +48,8 @@ export default function CostumeListPage() {
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const navigate = useNavigate()
 
-  const { items: allItems, isLoading, error, refetch } = usePublicCostumes()
+  const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
 
-  // Derive brands from live data
   const brands = React.useMemo(
     () => Array.from(new Set(allItems.map((item) => item.brand).filter(Boolean))).sort(),
     [allItems]
@@ -64,7 +63,6 @@ export default function CostumeListPage() {
 
   const filteredItems = React.useMemo(() => {
     let result = allItems
-
     if (keyword) {
       result = result.filter(
         (item) =>
@@ -74,54 +72,22 @@ export default function CostumeListPage() {
           item.shopName.toLowerCase().includes(keyword)
       )
     }
-
-    if (filters.regionKeys.length) {
-      result = result.filter((item) => filters.regionKeys.includes(item.region))
-    }
-
-    if (filters.brandKeys.length) {
-      result = result.filter((item) => filters.brandKeys.includes(item.brand))
-    }
-
-    if (filters.minRating) {
-      result = result.filter((item) => item.rating >= filters.minRating!)
-    }
-
-    if (filters.priceMin !== null) {
-      result = result.filter((item) => item.priceMax >= filters.priceMin!)
-    }
-
-    if (filters.priceMax !== null) {
-      result = result.filter((item) => item.priceMin <= filters.priceMax!)
-    }
-
-    if (filters.tagKeys.length) {
-      result = result.filter((item) =>
-        filters.tagKeys.some((tag) => item.tags.includes(tag))
-      )
-    }
-
-    if (filters.hasAccessories) {
-      result = result.filter((item) => item.hasAccessories)
-    }
-
-    if (filters.onlyAvailable) {
-      result = result.filter((item) => item.isAvailable)
-    }
-
-    if (filters.onlyBestSeller) {
-      result = result.filter((item) => item.bestSeller)
-    }
-
+    if (filters.regionKeys.length) result = result.filter((item) => filters.regionKeys.includes(item.region))
+    if (filters.brandKeys.length) result = result.filter((item) => filters.brandKeys.includes(item.brand))
+    if (filters.minRating) result = result.filter((item) => item.rating >= filters.minRating!)
+    if (filters.priceMin !== null) result = result.filter((item) => item.priceMax >= filters.priceMin!)
+    if (filters.priceMax !== null) result = result.filter((item) => item.priceMin <= filters.priceMax!)
+    if (filters.tagKeys.length) result = result.filter((item) => filters.tagKeys.some((tag) => item.tags.includes(tag)))
+    if (filters.hasAccessories) result = result.filter((item) => item.hasAccessories)
+    if (filters.onlyAvailable) result = result.filter((item) => item.isAvailable)
+    if (filters.onlyBestSeller) result = result.filter((item) => item.bestSeller)
     return result
   }, [allItems, filters, keyword])
 
   const sortedItems = React.useMemo(() => {
     const next = [...filteredItems]
     next.sort((a, b) => {
-      if (sortKey === "newest") {
-        return Date.parse(b.createdAt) - Date.parse(a.createdAt)
-      }
+      if (sortKey === "newest") return Date.parse(b.createdAt) - Date.parse(a.createdAt)
       if (sortKey === "bestSeller") {
         if (a.bestSeller !== b.bestSeller) return a.bestSeller ? -1 : 1
         return b.rating - a.rating
@@ -138,37 +104,23 @@ export default function CostumeListPage() {
   const safePage = Math.min(currentPage, Math.max(totalPages || 1, 1))
   const displayPage = hasResults ? safePage : 0
   const displayTotalPages = hasResults ? totalPages : 0
-  const pagedItems = hasResults
-    ? sortedItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-    : []
+  const pagedItems = hasResults ? sortedItems.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE) : []
 
-  // Derive UI state from hook
   type UIState = "loading" | "error" | "empty" | "success"
-  const uiState: UIState = isLoading
-    ? "loading"
-    : error
-    ? "error"
-    : sortedItems.length === 0
-    ? "empty"
-    : "success"
+  const uiState: UIState = isLoading ? "loading" : error ? "error" : sortedItems.length === 0 ? "empty" : "success"
 
   const handleReset = () => setFilters(initialFilters)
-
   const handleToggleWishlist = (costumeId: string) => {
-    setWishlistIds((prev) =>
-      prev.includes(costumeId)
-        ? prev.filter((id) => id !== costumeId)
-        : [...prev, costumeId]
-    )
+    setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
   }
 
   return (
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-6xl px-4 pt-10">
         <div className="rounded-3xl border border-white/80 bg-white/70 px-6 py-8 shadow-sm backdrop-blur">
-          <h1 className="text-3xl font-bold text-slate-900">Thue do Cosplay</h1>
+          <h1 className="text-3xl font-bold text-slate-900">Thuê đồ Cosplay</h1>
           <p className="mt-2 text-sm text-slate-600">
-            Tim theo nhan vat, anime/game, shop va ngan sach. Phu kien cho thue kem voi bo do.
+            Tìm theo nhân vật, anime/game, shop và ngân sách. Phụ kiện cho thuê kèm với bộ đồ.
           </p>
         </div>
 
@@ -195,24 +147,24 @@ export default function CostumeListPage() {
 
             {uiState === "loading" && (
               <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
-                Dang tai danh sach trang phuc...
+                Đang tải danh sách trang phục...
               </div>
             )}
 
             {uiState === "error" && (
               <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
-                <p>{error || "Da co loi xay ra. Vui long thu lai."}</p>
+                <p>{error || "Đã có lỗi xảy ra. Vui lòng thử lại."}</p>
                 <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={refetch}>
-                  Thu lai
+                  Thử lại
                 </Button>
               </div>
             )}
 
             {uiState === "empty" && (
               <div className="rounded-3xl border border-pink-100 bg-white/80 p-10 text-center text-sm text-slate-600">
-                <p>Chua co trang phuc phu hop. Thu noi bo loc nhe!</p>
+                <p>Chưa có trang phục phù hợp. Thử nới bộ lọc nhé!</p>
                 <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={handleReset}>
-                  Reset bo loc
+                  Reset bộ lọc
                 </Button>
               </div>
             )}

@@ -84,8 +84,11 @@ export interface Shop {
 export interface QuoteBreakdown {
   rentalPrice: number
   accessoryTotal: number
-  laundryFee: number
+  surchargesTotal: number
+  rentalOptionPrice: number
   deposit: number
+  /** @deprecated kept for backward compat; always 0 in new flow */
+  laundryFee: number
   total: number
 }
 
@@ -222,3 +225,4 @@ export interface RentalOptionUpdateInput {
   price: number
   description: string
 }
+

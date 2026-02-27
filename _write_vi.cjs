@@ -1,4 +1,7 @@
-/**
+// Script to write the correct vi.ts with proper Vietnamese Unicode
+const fs = require("fs");
+
+const content = `/**
  * Vietnamese (VI) Language Dictionary
  *
  * Centralized text content for CosMate application
@@ -410,3 +413,21 @@ export const VI = {
  * Type helper for accessing VI dictionary keys with autocomplete
  */
 export type VIKeys = typeof VI;
+`;
+
+fs.writeFileSync("src/shared/i18n/vi.ts", content, "utf8");
+
+// Verify
+const verify = fs.readFileSync("src/shared/i18n/vi.ts", "utf8");
+const checks = [
+  ["Đăng nhập", verify.includes("Đăng nhập")],
+  ["Đăng ký", verify.includes("Đăng ký")],
+  ["Xác nhận", verify.includes("Xác nhận")],
+  ["Tìm kiếm", verify.includes("Tìm kiếm")],
+  ["Thuê ngay", verify.includes("Thuê ngay")],
+  ["Bảng điều khiển", verify.includes("Bảng điều khiển")],
+  ["Quản lý người dùng", verify.includes("Quản lý người dùng")],
+  ["Không có dữ liệu", verify.includes("Không có dữ liệu")],
+];
+checks.forEach(([k, ok]) => console.log(ok ? "✓" : "✗", k));
+console.log("Lines:", verify.split("\n").length);
