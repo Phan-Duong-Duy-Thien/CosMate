@@ -1,4 +1,4 @@
-export type TagKey = "anime" | "game" | "event" | "photoshoot" | "new" | "adult18"
+﻿export type TagKey = "anime" | "game" | "event" | "photoshoot" | "new" | "adult18"
 
 export type SeriesType = "anime" | "game"
 
@@ -102,7 +102,7 @@ export interface FilterState {
   onlyBestSeller: boolean
 }
 
-// ─── Create Costume Wizard Types ────────────────────────────────────────────
+// â”€â”€â”€ Create Costume Wizard Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 export type CostumeSizeOption = "S" | "M" | "L" | "XL" | "FREESIZE"
 
@@ -134,6 +134,91 @@ export interface AccessoryInput {
 
 export interface RentalOptionInput {
   name: RentalOptionName
+  price: number
+  description: string
+}
+
+// â”€â”€â”€ Backend API Types (Provider / Costume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/** Status values returned by the backend for a Costume */
+export type CostumeStatus = 'AVAILABLE' | 'RENTED' | string
+
+export interface CostumeSurcharge {
+  id: number
+  name: string
+  description: string
+  price: number
+}
+
+export interface CostumeAccessory {
+  id: number
+  name: string
+  description: string
+  price: number
+  isRequired: boolean
+}
+
+export interface CostumeRentalOption {
+  id: number
+  name: string
+  price: number
+  description: string
+}
+
+/**
+ * Full Costume model returned by:
+ *   GET /api/costumes/provider/{providerId}  (list item)
+ *   GET /api/costumes/{id}(detail)
+ */
+export interface Costume {
+  id: number
+  name: string
+  description: string
+  size: string
+  numberOfItems: number
+  pricePerDay: number
+  depositAmount: number
+  status: CostumeStatus
+  imageUrls: string[]
+  providerId: number
+  surcharges: CostumeSurcharge[]
+  accessories: CostumeAccessory[]
+  rentalOptions: CostumeRentalOption[]
+}
+
+/**
+ * Generic API response wrapper used by costume-rental feature.
+ * Mirrors the shape of admin/types.ts ApiResponse without importing it.
+ */
+export interface CostumeApiResponse<T> {
+  code: number
+  message?: string
+  result: T
+}
+
+// â”€â”€â”€ Edit Costume Types â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+/** Fields allowed to be updated via PUT /api/costumes/{id} */
+export interface UpdateCostumeBasicInput {
+  name: string
+  description?: string
+  size: CostumeSizeOption
+  numberOfItems: number
+  pricePerDay: number
+  depositAmount: number
+  imageFiles?: File[]
+}
+
+/** Body for PUT /api/surcharges/{id} */
+export interface SurchargeUpdateInput {
+  name: string
+  description: string
+  price: number
+}
+
+/** Body for PUT /api/rental-options/{id} */
+export interface RentalOptionUpdateInput {
+  name: string
   price: number
   description: string
 }

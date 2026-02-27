@@ -1,4 +1,4 @@
-/**
+﻿/**
  * useCreateCostumeWizard
  *
  * Manages all state for the 2-phase create-costume wizard.
@@ -6,13 +6,14 @@
  */
 
 import { useState } from 'react'
-import { submitPhase1, submitPhase2Batch }from '../services/costumeRental.service'
+import { message } from 'antd'
+import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
 import type {
   CreateCostumeBasicPayload,
   SurchargeInput,
   AccessoryInput,
   RentalOptionInput,
-}from '../types'
+} from '../types'
 
 interface JwtPayload {
   providerId?: number
@@ -26,7 +27,7 @@ function decodeJwtPayload(token: string): JwtPayload | null {
     if (!base64) return null
     const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'))
     return JSON.parse(json) as JwtPayload
-  } catch {
+  }catch {
     return null
   }
 }
@@ -81,16 +82,19 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase1Error(null)
     const providerId = getProviderIdFromToken()
     if (providerId === null) {
-      setPhase1Error('Không tìm thấy providerId trong token. Vui lòng đăng nhập lại.')
+      setPhase1Error('Khong tim thay providerId trong token. Vui long dang nhap lai.')
       return
     }
     setIsPhase1Loading(true)
     try {
       const result = await submitPhase1({ ...values, providerId })
+      if (import.meta.env.DEV) {
+        console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
+      }
       setCostumeId(result.id)
       setPhase(2)
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Tạo trang phục thất bại.'
+    }catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
       setPhase1Error(msg)
     }finally {
       setIsPhase1Loading(false)
@@ -98,35 +102,46 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   }
 
   const handlePhase2Submit = async () => {
-    if (costumeId === null) return
+    // Guard: costumeId must be set by Phase 1 before Phase 2 can run
+    if (costumeId === null || typeof costumeId !== 'number') {
+      const errMsg = 'Thieu costumeId. Vui long hoan thanh buoc 1 truoc.'
+      setPhase2Error(errMsg)
+      message.error(errMsg)
+      throw new Error(errMsg)
+    }
+
+    if (import.meta.env.DEV) {
+      console.log('[useCreateCostumeWizard] Phase 2 submit. costumeId =', costumeId)
+    }
+
     setPhase2Error(null)
     setIsPhase2Loading(true)
     try {
       await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions })
     }catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Lưu thông tin bổ sung thất bại.'
+      const msg = err instanceof Error ? err.message : 'Luu thong tin bo sung that bai.'
       setPhase2Error(msg)
       throw err
-    }finally {
+    } finally {
       setIsPhase2Loading(false)
     }
   }
 
-  // ── Surcharge list helpers ──────────────────────────────────────────────
+  // Surcharge list helpers
   const addSurcharge = (item: SurchargeInput) => setSurcharges((p) => [...p, item])
   const updateSurcharge = (i: number, item: SurchargeInput) =>
     setSurcharges((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeSurcharge = (i: number) =>
     setSurcharges((p) => p.filter((_, idx) => idx !== i))
 
-  // ── Accessory list helpers ──────────────────────────────────────────────
+  // Accessory list helpers
   const addAccessory = (item: AccessoryInput) => setAccessories((p) => [...p, item])
   const updateAccessory = (i: number, item: AccessoryInput) =>
     setAccessories((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeAccessory = (i: number) =>
     setAccessories((p) => p.filter((_, idx) => idx !== i))
 
-  // ── Rental option list helpers ──────────────────────────────────────────
+  // Rental option list helpers
   const addRentalOption = (item: RentalOptionInput) => setRentalOptions((p) => [...p, item])
   const updateRentalOption = (i: number, item: RentalOptionInput) =>
     setRentalOptions((p) => p.map((x, idx) => (idx === i ? item : x)))
