@@ -4,6 +4,7 @@ import type { Costume, QuoteBreakdown } from "../../types"
 import { Button } from "@/shared/components/Button"
 import { cn } from "@/lib/utils"
 import { PriceBreakdownCard } from "./PriceBreakdownCard"
+import { VI } from "@/shared/i18n/vi"
 
 interface PurchasePanelProps {
   costume: Costume
@@ -53,9 +54,9 @@ export const PurchasePanel = ({
       </div>
 
       <div className="space-y-4 text-sm text-slate-600">
-        {hasRentalOptions && (
+        {hasRentalOptions ? (
           <div>
-            <p className="font-semibold text-slate-700">Gói thuê</p>
+            <p className="font-semibold text-slate-700">{VI.costumeRental.rentalOptions.title}</p>
             <div className="mt-2 flex flex-wrap gap-2">
               {costume.rentalOptions.map((opt) => (
                 <button
@@ -73,6 +74,11 @@ export const PurchasePanel = ({
                 </button>
               ))}
             </div>
+          </div>
+        ) : (
+          <div>
+            <p className="font-semibold text-slate-700">{VI.costumeRental.rentalOptions.title}</p>
+            <p className="mt-1 text-xs text-slate-400">{VI.costumeRental.rentalOptions.empty}</p>
           </div>
         )}
 
