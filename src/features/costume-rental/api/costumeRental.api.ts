@@ -85,6 +85,10 @@ export async function updateRentalOption(id: number, payload: RentalOptionUpdate
   await axiosInstance.put('/api/rental-options/' + id, payload)
 }
 
+export async function updateAccessory(id: number, payload: AccessoryInput): Promise<void> {
+  await axiosInstance.put('/api/accessories/' + id, payload)
+}
+
 export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
   const response = await axiosInstance.get<CostumeApiResponse<Costume[]>>('/api/costumes')
   return response.data

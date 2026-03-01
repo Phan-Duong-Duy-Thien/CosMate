@@ -363,6 +363,85 @@ export const VI = {
     rentNow: "Thuê ngay",
     addToCart: "Thêm vào giỏ",
     viewDetails: "Xem chi tiết",
+
+    // Edit Costume Modal - Fees Tab
+    editCostume: {
+      title: "Chỉnh sửa trang phục",
+      basicInfoTab: "Thông tin cơ bản",
+      feesTab: "Phụ phí & Gói thuê",
+      loadingDetail: "Đang tải dữ liệu...",
+      loadError: "Không thể tải dữ liệu trang phục.",
+    },
+
+    surcharges: {
+      title: "Phụ phí",
+      add: "Thêm phụ phí",
+      edit: "Sửa phụ phí",
+      empty: "Không có phụ phí nào.",
+      emptyWithButton: "Không có phụ phí nào.",
+      createSuccess: "Thêm phụ phí thành công!",
+      updateSuccess: "Cập nhật phụ phí thành công!",
+      createError: "Thêm phụ phí thất bại.",
+      updateError: "Cập nhật phụ phí thất bại.",
+      form: {
+        name: "Tên",
+        namePlaceholder: "Nhập tên phụ phí",
+        description: "Mô tả",
+        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
+        price: "Giá (VNĐ)",
+        pricePlaceholder: "Nhập giá phụ phí",
+      },
+    },
+
+    rentalOptions: {
+      title: "Gói thuê",
+      add: "Thêm gói thuê",
+      edit: "Sửa gói thuê",
+      empty: "Không có gói thuê nào.",
+      emptyWithButton: "Không có gói thuê nào.",
+      createSuccess: "Thêm gói thuê thành công!",
+      updateSuccess: "Cập nhật gói thuê thành công!",
+      createError: "Thêm gói thuê thất bại.",
+      updateError: "Cập nhật gói thuê thất bại.",
+      form: {
+        name: "Loại gói",
+        namePlaceholder: "Chọn loại gói",
+        description: "Mô tả",
+        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
+        price: "Giá (VNĐ)",
+        pricePlaceholder: "Nhập giá gói thuê",
+      },
+    },
+
+    accessories: {
+      title: "Phụ kiện",
+      add: "Thêm phụ kiện",
+      edit: "Sửa phụ kiện",
+      empty: "Không có phụ kiện nào.",
+      emptyWithButton: "Không có phụ kiện nào.",
+      createSuccess: "Thêm phụ kiện thành công!",
+      updateSuccess: "Cập nhật phụ kiện thành công!",
+      createError: "Thêm phụ kiện thất bại.",
+      updateError: "Cập nhật phụ kiện thất bại.",
+      required: "Bắt buộc",
+      optional: "Tùy chọn",
+      form: {
+        name: "Tên",
+        namePlaceholder: "Nhập tên phụ kiện",
+        description: "Mô tả",
+        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
+        price: "Giá (VNĐ)",
+        pricePlaceholder: "Nhập giá phụ kiện",
+        isRequired: "Bắt buộc",
+        isRequiredHint: "Khách hàng phải thuê phụ kiện này",
+      },
+    },
+
+    common: {
+      save: "Lưu",
+      cancel: "Hủy",
+      edit: "Sửa",
+    },
   },
 
   /**

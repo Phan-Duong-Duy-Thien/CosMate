@@ -371,6 +371,17 @@ export default function ProviderCostumeListPage() {
         onSubmitBasicInfo={editModal.submitBasicInfo}
         onUpdateSurcharge={editModal.submitSurchargeUpdate}
         onUpdateRentalOption={editModal.submitRentalOptionUpdate}
+        createSurchargeModalOpen={editModal.createSurchargeModalOpen}
+        setCreateSurchargeModalOpen={editModal.setCreateSurchargeModalOpen}
+        createRentalOptionModalOpen={editModal.createRentalOptionModalOpen}
+        setCreateRentalOptionModalOpen={editModal.setCreateRentalOptionModalOpen}
+        onCreateSurcharge={editModal.handleCreateSurcharge}
+        onCreateRentalOption={editModal.handleCreateRentalOption}
+        accessorySubmitting={editModal.accessorySubmitting}
+        createAccessoryModalOpen={editModal.createAccessoryModalOpen}
+        setCreateAccessoryModalOpen={editModal.setCreateAccessoryModalOpen}
+        onCreateAccessory={editModal.handleCreateAccessory}
+        onUpdateAccessory={editModal.handleUpdateAccessory}
       />
     </>
   )

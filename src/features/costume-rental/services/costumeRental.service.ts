@@ -59,11 +59,13 @@ import {
   updateCostumeBasic as apiUpdateCostumeBasic,
   updateSurcharge as apiUpdateSurcharge,
   updateRentalOption as apiUpdateRentalOption,
+  updateAccessory as apiUpdateAccessory,
 }from '../api/costumeRental.api'
 import type {
   UpdateCostumeBasicInput,
   SurchargeUpdateInput,
   RentalOptionUpdateInput,
+  AccessoryUpdateInput,
 } from '../types'
 
 /**
@@ -112,4 +114,66 @@ export async function updateRentalOption(
   input: RentalOptionUpdateInput,
 ): Promise<void> {
   await apiUpdateRentalOption(id, input)
+}
+
+// â”€â”€â”€ Create Surcharge / Rental Option for Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+import { getCostumeById } from '../api/costumeRental.api'
+import type { Costume } from '../types'
+
+/**
+ * Create a new surcharge for a costume.
+ * POST /api/surcharges/costume/{costumeId}
+ * Then refetch costume detail and return updated data.
+ */
+export async function createSurchargeService(
+  costumeId: number,
+  payload: SurchargeInput,
+): Promise<Costume> {
+  await createSurcharge(costumeId, payload)
+  const res = await getCostumeById(costumeId)
+  return res.result
+}
+
+/**
+ * Create a new rental option for a costume.
+ * POST /api/rental-options/costume/{costumeId}
+ * Then refetch costume detail and return updated data.
+ */
+export async function createRentalOptionService(
+  costumeId: number,
+  payload: RentalOptionInput,
+): Promise<Costume> {
+  await createRentalOption(costumeId, payload)
+  const res = await getCostumeById(costumeId)
+  return res.result
+}
+
+/**
+ * Create a new accessory for a costume.
+ * POST /api/accessories/costume/{costumeId}
+ * Then refetch costume detail and return updated data.
+ */
+export async function createAccessoryService(
+  costumeId: number,
+  payload: AccessoryInput,
+): Promise<Costume> {
+  await createAccessory(costumeId, payload)
+  const res = await getCostumeById(costumeId)
+  return res.result
+}
+
+/**
+ * Update an existing accessory.
+ * PUT /api/accessories/{id}
+ * Then refetch costume detail and return updated data.
+ */
+export async function updateAccessoryService(
+  accessoryId: number,
+  payload: AccessoryUpdateInput,
+  costumeId: number,
+): Promise<Costume> {
+  await apiUpdateAccessory(accessoryId, payload)
+  const res = await getCostumeById(costumeId)
+  return res.result
 }

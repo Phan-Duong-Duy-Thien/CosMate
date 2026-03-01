@@ -8,6 +8,7 @@
  * - Submits basic info update (PUT /api/costumes/{id})
  * - Submits surcharge update (PUT /api/surcharges/{id})
  * - Submits rental option update (PUT /api/rental-options/{id})
+ * - Submits accessory create/update (POST/PUT /api/accessories)
  * - Calls onSuccess callback so the list page can refetch
  */
 
@@ -18,13 +19,22 @@ import {
   updateCostumeBasic,
   updateSurcharge,
   updateRentalOption,
+  createSurchargeService,
+  createRentalOptionService,
+  createAccessoryService,
+  updateAccessoryService,
 } from '../services/costumeRental.service'
 import type {
   Costume,
   UpdateCostumeBasicInput,
   SurchargeUpdateInput,
   RentalOptionUpdateInput,
+  SurchargeInput,
+  RentalOptionInput,
+  AccessoryInput,
+  AccessoryUpdateInput,
 } from '../types'
+import { VI } from '@/shared/i18n/vi'
 
 /** Read providerId from JWT payload – same pattern as useCreateCostumeWizard */
 function getProviderIdFromToken(): number | null {
@@ -61,6 +71,12 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const [basicSubmitting, setBasicSubmitting] = useState(false)
   const [surchargeSubmitting, setSurchargeSubmitting] = useState(false)
   const [rentalOptionSubmitting, setRentalOptionSubmitting] = useState(false)
+  const [accessorySubmitting, setAccessorySubmitting] = useState(false)
+
+  // ── Create/Edit modal states ─────────────────────────────────────────────
+  const [createSurchargeModalOpen, setCreateSurchargeModalOpen] = useState(false)
+  const [createRentalOptionModalOpen, setCreateRentalOptionModalOpen] = useState(false)
+  const [createAccessoryModalOpen, setCreateAccessoryModalOpen] = useState(false)
 
   const providerId = getProviderIdFromToken()
 
@@ -183,6 +199,101 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     [editingId],
   )
 
+  /**
+   * Create a new surcharge (POST /api/surcharges/costume/{costumeId}).
+   */
+  const handleCreateSurcharge = useCallback(
+    async (values: SurchargeInput) => {
+      if (!editingId) return
+      setSurchargeSubmitting(true)
+      try {
+        const updatedDetail = await createSurchargeService(editingId, values)
+        setDetail(updatedDetail)
+        setCreateSurchargeModalOpen(false)
+        message.success(VI.costumeRental.surcharges.createSuccess)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : VI.costumeRental.surcharges.createError,
+        )
+      } finally {
+        setSurchargeSubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
+  /**
+   * Create a new rental option (POST /api/rental-options/costume/{costumeId}).
+   */
+  const handleCreateRentalOption = useCallback(
+    async (values: RentalOptionInput) => {
+      if (!editingId) return
+      setRentalOptionSubmitting(true)
+      try {
+        const updatedDetail = await createRentalOptionService(editingId, values)
+        setDetail(updatedDetail)
+        setCreateRentalOptionModalOpen(false)
+        message.success(VI.costumeRental.rentalOptions.createSuccess)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : VI.costumeRental.rentalOptions.createError,
+        )
+      } finally {
+        setRentalOptionSubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
+  /**
+   * Create a new accessory (POST /api/accessories/costume/{costumeId}).
+   */
+  const handleCreateAccessory = useCallback(
+    async (values: AccessoryInput) => {
+      if (!editingId) return
+      setAccessorySubmitting(true)
+      try {
+        const updatedDetail = await createAccessoryService(editingId, values)
+        setDetail(updatedDetail)
+        setCreateAccessoryModalOpen(false)
+        message.success(VI.costumeRental.accessories.createSuccess)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : VI.costumeRental.accessories.createError,
+        )
+      } finally {
+        setAccessorySubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
+  /**
+   * Update an existing accessory (PUT /api/accessories/{id}).
+   */
+  const handleUpdateAccessory = useCallback(
+    async (accessoryId: number, values: AccessoryUpdateInput) => {
+      if (!editingId) return
+      setAccessorySubmitting(true)
+      try {
+        const updatedDetail = await updateAccessoryService(accessoryId, values, editingId)
+        setDetail(updatedDetail)
+        message.success(VI.costumeRental.accessories.updateSuccess)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : VI.costumeRental.accessories.updateError,
+        )
+      } finally {
+        setAccessorySubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
   return {
     // Modal state
     open,
@@ -202,5 +313,22 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     surchargeSubmitting,
     submitRentalOptionUpdate,
     rentalOptionSubmitting,
+
+    // Surcharge create modal
+    createSurchargeModalOpen,
+    setCreateSurchargeModalOpen,
+    handleCreateSurcharge,
+
+    // Rental option create modal
+    createRentalOptionModalOpen,
+    setCreateRentalOptionModalOpen,
+    handleCreateRentalOption,
+
+    // Accessory handlers
+    accessorySubmitting,
+    createAccessoryModalOpen,
+    setCreateAccessoryModalOpen,
+    handleCreateAccessory,
+    handleUpdateAccessory,
   }
 }
