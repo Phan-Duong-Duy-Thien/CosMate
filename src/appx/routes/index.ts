@@ -37,7 +37,6 @@ export default function AppRoutes() {
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
-        <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="staffs" element={<StaffsListingPage />} />

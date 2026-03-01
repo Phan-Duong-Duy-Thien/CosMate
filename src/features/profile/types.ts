@@ -38,3 +38,39 @@ export interface MockReview {
 export type ProfileTabId = "gallery" | "concepts" | "reviews"
 
 export type SortOption = "latest" | "popular"
+
+// ============ USER ADDRESS TYPES ============
+
+export interface UserAddress {
+  id?: number
+  name: string
+  city: string
+  district: string
+  address: string
+  phone: string
+}
+
+export interface CreateUserAddressPayload {
+  name: string
+  city: string
+  district: string
+  address: string
+  phone: string
+}
+
+// ============ VIETNAM LOCATION TYPES ============
+
+export interface Province {
+  code: number
+  name: string
+}
+
+export interface District {
+  code: number
+  name: string
+}
+
+export interface Ward {
+  code: number
+  name: string
+}

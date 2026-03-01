@@ -7,6 +7,8 @@ import { PurchasePanel }from "../components/detail/PurchasePanel"
 import { DetailTabs } from "../components/detail/DetailTabs"
 import { ReviewsSection }from "../components/detail/ReviewsSection"
 import { usePublicCostumeDetail }from "../hooks/usePublicCostumeDetail"
+import { useUserAddresses } from "@/features/profile/hooks/useUserAddresses"
+import { getUserId } from "@/features/auth/services/tokenStorage"
 
 const reviewSamples = [
   { id: "review-1", author: "Ngọc Anh", rating: 5, content: "Đồ lên form đẹp, phụ kiện đầy đủ, giao đúng hẹn.", date: "20/01/2026", hasMedia: true },
@@ -42,7 +44,40 @@ export default function CostumeDetailPage() {
 
   const handleRentNow = () => {
     if (!costume) return
-    alert("Chức năng thuê sẽ được triển khai sau!")
+
+    // Get current user ID
+    const userId = getUserId()
+
+    if (!userId) {
+      // Not logged in - redirect to login with return URL
+      const currentUrl = window.location.pathname
+      navigate(`/login?returnTo=${encodeURIComponent(currentUrl)}`)
+      return
+    }
+
+    // Check if user has addresses - fetch and check
+    const checkAddresses = async () => {
+      try {
+        const { getUserAddresses } = await import('@/features/profile/services/userAddress.service')
+        const addresses = await getUserAddresses(userId)
+
+        if (addresses.length === 0) {
+          // No addresses - redirect to address creation page
+          const currentUrl = window.location.pathname
+          navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
+        } else {
+          // Has addresses - proceed with rental (placeholder for now)
+          alert("Chức năng thuê sẽ được triển khai sau!")
+        }
+      } catch (err) {
+        console.error('Failed to check addresses:', err)
+        // On error, allow proceeding (or redirect to address creation as fallback)
+        const currentUrl = window.location.pathname
+        navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
+      }
+    }
+
+    checkAddresses()
   }
 
   if (isLoading) {

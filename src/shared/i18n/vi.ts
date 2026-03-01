@@ -346,6 +346,43 @@ export const VI = {
     placeholders: {
       addTag: "Thêm thẻ",
     },
+
+    // Address form
+    address: {
+      createPage: {
+        title: "Thêm địa chỉ mới",
+        subtitle: "Vui lòng nhập thông tin địa chỉ giao hàng của bạn",
+      },
+      form: {
+        name: "Tên địa chỉ",
+        namePlaceholder: "Ví dụ: Nhà, Công ty",
+        phone: "Số điện thoại",
+        phonePlaceholder: "Nhập số điện thoại",
+        city: "Tỉnh/Thành phố",
+        cityPlaceholder: "Chọn Tỉnh/Thành phố",
+        district: "Quận/Huyện",
+        districtPlaceholder: "Chọn Quận/Huyện",
+        ward: "Phường/Xã",
+        wardPlaceholder: "Chọn Phường/Xã",
+        streetAddress: "Địa chỉ chi tiết",
+        streetAddressPlaceholder: "Số nhà, tên đường",
+      },
+      validation: {
+        required: "Trường này là bắt buộc",
+        invalidPhone: "Số điện thoại không hợp lệ",
+        selectCity: "Vui lòng chọn Tỉnh/Thành phố",
+        selectDistrict: "Vui lòng chọn Quận/Huyện",
+        selectWard: "Vui lòng chọn Phường/Xã",
+      },
+      button: {
+        save: "Lưu địa chỉ",
+        back: "Quay lại",
+      },
+      messages: {
+        createSuccess: "Thêm địa chỉ thành công!",
+        createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
+      },
+    },
   },
 
   /**
