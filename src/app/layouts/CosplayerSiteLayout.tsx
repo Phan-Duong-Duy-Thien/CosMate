@@ -246,10 +246,10 @@ export default function CosplayerSiteLayout() {
           </div>
         )}
         {isHomePage ? (
-          <div className="mx-auto w-full max-w-[1440px] px-4 py-4 lg:px-6">
+          <div className="mx-auto w-full max-w-[1800px] px-2 py-4 lg:px-3 xl:px-4">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
               <aside className="hidden lg:block">
-                <div className="sticky top-[128px]">
+                <div className="w-full">
                   <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <img
                       src={sideBannerImage}
@@ -276,7 +276,7 @@ export default function CosplayerSiteLayout() {
               </div>
 
               <aside className="hidden lg:block">
-                <div className="sticky top-[128px]">
+                <div className="w-full">
                   <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <img
                       src={sideBannerImage}
