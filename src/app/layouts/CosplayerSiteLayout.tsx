@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Outlet, useNavigate, useSearchParams } from "react-router-dom"
+import { Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import {
   ChevronDown,
   Facebook,
@@ -17,16 +17,67 @@ import type { MenuProps } from "antd"
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
+import { Breadcrumbs } from "@shared/components/Breadcrumbs"
+import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
+import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
+  const { items: breadcrumbItems, setItems } = useBreadcrumb()
 
   const loggedIn = isAuthenticated()
+
+  // Set default breadcrumbs based on route
+  React.useEffect(() => {
+    const path = location.pathname
+    if (path === "/") {
+      setItems([])
+    } else if (path === "/costumes") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes },
+      ])
+    } else if (path.startsWith("/costumes/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: VI.common.breadcrumb.checkout },
+      ])
+    } else if (path === "/profile") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile },
+      ])
+    } else if (path === "/rent/checkout") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: VI.common.breadcrumb.checkout },
+      ])
+    } else if (path.startsWith("/profile/addresses")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: path.includes("new") ? VI.common.breadcrumb.addAddress : VI.common.breadcrumb.addresses },
+      ])
+    } else if (path === "/photographers") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.photographers },
+      ])
+    } else if (path === "/staffs") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.staffs },
+      ])
+    }
+  }, [location.pathname, setItems])
 
   const handleLogout = () => {
     clearAuth()
@@ -172,6 +223,11 @@ export default function CosplayerSiteLayout() {
       </header>
 
       <main className="flex-1">
+        {breadcrumbItems.length > 0 && (
+          <div className="mx-auto w-full max-w-6xl px-4 py-3">
+            <Breadcrumbs items={breadcrumbItems} />
+          </div>
+        )}
         <Outlet />
       </main>
 

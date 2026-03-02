@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom"
 import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
+import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { ROLE } from "@/types/auth"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
@@ -32,7 +33,8 @@ import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <BreadcrumbProvider>
+      <Routes>
       {/* Public + Cosplayer Site Routes */}
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />}/>
@@ -71,6 +73,7 @@ export default function AppRoutes() {
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />
-    </Routes>
+    </Routes>     
+    </BreadcrumbProvider>
   )
 }

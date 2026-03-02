@@ -25,6 +25,24 @@ export const VI = {
     appNameAdmin: "CosMate Admin",
     appNameProvider: "CosMate Provider",
 
+    // Breadcrumb labels
+    breadcrumb: {
+      home: "Trang chủ",
+      costumes: "Thuê đồ Cosplay",
+      checkout: "Xác nhận đơn thuê",
+      profile: "Hồ sơ",
+      addresses: "Địa chỉ",
+      addAddress: "Thêm địa chỉ",
+      photographers: "Thuê Photographer",
+      staffs: "Thuê Staff",
+      admin: "Quản trị",
+      users: "Quản lý người dùng",
+      provider: "Provider",
+      providerCostumes: "Quản lý trang phục",
+      create: "Tạo mới",
+      edit: "Chỉnh sửa",
+    },
+
     actions: {
       login: "Đăng nhập",
       logout: "Đăng xuất",
