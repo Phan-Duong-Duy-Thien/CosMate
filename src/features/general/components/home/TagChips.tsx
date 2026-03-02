@@ -14,7 +14,7 @@ interface TagChipsProps {
 }
 
 export const TagChips = ({ tags, activeTag, onTagChange }: TagChipsProps) => (
-  <section className="mx-auto w-full max-w-6xl px-4 pt-6" data-reveal="true">
+  <section className="w-full pt-6" data-reveal="true">
     <div className="flex flex-wrap items-center gap-3">
       {tags.map((tag) => {
         const isActive = tag.key === activeTag

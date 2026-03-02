@@ -94,7 +94,7 @@ const HomePage = () => {
   }
 
   return (
-    <div className="bg-gradient-to-b from-pink-50 via-white to-purple-50">
+    <div className="bg-transparent">
       <main
         className="pb-12 [&_[data-reveal=true]]:translate-y-6 [&_[data-reveal=true]]:opacity-0 [&_[data-reveal=true]]:transition-all [&_[data-reveal=true]]:duration-700 [&_[data-reveal=true][data-visible=true]]:translate-y-0 [&_[data-reveal=true][data-visible=true]]:opacity-100 motion-reduce:[&_[data-reveal=true]]:translate-y-0 motion-reduce:[&_[data-reveal=true]]:opacity-100"
       >
