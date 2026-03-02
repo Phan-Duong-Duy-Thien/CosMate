@@ -48,7 +48,8 @@ export default function PaymentResultPage() {
     if (isSuccess) {
       navigate('/');
     } else {
-      navigate('/costumes');
+      // Payment failed - go to checkout to retry payment
+      navigate('/rent/checkout');
     }
   };
 

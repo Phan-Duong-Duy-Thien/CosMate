@@ -85,3 +85,20 @@ export interface Ward {
   code: number
   name: string
 }
+
+// ============ WALLET TYPES ============
+
+export interface WalletInfo {
+  walletId: number
+  userId: number
+  balance: number
+  depositBalance: number
+}
+
+export interface WalletTransaction {
+  id: number
+  amount: number
+  type: string
+  status: string
+  createdAt: string
+}

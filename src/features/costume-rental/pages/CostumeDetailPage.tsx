@@ -47,8 +47,35 @@ export default function CostumeDetailPage() {
   // Modal state for "no address" confirmation
   const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
 
+  // Validation error state
+  const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  // Convert date string to ISO format for backend
+  const convertToIsoDateTime = (dateString: string): string => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    // Set to start of day in local time, then format as ISO without milliseconds
+    date.setHours(0, 0, 0, 0)
+    return date.toISOString().split('.')[0] // Remove milliseconds
+  }
+
   const handleRentNow = async () => {
     if (!costume) return
+
+    // Validate rentStart is selected
+    if (!startDate) {
+      setValidationError(VI.costumeRental.validation.missingRentStart)
+      return
+    }
+
+    // Validate rentDay is valid
+    if (!days || days <= 0) {
+      setValidationError(VI.costumeRental.validation.invalidRentDay)
+      return
+    }
+
+    // Clear validation error
+    setValidationError(null)
 
     // Get current user ID
     const userId = getUserId()
@@ -60,11 +87,14 @@ export default function CostumeDetailPage() {
       return
     }
 
+    // Convert startDate to ISO format for backend
+    const rentStartIso = convertToIsoDateTime(startDate)
+
     // Save rental draft to sessionStorage
     saveDraft({
       costumeId: costume.id,
       rentDay: days,
-      rentStart: startDate,
+      rentStart: rentStartIso,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
       selectedRentalOptionId,
     })
@@ -168,6 +198,13 @@ export default function CostumeDetailPage() {
             onToggleOptionalAccessory={toggleOptionalAccessory}
             onRentNow={handleRentNow}
           />
+
+          {/* Validation Error */}
+          {validationError && (
+            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {validationError}
+            </div>
+          )}
         </div>
 
         <div className="mt-8 space-y-6">

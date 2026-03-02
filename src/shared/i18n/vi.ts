@@ -468,12 +468,59 @@ export const VI = {
     wallet: {
       title: "Ví của tôi",
       balance: "Số dư ví",
+      depositBalance: "Tiền cọc",
       manage: "Quản lý ví",
       topup: "Nạp tiền vào ví",
       topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
       amount: "Số tiền nạp",
       amountPlaceholder: "Nhập số tiền",
       submit: "Nạp tiền",
+
+      // Transaction history
+      viewTransactions: "Xem giao dịch",
+      hideTransactions: "Ẩn giao dịch",
+      transactionDate: "Ngày",
+      transactionType: "Loại giao dịch",
+      transactionAmount: "Số tiền",
+      transactionStatus: "Trạng thái",
+      noTransactions: "Chưa có giao dịch nào",
+      loading: "Đang tải...",
+      walletError: "Không thể tải thông tin ví",
+
+      // Wallet checkout validation
+      checkoutValidation: {
+        insufficientTitle: "Số dư ví không đủ",
+        balanceLabel: "Số dư hiện tại",
+        totalLabel: "Tổng cần thanh toán",
+        missingLabel: "Thiếu",
+        topUpCta: "Nạp thêm",
+        payWithWalletNote: "Thanh toán bằng số dư ví CosMate",
+      },
+
+      // Transaction status
+      statusCompleted: "Hoàn thành",
+      statusFailed: "Thất bại",
+      statusPending: "Đang chờ",
+
+      // Transaction types
+      typeTopUp: "Nạp tiền",
+      typePayment: "Thanh toán",
+      typeRefund: "Hoàn tiền",
+      typeDeposit: "Đặt cọc",
+      typeOther: "Khác",
+
+      // Top-up form
+      topUpTitle: "Nạp tiền vào ví",
+      topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
+      paymentMethodLabel: "Phương thức thanh toán",
+      momo: "MoMo",
+      momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
+      vnpay: "VNPAY",
+      vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
+      invalidAmount: "Số tiền phải lớn hơn 0",
+      selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
+      processing: "Đang xử lý...",
+      error: "Có lỗi xảy ra. Vui lòng thử lại.",
     },
   },
 
@@ -492,6 +539,12 @@ export const VI = {
     rentNow: "Thuê ngay",
     addToCart: "Thêm vào giỏ",
     viewDetails: "Xem chi tiết",
+
+    // Validation messages
+    validation: {
+      missingRentStart: "Vui lòng chọn ngày bắt đầu thuê",
+      invalidRentDay: "Số ngày thuê phải lớn hơn 0",
+    },
 
     // Edit Costume Modal - Fees Tab
     editCostume: {
@@ -673,8 +726,11 @@ export const VI = {
       title: "Phương thức thanh toán",
       method: "Chọn phương thức",
       momo: "MoMo",
+      momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
       vnpay: "VNPAY",
+      vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
       wallet: "Ví CosMate",
+      walletDesc: "Sử dụng số dư trong ví CosMate của bạn",
     },
 
     // Actions
