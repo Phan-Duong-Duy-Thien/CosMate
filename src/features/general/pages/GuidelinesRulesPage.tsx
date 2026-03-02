@@ -24,6 +24,23 @@ export default function GuidelinesRulesPage() {
     GUIDELINES_RULES_SECTIONS[0]?.id
   )
   const [activeView, setActiveView] = React.useState<ContentView>("guide")
+  const [pageVisible, setPageVisible] = React.useState(false)
+  const [contentVisible, setContentVisible] = React.useState(true)
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setPageVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
+
+  React.useEffect(() => {
+    setContentVisible(false)
+    const frame = window.requestAnimationFrame(() => {
+      setContentVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [activeSectionId, activeView])
 
   const activeSection =
     GUIDELINES_RULES_SECTIONS.find((section) => section.id === activeSectionId) ??
@@ -35,9 +52,26 @@ export default function GuidelinesRulesPage() {
   ]
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-pink-50 via-white to-purple-50 py-8 [font-family:'Be_Vietnam_Pro','Nunito','Inter',ui-sans-serif,system-ui] md:py-10">
-      <div className="mx-auto w-full max-w-6xl px-4">
-        <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-[0_16px_40px_rgba(236,72,153,0.08)] backdrop-blur-sm md:p-8">
+    <section className="min-h-screen bg-transparent py-8 [font-family:'Be_Vietnam_Pro','Nunito','Inter',ui-sans-serif,system-ui] md:py-10">
+      <style>{`
+        @keyframes sparkleBlink {
+          0% { opacity: 0.6; transform: scale(1); }
+          50% { opacity: 1; transform: scale(1.05); }
+          100% { opacity: 0.6; transform: scale(1); }
+        }
+        @keyframes softSparkle {
+          0% { opacity: 0.6; transform: translateY(0px); }
+          50% { opacity: 1; transform: translateY(-1px); }
+          100% { opacity: 0.6; transform: translateY(0px); }
+        }
+      `}</style>
+      <div className="mx-auto w-full max-w-7xl px-4">
+        <div
+          className={cn(
+            "rounded-3xl border border-white/70 bg-white/68 p-6 shadow-[0_16px_40px_rgba(236,72,153,0.08)] backdrop-blur-sm transition-all duration-300 ease-out md:p-8",
+            pageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
+          )}
+        >
           <div className="mb-10 text-center md:mb-12">
             <h1 className="mb-4 text-[28px] font-bold leading-[1.2] tracking-[-0.5px] text-slate-900 md:text-[34px] xl:text-[40px]">
               {VI.general.guidelinesRules.pageTitle}
@@ -56,17 +90,26 @@ export default function GuidelinesRulesPage() {
                   key={section.id}
                   type="button"
                   className={cn(
-                    "rounded-2xl border p-4 text-left transition-all xl:min-h-32",
+                    "group relative rounded-2xl border p-4 text-left transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5 xl:min-h-32",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                     selected
-                      ? "border-pink-300 bg-gradient-to-br from-pink-200 via-rose-100 to-purple-200 shadow-[0_12px_26px_rgba(236,72,153,0.18)]"
-                      : "border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100"
+                      ? "border-pink-300 bg-gradient-to-br from-pink-200 via-rose-100 to-purple-200 shadow-[0_14px_30px_rgba(236,72,153,0.2)]"
+                      : "border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100 hover:shadow-[0_12px_24px_rgba(236,72,153,0.14)]"
                   )}
                   onClick={() => {
                     setActiveSectionId(section.id)
                     setActiveView("guide")
                   }}
                 >
+                  <span
+                    aria-hidden="true"
+                    className={cn(
+                      "pointer-events-none absolute right-3 top-3 inline-flex h-5 w-5 items-center justify-center text-[18px] text-pink-500/80 transition-all duration-300 [animation:sparkleBlink_2.8s_ease-in-out_infinite] motion-reduce:animate-none",
+                      "group-hover:scale-110 group-hover:text-pink-600 group-hover:brightness-110"
+                    )}
+                  >
+                    ✦
+                  </span>
                   <p className="mb-2 text-[12px] font-medium tracking-[0.3px] text-slate-700/70">
                     {VI.general.guidelinesRules.cardSmallTitle}
                   </p>
@@ -85,7 +128,7 @@ export default function GuidelinesRulesPage() {
                   key={tab.key}
                   type="button"
                   className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium transition-colors",
+                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                     activeView === tab.key
                       ? "bg-pink-500 text-white"
@@ -98,11 +141,18 @@ export default function GuidelinesRulesPage() {
               ))}
             </div>
 
-            {activeView === "guide" ? (
-              <GuideList section={activeSection} />
-            ) : (
-              <RulesList section={activeSection} />
-            )}
+            <div
+              className={cn(
+                "transition-all duration-250 ease-out",
+                contentVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
+              )}
+            >
+              {activeView === "guide" ? (
+                <GuideList section={activeSection} />
+              ) : (
+                <RulesList section={activeSection} />
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -198,6 +248,10 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
           : section.id === "complaints-disputes"
             ? VI.general.guidelinesRules.complaintsRules.mainDescription
       : VI.general.guidelinesRules.cosplayRules.mainDescription
+  const heroTitleText =
+    section.id === "cosplay-rental"
+      ? mainTitle.replace(/^.*?(Nội Quy Thuê Đồ Cosplay).*$/u, "$1")
+      : mainTitle
 
   const ruleByCode = React.useMemo(() => {
     return section.rules.reduce<Record<string, GuidelinesRuleItem>>((acc, rule) => {
@@ -241,9 +295,17 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
       </aside>
 
       <div className="space-y-4">
-        <div className="rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-50 to-purple-100 p-4 md:p-5">
-          <h3 className="text-xl font-semibold tracking-wide text-pink-700 md:text-2xl">
-            {mainTitle}
+        <div className="group rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-50 to-purple-100 p-4 md:p-5">
+          <h3 className="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-wide text-pink-700 md:text-2xl">
+            <span>{heroTitleText}</span>
+            {section.id === "cosplay-rental" ? (
+              <span
+                aria-hidden="true"
+                className="text-[14px] tracking-[0.4px] text-pink-500/85 transition duration-300 [animation:softSparkle_3s_ease-in-out_infinite] motion-reduce:animate-none md:text-[16px] xl:text-[18px] group-hover:brightness-110"
+              >
+                ⋆. 𐙚˚࿔   𝜗𝜚˚⋆
+              </span>
+            ) : null}
           </h3>
           <p className="mt-2 text-sm text-slate-700">
             {mainDescription}

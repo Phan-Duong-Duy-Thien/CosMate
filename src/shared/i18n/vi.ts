@@ -594,7 +594,7 @@ export const VI = {
       },
     },
     guidelinesRules: {
-      pageTitle: "Hướng Dẫn & Quy Định",
+      pageTitle: "⊹ ࣪˖₊˚♡ Hướng Dẫn & Quy Định ♡˚₊˖ ࣪⊹",
       pageSubtitle:
         "CosMate xây dựng hệ thống quy định rõ ràng nhằm bảo vệ quyền lợi của khách thuê và bên cung cấp. Vui lòng đọc kỹ nội dung trước khi tạo giao dịch để đảm bảo an toàn và minh bạch.",
       cosplayGuideTitle: "⊹ ࣪˖₊˚♡ HƯỚNG DẪN THUÊ ĐỒ COSPLAY ♡˚₊˖ ࣪⊹",

@@ -46,6 +46,7 @@ export default function CostumeListPage() {
   const [sortKey, setSortKey] = React.useState<SortKey>("relevance")
   const [currentPage, setCurrentPage] = React.useState(1)
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
+  const [heroVisible, setHeroVisible] = React.useState(false)
   const navigate = useNavigate()
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
@@ -58,6 +59,13 @@ export default function CostumeListPage() {
   React.useEffect(() => {
     setCurrentPage(1)
   }, [filters, sortKey])
+
+  React.useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setHeroVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   const keyword = filters.keyword.trim().toLowerCase()
 
@@ -115,13 +123,29 @@ export default function CostumeListPage() {
   }
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-10">
-        <div className="rounded-3xl border border-white/80 bg-white/70 px-6 py-8 shadow-sm backdrop-blur">
-          <h1 className="text-3xl font-bold text-slate-900">Thuê đồ Cosplay</h1>
-          <p className="mt-2 text-sm text-slate-600">
-            Tìm theo nhân vật, anime/game, shop và ngân sách. Phụ kiện cho thuê kèm với bộ đồ.
-          </p>
+    <section className="min-h-screen bg-transparent pb-20">
+      <style>{`
+        @keyframes softSparkle {
+          0% { opacity: 0.6; transform: translateY(0px); }
+          50% { opacity: 1; transform: translateY(-1px); }
+          100% { opacity: 0.6; transform: translateY(0px); }
+        }
+      `}</style>
+      <div className="mx-auto w-full max-w-7xl px-4 pt-10">
+        <div
+          className={
+            "rounded-3xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-6 py-8 text-center shadow-[0_12px_28px_rgba(236,72,153,0.16)] backdrop-blur transition-all duration-300 ease-out " +
+            (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
+          }
+        >
+          <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 text-5xl font-extrabold text-pink-700 md:mt-3 md:text-6xl">
+            <span
+              aria-hidden="true"
+              className="text-[20px] tracking-[0.5px] text-pink-700 motion-reduce:animate-none md:text-[40px]"
+            >
+              ･:*🌸࿔   ⋆. 𐙚˚࿔  Thuê đồ Cosplay  𝜗𝜚˚⋆   ࿔🌸*:･
+            </span>
+          </h1>
         </div>
 
         <div className="mt-8 grid gap-6 lg:grid-cols-[300px_1fr]">
