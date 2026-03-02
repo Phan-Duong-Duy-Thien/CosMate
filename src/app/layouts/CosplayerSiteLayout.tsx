@@ -245,7 +245,6 @@ export default function CosplayerSiteLayout() {
             <Breadcrumbs items={breadcrumbItems} />
           </div>
         )}
-        <Outlet />
         {isHomePage ? (
           <div className="mx-auto w-full max-w-[1440px] px-4 py-4 lg:px-6">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
