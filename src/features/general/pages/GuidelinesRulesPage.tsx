@@ -118,6 +118,10 @@ function GuideList({ section }: { section: GuidelinesSection }) {
         ? VI.general.guidelinesRules.photographerGuideTitle
         : section.id === "staff"
           ? VI.general.guidelinesRules.staffGuideTitle
+          : section.id === "orders-returns"
+            ? VI.general.guidelinesRules.ordersReturnsGuideTitle
+            : section.id === "complaints-disputes"
+              ? VI.general.guidelinesRules.complaintsGuideTitle
       : `${VI.general.guidelinesRules.tabs.guide} ${getI18nValue(section.titleKey)}`
 
   return (
@@ -179,12 +183,20 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
       ? VI.general.guidelinesRules.photographerRulesTitle
       : section.id === "staff"
         ? VI.general.guidelinesRules.staffRulesTitle
+        : section.id === "orders-returns"
+          ? VI.general.guidelinesRules.ordersReturnsRulesTitle
+          : section.id === "complaints-disputes"
+            ? VI.general.guidelinesRules.complaintsRulesTitle
       : VI.general.guidelinesRules.cosplayRules.mainTitle
   const mainDescription =
     section.id === "staff"
       ? VI.general.guidelinesRules.staffRules.mainDescription
       : section.id === "photographer"
         ? VI.general.guidelinesRules.photographerRules.mainDescription
+        : section.id === "orders-returns"
+          ? VI.general.guidelinesRules.ordersReturnsRules.mainDescription
+          : section.id === "complaints-disputes"
+            ? VI.general.guidelinesRules.complaintsRules.mainDescription
       : VI.general.guidelinesRules.cosplayRules.mainDescription
 
   const ruleByCode = React.useMemo(() => {

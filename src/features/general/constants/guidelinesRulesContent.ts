@@ -168,14 +168,114 @@ const PHOTOGRAPHER_RULE_GROUPS: GuidelinesRuleGroup[] = [
   },
 ]
 
-function cmRule(code: number): GuidelinesRuleItem {
-  const normalized = String(code).padStart(2, "0")
-  return {
-    code: `CM-${normalized}`,
-    titleKey: `general.guidelinesRules.rules.cm${normalized}.title`,
-    descKey: `general.guidelinesRules.rules.cm${normalized}.desc`,
-  }
-}
+const ORDERS_RETURNS_RULE_GROUPS: GuidelinesRuleGroup[] = [
+  {
+    id: "or-legal-scope",
+    titleKey: "general.guidelinesRules.ordersReturnsRules.groups.legalScope",
+    ruleCodes: ["or-platform-role", "or-party-independence", "or-liability-limit"],
+  },
+  {
+    id: "or-return-goods",
+    titleKey: "general.guidelinesRules.ordersReturnsRules.groups.returnGoods",
+    ruleCodes: [
+      "or-return-create-order",
+      "or-return-valid-time",
+      "or-return-obligation",
+    ],
+  },
+  {
+    id: "or-cancel-order",
+    titleKey: "general.guidelinesRules.ordersReturnsRules.groups.cancelOrder",
+    ruleCodes: [
+      "or-cancel-before-confirm",
+      "or-cancel-after-confirm",
+      "or-cancel-after-start",
+    ],
+  },
+  {
+    id: "or-refund-by-provider-fault",
+    titleKey:
+      "general.guidelinesRules.ordersReturnsRules.groups.refundByProviderFault",
+    ruleCodes: [
+      "or-refund-valid-condition",
+      "or-refund-mandatory-condition",
+      "or-refund-resolution",
+    ],
+  },
+  {
+    id: "or-escrow-deduction",
+    titleKey: "general.guidelinesRules.ordersReturnsRules.groups.escrowDeduction",
+    ruleCodes: ["or-escrow-hold", "or-escrow-deduction", "or-escrow-over-deposit"],
+  },
+  {
+    id: "or-cooperation-fraud",
+    titleKey: "general.guidelinesRules.ordersReturnsRules.groups.cooperationFraud",
+    ruleCodes: [
+      "or-cooperation-evidence",
+      "or-fraud-prohibited",
+      "or-serious-violation",
+    ],
+  },
+  {
+    id: "or-force-majeure-jurisdiction",
+    titleKey:
+      "general.guidelinesRules.ordersReturnsRules.groups.forceMajeureJurisdiction",
+    ruleCodes: [
+      "or-force-majeure",
+      "or-dispute-jurisdiction",
+      "or-rule-update-right",
+    ],
+  },
+]
+
+const COMPLAINTS_RULE_GROUPS: GuidelinesRuleGroup[] = [
+  {
+    id: "cp-general-principles",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.generalPrinciples",
+    ruleCodes: ["cp-platform-role", "cp-evidence-principle"],
+  },
+  {
+    id: "cp-deadline",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.deadline",
+    ruleCodes: ["cp-cosplay-deadline", "cp-service-deadline", "cp-deadline-expired"],
+  },
+  {
+    id: "cp-dispute-process",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.process",
+    ruleCodes: [
+      "cp-step-submit",
+      "cp-step-verify",
+      "cp-step-response",
+      "cp-step-decision",
+    ],
+  },
+  {
+    id: "cp-cooperation-duty",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.cooperation",
+    ruleCodes: ["cp-cooperation-duty", "cp-noncooperation-penalty"],
+  },
+  {
+    id: "cp-fraud",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.fraud",
+    ruleCodes: ["cp-fraud-prohibited", "cp-fraud-penalty"],
+  },
+  {
+    id: "cp-liability-limit",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.liabilityLimit",
+    ruleCodes: ["cp-liability-exclusions", "cp-liability-cap"],
+  },
+  {
+    id: "cp-escrow",
+    titleKey: "general.guidelinesRules.complaintsRules.groups.escrow",
+    ruleCodes: ["cp-escrow-rights"],
+  },
+  {
+    id: "cp-force-majeure-jurisdiction",
+    titleKey:
+      "general.guidelinesRules.complaintsRules.groups.forceMajeureJurisdiction",
+    ruleCodes: ["cp-force-majeure", "cp-dispute-jurisdiction", "cp-rule-update-right"],
+  },
+]
 
 function cosplayRule(code: string): GuidelinesRuleItem {
   return {
@@ -198,6 +298,22 @@ function photographerRule(code: string): GuidelinesRuleItem {
     code,
     titleKey: `general.guidelinesRules.photographerRules.items.${code}.title`,
     descKey: `general.guidelinesRules.photographerRules.items.${code}.desc`,
+  }
+}
+
+function ordersReturnsRule(code: string): GuidelinesRuleItem {
+  return {
+    code,
+    titleKey: `general.guidelinesRules.ordersReturnsRules.items.${code}.title`,
+    descKey: `general.guidelinesRules.ordersReturnsRules.items.${code}.desc`,
+  }
+}
+
+function complaintsRule(code: string): GuidelinesRuleItem {
+  return {
+    code,
+    titleKey: `general.guidelinesRules.complaintsRules.items.${code}.title`,
+    descKey: `general.guidelinesRules.complaintsRules.items.${code}.desc`,
   }
 }
 
@@ -339,7 +455,34 @@ export const GUIDELINES_RULES_SECTIONS: GuidelinesSection[] = [
       "general.guidelinesRules.guides.ordersReturns.step4",
       "general.guidelinesRules.guides.ordersReturns.step5",
     ],
-    rules: [3, 12, 13, 17, 23, 24, 25, 29].map(cmRule),
+    rules: [
+      "or-platform-role",
+      "or-party-independence",
+      "or-liability-limit",
+      "or-return-create-order",
+      "or-return-valid-time",
+      "or-return-obligation",
+      "or-cancel-before-confirm",
+      "or-cancel-after-confirm",
+      "or-cancel-after-start",
+      "or-refund-valid-condition",
+      "or-refund-mandatory-condition",
+      "or-refund-resolution",
+      "or-escrow-hold",
+      "or-escrow-deduction",
+      "or-escrow-over-deposit",
+      "or-cooperation-evidence",
+      "or-fraud-prohibited",
+      "or-serious-violation",
+      "or-force-majeure",
+      "or-dispute-jurisdiction",
+      "or-rule-update-right",
+    ].map(ordersReturnsRule),
+    ruleGroups: ORDERS_RETURNS_RULE_GROUPS,
+    ruleIntroKeys: [
+      "general.guidelinesRules.ordersReturnsRules.introAcknowledgement",
+      "general.guidelinesRules.ordersReturnsRules.introPriority",
+    ],
   },
   {
     id: "complaints-disputes",
@@ -353,6 +496,31 @@ export const GUIDELINES_RULES_SECTIONS: GuidelinesSection[] = [
       "general.guidelinesRules.guides.complaintsDisputes.step4",
       "general.guidelinesRules.guides.complaintsDisputes.step5",
     ],
-    rules: [9, 10, 13, 18, 19, 29, 30].map(cmRule),
+    rules: [
+      "cp-platform-role",
+      "cp-evidence-principle",
+      "cp-cosplay-deadline",
+      "cp-service-deadline",
+      "cp-deadline-expired",
+      "cp-step-submit",
+      "cp-step-verify",
+      "cp-step-response",
+      "cp-step-decision",
+      "cp-cooperation-duty",
+      "cp-noncooperation-penalty",
+      "cp-fraud-prohibited",
+      "cp-fraud-penalty",
+      "cp-liability-exclusions",
+      "cp-liability-cap",
+      "cp-escrow-rights",
+      "cp-force-majeure",
+      "cp-dispute-jurisdiction",
+      "cp-rule-update-right",
+    ].map(complaintsRule),
+    ruleGroups: COMPLAINTS_RULE_GROUPS,
+    ruleIntroKeys: [
+      "general.guidelinesRules.complaintsRules.introAcknowledgement",
+      "general.guidelinesRules.complaintsRules.introPriority",
+    ],
   },
 ]

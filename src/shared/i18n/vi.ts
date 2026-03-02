@@ -600,8 +600,15 @@ export const VI = {
       cosplayGuideTitle: "⊹ ࣪˖₊˚♡ HƯỚNG DẪN THUÊ ĐỒ COSPLAY ♡˚₊˖ ࣪⊹",
       photographerGuideTitle: "⊹ ࣪˖₊˚♡ HƯỚNG DẪN THUÊ PHOTOGRAPHER (PTG) ♡˚₊˖ ࣪⊹",
       staffGuideTitle: "⊹ ࣪˖₊˚♡ HƯỚNG DẪN THUÊ STAFF ♡˚₊˖ ࣪⊹",
+      ordersReturnsGuideTitle:
+        "⊹ ࣪˖₊˚♡ HƯỚNG DẪN TRẢ HÀNG / HỦY HÀNG / HOÀN HÀNG ♡˚₊˖ ࣪⊹",
+      complaintsGuideTitle:
+        "⊹ ࣪˖₊˚♡ HƯỚNG DẪN KHIẾU NẠI / XỬ LÝ TRANH CHẤP ♡˚₊˖ ࣪⊹",
       photographerRulesTitle: "✧˖°♡ Nội Quy Thuê Photographer (PTG) ♡°˖✧",
       staffRulesTitle: "✧˖°♡ Nội Quy Thuê Staff ♡°˖✧",
+      ordersReturnsRulesTitle:
+        "✧˖°♡ Nội Quy Giao Dịch, Trả Hàng, Hủy & Hoàn Trên CosMate ♡°˖✧",
+      complaintsRulesTitle: "✧˖°♡ Nội Quy Xử Lý Khiếu Nại & Tranh Chấp ♡°˖✧",
       stepLabel: "Bước",
       rulePrefix: "Quy định",
       tabs: {
@@ -613,7 +620,7 @@ export const VI = {
         cosplayRental: "THUÊ ĐỒ",
         photographer: "THUÊ PTG",
         staff: "THUÊ STAFF",
-        ordersReturns: "TRẢ / HỦY / HOÀN HÀNG",
+        ordersReturns: "TRẢ / HỦY / HOÀN",
         complaintsDisputes: "KHIẾU NẠI & TRANH CHẤP",
       },
       sections: {
@@ -759,6 +766,205 @@ export const VI = {
           "cos-rule-updates": {
             title: "Cập nhật nội quy",
             desc: "CosMate có quyền cập nhật nội quy. Việc tiếp tục sử dụng dịch vụ được xem là đồng ý với phiên bản cập nhật.",
+          },
+        },
+      },
+      ordersReturnsRules: {
+        mainDescription:
+          "Các quy định dưới đây áp dụng đối với mọi giao dịch được thực hiện trên nền tảng CosMate, bao gồm nhưng không giới hạn ở: thuê đồ cosplay, thuê Photographer (PTG) và thuê Staff Support.",
+        introAcknowledgement:
+          "Việc tạo đơn, thanh toán, xác nhận điều khoản, tạo yêu cầu trả hàng, yêu cầu hủy đơn, yêu cầu hoàn hàng hoặc tiếp tục sử dụng dịch vụ sau khi có thông báo cập nhật được xem là hành vi xác nhận đã đọc, hiểu và đồng ý chịu sự ràng buộc pháp lý của toàn bộ nội dung quy định này.",
+        introPriority:
+          "Trường hợp có xung đột giữa điều khoản riêng của Shop/PTG/Staff và nội quy này, business rule và quyết định của nền tảng CosMate được ưu tiên áp dụng.",
+        groups: {
+          legalScope: "I. Nguyên tắc pháp lý & phạm vi áp dụng",
+          returnGoods: "II. Trả hàng (kết thúc thuê đồ cosplay)",
+          cancelOrder: "IV. Hủy đơn",
+          refundByProviderFault: "V. Hoàn hàng (do lỗi từ bên cung cấp)",
+          escrowDeduction: "VI. Escrow & xử lý cọc",
+          cooperationFraud: "VII. Nghĩa vụ hợp tác & gian lận",
+          forceMajeureJurisdiction: "VIII. Bất khả kháng & thẩm quyền",
+        },
+        items: {
+          "or-platform-role": {
+            title: "Vai trò nền tảng trung gian",
+            desc: "CosMate là nền tảng trung gian cung cấp hạ tầng kỹ thuật để kết nối các bên. CosMate không trực tiếp sở hữu, lưu giữ, vận hành hoặc cung cấp dịch vụ vật lý ngoài phạm vi kỹ thuật đã công bố (escrow, lưu trữ dữ liệu, quản lý trạng thái giao dịch, xử lý tranh chấp).",
+          },
+          "or-party-independence": {
+            title: "Tính độc lập của các bên",
+            desc: "Khách thuê, Shop, PTG và Staff là các chủ thể độc lập, tự chịu trách nhiệm dân sự và pháp lý đối với hành vi của mình trong quá trình giao dịch.",
+          },
+          "or-liability-limit": {
+            title: "Giới hạn trách nhiệm của CosMate",
+            desc: "Trong mọi trường hợp, trách nhiệm tối đa của CosMate (nếu có phát sinh) không vượt quá tổng phí giao dịch mà nền tảng thu từ giao dịch đó.",
+          },
+          "or-return-create-order": {
+            title: "Tạo đơn trả hàng bắt buộc",
+            desc: "Khách phải tạo đơn trả hàng trên CosMate trước khi gửi sản phẩm. Việc gửi hàng phải thực hiện thông qua đơn vị vận chuyển được hệ thống hỗ trợ hoặc hướng dẫn. Không tạo đơn hệ thống nhưng tự ý gửi hàng thì CosMate không chịu trách nhiệm đối với thất lạc hoặc tranh chấp.",
+          },
+          "or-return-valid-time": {
+            title: "Thời điểm hợp lệ trả hàng",
+            desc: "Thời điểm hợp lệ được tính là thời điểm hệ thống ghi nhận đơn vận chuyển được tạo thành công. Trả trễ so với thời hạn thuê hoặc gia hạn hợp lệ có thể phát sinh phí phạt, bị khấu trừ cọc hoặc xử lý theo mức độ vi phạm.",
+          },
+          "or-return-obligation": {
+            title: "Nghĩa vụ khi trả hàng",
+            desc: "Khách phải quay video tình trạng sản phẩm trước khi đóng gói. Sản phẩm phải được đóng gói an toàn và đầy đủ phụ kiện. Mất mát, thiếu phụ kiện, hư hỏng phát sinh trong thời gian khách chịu trách nhiệm sẽ bị khấu trừ tương ứng.",
+          },
+          "or-cancel-before-confirm": {
+            title: "Hủy trước khi xác nhận",
+            desc: "Nếu đơn chưa được bên cung cấp xác nhận, khách có quyền hủy. Khoản thanh toán sẽ được xử lý theo cơ chế hệ thống.",
+          },
+          "or-cancel-after-confirm": {
+            title: "Hủy sau khi xác nhận nhưng chưa thực hiện",
+            desc: "Nếu đơn đã được xác nhận thì tiền cọc được xử lý theo điều khoản công khai của bên cung cấp và có thể bị khấu trừ một phần hoặc 100% cọc. Việc hủy sát ngày thực hiện có thể bị xem là gây thiệt hại thực tế cho bên cung cấp.",
+          },
+          "or-cancel-after-start": {
+            title: "Hủy khi đã bắt đầu thực hiện",
+            desc: "Khi dịch vụ đã bắt đầu (đã giao đồ, đã check-in chụp, đã bắt đầu support), khách không được hoàn tiền thuê/dịch vụ và cọc được xử lý theo rule công khai.",
+          },
+          "or-refund-valid-condition": {
+            title: "Điều kiện hoàn hàng hợp lệ",
+            desc: "Chỉ được chấp nhận khi giao sai sản phẩm, thiếu phụ kiện đã công bố, hư hỏng nghiêm trọng trước khi sử dụng hoặc không đúng cấu hình đã xác nhận.",
+          },
+          "or-refund-mandatory-condition": {
+            title: "Điều kiện bắt buộc",
+            desc: "Phải có video mở hàng hợp lệ trong vòng 24 giờ và yêu cầu hoàn hàng phải được tạo trên hệ thống trong thời hạn quy định.",
+          },
+          "or-refund-resolution": {
+            title: "Hình thức xử lý",
+            desc: "Sau khi xác minh, CosMate có thể yêu cầu đổi sản phẩm, yêu cầu gửi trả và hoàn tiền, hoàn tiền một phần hoặc từ chối yêu cầu nếu không đủ căn cứ. Quyết định của CosMate là quyết định cuối cùng và có giá trị ràng buộc.",
+          },
+          "or-escrow-hold": {
+            title: "Tạm giữ tiền escrow",
+            desc: "CosMate có quyền tạm giữ tiền trong cơ chế escrow trong thời gian xử lý tranh chấp.",
+          },
+          "or-escrow-deduction": {
+            title: "Khấu trừ cọc",
+            desc: "Khấu trừ cọc dựa trên mức độ thiệt hại, bằng chứng hệ thống, thời gian vi phạm và điều khoản công khai của bên cung cấp.",
+          },
+          "or-escrow-over-deposit": {
+            title: "Thiệt hại vượt tiền cọc",
+            desc: "Nếu thiệt hại vượt quá tiền cọc, bên gây thiệt hại có trách nhiệm bồi thường phần chênh lệch.",
+          },
+          "or-cooperation-evidence": {
+            title: "Nghĩa vụ hợp tác chứng cứ",
+            desc: "Các bên phải cung cấp chứng cứ trong thời hạn quy định.",
+          },
+          "or-fraud-prohibited": {
+            title: "Hành vi gian lận bị nghiêm cấm",
+            desc: "Nghiêm cấm giả mạo video, cắt ghép bằng chứng, cố tình gây thiệt hại để yêu cầu hoàn tiền, hoặc tạo giao dịch ngoài hệ thống rồi yêu cầu CosMate can thiệp.",
+          },
+          "or-serious-violation": {
+            title: "Chế tài vi phạm nghiêm trọng",
+            desc: "Vi phạm nghiêm trọng có thể dẫn đến giữ tiền, khóa tài khoản hoặc blacklist vĩnh viễn.",
+          },
+          "or-force-majeure": {
+            title: "Sự kiện bất khả kháng",
+            desc: "Sự kiện bất khả kháng (thiên tai, dịch bệnh, sự cố ngoài tầm kiểm soát hợp lý) có thể được miễn trách nhiệm trong phạm vi ảnh hưởng.",
+          },
+          "or-dispute-jurisdiction": {
+            title: "Thẩm quyền giải quyết tranh chấp",
+            desc: "Tranh chấp trước hết được xử lý nội bộ trên CosMate. Nếu không đạt được thỏa thuận, tranh chấp được giải quyết theo pháp luật hiện hành tại cơ quan có thẩm quyền nơi CosMate đăng ký hoạt động.",
+          },
+          "or-rule-update-right": {
+            title: "Quyền cập nhật nội quy",
+            desc: "CosMate có quyền cập nhật nội quy. Việc tiếp tục sử dụng nền tảng được xem là chấp thuận phiên bản mới nhất.",
+          },
+        },
+      },
+      complaintsRules: {
+        mainDescription:
+          "Các quy định dưới đây áp dụng đối với mọi khiếu nại và tranh chấp phát sinh từ giao dịch thực hiện trên nền tảng CosMate, bao gồm nhưng không giới hạn ở: thuê đồ cosplay, thuê Photographer (PTG) và thuê Staff Support.",
+        introAcknowledgement:
+          "Việc gửi khiếu nại, phản hồi khiếu nại hoặc tiếp tục sử dụng dịch vụ được xem là hành vi xác nhận đã đọc, hiểu và đồng ý tuân thủ toàn bộ nội dung quy định này.",
+        introPriority:
+          "Trường hợp có xung đột giữa điều khoản riêng của các bên và nội quy này, business rule và quyết định của nền tảng CosMate được ưu tiên áp dụng.",
+        groups: {
+          generalPrinciples: "I. Nguyên tắc chung",
+          deadline: "II. Thời hạn gửi khiếu nại",
+          process: "III. Quy trình xử lý tranh chấp",
+          cooperation: "IV. Nghĩa vụ hợp tác",
+          fraud: "V. Xử lý gian lận",
+          liabilityLimit: "VI. Giới hạn trách nhiệm",
+          escrow: "VII. Cơ chế escrow",
+          forceMajeureJurisdiction: "VIII. Bất khả kháng & thẩm quyền",
+        },
+        items: {
+          "cp-platform-role": {
+            title: "Vai trò trung gian của CosMate",
+            desc: "CosMate là bên trung gian kỹ thuật, không phải là bên cung cấp hàng hóa/dịch vụ trực tiếp. CosMate có trách nhiệm ghi nhận dữ liệu, lưu trữ chứng cứ, quản lý trạng thái giao dịch và xử lý tranh chấp theo business rule đã công bố.",
+          },
+          "cp-evidence-principle": {
+            title: "Nguyên tắc dựa trên chứng cứ",
+            desc: "Mọi quyết định xử lý tranh chấp được đưa ra dựa trên dữ liệu hệ thống, log chat trên nền tảng, video/hình ảnh hợp lệ, mốc thời gian hệ thống và điều khoản đã được các bên chấp nhận. Chứng cứ ngoài hệ thống không được ưu tiên công nhận.",
+          },
+          "cp-cosplay-deadline": {
+            title: "Thời hạn khiếu nại đối với thuê đồ cosplay",
+            desc: "Khiếu nại về lỗi ban đầu phải được gửi trong vòng 24 giờ kể từ thời điểm giao hàng thành công, kèm video mở hàng hợp lệ. Khiếu nại về hư hỏng sau khi sử dụng phải được gửi trước thời điểm hoàn tất đồng kiểm trả hàng.",
+          },
+          "cp-service-deadline": {
+            title: "Thời hạn khiếu nại đối với PTG & Staff",
+            desc: "Khiếu nại liên quan đến không đúng thời lượng, không đúng cấu hình dịch vụ hoặc không thực hiện nghĩa vụ phải được gửi trong thời hạn tối đa 48 giờ kể từ thời điểm hoàn tất dịch vụ hoặc mốc hệ thống ghi nhận COMPLETED.",
+          },
+          "cp-deadline-expired": {
+            title: "Quá thời hạn khiếu nại",
+            desc: "Nếu quá thời hạn nêu trên mà không có khiếu nại hợp lệ, hệ thống mặc định giao dịch đã được chấp nhận và hoàn tất.",
+          },
+          "cp-step-submit": {
+            title: "Bước 1 - Gửi yêu cầu",
+            desc: "Bên khiếu nại phải tạo yêu cầu tranh chấp trực tiếp trên CosMate và đính kèm đầy đủ chứng cứ.",
+          },
+          "cp-step-verify": {
+            title: "Bước 2 - Thu thập & xác minh",
+            desc: "CosMate có quyền yêu cầu bổ sung chứng cứ, tạm giữ tiền trong escrow, tạm khóa trạng thái giao dịch hoặc tạm hạn chế tài khoản nếu có dấu hiệu gian lận.",
+          },
+          "cp-step-response": {
+            title: "Bước 3 - Phản hồi từ bên còn lại",
+            desc: "Bên bị khiếu nại phải phản hồi trong thời hạn quy định của hệ thống. Không phản hồi đúng hạn có thể dẫn đến quyết định xử lý bất lợi.",
+          },
+          "cp-step-decision": {
+            title: "Bước 4 - Ra quyết định",
+            desc: "Sau khi xem xét toàn bộ chứng cứ, CosMate có thể giữ cọc toàn bộ, khấu trừ một phần, hoàn tiền một phần/toàn bộ, từ chối yêu cầu hoặc áp dụng chế tài đối với bên vi phạm. Quyết định của CosMate là quyết định cuối cùng và có giá trị ràng buộc.",
+          },
+          "cp-cooperation-duty": {
+            title: "Nghĩa vụ hợp tác",
+            desc: "Các bên có nghĩa vụ cung cấp thông tin trung thực, không chỉnh sửa/cắt ghép bằng chứng và không gây cản trở quá trình xác minh.",
+          },
+          "cp-noncooperation-penalty": {
+            title: "Hệ quả khi không hợp tác",
+            desc: "Không hợp tác hoặc cung cấp thông tin sai lệch có thể bị xem là vi phạm nghiêm trọng.",
+          },
+          "cp-fraud-prohibited": {
+            title: "Các hành vi bị nghiêm cấm",
+            desc: "Giả mạo video hoặc hình ảnh, cắt ghép bằng chứng, cố tình gây thiệt hại để yêu cầu hoàn tiền, tạo tranh chấp giả, hoặc lôi kéo giao dịch ngoài nền tảng rồi yêu cầu CosMate can thiệp.",
+          },
+          "cp-fraud-penalty": {
+            title: "Xử lý vi phạm gian lận",
+            desc: "Vi phạm có thể dẫn đến giữ toàn bộ tiền liên quan, khóa tài khoản tạm thời/vĩnh viễn, blacklist, hoặc chuyển hồ sơ cho cơ quan có thẩm quyền nếu có dấu hiệu vi phạm pháp luật.",
+          },
+          "cp-liability-exclusions": {
+            title: "Phạm vi miễn trừ trách nhiệm",
+            desc: "CosMate không chịu trách nhiệm đối với thiệt hại gián tiếp, tổn thất cơ hội hoặc thiệt hại phát sinh ngoài phạm vi kiểm soát kỹ thuật của nền tảng.",
+          },
+          "cp-liability-cap": {
+            title: "Giới hạn trách nhiệm tối đa",
+            desc: "Trách nhiệm tối đa của CosMate (nếu có) không vượt quá tổng phí giao dịch mà nền tảng thu từ giao dịch đó.",
+          },
+          "cp-escrow-rights": {
+            title: "Cơ chế escrow khi xử lý tranh chấp",
+            desc: "Trong suốt quá trình xử lý tranh chấp, CosMate có quyền tạm giữ tiền, trì hoãn giải ngân và điều chỉnh trạng thái giao dịch cho đến khi có quyết định cuối cùng.",
+          },
+          "cp-force-majeure": {
+            title: "Sự kiện bất khả kháng",
+            desc: "Trường hợp bất khả kháng (thiên tai, dịch bệnh, sự kiện ngoài kiểm soát hợp lý), các bên có thể được miễn trách nhiệm trong phạm vi ảnh hưởng.",
+          },
+          "cp-dispute-jurisdiction": {
+            title: "Thẩm quyền giải quyết tranh chấp",
+            desc: "Tranh chấp trước hết được giải quyết nội bộ trên CosMate. Nếu không đạt được thỏa thuận, tranh chấp được giải quyết theo pháp luật hiện hành tại cơ quan có thẩm quyền nơi CosMate đăng ký hoạt động.",
+          },
+          "cp-rule-update-right": {
+            title: "Quyền cập nhật nội quy",
+            desc: "CosMate có quyền cập nhật nội quy. Việc tiếp tục sử dụng nền tảng được xem là chấp thuận phiên bản mới nhất.",
           },
         },
       },
