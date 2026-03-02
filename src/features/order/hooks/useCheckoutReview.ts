@@ -3,8 +3,8 @@ import { getUserAddresses } from '@/features/profile/services/userAddress.servic
 import { createOrder } from '../services/order.service';
 import { loadDraft, clearDraft } from '../utils/rentalDraftStorage';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
-import type { UserAddress, PaymentMethod, RentalDraft, CreateOrderParams } from '../types';
-import type { Costume } from '@/features/costume-rental/types';
+import { getReturnUrl } from '../utils/paymentReturnUrls';
+import type { Costume, PaymentMethod } from '@/features/costume-rental/types';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 
 interface CheckoutState {
