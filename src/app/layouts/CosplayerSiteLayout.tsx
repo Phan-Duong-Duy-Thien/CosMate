@@ -99,7 +99,12 @@ export default function CosplayerSiteLayout() {
             <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Quiz
             </Button>
-            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="whitespace-nowrap"
+              onClick={() => navigate("/guidelines-rules")}
+            >
               Hướng dẫn &amp; Quy định
             </Button>
             <DropdownMenu

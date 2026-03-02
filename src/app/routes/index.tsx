@@ -13,6 +13,7 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 
 import HomePage from "@/features/general/pages/HomePage"
+import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -39,6 +40,7 @@ export default function AppRoutes() {
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
+        <Route path="guidelines-rules" element={<GuidelinesRulesPage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
