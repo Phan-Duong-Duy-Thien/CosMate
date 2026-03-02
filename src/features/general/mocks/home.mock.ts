@@ -1,4 +1,6 @@
 import type { BannerSlide, Product, Shop, TagKey } from "../pages/home.types"
+import bannerGameImage from "@/assets/banner game.jpg"
+import bannerMarinImage from "@/assets/banner marin.jpg"
 
 export const bannerSlides: BannerSlide[] = [
   {
@@ -8,31 +10,18 @@ export const bannerSlides: BannerSlide[] = [
     actionType: "tag",
     tag: "game",
     pill: "Bộ sưu tập mới",
-    ctaLabel: "Xem ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1400&q=80",
+    ctaLabel: "⋆˙⟡ Trang phục theo game",
+    imageUrl: bannerGameImage,
   },
   {
-    id: "slide-anime",
-    title: "Trang phục theo Anime",
-    subtitle: "Khám phá bộ sưu tập cosplay anime mới nhất",
+    id: "slide-marin",
+    title: "Trang phục Marin",
+    subtitle: "Phong cách nổi bật, dễ thương cho buổi chụp hình và sự kiện.",
     actionType: "tag",
     tag: "anime",
-    pill: "Bộ sưu tập mới",
-    ctaLabel: "Xem ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    id: "slide-quiz",
-    title: "Bạn hợp cosplay nhân vật nào nhất?",
-    subtitle: "Trả lời 5 câu hỏi nhanh để khám phá vibe nhân vật phù hợp với bạn.",
-    hint: "⏱ Mất ~1 phút • Gợi ý trang phục & shop phù hợp",
-    actionType: "quiz",
-    pill: "Quiz nhanh",
-    ctaLabel: "Làm quiz ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?auto=format&fit=crop&w=1400&q=80",
+    pill: "Bộ sưu tập nổi bật",
+    ctaLabel: "⋆˙⟡ Trang phục theo Anime",
+    imageUrl: bannerMarinImage,
   },
 ]
 
