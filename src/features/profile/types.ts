@@ -6,7 +6,10 @@ export interface MockProfile {
   name: string
   username: string
   bio: string
-  avatarUrl: string
+  avatarUrl?: string | null
+  email?: string
+  phone?: string
+  status?: string
   stats: { bookings: number; rating: number }
   location: string
   social: { instagram?: string }

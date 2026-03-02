@@ -338,13 +338,38 @@ export const VI = {
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
     settings: "Cài đặt",
-
+    
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
+      fullNameRequired: "Họ tên là bắt buộc.",
+      phoneRequired: "Số điện thoại là bắt buộc.",
+      phoneInvalid: "Số điện thoại không hợp lệ.",
     },
 
     placeholders: {
       addTag: "Thêm thẻ",
+      fullName: "Nhập họ tên",
+      phone: "Nhập số điện thoại",
+    },
+
+    editModal: {
+      title: "Cập nhật hồ sơ",
+      tabs: {
+        basicInfo: "Thông tin cơ bản",
+        address: "Địa chỉ",
+      },
+      uploadAvatar: "Tải ảnh lên",
+      uploading: "Đang tải ảnh...",
+      saveBasicInfo: "Lưu thông tin",
+      updateSuccess: "Cập nhật thông tin thành công.",
+      uploadAvatarSuccess: "Tải ảnh đại diện thành công.",
+      addressPlaceholder: "Tính năng địa chỉ sẽ sớm được hỗ trợ.",
+    },
+
+    messages: {
+      updateFailed: "Không thể cập nhật hồ sơ.",
+      uploadAvatarFailed: "Không thể tải ảnh đại diện.",
+      loginRequired: "Vui lòng đăng nhập để cập nhật hồ sơ.",
     },
 
     // Address form
@@ -519,6 +544,103 @@ export const VI = {
         recentEvents: "Sự kiện gần đây",
       },
     },
+  },
+
+  /**
+   * Checkout / Order text
+   */
+  checkout: {
+    // No address modal
+    noAddress: {
+      title: "Chưa có địa chỉ nhận hàng",
+      message: "Bạn chưa có địa chỉ nhận hàng. Bạn có muốn tạo địa chỉ ngay bây giờ không?",
+      confirm: "Tạo địa chỉ",
+      cancel: "Hủy",
+    },
+
+    // Page
+    page: {
+      title: "Xác nhận đơn thuê",
+      subtitle: "Vui lòng kiểm tra thông tin và chọn địa chỉ giao hàng",
+    },
+
+    // Address selection
+    address: {
+      title: "Địa chỉ nhận hàng",
+      select: "Chọn địa chỉ",
+      empty: "Bạn chưa có địa chỉ nào",
+      addNew: "Thêm địa chỉ mới",
+    },
+
+    // Order summary
+    summary: {
+      title: "Thông tin đơn thuê",
+      costume: "Trang phục",
+      rentalDays: "Số ngày thuê",
+      startDate: "Ngày bắt đầu",
+      rentalOption: "Gói thuê",
+      noRentalOption: "Không có",
+      accessories: "Phụ kiện kèm theo",
+      noAccessories: "Không có",
+      required: "Bắt buộc",
+      surcharges: "Phụ phí",
+      surchargesNote: "(luôn áp dụng)",
+      deposit: "Tiền cọc",
+      total: "Tổng cộng",
+      pricePerDay: "Giá/ngày",
+      baseRent: "Tiền thuê",
+      accessoriesTotal: "Phụ kiện",
+      surchargesTotal: "Phụ phí",
+      rentalOptionPrice: "Gói thuê",
+      totalToPay: "Tổng cần thanh toán",
+    },
+
+    // Policy
+    policy: {
+      label: "Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật",
+      required: "Bạn cần đồng ý với điều khoản để tiếp tục",
+    },
+
+    // Payment
+    payment: {
+      title: "Phương thức thanh toán",
+      method: "Chọn phương thức",
+      momo: "MoMo",
+      vnpay: "VNPAY",
+      wallet: "Ví CosMate",
+    },
+
+    // Actions
+    actions: {
+      submit: "Tiếp tục thanh toán",
+      submitting: "Đang xử lý...",
+      backToCostumes: "Quay lại danh sách trang phục",
+    },
+
+    // Messages
+    messages: {
+      orderSuccess: "Tạo đơn thuê thành công! Đang chuyển đến thanh toán...",
+      orderError: "Không thể tạo đơn thuê. Vui lòng thử lại.",
+      noDraft: "Không có thông tin đơn thuê. Vui lòng chọn trang phục trước.",
+    },
+  },
+
+  /**
+   * Payment Result Page
+   */
+  paymentResult: {
+    successTitle: "Thanh toán thành công!",
+    successDesc: "Cảm ơn bạn đã đặt thuê trang phục tại CosMate. Đơn hàng của bạn đang được xử lý.",
+    failedTitle: "Thanh toán thất bại",
+    failedDesc: "Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
+    cancelledTitle: "Thanh toán đã bị hủy",
+    cancelledDesc: "Giao dịch thanh toán đã bị hủy. Bạn có thể thử lại hoặc quay lại sau.",
+    unknownTitle: "Kết quả thanh toán",
+    unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
+    orderIdLabel: "Mã đơn hàng",
+    primarySuccessCta: "Xem đơn hàng",
+    primaryFailedCta: "Quay lại thanh toán",
+    homeCta: "Về trang chủ",
   },
 };
 
