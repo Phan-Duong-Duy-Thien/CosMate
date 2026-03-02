@@ -42,10 +42,16 @@ export type ProfileTabId = "gallery" | "concepts" | "reviews"
 
 export type SortOption = "latest" | "popular"
 
+export interface UpdateUserProfilePayload {
+  fullName: string
+  phone: string
+}
+
 // ============ USER ADDRESS TYPES ============
 
 export interface UserAddress {
-  id?: number
+  id: number
+  userId: number
   name: string
   city: string
   district: string
@@ -53,13 +59,15 @@ export interface UserAddress {
   phone: string
 }
 
-export interface CreateUserAddressPayload {
+export interface UpsertUserAddressPayload {
   name: string
   city: string
   district: string
   address: string
   phone: string
 }
+
+export type CreateUserAddressPayload = UpsertUserAddressPayload
 
 // ============ VIETNAM LOCATION TYPES ============
 

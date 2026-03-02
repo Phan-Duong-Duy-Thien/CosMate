@@ -352,10 +352,14 @@ export const VI = {
   profile: {
     title: "Hồ sơ của tôi",
     edit: "Chỉnh sửa hồ sơ",
+    handleLabel: "Tài khoản Cosplayer",
     gallery: "Bộ sưu tập",
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
     settings: "Cài đặt",
+    fullName: "Họ tên",
+    phone: "Số điện thoại",
+    avatar: "Ảnh đại diện",
     
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
@@ -419,12 +423,57 @@ export const VI = {
       },
       button: {
         save: "Lưu địa chỉ",
+        add: "Thêm địa chỉ",
+        edit: "Sửa",
+        delete: "Xóa",
         back: "Quay lại",
       },
       messages: {
         createSuccess: "Thêm địa chỉ thành công!",
+        updateSuccess: "Cập nhật địa chỉ thành công!",
+        deleteSuccess: "Xóa địa chỉ thành công!",
         createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
+        saveError: "Không thể lưu địa chỉ. Vui lòng thử lại.",
       },
+      confirm: {
+        delete: "Bạn có chắc muốn xóa địa chỉ này không?",
+      },
+    },
+
+    addresses: {
+      title: "Địa chỉ",
+      showMore: "Hiển thị thêm",
+      collapse: "Thu gọn",
+      empty: "Bạn chưa có địa chỉ nào.",
+      loading: "Đang tải địa chỉ...",
+      error: "Không thể tải danh sách địa chỉ.",
+    },
+
+    hub: {
+      title: "Trung tâm tài khoản",
+      edit: "Chỉnh sửa hồ sơ",
+    },
+
+    orders: {
+      title: "Đơn mua",
+      history: "Xem lịch sử mua hàng",
+      pendingConfirm: "Chờ xác nhận",
+      pendingPickup: "Chờ lấy hàng",
+      shipping: "Chờ giao hàng",
+      review: "Đánh giá",
+      historyPlaceholder: "Lịch sử mua hàng sẽ hiển thị tại đây.",
+      filterLabel: "Bộ lọc hiện tại",
+    },
+
+    wallet: {
+      title: "Ví của tôi",
+      balance: "Số dư ví",
+      manage: "Quản lý ví",
+      topup: "Nạp tiền vào ví",
+      topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
+      amount: "Số tiền nạp",
+      amountPlaceholder: "Nhập số tiền",
+      submit: "Nạp tiền",
     },
   },
 

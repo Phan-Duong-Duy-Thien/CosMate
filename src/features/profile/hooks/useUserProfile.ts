@@ -3,6 +3,7 @@ import type { AdminUserProfile } from "@/features/admin/types"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { VI } from "@/shared/i18n/vi"
+import * as userProfileService from "../services/userProfile.service"
 
 type StatusTone = "active" | "inactive" | "banned" | "default"
 
@@ -24,6 +25,7 @@ function getStatusTone(status?: string): StatusTone {
 export function useUserProfile() {
   const [profile, setProfile] = useState<AdminUserProfile | null>(null)
   const [loading, setLoading] = useState(false)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const userId = getUserId()
 
@@ -51,6 +53,29 @@ export function useUserProfile() {
     void fetchProfile()
   }, [fetchProfile])
 
+  const uploadAvatar = useCallback(
+    async (file: File): Promise<boolean> => {
+      if (!userId) {
+        setError(VI.profile.messages.loginRequired)
+        return false
+      }
+
+      try {
+        setUploadingAvatar(true)
+        setError(null)
+        const updatedProfile = await userProfileService.uploadAvatar(userId, file)
+        setProfile(updatedProfile)
+        return true
+      } catch {
+        setError(VI.profile.messages.uploadAvatarFailed)
+        return false
+      } finally {
+        setUploadingAvatar(false)
+      }
+    },
+    [userId]
+  )
+
   return {
     profile,
     displayName:
@@ -63,9 +88,11 @@ export function useUserProfile() {
     ),
     statusTone: getStatusTone(profile?.status),
     loading,
+    uploadingAvatar,
     error,
     userId,
     refetch: fetchProfile,
+    uploadAvatar,
     setProfile,
   }
 }
