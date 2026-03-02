@@ -1,4 +1,4 @@
-﻿export type TagKey = "anime" | "game" | "event" | "photoshoot" | "new" | "adult18"
+export type TagKey = "anime" | "game" | "event" | "photoshoot" | "new" | "adult18"
 
 export type SeriesType = "anime" | "game"
 
@@ -226,3 +226,10 @@ export interface RentalOptionUpdateInput {
   description: string
 }
 
+/** Body for PUT /api/accessories/{id} */
+export interface AccessoryUpdateInput {
+  name: string
+  description: string
+  price: number
+  isRequired: boolean
+}

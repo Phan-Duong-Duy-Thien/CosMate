@@ -27,6 +27,7 @@ import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ProviderCostumeListPage from "@/features/costume-rental/pages/ProviderCostumeListPage"
 import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderCreateCostumePage"
+import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 
 export default function AppRoutes() {
   return (
@@ -36,6 +37,7 @@ export default function AppRoutes() {
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
+        <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />

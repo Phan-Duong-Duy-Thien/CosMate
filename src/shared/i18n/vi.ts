@@ -545,6 +545,85 @@ export const VI = {
       },
     },
   },
+
+  /**
+   * Checkout / Order text
+   */
+  checkout: {
+    // No address modal
+    noAddress: {
+      title: "Chưa có địa chỉ nhận hàng",
+      message: "Bạn chưa có địa chỉ nhận hàng. Bạn có muốn tạo địa chỉ ngay bây giờ không?",
+      confirm: "Tạo địa chỉ",
+      cancel: "Hủy",
+    },
+
+    // Page
+    page: {
+      title: "Xác nhận đơn thuê",
+      subtitle: "Vui lòng kiểm tra thông tin và chọn địa chỉ giao hàng",
+    },
+
+    // Address selection
+    address: {
+      title: "Địa chỉ nhận hàng",
+      select: "Chọn địa chỉ",
+      empty: "Bạn chưa có địa chỉ nào",
+      addNew: "Thêm địa chỉ mới",
+    },
+
+    // Order summary
+    summary: {
+      title: "Thông tin đơn thuê",
+      costume: "Trang phục",
+      rentalDays: "Số ngày thuê",
+      startDate: "Ngày bắt đầu",
+      rentalOption: "Gói thuê",
+      noRentalOption: "Không có",
+      accessories: "Phụ kiện kèm theo",
+      noAccessories: "Không có",
+      required: "Bắt buộc",
+      surcharges: "Phụ phí",
+      surchargesNote: "(luôn áp dụng)",
+      deposit: "Tiền cọc",
+      total: "Tổng cộng",
+      pricePerDay: "Giá/ngày",
+      baseRent: "Tiền thuê",
+      accessoriesTotal: "Phụ kiện",
+      surchargesTotal: "Phụ phí",
+      rentalOptionPrice: "Gói thuê",
+      totalToPay: "Tổng cần thanh toán",
+    },
+
+    // Policy
+    policy: {
+      label: "Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật",
+      required: "Bạn cần đồng ý với điều khoản để tiếp tục",
+    },
+
+    // Payment
+    payment: {
+      title: "Phương thức thanh toán",
+      method: "Chọn phương thức",
+      momo: "MoMo",
+      vnpay: "VNPAY",
+      wallet: "Ví CosMate",
+    },
+
+    // Actions
+    actions: {
+      submit: "Tiếp tục thanh toán",
+      submitting: "Đang xử lý...",
+      backToCostumes: "Quay lại danh sách trang phục",
+    },
+
+    // Messages
+    messages: {
+      orderSuccess: "Tạo đơn thuê thành công! Đang chuyển đến thanh toán...",
+      orderError: "Không thể tạo đơn thuê. Vui lòng thử lại.",
+      noDraft: "Không có thông tin đơn thuê. Vui lòng chọn trang phục trước.",
+    },
+  },
 };
 
 /**

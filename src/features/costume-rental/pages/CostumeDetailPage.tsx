@@ -1,14 +1,16 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
-import { Button }from "@/shared/components/Button"
+import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
-import { PurchasePanel }from "../components/detail/PurchasePanel"
+import { PurchasePanel } from "../components/detail/PurchasePanel"
 import { DetailTabs } from "../components/detail/DetailTabs"
-import { ReviewsSection }from "../components/detail/ReviewsSection"
-import { usePublicCostumeDetail }from "../hooks/usePublicCostumeDetail"
-import { useUserAddresses } from "@/features/profile/hooks/useUserAddresses"
+import { ReviewsSection } from "../components/detail/ReviewsSection"
+import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
 import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserAddresses } from "@/features/profile/services/userAddress.service"
+import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { VI } from "@/shared/i18n/vi"
 
 const reviewSamples = [
   { id: "review-1", author: "Ngọc Anh", rating: 5, content: "Đồ lên form đẹp, phụ kiện đầy đủ, giao đúng hẹn.", date: "20/01/2026", hasMedia: true },
@@ -42,7 +44,10 @@ export default function CostumeDetailPage() {
     setActiveTab("description")
   }, [costumeId])
 
-  const handleRentNow = () => {
+  // Modal state for "no address" confirmation
+  const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
+
+  const handleRentNow = async () => {
     if (!costume) return
 
     // Get current user ID
@@ -55,29 +60,40 @@ export default function CostumeDetailPage() {
       return
     }
 
-    // Check if user has addresses - fetch and check
-    const checkAddresses = async () => {
-      try {
-        const { getUserAddresses } = await import('@/features/profile/services/userAddress.service')
-        const addresses = await getUserAddresses(userId)
+    // Save rental draft to sessionStorage
+    saveDraft({
+      costumeId: costume.id,
+      rentDay: days,
+      rentStart: startDate,
+      selectedAccessoryIds: Array.from(checkedOptionalIds),
+      selectedRentalOptionId,
+    })
 
-        if (addresses.length === 0) {
-          // No addresses - redirect to address creation page
-          const currentUrl = window.location.pathname
-          navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
-        } else {
-          // Has addresses - proceed with rental (placeholder for now)
-          alert("Chức năng thuê sẽ được triển khai sau!")
-        }
-      } catch (err) {
-        console.error('Failed to check addresses:', err)
-        // On error, allow proceeding (or redirect to address creation as fallback)
-        const currentUrl = window.location.pathname
-        navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
+    // Check if user has addresses
+    try {
+      const addresses = await getUserAddresses(userId)
+
+      if (addresses.length === 0) {
+        // No addresses - show confirmation modal
+        setShowNoAddressModal(true)
+      } else {
+        // Has addresses - proceed to checkout
+        navigate('/rent/checkout')
       }
+    } catch (err) {
+      console.error('Failed to check addresses:', err)
+      // On error, show modal as fallback
+      setShowNoAddressModal(true)
     }
+  }
 
-    checkAddresses()
+  const handleNoAddressConfirm = () => {
+    setShowNoAddressModal(false)
+    navigate('/profile/addresses/new?returnTo=/rent/checkout')
+  }
+
+  const handleNoAddressCancel = () => {
+    setShowNoAddressModal(false)
   }
 
   if (isLoading) {
@@ -173,6 +189,28 @@ export default function CostumeDetailPage() {
             )}
           </DetailTabs>
         </div>
+
+        {/* No Address Confirmation Modal */}
+        {showNoAddressModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {VI.checkout.noAddress.title}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {VI.checkout.noAddress.message}
+              </p>
+              <div className="mt-6 flex gap-3">
+                <Button variant="outline" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressCancel}>
+                  {VI.checkout.noAddress.cancel}
+                </Button>
+                <Button variant="default" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressConfirm}>
+                  {VI.checkout.noAddress.confirm}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
