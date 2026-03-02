@@ -17,7 +17,6 @@ import type { MenuProps } from "antd"
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
-import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
@@ -31,7 +30,7 @@ export default function CosplayerSiteLayout() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
-  const { items: breadcrumbItems, setItems } = useBreadcrumb()
+  const { setItems } = useBreadcrumb()
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
 
   const loggedIn = isAuthenticated()
@@ -240,11 +239,6 @@ export default function CosplayerSiteLayout() {
       </header>
 
       <main className="flex-1">
-        {breadcrumbItems.length > 0 && (
-          <div className="mx-auto w-full max-w-6xl px-4 py-3">
-            <Breadcrumbs items={breadcrumbItems} />
-          </div>
-        )}
         {isHomePage ? (
           <div className="mx-auto w-full max-w-[1800px] px-2 py-4 lg:px-3 xl:px-4">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
