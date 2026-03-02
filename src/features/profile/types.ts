@@ -63,6 +63,7 @@ export interface UpsertUserAddressPayload {
   name: string
   city: string
   district: string
+  ward?: string
   address: string
   phone: string
 }

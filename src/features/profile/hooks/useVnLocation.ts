@@ -1,14 +1,18 @@
 import { useEffect, useState } from "react"
 import { VI } from "@/shared/i18n/vi"
-import type { Province, District } from "../types"
+import type { Province, District, Ward } from "../types"
 import * as vnLocationApi from "../api/vnLocation.api"
 
 export function useVnLocation() {
   const [provinceCode, setProvinceCode] = useState<number | null>(null)
+  const [districtCode, setDistrictCode] = useState<number | null>(null)
+  const [wardCode, setWardCode] = useState<number | null>(null)
   const [provinces, setProvinces] = useState<Province[]>([])
   const [districts, setDistricts] = useState<District[]>([])
+  const [wards, setWards] = useState<Ward[]>([])
   const [loadingProvinces, setLoadingProvinces] = useState(false)
   const [loadingDistricts, setLoadingDistricts] = useState(false)
+  const [loadingWards, setLoadingWards] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -32,6 +36,9 @@ export function useVnLocation() {
     const loadDistricts = async () => {
       if (provinceCode == null) {
         setDistricts([])
+        setDistrictCode(null)
+        setWards([])
+        setWardCode(null)
         return
       }
 
@@ -50,13 +57,42 @@ export function useVnLocation() {
     void loadDistricts()
   }, [provinceCode])
 
+  useEffect(() => {
+    const loadWards = async () => {
+      if (districtCode == null) {
+        setWards([])
+        setWardCode(null)
+        return
+      }
+
+      try {
+        setLoadingWards(true)
+        setError(null)
+        const data = await vnLocationApi.fetchWards(districtCode)
+        setWards(data)
+      } catch {
+        setError(VI.profile.address.messages.saveError)
+      } finally {
+        setLoadingWards(false)
+      }
+    }
+
+    void loadWards()
+  }, [districtCode])
+
   return {
     provinceCode,
     setProvinceCode,
+    districtCode,
+    setDistrictCode,
+    wardCode,
+    setWardCode,
     provinces,
     districts,
+    wards,
     loadingProvinces,
     loadingDistricts,
+    loadingWards,
     error,
   }
 }
