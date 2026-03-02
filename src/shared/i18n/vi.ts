@@ -624,6 +624,24 @@ export const VI = {
       noDraft: "Không có thông tin đơn thuê. Vui lòng chọn trang phục trước.",
     },
   },
+
+  /**
+   * Payment Result Page
+   */
+  paymentResult: {
+    successTitle: "Thanh toán thành công!",
+    successDesc: "Cảm ơn bạn đã đặt thuê trang phục tại CosMate. Đơn hàng của bạn đang được xử lý.",
+    failedTitle: "Thanh toán thất bại",
+    failedDesc: "Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
+    cancelledTitle: "Thanh toán đã bị hủy",
+    cancelledDesc: "Giao dịch thanh toán đã bị hủy. Bạn có thể thử lại hoặc quay lại sau.",
+    unknownTitle: "Kết quả thanh toán",
+    unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
+    orderIdLabel: "Mã đơn hàng",
+    primarySuccessCta: "Xem đơn hàng",
+    primaryFailedCta: "Quay lại thanh toán",
+    homeCta: "Về trang chủ",
+  },
 };
 
 /**

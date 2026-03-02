@@ -13,6 +13,7 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 
 import HomePage from "@/features/general/pages/HomePage"
+import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -67,6 +68,9 @@ export default function AppRoutes() {
 
       {/* Global Error Pages */}
       <Route path="/no-permission" element={<NoPermissionPage />} />
+
+      {/* Payment Result Page (standalone) */}
+      <Route path="/payment/result" element={<PaymentResultPage />} />
     </Routes>
   )
 }
