@@ -1,4 +1,7 @@
-/**
+// Script to write the correct vi.ts with proper Vietnamese Unicode
+const fs = require("fs");
+
+const content = `/**
  * Vietnamese (VI) Language Dictionary
  *
  * Centralized text content for CosMate application
@@ -338,75 +341,13 @@ export const VI = {
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
     settings: "Cài đặt",
-    
+
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
-      fullNameRequired: "Họ tên là bắt buộc.",
-      phoneRequired: "Số điện thoại là bắt buộc.",
-      phoneInvalid: "Số điện thoại không hợp lệ.",
     },
 
     placeholders: {
       addTag: "Thêm thẻ",
-      fullName: "Nhập họ tên",
-      phone: "Nhập số điện thoại",
-    },
-
-    editModal: {
-      title: "Cập nhật hồ sơ",
-      tabs: {
-        basicInfo: "Thông tin cơ bản",
-        address: "Địa chỉ",
-      },
-      uploadAvatar: "Tải ảnh lên",
-      uploading: "Đang tải ảnh...",
-      saveBasicInfo: "Lưu thông tin",
-      updateSuccess: "Cập nhật thông tin thành công.",
-      uploadAvatarSuccess: "Tải ảnh đại diện thành công.",
-      addressPlaceholder: "Tính năng địa chỉ sẽ sớm được hỗ trợ.",
-    },
-
-    messages: {
-      updateFailed: "Không thể cập nhật hồ sơ.",
-      uploadAvatarFailed: "Không thể tải ảnh đại diện.",
-      loginRequired: "Vui lòng đăng nhập để cập nhật hồ sơ.",
-    },
-
-    // Address form
-    address: {
-      createPage: {
-        title: "Thêm địa chỉ mới",
-        subtitle: "Vui lòng nhập thông tin địa chỉ giao hàng của bạn",
-      },
-      form: {
-        name: "Tên địa chỉ",
-        namePlaceholder: "Ví dụ: Nhà, Công ty",
-        phone: "Số điện thoại",
-        phonePlaceholder: "Nhập số điện thoại",
-        city: "Tỉnh/Thành phố",
-        cityPlaceholder: "Chọn Tỉnh/Thành phố",
-        district: "Quận/Huyện",
-        districtPlaceholder: "Chọn Quận/Huyện",
-        ward: "Phường/Xã",
-        wardPlaceholder: "Chọn Phường/Xã",
-        streetAddress: "Địa chỉ chi tiết",
-        streetAddressPlaceholder: "Số nhà, tên đường",
-      },
-      validation: {
-        required: "Trường này là bắt buộc",
-        invalidPhone: "Số điện thoại không hợp lệ",
-        selectCity: "Vui lòng chọn Tỉnh/Thành phố",
-        selectDistrict: "Vui lòng chọn Quận/Huyện",
-        selectWard: "Vui lòng chọn Phường/Xã",
-      },
-      button: {
-        save: "Lưu địa chỉ",
-        back: "Quay lại",
-      },
-      messages: {
-        createSuccess: "Thêm địa chỉ thành công!",
-        createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
-      },
     },
   },
 
@@ -425,85 +366,6 @@ export const VI = {
     rentNow: "Thuê ngay",
     addToCart: "Thêm vào giỏ",
     viewDetails: "Xem chi tiết",
-
-    // Edit Costume Modal - Fees Tab
-    editCostume: {
-      title: "Chỉnh sửa trang phục",
-      basicInfoTab: "Thông tin cơ bản",
-      feesTab: "Phụ phí & Gói thuê",
-      loadingDetail: "Đang tải dữ liệu...",
-      loadError: "Không thể tải dữ liệu trang phục.",
-    },
-
-    surcharges: {
-      title: "Phụ phí",
-      add: "Thêm phụ phí",
-      edit: "Sửa phụ phí",
-      empty: "Không có phụ phí nào.",
-      emptyWithButton: "Không có phụ phí nào.",
-      createSuccess: "Thêm phụ phí thành công!",
-      updateSuccess: "Cập nhật phụ phí thành công!",
-      createError: "Thêm phụ phí thất bại.",
-      updateError: "Cập nhật phụ phí thất bại.",
-      form: {
-        name: "Tên",
-        namePlaceholder: "Nhập tên phụ phí",
-        description: "Mô tả",
-        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
-        price: "Giá (VNĐ)",
-        pricePlaceholder: "Nhập giá phụ phí",
-      },
-    },
-
-    rentalOptions: {
-      title: "Gói thuê",
-      add: "Thêm gói thuê",
-      edit: "Sửa gói thuê",
-      empty: "Không có gói thuê nào.",
-      emptyWithButton: "Không có gói thuê nào.",
-      createSuccess: "Thêm gói thuê thành công!",
-      updateSuccess: "Cập nhật gói thuê thành công!",
-      createError: "Thêm gói thuê thất bại.",
-      updateError: "Cập nhật gói thuê thất bại.",
-      form: {
-        name: "Loại gói",
-        namePlaceholder: "Chọn loại gói",
-        description: "Mô tả",
-        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
-        price: "Giá (VNĐ)",
-        pricePlaceholder: "Nhập giá gói thuê",
-      },
-    },
-
-    accessories: {
-      title: "Phụ kiện",
-      add: "Thêm phụ kiện",
-      edit: "Sửa phụ kiện",
-      empty: "Không có phụ kiện nào.",
-      emptyWithButton: "Không có phụ kiện nào.",
-      createSuccess: "Thêm phụ kiện thành công!",
-      updateSuccess: "Cập nhật phụ kiện thành công!",
-      createError: "Thêm phụ kiện thất bại.",
-      updateError: "Cập nhật phụ kiện thất bại.",
-      required: "Bắt buộc",
-      optional: "Tùy chọn",
-      form: {
-        name: "Tên",
-        namePlaceholder: "Nhập tên phụ kiện",
-        description: "Mô tả",
-        descriptionPlaceholder: "Nhập mô tả (không bắt buộc)",
-        price: "Giá (VNĐ)",
-        pricePlaceholder: "Nhập giá phụ kiện",
-        isRequired: "Bắt buộc",
-        isRequiredHint: "Khách hàng phải thuê phụ kiện này",
-      },
-    },
-
-    common: {
-      save: "Lưu",
-      cancel: "Hủy",
-      edit: "Sửa",
-    },
   },
 
   /**
@@ -551,3 +413,21 @@ export const VI = {
  * Type helper for accessing VI dictionary keys with autocomplete
  */
 export type VIKeys = typeof VI;
+`;
+
+fs.writeFileSync("src/shared/i18n/vi.ts", content, "utf8");
+
+// Verify
+const verify = fs.readFileSync("src/shared/i18n/vi.ts", "utf8");
+const checks = [
+  ["Đăng nhập", verify.includes("Đăng nhập")],
+  ["Đăng ký", verify.includes("Đăng ký")],
+  ["Xác nhận", verify.includes("Xác nhận")],
+  ["Tìm kiếm", verify.includes("Tìm kiếm")],
+  ["Thuê ngay", verify.includes("Thuê ngay")],
+  ["Bảng điều khiển", verify.includes("Bảng điều khiển")],
+  ["Quản lý người dùng", verify.includes("Quản lý người dùng")],
+  ["Không có dữ liệu", verify.includes("Không có dữ liệu")],
+];
+checks.forEach(([k, ok]) => console.log(ok ? "✓" : "✗", k));
+console.log("Lines:", verify.split("\n").length);

@@ -10,9 +10,10 @@
  */
 
 import { Modal, Tabs, Spin } from 'antd'
-import type { Costume, UpdateCostumeBasicInput, SurchargeUpdateInput, RentalOptionUpdateInput } from '../../types'
+import type { Costume, UpdateCostumeBasicInput, SurchargeUpdateInput, RentalOptionUpdateInput, SurchargeInput, RentalOptionInput, AccessoryInput, AccessoryUpdateInput } from '../../types'
 import EditBasicInfoForm from './EditBasicInfoForm'
 import FeesTab from './FeesTab'
+import { VI } from '@/shared/i18n/vi'
 
 interface Props {
   open: boolean
@@ -26,6 +27,17 @@ interface Props {
   onSubmitBasicInfo: (values: UpdateCostumeBasicInput) => Promise<void>
   onUpdateSurcharge: (id: number, values: SurchargeUpdateInput) => Promise<void>
   onUpdateRentalOption: (id: number, values: RentalOptionUpdateInput) => Promise<void>
+  createSurchargeModalOpen: boolean
+  setCreateSurchargeModalOpen: (open: boolean) => void
+  createRentalOptionModalOpen: boolean
+  setCreateRentalOptionModalOpen: (open: boolean) => void
+  onCreateSurcharge: (values: SurchargeInput) => Promise<void>
+  onCreateRentalOption: (values: RentalOptionInput) => Promise<void>
+  accessorySubmitting: boolean
+  createAccessoryModalOpen: boolean
+  setCreateAccessoryModalOpen: (open: boolean) => void
+  onCreateAccessory: (values: AccessoryInput) => Promise<void>
+  onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
 }
 
 export default function EditCostumeModal({
@@ -40,12 +52,23 @@ export default function EditCostumeModal({
   onSubmitBasicInfo,
   onUpdateSurcharge,
   onUpdateRentalOption,
+  createSurchargeModalOpen,
+  setCreateSurchargeModalOpen,
+  createRentalOptionModalOpen,
+  setCreateRentalOptionModalOpen,
+  onCreateSurcharge,
+  onCreateRentalOption,
+  accessorySubmitting,
+  createAccessoryModalOpen,
+  setCreateAccessoryModalOpen,
+  onCreateAccessory,
+  onUpdateAccessory,
 }: Props) {
   const tabItems = detail
     ? [
         {
           key: 'basic',
-          label: 'Thông tin cơ bản',
+          label: VI.costumeRental.editCostume.basicInfoTab,
           children: (
             <EditBasicInfoForm
               initialValues={detail}
@@ -57,15 +80,27 @@ export default function EditCostumeModal({
         },
         {
           key: 'fees',
-          label: 'Phụ phí & Gói thuê',
+          label: VI.costumeRental.editCostume.feesTab,
           children: (
             <FeesTab
               surcharges={detail.surcharges ?? []}
               rentalOptions={detail.rentalOptions ?? []}
+              accessories={detail.accessories ?? []}
               onUpdateSurcharge={onUpdateSurcharge}
               onUpdateRentalOption={onUpdateRentalOption}
+              onUpdateAccessory={onUpdateAccessory}
               surchargeSubmitting={surchargeSubmitting}
               rentalOptionSubmitting={rentalOptionSubmitting}
+              accessorySubmitting={accessorySubmitting}
+              createSurchargeModalOpen={createSurchargeModalOpen}
+              setCreateSurchargeModalOpen={setCreateSurchargeModalOpen}
+              createRentalOptionModalOpen={createRentalOptionModalOpen}
+              setCreateRentalOptionModalOpen={setCreateRentalOptionModalOpen}
+              createAccessoryModalOpen={createAccessoryModalOpen}
+              setCreateAccessoryModalOpen={setCreateAccessoryModalOpen}
+              onCreateSurcharge={onCreateSurcharge}
+              onCreateRentalOption={onCreateRentalOption}
+              onCreateAccessory={onCreateAccessory}
             />
           ),
         },
@@ -77,13 +112,13 @@ export default function EditCostumeModal({
       open={open}
       onCancel={onClose}
       footer={null}
-      title="Chỉnh sửa trang phục"
+      title={VI.costumeRental.editCostume.title}
       width={760}
       destroyOnClose
     >
       {detailLoading && (
         <div style={{ textAlign: 'center', padding: '48px 0' }}>
-          <Spin tip="Đang tải dữ liệu..." />
+          <Spin tip={VI.costumeRental.editCostume.loadingDetail} />
         </div>
       )}
 
@@ -93,7 +128,7 @@ export default function EditCostumeModal({
 
       {!detailLoading && !detail && (
         <div style={{ textAlign: 'center', padding: '48px 0', color: '#6B7280' }}>
-          Không thể tải dữ liệu trang phục.
+          {VI.costumeRental.editCostume.loadError}
         </div>
       )}
     </Modal>
