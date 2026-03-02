@@ -173,7 +173,7 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
         >
           <ChevronRight className="h-5 w-5" />
         </button>
-        <div className="aspect-[16/7] w-full md:h-[360px]" />
+        <div className="aspect-[16/7] w-full md:aspect-auto md:h-[360px]" />
       </div>
     </section>
   )

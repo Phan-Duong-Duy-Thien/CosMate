@@ -248,13 +248,13 @@ export default function CosplayerSiteLayout() {
         {isHomePage ? (
           <div className="mx-auto w-full max-w-[1800px] px-2 py-4 lg:px-3 xl:px-4">
             <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-              <aside className="hidden lg:block">
+              <aside className="hidden lg:block lg:pt-8">
                 <div className="w-full">
                   <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <img
                       src={sideBannerImage}
                       alt="Trang tri ben trai"
-                      className="h-[360px] w-full max-h-[calc(100vh-152px)] rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                       <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
@@ -275,13 +275,13 @@ export default function CosplayerSiteLayout() {
                 <Outlet />
               </div>
 
-              <aside className="hidden lg:block">
+              <aside className="hidden lg:block lg:pt-8">
                 <div className="w-full">
                   <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                     <img
                       src={sideBannerImage}
                       alt="Trang tri ben phai"
-                      className="h-[360px] w-full max-h-[calc(100vh-152px)] rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                      className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
                     />
                     <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                       <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
