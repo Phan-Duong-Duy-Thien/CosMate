@@ -334,6 +334,7 @@ export const VI = {
   profile: {
     title: "Hồ sơ của tôi",
     edit: "Chỉnh sửa hồ sơ",
+    handleLabel: "Tài khoản Cosplayer",
     gallery: "Bộ sưu tập",
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
@@ -428,6 +429,33 @@ export const VI = {
       empty: "Bạn chưa có địa chỉ nào.",
       loading: "Đang tải địa chỉ...",
       error: "Không thể tải danh sách địa chỉ.",
+    },
+
+    hub: {
+      title: "Trung tâm tài khoản",
+      edit: "Chỉnh sửa hồ sơ",
+    },
+
+    orders: {
+      title: "Đơn mua",
+      history: "Xem lịch sử mua hàng",
+      pendingConfirm: "Chờ xác nhận",
+      pendingPickup: "Chờ lấy hàng",
+      shipping: "Chờ giao hàng",
+      review: "Đánh giá",
+      historyPlaceholder: "Lịch sử mua hàng sẽ hiển thị tại đây.",
+      filterLabel: "Bộ lọc hiện tại",
+    },
+
+    wallet: {
+      title: "Ví của tôi",
+      balance: "Số dư ví",
+      manage: "Quản lý ví",
+      topup: "Nạp tiền vào ví",
+      topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
+      amount: "Số tiền nạp",
+      amountPlaceholder: "Nhập số tiền",
+      submit: "Nạp tiền",
     },
   },
 

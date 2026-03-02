@@ -17,6 +17,9 @@ import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
 import AddressCreatePage from "@/features/profile/pages/AddressCreatePage"
+import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
+import WalletPage from "@/features/profile/pages/WalletPage"
+import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -40,6 +43,9 @@ export default function AppRoutes() {
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
+        <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/wallet" element={<WalletPage />} />
+        <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="staffs" element={<StaffsListingPage />} />

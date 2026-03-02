@@ -42,6 +42,11 @@ export type ProfileTabId = "gallery" | "concepts" | "reviews"
 
 export type SortOption = "latest" | "popular"
 
+export interface UpdateUserProfilePayload {
+  fullName: string
+  phone: string
+}
+
 // ============ USER ADDRESS TYPES ============
 
 export interface UserAddress {
