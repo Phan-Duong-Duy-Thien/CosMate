@@ -338,6 +338,9 @@ export const VI = {
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
     settings: "Cài đặt",
+    fullName: "Họ tên",
+    phone: "Số điện thoại",
+    avatar: "Ảnh đại diện",
     
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
@@ -401,12 +404,30 @@ export const VI = {
       },
       button: {
         save: "Lưu địa chỉ",
+        add: "Thêm địa chỉ",
+        edit: "Sửa",
+        delete: "Xóa",
         back: "Quay lại",
       },
       messages: {
         createSuccess: "Thêm địa chỉ thành công!",
+        updateSuccess: "Cập nhật địa chỉ thành công!",
+        deleteSuccess: "Xóa địa chỉ thành công!",
         createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
+        saveError: "Không thể lưu địa chỉ. Vui lòng thử lại.",
       },
+      confirm: {
+        delete: "Bạn có chắc muốn xóa địa chỉ này không?",
+      },
+    },
+
+    addresses: {
+      title: "Địa chỉ",
+      showMore: "Hiển thị thêm",
+      collapse: "Thu gọn",
+      empty: "Bạn chưa có địa chỉ nào.",
+      loading: "Đang tải địa chỉ...",
+      error: "Không thể tải danh sách địa chỉ.",
     },
   },
 

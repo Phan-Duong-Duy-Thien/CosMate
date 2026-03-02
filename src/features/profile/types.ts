@@ -45,7 +45,8 @@ export type SortOption = "latest" | "popular"
 // ============ USER ADDRESS TYPES ============
 
 export interface UserAddress {
-  id?: number
+  id: number
+  userId: number
   name: string
   city: string
   district: string
@@ -53,13 +54,15 @@ export interface UserAddress {
   phone: string
 }
 
-export interface CreateUserAddressPayload {
+export interface UpsertUserAddressPayload {
   name: string
   city: string
   district: string
   address: string
   phone: string
 }
+
+export type CreateUserAddressPayload = UpsertUserAddressPayload
 
 // ============ VIETNAM LOCATION TYPES ============
 

@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { useUserProfile } from "../hooks/useUserProfile"
+import { useUserAddresses } from "../hooks/useUserAddresses"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
@@ -13,9 +14,13 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
 }
 
 export default function CosplayerProfilePage() {
-  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile } =
+  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile, userId } =
     useUserProfile()
   const [isEditOpen, setIsEditOpen] = useState(false)
+  const [showAllAddresses, setShowAllAddresses] = useState(false)
+  const { addresses, isLoading: addressesLoading, error: addressesError } = useUserAddresses(userId)
+
+  const displayedAddresses = showAllAddresses ? addresses : addresses.slice(0, 1)
 
   return (
     <div className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#fff6fc] via-[#f6f5ff] to-[#eef7ff] px-4 py-10">
@@ -101,6 +106,59 @@ export default function CosplayerProfilePage() {
                       </div>
                     </div>
                   </div>
+
+                  <div className="mt-6 rounded-xl bg-slate-50 px-4 py-3">
+                    <p className="text-xs font-medium text-slate-500">
+                      {VI.profile.addresses.title}
+                    </p>
+
+                    {addressesLoading ? (
+                      <p className="mt-2 text-sm text-slate-600">
+                        {VI.profile.addresses.loading}
+                      </p>
+                    ) : addressesError ? (
+                      <p className="mt-2 text-sm text-rose-600">
+                        {addressesError}
+                      </p>
+                    ) : addresses.length === 0 ? (
+                      <p className="mt-2 text-sm text-slate-600">
+                        {VI.profile.addresses.empty}
+                      </p>
+                    ) : (
+                      <div className="mt-2 space-y-2">
+                        {displayedAddresses.map((item) => {
+                          const fullAddress = [item.address, item.district, item.city]
+                            .filter((part) => part && part.trim().length > 0)
+                            .join(", ")
+
+                          return (
+                            <div
+                              key={item.id}
+                              className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+                            >
+                              <p className="text-sm font-semibold text-slate-800">{item.name}</p>
+                              <p className="mt-0.5 text-sm text-slate-700">{item.phone}</p>
+                              <p className="mt-0.5 text-sm text-slate-600">{fullAddress}</p>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
+
+                    {addresses.length > 1 && !addressesLoading && !addressesError && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="mt-3 rounded-full border border-purple-100 bg-purple-50 px-4 text-purple-700 hover:bg-purple-100 hover:text-purple-800"
+                        onClick={() => setShowAllAddresses((prev) => !prev)}
+                      >
+                        {showAllAddresses
+                          ? VI.profile.addresses.collapse
+                          : VI.profile.addresses.showMore}
+                      </Button>
+                    )}
+                  </div>
                 </div>
               ) : (
                 <p className="mt-6 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
@@ -114,6 +172,7 @@ export default function CosplayerProfilePage() {
       <EditProfileModal
         open={isEditOpen}
         onOpenChange={setIsEditOpen}
+        userId={userId}
         profile={profile}
         onProfileUpdated={setProfile}
       />
