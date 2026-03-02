@@ -6,7 +6,10 @@ export interface MockProfile {
   name: string
   username: string
   bio: string
-  avatarUrl: string
+  avatarUrl?: string | null
+  email?: string
+  phone?: string
+  status?: string
   stats: { bookings: number; rating: number }
   location: string
   social: { instagram?: string }
@@ -38,3 +41,8 @@ export interface MockReview {
 export type ProfileTabId = "gallery" | "concepts" | "reviews"
 
 export type SortOption = "latest" | "popular"
+
+export interface UpdateUserProfilePayload {
+  fullName: string
+  phone: string
+}

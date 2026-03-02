@@ -338,13 +338,45 @@ export const VI = {
     bookings: "Lịch đặt",
     favorites: "Yêu thích",
     settings: "Cài đặt",
+    fullName: "Họ tên",
+    phone: "Số điện thoại",
+    avatar: "Ảnh đại diện",
+    basicInfo: "Thông tin cơ bản",
+    address: "Địa chỉ",
+    email: "Email",
+    status: "Trạng thái",
     
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
+      fullNameRequired: "Họ tên là bắt buộc.",
+      phoneRequired: "Số điện thoại là bắt buộc.",
+      phoneInvalid: "Số điện thoại không hợp lệ.",
     },
     
     placeholders: {
       addTag: "Thêm thẻ",
+      fullName: "Nhập họ tên",
+      phone: "Nhập số điện thoại",
+    },
+
+    editModal: {
+      title: "Cập nhật hồ sơ",
+      tabs: {
+        basicInfo: "Thông tin cơ bản",
+        address: "Địa chỉ",
+      },
+      uploadAvatar: "Tải ảnh lên",
+      uploading: "Đang tải ảnh...",
+      saveBasicInfo: "Lưu thông tin",
+      updateSuccess: "Cập nhật thông tin thành công.",
+      uploadAvatarSuccess: "Tải ảnh đại diện thành công.",
+      addressPlaceholder: "Tính năng địa chỉ sẽ sớm được hỗ trợ.",
+    },
+
+    messages: {
+      updateFailed: "Không thể cập nhật hồ sơ.",
+      uploadAvatarFailed: "Không thể tải ảnh đại diện.",
+      loginRequired: "Vui lòng đăng nhập để cập nhật hồ sơ.",
     },
   },
 

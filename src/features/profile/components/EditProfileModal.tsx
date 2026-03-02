@@ -2,232 +2,216 @@ import * as React from "react"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
-import type { MockProfile } from "../types"
+import type { AdminUserProfile } from "@/features/admin/types"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
+import { useEditProfile } from "../hooks/useEditProfile"
 
-const BIO_MAX_LENGTH = 160
+type EditProfileTab = "basic" | "address"
 
 interface EditProfileModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  initialProfile: MockProfile
-  onSave: (profile: MockProfile) => void
+  profile: AdminUserProfile | null
+  onProfileUpdated: (profile: AdminUserProfile) => void
 }
 
 export function EditProfileModal({
   open,
   onOpenChange,
-  initialProfile,
-  onSave,
+  profile,
+  onProfileUpdated,
 }: EditProfileModalProps) {
-  const [draft, setDraft] = React.useState<MockProfile>(initialProfile)
-  const [errors, setErrors] = React.useState<Record<string, string>>({})
-  const [tagInput, setTagInput] = React.useState("")
+  const [activeTab, setActiveTab] = React.useState<EditProfileTab>("basic")
+  const [avatarFile, setAvatarFile] = React.useState<File | null>(null)
+
+  const {
+    fullName,
+    setFullName,
+    phone,
+    setPhone,
+    updatingProfile,
+    uploadingAvatar,
+    fieldErrors,
+    error,
+    success,
+    handleSubmitBasicInfo,
+    handleAvatarUpload,
+  } = useEditProfile({
+    initialProfile: profile,
+    onProfileUpdated,
+  })
 
   React.useEffect(() => {
     if (open) {
-      setDraft(initialProfile)
-      setErrors({})
-      setTagInput("")
+      setActiveTab("basic")
+      setAvatarFile(null)
     }
-  }, [open, initialProfile])
+  }, [open])
 
-  const validate = (): boolean => {
-    const next: Record<string, string> = {}
-    if (!draft.name?.trim()) next.displayName = "Display name is required"
-    if (!draft.username?.trim()) next.username = VI.profile.validation.usernameRequired
-    if (draft.bio && draft.bio.length > BIO_MAX_LENGTH)
-      next.bio = `Bio must be ${BIO_MAX_LENGTH} characters or less`
-    setErrors(next)
-    return Object.keys(next).length === 0
-  }
+  const previewUrl = React.useMemo(() => {
+    if (avatarFile) return URL.createObjectURL(avatarFile)
+    return profile?.avatarUrl ?? null
+  }, [avatarFile, profile?.avatarUrl])
 
-  const handleSave = () => {
-    if (!validate()) return
-    onSave(draft)
-    onOpenChange(false)
-  }
+  React.useEffect(() => {
+    return () => {
+      if (avatarFile) {
+        URL.revokeObjectURL(previewUrl ?? "")
+      }
+    }
+  }, [avatarFile, previewUrl])
 
-  const addTag = () => {
-    const t = tagInput.trim().replace(/^#/, "")
-    if (!t || draft.tags.includes(t)) return
-    setDraft((prev) => ({ ...prev, tags: [...prev.tags, t] }))
-    setTagInput("")
-  }
-
-  const removeTag = (tag: string) => {
-    setDraft((prev) => ({
-      ...prev,
-      tags: prev.tags.filter((x) => x !== tag),
-    }))
-  }
+  const initials = React.useMemo(() => {
+    const source = (profile?.fullName?.trim() || profile?.username || "U").trim()
+    const parts = source.split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return "U"
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase()
+  }, [profile?.fullName, profile?.username])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg"
+        className="max-w-xl"
         onClose={() => onOpenChange(false)}
       >
-        <h2 className="text-xl font-bold text-slate-900">Edit Profile</h2>
-        <form
-          className="mt-4 space-y-4"
-          onSubmit={(e) => {
-            e.preventDefault()
-            handleSave()
-          }}
-        >
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Display name <span className="text-pink-500">*</span>
-            </label>
-            <Input
-              value={draft.name}
-              onChange={(e) => setDraft((p) => ({ ...p, name: e.target.value }))}
-              placeholder="Display name"
-              className={cn(errors.displayName && "border-pink-300")}
-            />
-            {errors.displayName && (
-              <p className="mt-1 text-xs text-pink-600">{errors.displayName}</p>
+        <h2 className="text-xl font-bold text-slate-900">
+          {VI.profile.editModal.title}
+        </h2>
+
+        <div className="mt-4 flex gap-2 rounded-xl bg-slate-50 p-1">
+          <button
+            type="button"
+            className={cn(
+              "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+              activeTab === "basic"
+                ? "bg-white text-slate-900 shadow-sm"
+                : "text-slate-500 hover:text-slate-700"
             )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Username <span className="text-pink-500">*</span>
-            </label>
-            <Input
-              value={draft.username}
-              onChange={(e) =>
-                setDraft((p) => ({ ...p, username: e.target.value }))
-              }
-              placeholder="@username"
-              className={cn(errors.username && "border-pink-300")}
-            />
-            {errors.username && (
-              <p className="mt-1 text-xs text-pink-600">{errors.username}</p>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Bio (max {BIO_MAX_LENGTH})
-            </label>
-            <textarea
-              value={draft.bio}
-              onChange={(e) =>
-                setDraft((p) => ({ ...p, bio: e.target.value.slice(0, BIO_MAX_LENGTH) }))
-              }
-              placeholder="Short bio"
-              rows={3}
-              className={cn(
-                "w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-700 placeholder:text-slate-400 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200",
-                errors.bio && "border-pink-300"
-              )}
-            />
-            <p className="mt-1 text-right text-xs text-slate-400">
-              {draft.bio.length}/{BIO_MAX_LENGTH}
-            </p>
-            {errors.bio && (
-              <p className="mt-1 text-xs text-pink-600">{errors.bio}</p>
-            )}
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Location
-            </label>
-            <Input
-              value={draft.location}
-              onChange={(e) =>
-                setDraft((p) => ({ ...p, location: e.target.value }))
-              }
-              placeholder="City, Country"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Instagram
-            </label>
-            <Input
-              value={draft.social.instagram ?? ""}
-              onChange={(e) =>
-                setDraft((p) => ({
-                  ...p,
-                  social: { ...p.social, instagram: e.target.value || undefined },
-                }))
-              }
-              placeholder="username"
-            />
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Avatar URL
-            </label>
-            <div className="flex gap-3">
-              <Input
-                value={draft.avatarUrl}
-                onChange={(e) =>
-                  setDraft((p) => ({ ...p, avatarUrl: e.target.value }))
-                }
-                placeholder="https://..."
-                className="flex-1"
-              />
-              {draft.avatarUrl && (
-                <img
-                  src={draft.avatarUrl}
-                  alt="Preview"
-                  className="h-12 w-12 shrink-0 rounded-xl object-cover"
-                />
-              )}
-            </div>
-          </div>
-          <div>
-            <label className="mb-1 block text-sm font-medium text-slate-700">
-              Tags
-            </label>
-            <div className="flex flex-wrap gap-2">
-              {draft.tags.map((tag) => (
-                <span
-                  key={tag}
-                  className="inline-flex items-center gap-1 rounded-full bg-purple-100 px-3 py-1 text-xs font-medium text-purple-700"
-                >
-                  #{tag}
-                  <button
+            onClick={() => setActiveTab("basic")}
+          >
+            {VI.profile.editModal.tabs.basicInfo}
+          </button>
+          <button
+            type="button"
+            className="flex-1 cursor-not-allowed rounded-lg px-3 py-2 text-sm font-medium text-slate-400"
+            disabled
+          >
+            {VI.profile.editModal.tabs.address}
+          </button>
+        </div>
+
+        {activeTab === "basic" ? (
+          <div className="mt-5 space-y-5">
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+              <p className="mb-3 text-sm font-medium text-slate-700">
+                {VI.profile.avatar}
+              </p>
+              <div className="flex items-center gap-4">
+                {previewUrl ? (
+                  <img
+                    src={previewUrl}
+                    alt={VI.profile.avatar}
+                    className="h-16 w-16 rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 text-lg font-bold text-purple-700">
+                    {initials}
+                  </div>
+                )}
+                <div className="flex-1 space-y-2">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                    className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-pink-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-pink-700 hover:file:bg-pink-200"
+                  />
+                  <Button
                     type="button"
-                    onClick={() => removeTag(tag)}
-                    className="ml-1 rounded-full p-0.5 hover:bg-purple-200"
-                    aria-label={`Remove ${tag}`}
+                    size="sm"
+                    variant="outline"
+                    disabled={!avatarFile || uploadingAvatar}
+                    onClick={() => handleAvatarUpload(avatarFile)}
                   >
-                    ×
-                  </button>
-                </span>
-              ))}
-              <div className="flex gap-1">
-                <Input
-                  value={tagInput}
-                  onChange={(e) => setTagInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())}
-                  placeholder={VI.profile.placeholders.addTag}
-                  className="w-28"
-                />
-                <Button type="button" variant="outline" size="sm" onClick={addTag}>
-                  Add
-                </Button>
+                    {uploadingAvatar
+                      ? VI.profile.editModal.uploading
+                      : VI.profile.editModal.uploadAvatar}
+                  </Button>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="flex justify-end gap-3 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => onOpenChange(false)}
+
+            <form
+              className="space-y-4"
+              onSubmit={(e) => {
+                e.preventDefault()
+                void handleSubmitBasicInfo()
+              }}
             >
-              Cancel
-            </Button>
-            <Button type="submit" size="sm">
-              Save Changes
-            </Button>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {VI.profile.fullName} <span className="text-pink-500">*</span>
+                </label>
+                <Input
+                  value={fullName}
+                  onChange={(e) => setFullName(e.target.value)}
+                  placeholder={VI.profile.placeholders.fullName}
+                  className={cn(fieldErrors.fullName && "border-pink-300")}
+                />
+                {fieldErrors.fullName && (
+                  <p className="mt-1 text-xs text-pink-600">{fieldErrors.fullName}</p>
+                )}
+              </div>
+
+              <div>
+                <label className="mb-1 block text-sm font-medium text-slate-700">
+                  {VI.profile.phone} <span className="text-pink-500">*</span>
+                </label>
+                <Input
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder={VI.profile.placeholders.phone}
+                  className={cn(fieldErrors.phone && "border-pink-300")}
+                />
+                {fieldErrors.phone && (
+                  <p className="mt-1 text-xs text-pink-600">{fieldErrors.phone}</p>
+                )}
+              </div>
+
+              {error && (
+                <p className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+                  {error}
+                </p>
+              )}
+              {success && (
+                <p className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {success}
+                </p>
+              )}
+
+              <div className="flex justify-end gap-3 pt-1">
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onOpenChange(false)}
+                >
+                  {VI.common.actions.cancel}
+                </Button>
+                <Button type="submit" size="sm" disabled={updatingProfile}>
+                  {updatingProfile
+                    ? VI.common.status.loading
+                    : VI.profile.editModal.saveBasicInfo}
+                </Button>
+              </div>
+            </form>
           </div>
-        </form>
+        ) : (
+          <div className="mt-5 rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-5 text-sm text-slate-500">
+            {VI.profile.editModal.addressPlaceholder}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

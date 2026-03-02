@@ -13,7 +13,10 @@ interface GalleryGridProps {
   emptyMessage?: string
 }
 
-export function GalleryGrid({ items, emptyMessage = "No shoots yet." }: GalleryGridProps) {
+export function GalleryGrid({
+  items,
+  emptyMessage = "No shoots yet.",
+}: GalleryGridProps) {
   if (items.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-16 text-center text-sm text-slate-500">

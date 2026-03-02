@@ -47,11 +47,14 @@ export function SortDropdown({
           aria-label="Sort by"
           aria-expanded={open}
           aria-haspopup="listbox"
-          className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-200 ease-out hover:border-purple-200 hover:shadow-md hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-200"
+          className="flex cursor-pointer items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-800 shadow-sm transition-all duration-200 ease-out hover:scale-[1.02] hover:border-purple-200 hover:shadow-md active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-200"
         >
           {currentLabel}
           <ChevronDown
-            className={cn("h-4 w-4 text-slate-400 transition-transform", open && "rotate-180")}
+            className={cn(
+              "h-4 w-4 text-slate-400 transition-transform",
+              open && "rotate-180"
+            )}
           />
         </button>
         {open && (
