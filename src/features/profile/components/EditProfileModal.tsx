@@ -294,6 +294,15 @@ export function EditProfileModal({
     setIsAvatarCropOpen(true)
   }
 
+  const handleSaveBasicInfo = async () => {
+    const ok = await handleSubmitBasicInfo()
+    if (ok) {
+      message.success(VI.profile.editModal.updateSuccess)
+      return
+    }
+    message.error(error ?? VI.profile.messages.updateFailed)
+  }
+
   const handleDeleteAddress = async (addressId: number) => {
     const confirmed = window.confirm(VI.profile.address.confirm.delete)
     if (!confirmed) return
@@ -379,7 +388,7 @@ export function EditProfileModal({
               className="space-y-4"
               onSubmit={(e) => {
                 e.preventDefault()
-                void handleSubmitBasicInfo()
+                void handleSaveBasicInfo()
               }}
             >
               <div>
