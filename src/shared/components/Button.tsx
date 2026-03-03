@@ -18,7 +18,8 @@ const variantClasses: Record<ButtonVariant, string> = {
   outline:
     "border border-slate-200 bg-white hover:bg-slate-50 text-slate-700",
   soft: "bg-pink-100 text-pink-700 hover:bg-pink-200",
-  link: "bg-transparent text-pink-600 hover:text-pink-700 underline-offset-4 hover:underline",
+  link:
+    "bg-transparent text-pink-600 hover:text-pink-700 decoration-1 underline-offset-2 hover:underline",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

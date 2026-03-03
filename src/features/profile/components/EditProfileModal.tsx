@@ -9,6 +9,7 @@ import { VI } from "@/shared/i18n/vi"
 import { useEditProfile } from "../hooks/useEditProfile"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
 import { useVnLocation } from "../hooks/useVnLocation"
+import { ImageCropDialog } from "./ImageCropDialog"
 import { message } from "antd"
 
 // ============ Location Helper Functions ============
@@ -65,6 +66,7 @@ export function EditProfileModal({
 }: EditProfileModalProps) {
   const [activeTab, setActiveTab] = React.useState<EditProfileTab>("basic")
   const [avatarFile, setAvatarFile] = React.useState<File | null>(null)
+  const [isAvatarCropOpen, setIsAvatarCropOpen] = React.useState(false)
   const [isAddressFormOpen, setIsAddressFormOpen] = React.useState(false)
   const [editingAddressId, setEditingAddressId] = React.useState<number | null>(null)
   const [addressForm, setAddressForm] = React.useState<UpsertUserAddressPayload>({
@@ -127,6 +129,7 @@ export function EditProfileModal({
     if (open) {
       setActiveTab("basic")
       setAvatarFile(null)
+      setIsAvatarCropOpen(false)
       setIsAddressFormOpen(false)
       setEditingAddressId(null)
       setAddressForm({
@@ -283,6 +286,14 @@ export function EditProfileModal({
     setAddressFieldErrors({})
   }
 
+  const handleAvatarFileSelected = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    event.target.value = ""
+    if (!file || uploadingAvatar) return
+    setAvatarFile(file)
+    setIsAvatarCropOpen(true)
+  }
+
   const handleDeleteAddress = async (addressId: number) => {
     const confirmed = window.confirm(VI.profile.address.confirm.delete)
     if (!confirmed) return
@@ -357,20 +368,9 @@ export function EditProfileModal({
                   <input
                     type="file"
                     accept="image/*"
-                    onChange={(e) => setAvatarFile(e.target.files?.[0] ?? null)}
+                    onChange={handleAvatarFileSelected}
                     className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-pink-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-pink-700 hover:file:bg-pink-200"
                   />
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    disabled={!avatarFile || uploadingAvatar}
-                    onClick={() => handleAvatarUpload(avatarFile)}
-                  >
-                    {uploadingAvatar
-                      ? VI.profile.editModal.uploading
-                      : VI.profile.editModal.uploadAvatar}
-                  </Button>
                 </div>
               </div>
             </div>
@@ -716,6 +716,29 @@ export function EditProfileModal({
           </div>
         )}
       </DialogContent>
+      <ImageCropDialog
+        open={isAvatarCropOpen}
+        file={avatarFile}
+        title={VI.profile.crop.avatarTitle}
+        aspect={1}
+        cropShape="round"
+        onOpenChange={(open) => {
+          setIsAvatarCropOpen(open)
+          if (!open) {
+            setAvatarFile(null)
+          }
+        }}
+        onConfirm={async ({ file }) => {
+          const ok = await handleAvatarUpload(file)
+          if (ok) {
+            message.success(VI.profile.editModal.uploadAvatarSuccess)
+            setAvatarFile(null)
+            setIsAvatarCropOpen(false)
+            return
+          }
+          message.error(VI.profile.messages.uploadAvatarFailed)
+        }}
+      />
     </Dialog>
   )
 }
