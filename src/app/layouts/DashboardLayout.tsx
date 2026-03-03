@@ -1,10 +1,11 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User } from 'lucide-react';
+import { LogOut, User, ChevronRight } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
+import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 
 const { Header, Sider, Content } = Layout;
 
@@ -71,6 +72,37 @@ export function DashboardLayout({
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const { items: breadcrumbItems, setItems } = useBreadcrumb();
+
+  // Set default breadcrumbs based on route
+  useEffect(() => {
+    const path = location.pathname;
+    if (path === '/admin') {
+      setItems([
+        { label: VI.common.breadcrumb.admin, to: '/admin' },
+      ]);
+    } else if (path === '/admin/users') {
+      setItems([
+        { label: VI.common.breadcrumb.admin, to: '/admin' },
+        { label: VI.common.breadcrumb.users },
+      ]);
+    } else if (path === '/provider-rental') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+      ]);
+    } else if (path === '/provider-rental/costumes') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.common.breadcrumb.providerCostumes },
+      ]);
+    } else if (path === '/provider-rental/costumes/create') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.common.breadcrumb.providerCostumes, to: '/provider-rental/costumes' },
+        { label: VI.common.breadcrumb.create },
+      ]);
+    }
+  }, [location.pathname, setItems]);
 
   // TODO: Read user info from auth context when implemented
   const userName = 'User';
@@ -220,6 +252,37 @@ export function DashboardLayout({
             minHeight: 280,
           }}
         >
+          {breadcrumbItems.length > 0 && (
+            <div style={{ marginBottom: 16 }}>
+              {breadcrumbItems.map((item, index) => (
+                <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
+                  {item.to ? (
+                    <a
+                      href={item.to}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        navigate(item.to!);
+                      }}
+                      style={{
+                        color: '#64748b',
+                        textDecoration: 'none',
+                        fontSize: 14,
+                      }}
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>
+                      {item.label}
+                    </span>
+                  )}
+                  {index < breadcrumbItems.length - 1 && (
+                    <ChevronRight size={14} style={{ margin: '0 8px', color: '#94a3b8' }} />
+                  )}
+                </span>
+              ))}
+            </div>
+          )}
           {children}
         </Content>
       </Layout>

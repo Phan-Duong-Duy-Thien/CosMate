@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Outlet, useNavigate, useSearchParams } from "react-router-dom"
+import { Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import {
   ChevronDown,
   Facebook,
@@ -17,16 +17,79 @@ import type { MenuProps } from "antd"
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
+import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
+import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
+import bgImage from "@/assets/background.jpg"
+import sideBannerImage from "@/assets/anh1.jpg"
+import quizBannerImage1 from "@/assets/quiz1.jpg"
+import quizBannerImage2 from "@/assets/quiz2.jpg"
+import quizBannerImage3 from "@/assets/quiz3.jpg"
 
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
+  const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
+  const { setItems } = useBreadcrumb()
+  const isHomePage = location.pathname === "/" || location.pathname === "/home"
+  const isWideContentPage =
+    location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
+  const sideBannerSlides = React.useMemo(
+    () => [sideBannerImage, quizBannerImage1, quizBannerImage2, quizBannerImage3],
+    []
+  )
+  const [sideBannerIndex, setSideBannerIndex] = React.useState(0)
 
   const loggedIn = isAuthenticated()
+
+  // Set default breadcrumbs based on route
+  React.useEffect(() => {
+    const path = location.pathname
+    if (path === "/") {
+      setItems([])
+    } else if (path === "/costumes") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes },
+      ])
+    } else if (path.startsWith("/costumes/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: VI.common.breadcrumb.checkout },
+      ])
+    } else if (path === "/profile") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile },
+      ])
+    } else if (path === "/rent/checkout") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: VI.common.breadcrumb.checkout },
+      ])
+    } else if (path.startsWith("/profile/addresses")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: path.includes("new") ? VI.common.breadcrumb.addAddress : VI.common.breadcrumb.addresses },
+      ])
+    } else if (path === "/photographers") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.photographers },
+      ])
+    } else if (path === "/staffs") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.staffs },
+      ])
+    }
+  }, [location.pathname, setItems])
 
   const handleLogout = () => {
     clearAuth()
@@ -46,6 +109,18 @@ export default function CosplayerSiteLayout() {
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
 
+  React.useEffect(() => {
+    if (!isHomePage) return
+    const interval = window.setInterval(() => {
+      setSideBannerIndex((prev) => (prev + 1) % sideBannerSlides.length)
+    }, 2000)
+    return () => window.clearInterval(interval)
+  }, [isHomePage, sideBannerSlides.length])
+
+  const handleAdvanceSideBanner = () => {
+    setSideBannerIndex((prev) => (prev + 1) % sideBannerSlides.length)
+  }
+
   const handleSearchChange = (value: string) => {
     const next = new URLSearchParams(searchParams)
     if (value.trim()) {
@@ -57,11 +132,20 @@ export default function CosplayerSiteLayout() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#F9FAFB] text-[#111827]">
+    <div
+      className="flex min-h-screen flex-col overflow-x-hidden text-[#111827]"
+      style={{
+        backgroundImage: `url(${bgImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+        backgroundAttachment: "fixed",
+      }}
+    >
       <header
         className={cn(
-          "sticky top-0 z-50 w-full border-b border-transparent bg-white/90 backdrop-blur-md transition-shadow",
-          isScrolled && "border-slate-100 shadow-md"
+          "sticky top-0 z-50 w-full border-b border-transparent bg-pink-100/90 backdrop-blur-md transition-shadow",
+          isScrolled && "border-pink-200/80 shadow-md"
         )}
       >
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4">
@@ -99,7 +183,12 @@ export default function CosplayerSiteLayout() {
             <Button variant="ghost" size="sm" className="whitespace-nowrap">
               Quiz
             </Button>
-            <Button variant="ghost" size="sm" className="whitespace-nowrap">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="whitespace-nowrap transition-all duration-200 hover:bg-pink-100/70 active:scale-[0.98]"
+              onClick={() => navigate("/guidelines-rules")}
+            >
               Hướng dẫn &amp; Quy định
             </Button>
             <DropdownMenu
@@ -172,7 +261,86 @@ export default function CosplayerSiteLayout() {
       </header>
 
       <main className="flex-1">
-        <Outlet />
+        {isHomePage ? (
+          <div className="relative">
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
+            />
+            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-4 lg:px-3 xl:px-4">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
+                <aside className="hidden lg:block lg:pt-8">
+                  <div className="w-full">
+                    <div
+                      className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      onMouseEnter={handleAdvanceSideBanner}
+                    >
+                      <img
+                        src={sideBannerSlides[sideBannerIndex]}
+                        alt="Trang tri ben trai"
+                        className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
+                          Bạn là nhân vật nào?
+                        </p>
+                        <button
+                          type="button"
+                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-pink-600"
+                        >
+                          Làm quiz ngay
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+
+                <div className="min-w-0">
+                  <Outlet />
+                </div>
+
+                <aside className="hidden lg:block lg:pt-8">
+                  <div className="w-full">
+                    <div
+                      className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      onMouseEnter={handleAdvanceSideBanner}
+                    >
+                      <img
+                        src={sideBannerSlides[(sideBannerIndex + 1) % sideBannerSlides.length]}
+                        alt="Trang tri ben phai"
+                        className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
+                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
+                          Bạn là nhân vật nào?
+                        </p>
+                        <button
+                          type="button"
+                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-pink-600"
+                        >
+                          Làm quiz ngay
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </aside>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "mx-auto w-full py-4",
+              isWideContentPage
+                ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
+                : "max-w-7xl px-4 lg:px-6"
+            )}
+          >
+            <div className="min-w-0">
+              <Outlet />
+            </div>
+          </div>
+        )}
       </main>
 
       <footer className=" bg-slate-900 text-slate-200">

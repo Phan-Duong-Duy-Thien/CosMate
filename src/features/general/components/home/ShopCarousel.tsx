@@ -33,7 +33,7 @@ export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
   }
 
   return (
-    <section className="mx-auto w-full max-w-6xl px-4 pt-12" data-reveal="true">
+    <section className="w-full pt-12" data-reveal="true">
       <SectionHeader
         title="Shop cho thuê uy tín"
         icon={<Trophy className="h-6 w-6" />}

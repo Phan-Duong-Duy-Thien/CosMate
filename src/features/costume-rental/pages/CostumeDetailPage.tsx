@@ -1,25 +1,18 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
-import { Button }from "@/shared/components/Button"
+import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
-import { PurchasePanel }from "../components/detail/PurchasePanel"
-import { DetailTabs } from "../components/detail/DetailTabs"
-import { ReviewsSection }from "../components/detail/ReviewsSection"
-import { usePublicCostumeDetail }from "../hooks/usePublicCostumeDetail"
-import { useUserAddresses } from "@/features/profile/hooks/useUserAddresses"
+import { PurchasePanel } from "../components/detail/PurchasePanel"
+import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
 import { getUserId } from "@/features/auth/services/tokenStorage"
-
-const reviewSamples = [
-  { id: "review-1", author: "Ngọc Anh", rating: 5, content: "Đồ lên form đẹp, phụ kiện đầy đủ, giao đúng hẹn.", date: "20/01/2026", hasMedia: true },
-  { id: "review-2", author: "Minh Khoa", rating: 4, content: "Vải mềm, dễ mặc, shop tư vấn nhanh.", date: "15/01/2026" },
-  { id: "review-3", author: "Hà Linh", rating: 5, content: "Rất hợp chụp fes, màu lên ảnh xinh.", date: "10/01/2026", hasMedia: true },
-]
+import { getUserAddresses } from "@/features/profile/services/userAddress.service"
+import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { VI } from "@/shared/i18n/vi"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
   const navigate = useNavigate()
-  const [activeTab, setActiveTab] = React.useState("description")
 
   const {
     costume,
@@ -38,12 +31,38 @@ export default function CostumeDetailPage() {
     refetch,
   }= usePublicCostumeDetail(costumeId)
 
-  React.useEffect(() => {
-    setActiveTab("description")
-  }, [costumeId])
+  // Modal state for "no address" confirmation
+  const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
 
-  const handleRentNow = () => {
+  // Validation error state
+  const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  // Convert date string to ISO format for backend
+  const convertToIsoDateTime = (dateString: string): string => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    // Set to start of day in local time, then format as ISO without milliseconds
+    date.setHours(0, 0, 0, 0)
+    return date.toISOString().split('.')[0] // Remove milliseconds
+  }
+
+  const handleRentNow = async () => {
     if (!costume) return
+
+    // Validate rentStart is selected
+    if (!startDate) {
+      setValidationError(VI.costumeRental.validation.missingRentStart)
+      return
+    }
+
+    // Validate rentDay is valid
+    if (!days || days <= 0) {
+      setValidationError(VI.costumeRental.validation.invalidRentDay)
+      return
+    }
+
+    // Clear validation error
+    setValidationError(null)
 
     // Get current user ID
     const userId = getUserId()
@@ -55,29 +74,43 @@ export default function CostumeDetailPage() {
       return
     }
 
-    // Check if user has addresses - fetch and check
-    const checkAddresses = async () => {
-      try {
-        const { getUserAddresses } = await import('@/features/profile/services/userAddress.service')
-        const addresses = await getUserAddresses(userId)
+    // Convert startDate to ISO format for backend
+    const rentStartIso = convertToIsoDateTime(startDate)
 
-        if (addresses.length === 0) {
-          // No addresses - redirect to address creation page
-          const currentUrl = window.location.pathname
-          navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
-        } else {
-          // Has addresses - proceed with rental (placeholder for now)
-          alert("Chức năng thuê sẽ được triển khai sau!")
-        }
-      } catch (err) {
-        console.error('Failed to check addresses:', err)
-        // On error, allow proceeding (or redirect to address creation as fallback)
-        const currentUrl = window.location.pathname
-        navigate(`/profile/addresses/new?returnTo=${encodeURIComponent(currentUrl)}`)
+    // Save rental draft to sessionStorage
+    saveDraft({
+      costumeId: costume.id,
+      rentDay: days,
+      rentStart: rentStartIso,
+      selectedAccessoryIds: Array.from(checkedOptionalIds),
+      selectedRentalOptionId,
+    })
+
+    // Check if user has addresses
+    try {
+      const addresses = await getUserAddresses(userId)
+
+      if (addresses.length === 0) {
+        // No addresses - show confirmation modal
+        setShowNoAddressModal(true)
+      } else {
+        // Has addresses - proceed to checkout
+        navigate('/rent/checkout')
       }
+    } catch (err) {
+      console.error('Failed to check addresses:', err)
+      // On error, show modal as fallback
+      setShowNoAddressModal(true)
     }
+  }
 
-    checkAddresses()
+  const handleNoAddressConfirm = () => {
+    setShowNoAddressModal(false)
+    navigate('/profile/addresses/new?returnTo=/rent/checkout')
+  }
+
+  const handleNoAddressCancel = () => {
+    setShowNoAddressModal(false)
   }
 
   if (isLoading) {
@@ -152,28 +185,151 @@ export default function CostumeDetailPage() {
             onToggleOptionalAccessory={toggleOptionalAccessory}
             onRentNow={handleRentNow}
           />
+
+          {/* Validation Error */}
+          {validationError && (
+            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {validationError}
+            </div>
+          )}
         </div>
 
-        <div className="mt-8 space-y-6">
-          <DetailTabs
-            tabs={[
-              { key: "description", label: "Mô tả" },
-              { key: "reviews", label: "Đánh giá" },
-            ]}
-            activeKey={activeTab}
-            onChange={setActiveTab}
-          >
-            {activeTab === "description" && (
-              <p className="text-sm leading-relaxed text-slate-600">
-                {costume.description || "Chưa có mô tả."}
-              </p>
-            )}
-            {activeTab === "reviews" && (
-              <ReviewsSection average={0} total={0}reviews={reviewSamples} />
-            )}
-          </DetailTabs>
+        <div className="mt-8 space-y-6 rounded-3xl border border-pink-100 bg-white/85 p-6">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {VI.costumeRental.detailSectionTitle}
+          </h2>
+
+          <div className="grid gap-4 md:grid-cols-2">
+            <ApiField label="ID" value={String(costume.id)} />
+            <ApiField label={VI.costumeRental.providerId} value={String(costume.providerId)} />
+            <ApiField label={VI.costumeRental.costumeName} value={costume.name} />
+            <ApiField label={VI.costumeRental.status} value={costume.status} />
+            <ApiField label={VI.costumeRental.size} value={costume.size} />
+            <ApiField label={VI.costumeRental.rentPurpose} value={costume.rentPurpose} />
+            <ApiField
+              label={VI.costumeRental.numberOfItems}
+              value={String(costume.numberOfItems)}
+            />
+            <ApiField
+              label={VI.costumeRental.pricePerDay}
+              value={`${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ`}
+            />
+            <ApiField
+              label={VI.costumeRental.depositAmount}
+              value={`${costume.depositAmount.toLocaleString("vi-VN")} VNĐ`}
+            />
+            <ApiField
+              label={VI.costumeRental.description}
+              value={costume.description}
+              fullWidth
+            />
+          </div>
+
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">
+              {VI.costumeRental.imageUrls}
+            </h3>
+            <ul className="mt-2 space-y-1 text-sm text-slate-600">
+              {costume.imageUrls.map((imageUrl) => (
+                <li key={imageUrl} className="break-all">{imageUrl}</li>
+              ))}
+            </ul>
+          </div>
+
+          <ApiListSection title={VI.costumeRental.surcharges.title}>
+            {costume.surcharges.map((surcharge) => (
+              <li key={surcharge.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{surcharge.name}</p>
+                <p className="text-sm text-slate-600">{surcharge.description}</p>
+                <p className="text-sm text-pink-600">
+                  {surcharge.price.toLocaleString("vi-VN")} VNĐ
+                </p>
+              </li>
+            ))}
+          </ApiListSection>
+
+          <ApiListSection title={VI.costumeRental.accessories.title}>
+            {costume.accessories.map((accessory) => (
+              <li key={accessory.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{accessory.name}</p>
+                <p className="text-sm text-slate-600">{accessory.description}</p>
+                <p className="text-sm text-pink-600">
+                  {accessory.price.toLocaleString("vi-VN")} VNĐ
+                </p>
+                <p className="text-xs text-slate-500">
+                  {VI.costumeRental.isRequired}: {String(accessory.isRequired)}
+                </p>
+              </li>
+            ))}
+          </ApiListSection>
+
+          <ApiListSection title={VI.costumeRental.rentalOptions.title}>
+            {costume.rentalOptions.map((option) => (
+              <li key={option.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{option.name}</p>
+                <p className="text-sm text-slate-600">{option.description}</p>
+                <p className="text-sm text-pink-600">
+                  {option.price.toLocaleString("vi-VN")} VNĐ
+                </p>
+              </li>
+            ))}
+          </ApiListSection>
         </div>
+
+        {/* No Address Confirmation Modal */}
+        {showNoAddressModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {VI.checkout.noAddress.title}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {VI.checkout.noAddress.message}
+              </p>
+              <div className="mt-6 flex gap-3">
+                <Button variant="outline" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressCancel}>
+                  {VI.checkout.noAddress.cancel}
+                </Button>
+                <Button variant="default" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressConfirm}>
+                  {VI.checkout.noAddress.confirm}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
+  )
+}
+
+function ApiField({
+  label,
+  value,
+  fullWidth,
+}: {
+  label: string
+  value: string
+  fullWidth?: boolean
+}) {
+  return (
+    <div className={fullWidth ? "md:col-span-2" : undefined}>
+      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+      <p className="mt-1 text-sm text-slate-700">{value}</p>
+    </div>
+  )
+}
+
+function ApiListSection({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+      <ul className="mt-2 space-y-2">{children}</ul>
+    </div>
   )
 }

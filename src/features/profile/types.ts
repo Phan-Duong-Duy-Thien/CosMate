@@ -6,7 +6,10 @@ export interface MockProfile {
   name: string
   username: string
   bio: string
-  avatarUrl: string
+  avatarUrl?: string | null
+  email?: string
+  phone?: string
+  status?: string
   stats: { bookings: number; rating: number }
   location: string
   social: { instagram?: string }
@@ -39,10 +42,16 @@ export type ProfileTabId = "gallery" | "concepts" | "reviews"
 
 export type SortOption = "latest" | "popular"
 
+export interface UpdateUserProfilePayload {
+  fullName: string
+  phone: string
+}
+
 // ============ USER ADDRESS TYPES ============
 
 export interface UserAddress {
-  id?: number
+  id: number
+  userId: number
   name: string
   city: string
   district: string
@@ -50,13 +59,16 @@ export interface UserAddress {
   phone: string
 }
 
-export interface CreateUserAddressPayload {
+export interface UpsertUserAddressPayload {
   name: string
   city: string
   district: string
+  ward?: string
   address: string
   phone: string
 }
+
+export type CreateUserAddressPayload = UpsertUserAddressPayload
 
 // ============ VIETNAM LOCATION TYPES ============
 
@@ -73,4 +85,21 @@ export interface District {
 export interface Ward {
   code: number
   name: string
+}
+
+// ============ WALLET TYPES ============
+
+export interface WalletInfo {
+  walletId: number
+  userId: number
+  balance: number
+  depositBalance: number
+}
+
+export interface WalletTransaction {
+  id: number
+  amount: number
+  type: string
+  status: string
+  createdAt: string
 }

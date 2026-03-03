@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom"
 import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
+import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { ROLE } from "@/types/auth"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
@@ -13,10 +14,15 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 
 import HomePage from "@/features/general/pages/HomePage"
+import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
+import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
 import AddressCreatePage from "@/features/profile/pages/AddressCreatePage"
+import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
+import WalletPage from "@/features/profile/pages/WalletPage"
+import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -27,17 +33,24 @@ import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ProviderCostumeListPage from "@/features/costume-rental/pages/ProviderCostumeListPage"
 import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderCreateCostumePage"
+import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 
 export default function AppRoutes() {
   return (
-    <Routes>
+    <BreadcrumbProvider>
+      <Routes>
       {/* Public + Cosplayer Site Routes */}
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
+        <Route path="guidelines-rules" element={<GuidelinesRulesPage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
+        <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
+        <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/wallet" element={<WalletPage />} />
+        <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
@@ -65,6 +78,10 @@ export default function AppRoutes() {
 
       {/* Global Error Pages */}
       <Route path="/no-permission" element={<NoPermissionPage />} />
-    </Routes>
+
+      {/* Payment Result Page (standalone) */}
+      <Route path="/payment/result" element={<PaymentResultPage />} />
+    </Routes>     
+    </BreadcrumbProvider>
   )
 }
