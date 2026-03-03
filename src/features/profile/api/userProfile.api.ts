@@ -22,7 +22,12 @@ export async function uploadUserAvatar(
 
   const response = await axiosInstance.put<ApiResponse<AdminUserProfile>>(
     `/api/users/${id}/avatar`,
-    formData
+    formData,
+    {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
   )
   return response.data
 }
