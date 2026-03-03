@@ -32,7 +32,7 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
             {isClickable ? (
               <Link
                 to={item.to}
-                className="text-slate-500 transition-colors hover:text-pink-600 hover:underline"
+                className="text-slate-500 decoration-1 underline-offset-2 transition-colors hover:text-pink-600 hover:underline"
               >
                 {item.label}
               </Link>

@@ -449,7 +449,7 @@ export default function CheckoutReviewPage() {
             <div className="text-center">
               <Link
                 to="/costumes"
-                className="text-sm text-pink-600 hover:underline"
+                className="text-sm text-pink-600 decoration-1 underline-offset-2 hover:underline"
               >
                 {VI.checkout.actions.backToCostumes}
               </Link>
