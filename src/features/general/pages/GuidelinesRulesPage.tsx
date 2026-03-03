@@ -65,7 +65,7 @@ export default function GuidelinesRulesPage() {
           100% { opacity: 0.6; transform: translateY(0px); }
         }
       `}</style>
-      <div className="mx-auto w-full max-w-7xl px-4">
+      <div className="mx-auto w-full">
         <div
           className={cn(
             "rounded-3xl border border-white/70 bg-white/68 p-6 shadow-[0_16px_40px_rgba(236,72,153,0.08)] backdrop-blur-sm transition-all duration-300 ease-out md:p-8",
@@ -76,7 +76,7 @@ export default function GuidelinesRulesPage() {
             <h1 className="mb-4 text-[28px] font-bold leading-[1.2] tracking-[-0.5px] text-slate-900 md:text-[34px] xl:text-[40px]">
               {VI.general.guidelinesRules.pageTitle}
             </h1>
-            <p className="mx-auto max-w-[640px] text-[14px] font-medium leading-[1.6] text-slate-700/80 md:text-[16px]">
+            <p className="mx-auto max-w-[700px] text-base font-medium leading-[1.7] text-slate-700/80 md:text-[18px]">
               {VI.general.guidelinesRules.pageSubtitle}
             </p>
           </div>
@@ -128,7 +128,7 @@ export default function GuidelinesRulesPage() {
                   key={tab.key}
                   type="button"
                   className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]",
+                    "rounded-full px-4 py-2 text-[17px] font-medium transition-all duration-200 active:scale-[0.98]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                     activeView === tab.key
                       ? "bg-pink-500 text-white"
@@ -175,15 +175,15 @@ function GuideList({ section }: { section: GuidelinesSection }) {
       : `${VI.general.guidelinesRules.tabs.guide} ${getI18nValue(section.titleKey)}`
 
   return (
-    <div className="mt-4 rounded-2xl border border-pink-100 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-100 p-4 md:p-5">
+    <div className="mt-3 rounded-2xl border border-pink-100 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-100 p-4 md:p-4">
       <h3 className="text-[18px] font-semibold leading-[1.3] tracking-[0.3px] text-pink-700 md:text-[22px]">
         {title}
       </h3>
-      <ul className="mt-3 space-y-3">
+      <ul className="mt-2.5 space-y-2">
         {section.guides.map((stepKey, index) => (
           <li
             key={stepKey}
-            className="flex items-start gap-2.5 text-sm leading-7 text-slate-700"
+            className="flex items-start gap-2.5 text-base leading-7 text-slate-700 md:text-[17px]"
           >
             <span className="mt-1 text-xs text-pink-500">✿</span>
             <p>
@@ -206,19 +206,19 @@ function RulesList({ section }: { section: GuidelinesSection }) {
   }
 
   return (
-    <div className="mt-4 space-y-3">
+    <div className="mt-3 space-y-2">
       {section.rules.map((rule) => (
         <article
           key={`${section.id}-${rule.code}`}
-          className="rounded-2xl border border-pink-100 bg-pink-50/40 p-4"
+          className="rounded-2xl border border-pink-100 bg-pink-50/40 p-3.5 md:p-4"
         >
           <p className="text-xs font-semibold uppercase tracking-wide text-pink-600">
             {VI.general.guidelinesRules.rulePrefix} {rule.code}
           </p>
-          <h3 className="mt-1 text-sm font-semibold text-slate-900">
+          <h3 className="mt-1 text-lg font-semibold text-slate-900">
             {getI18nValue(rule.titleKey)}
           </h3>
-          <p className="mt-1 text-sm text-slate-700">{getI18nValue(rule.descKey)}</p>
+          <p className="mt-1 text-base leading-7 text-slate-700 md:text-[17px]">{getI18nValue(rule.descKey)}</p>
         </article>
       ))}
     </div>
@@ -265,18 +265,18 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
   }, [ruleGroups])
 
   return (
-    <div className="mt-4 grid gap-4 lg:grid-cols-[260px_1fr]">
-      <aside className="rounded-2xl border border-pink-100 bg-pink-50/60 p-4 lg:sticky lg:top-6 lg:self-start">
-        <p className="text-sm font-semibold uppercase tracking-wide text-pink-700">
+    <div className="mt-3 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
+      <aside className="rounded-2xl border border-pink-100 bg-pink-50/60 p-5 lg:sticky lg:top-32 lg:self-start md:p-6">
+        <p className="text-base font-semibold uppercase tracking-wide text-pink-700 md:text-lg">
           {VI.general.guidelinesRules.cosplayRules.tocTitle}
         </p>
-        <div className="mt-3 space-y-1.5">
+        <div className="mt-3 space-y-2">
           {ruleGroups.map((group) => (
             <button
               key={group.id}
               type="button"
               className={cn(
-                "block w-full rounded-lg border-l-2 px-2.5 py-1.5 text-left text-sm leading-6 transition-colors",
+                "block w-full rounded-lg border-l-2 px-3 py-2 text-left text-sm leading-relaxed transition-colors md:text-base",
                 activeGroupId === group.id
                   ? "border-pink-500 bg-pink-100/70 text-pink-700 shadow-sm"
                   : "border-transparent bg-transparent font-medium text-pink-300 hover:border-pink-200 hover:bg-pink-50/70 hover:text-pink-500"
@@ -294,8 +294,8 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
         </div>
       </aside>
 
-      <div className="space-y-4">
-        <div className="group rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-50 to-purple-100 p-4 md:p-5">
+      <div className="space-y-3 md:space-y-4">
+        <div className="group rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-50 to-purple-100 p-3.5 md:p-4">
           <h3 className="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-wide text-pink-700 md:text-2xl">
             <span>{heroTitleText}</span>
             {section.id === "cosplay-rental" ? (
@@ -307,11 +307,11 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
               </span>
             ) : null}
           </h3>
-          <p className="mt-2 text-sm text-slate-700">
+          <p className="mt-1.5 text-base leading-7 text-slate-700 md:text-[17px]">
             {mainDescription}
           </p>
           {section.ruleIntroKeys?.length ? (
-            <div className="mt-4 space-y-3 text-sm leading-7 text-slate-700">
+            <div className="mt-2.5 space-y-1.5 text-base leading-7 text-slate-700 md:text-[17px]">
               {section.ruleIntroKeys.map((introKey) => (
                 <p key={introKey}>{getI18nValue(introKey)}</p>
               ))}
@@ -323,12 +323,12 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
           <section
             key={group.id}
             id={`rules-${group.id}`}
-            className="scroll-mt-24 rounded-2xl border border-pink-100 bg-white p-4 md:p-5"
+            className="scroll-mt-24 rounded-2xl border border-pink-100 bg-white p-3.5 md:p-4"
           >
-            <h4 className="text-lg font-extrabold text-pink-600 md:text-xl">
+            <h4 className="text-xl font-extrabold text-pink-600 md:text-2xl">
               {getI18nValue(group.titleKey)}
             </h4>
-            <ul className="mt-3 space-y-3">
+            <ul className="mt-2 space-y-1.5">
               {group.ruleCodes.map((code) => {
                 const rule = ruleByCode[code]
                 if (!rule) return null
@@ -336,7 +336,7 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
                 return (
                   <li
                     key={`${group.id}-${code}`}
-                    className="flex items-start gap-2.5 text-sm leading-7 text-slate-700"
+                    className="flex items-start gap-2.5 text-base leading-7 text-slate-700 md:text-[17px]"
                   >
                     <span className="mt-1 text-xs text-slate-500">✿</span>
                     <p>

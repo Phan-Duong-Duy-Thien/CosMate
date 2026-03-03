@@ -32,6 +32,8 @@ export default function CosplayerSiteLayout() {
   const searchValue = searchParams.get("q") ?? ""
   const { setItems } = useBreadcrumb()
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
+  const isWideContentPage =
+    location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
 
@@ -294,7 +296,14 @@ export default function CosplayerSiteLayout() {
             </div>
           </div>
         ) : (
-          <div className="mx-auto w-full max-w-7xl px-4 py-4 lg:px-6">
+          <div
+            className={cn(
+              "mx-auto w-full py-4",
+              isWideContentPage
+                ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
+                : "max-w-7xl px-4 lg:px-6"
+            )}
+          >
             <div className="min-w-0">
               <Outlet />
             </div>
