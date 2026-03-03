@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react"
-import { getCostumeById }from "../api/costumeRental.api"
+import { getCostumeById } from "../api/costume.api"
 import type { Costume, QuoteBreakdown }from "../types"
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
@@ -40,8 +40,7 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await getCostumeById(numId)
-      const data = res.result
+      const data = await getCostumeById(numId)
       setCostume(data)
       const firstOption = data.rentalOptions?.[0] ?? null
       setSelectedRentalOptionId(firstOption?.id ?? null)

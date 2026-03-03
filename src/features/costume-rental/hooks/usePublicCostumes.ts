@@ -9,7 +9,7 @@
  */
 
 import { useState, useEffect, useCallback } from "react"
-import { getAllCostumes }from "../api/costumeRental.api"
+import { getCostumes } from "../api/costume.api"
 import type { CostumeItem, Costume } from "../types"
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
@@ -98,8 +98,8 @@ export function usePublicCostumes() {
     setIsLoading(true)
     setError(null)
     try {
-      const res = await getAllCostumes()
-      const mapped = (res.result ?? []).map(mapCostumeToItem)
+      const costumes = await getCostumes()
+      const mapped = costumes.map(mapCostumeToItem)
       setItems(mapped)
     } catch (err) {
       setError(err instanceof Error ? err.message : "KhĂ´ng thá»ƒ táº£i danh sĂ¡ch trang phá»¥c.")

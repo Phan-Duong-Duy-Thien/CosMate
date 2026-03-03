@@ -561,6 +561,18 @@ export const VI = {
     rentNow: "Thuê ngay",
     addToCart: "Thêm vào giỏ",
     viewDetails: "Xem chi tiết",
+    viewDetail: "Xem chi tiết",
+    costumeName: "Tên trang phục",
+    description: "Mô tả",
+    rentPurpose: "Mục đích thuê",
+    numberOfItems: "Số lượng món",
+    pricePerDay: "Giá theo ngày",
+    depositAmount: "Tiền cọc",
+    status: "Trạng thái",
+    providerId: "ID nhà cung cấp",
+    imageUrls: "Danh sách ảnh",
+    isRequired: "Bắt buộc",
+    detailSectionTitle: "Thông tin chi tiết từ API",
 
     // Validation messages
     validation: {
@@ -684,6 +696,16 @@ export const VI = {
         popularShops: "Cửa hàng phổ biến",
         topPhotographers: "Nhiếp ảnh gia hàng đầu",
         recentEvents: "Sự kiện gần đây",
+      },
+      featured: {
+        title: "Trang phục nổi bật",
+        viewAll: "Xem tất cả",
+        errorTitle: "Ôi không!",
+        errorDescription: "Có lỗi xảy ra khi tải dữ liệu.",
+        emptyTitle: "Không tìm thấy trang phục",
+        emptyDescription: "Thử đổi từ khóa tìm kiếm khác nhé.",
+        clearFilter: "Xóa bộ lọc",
+        wishlist: "Yêu thích",
       },
     },
     guidelinesRules: {

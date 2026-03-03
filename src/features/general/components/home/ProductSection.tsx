@@ -5,12 +5,15 @@ import type { Product } from "../../pages/home.types"
 import { ProductCard } from "./ProductCard"
 import { Button } from "@/shared/components/Button"
 import { SectionHeader } from "@/shared/components/SectionHeader"
+import { VI } from "@/shared/i18n/vi"
 
 interface ProductSectionProps {
   products: Product[]
   wishlistIds: string[]
   onToggleWishlist: (productId: string) => void
   sectionRef: React.RefObject<HTMLDivElement | null>
+  onViewDetail: (productId: number) => void
+  onViewAll: () => void
 }
 
 export const ProductSection = ({
@@ -18,6 +21,8 @@ export const ProductSection = ({
   wishlistIds,
   onToggleWishlist,
   sectionRef,
+  onViewDetail,
+  onViewAll,
 }: ProductSectionProps) => (
   <section
     ref={sectionRef}
@@ -25,11 +30,16 @@ export const ProductSection = ({
     data-reveal="true"
   >
     <SectionHeader
-      title="Trang phục nổi bật"
+      title={VI.general.home.featured.title}
       accent
       action={
-        <Button variant="link" size="sm" className="text-slate-600">
-          Xem tất cả <ArrowRight className="h-4 w-4" />
+        <Button
+          variant="link"
+          size="sm"
+          className="text-slate-600"
+          onClick={onViewAll}
+        >
+          {VI.general.home.featured.viewAll} <ArrowRight className="h-4 w-4" />
         </Button>
       }
     />
@@ -38,8 +48,9 @@ export const ProductSection = ({
         <ProductCard
           key={product.id}
           product={product}
-          isWishlisted={wishlistIds.includes(product.id)}
+          isWishlisted={wishlistIds.includes(String(product.id))}
           onToggleWishlist={onToggleWishlist}
+          onViewDetail={onViewDetail}
         />
       ))}
     </div>
