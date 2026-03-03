@@ -75,7 +75,7 @@ export function DashboardLayout({
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
 
   // Set default breadcrumbs based on route
-  React.useEffect(() => {
+  useEffect(() => {
     const path = location.pathname;
     if (path === '/admin') {
       setItems([
