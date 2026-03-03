@@ -63,6 +63,7 @@ export interface UpsertUserAddressPayload {
   name: string
   city: string
   district: string
+  ward?: string
   address: string
   phone: string
 }
@@ -84,4 +85,21 @@ export interface District {
 export interface Ward {
   code: number
   name: string
+}
+
+// ============ WALLET TYPES ============
+
+export interface WalletInfo {
+  walletId: number
+  userId: number
+  balance: number
+  depositBalance: number
+}
+
+export interface WalletTransaction {
+  id: number
+  amount: number
+  type: string
+  status: string
+  createdAt: string
 }

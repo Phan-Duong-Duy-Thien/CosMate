@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
-import { createOrder } from '../services/order.service';
+import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
+import { submitOrderAndHandleResult } from '../services/order.service';
 import { loadDraft, clearDraft } from '../utils/rentalDraftStorage';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
-import { getReturnUrl } from '../utils/paymentReturnUrls';
 import type { Costume, PaymentMethod } from '@/features/costume-rental/types';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 
@@ -15,6 +15,8 @@ interface CheckoutState {
   selectedAddressId: number | null;
   policyAccepted: boolean;
   paymentMethod: PaymentMethod;
+  walletBalance: number | null;
+  isLoadingWallet: boolean;
   isLoading: boolean;
   isSubmitting: boolean;
   error: string | null;
@@ -39,10 +41,23 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
     selectedAddressId: null,
     policyAccepted: false,
     paymentMethod: 'MOMO',
+    walletBalance: null,
+    isLoadingWallet: false,
     isLoading: true,
     isSubmitting: false,
     error: null,
   });
+
+  // Fetch wallet balance when payment method changes to WALLET
+  const fetchWalletBalance = useCallback(async (userId: number) => {
+    setState((prev) => ({ ...prev, isLoadingWallet: true, error: null }));
+    try {
+      const walletInfo = await fetchWalletInfo(userId);
+      setState((prev) => ({ ...prev, walletBalance: walletInfo.balance, isLoadingWallet: false }));
+    } catch {
+      setState((prev) => ({ ...prev, walletBalance: null, isLoadingWallet: false, error: 'Không thể tải số dư ví.' }));
+    }
+  }, []);
 
   useEffect(() => {
     const init = async () => {
@@ -74,6 +89,13 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
     };
     init();
   }, []);
+
+  // Fetch wallet info when paymentMethod becomes WALLET
+  useEffect(() => {
+    if (state.paymentMethod === 'WALLET' && state.userId && state.walletBalance === null && !state.isLoadingWallet) {
+      fetchWalletBalance(state.userId);
+    }
+  }, [state.paymentMethod, state.userId, state.walletBalance, state.isLoadingWallet, fetchWalletBalance]);
 
   // Computed values
   const computed = useMemo(() => {
@@ -138,12 +160,27 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
   }, []);
 
   const submitOrder = useCallback(async () => {
-    const { userId, selectedAddressId } = state;
+    const { userId, selectedAddressId, paymentMethod, walletBalance } = state;
     const draft = state.draft;
+    const totalToPay = computed?.totalToPay ?? 0;
+
     if (!userId) { setState((prev) => ({ ...prev, error: 'Vui lòng đăng nhập.' })); return; }
     if (!draft) { setState((prev) => ({ ...prev, error: 'Không có thông tin đơn thuê.' })); return; }
     if (!selectedAddressId) { setState((prev) => ({ ...prev, error: 'Vui lòng chọn địa chỉ.' })); return; }
     if (!state.policyAccepted) { setState((prev) => ({ ...prev, error: 'Cần đồng ý điều khoản.' })); return; }
+
+    // Check wallet balance if using WALLET payment
+    if (paymentMethod === 'WALLET') {
+      if (walletBalance === null) {
+        setState((prev) => ({ ...prev, error: 'Đang tải số dư ví. Vui lòng thử lại.' }));
+        return;
+      }
+      if (walletBalance < totalToPay) {
+        const missing = totalToPay - walletBalance;
+        setState((prev) => ({ ...prev, error: `Số dư ví không đủ. Bạn cần thêm ${missing.toLocaleString('vi-VN')}VNĐ.` }));
+        return;
+      }
+    }
 
     setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
@@ -159,14 +196,14 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
         selectedAccessoryIds: draft.selectedAccessoryIds,
         selectedRentalOptionId: draft.selectedRentalOptionId,
       };
-      const result = await createOrder(params);
-      clearDraft();
-      if (result.paymentUrl) { window.location.href = result.paymentUrl; }
-      else { setState((prev) => ({ ...prev, isSubmitting: false, error: 'Không nhận được liên kết thanh toán.' })); }
+      // Service handles redirect logic (gateway or wallet success/fail)
+      await submitOrderAndHandleResult(params);
+      // If we reach here, something went wrong (service should redirect)
+      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Co loi xay ra. Vui long thu lai.' }));
     } catch {
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Không thể tạo đơn thuê.' }));
+      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Khong the tao don thue.' }));
     }
-  }, [state]);
+  }, [state, computed]);
 
   return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses };
 }

@@ -18,6 +18,8 @@ export default function CheckoutReviewPage() {
     selectedAddressId,
     policyAccepted,
     paymentMethod,
+    walletBalance,
+    isLoadingWallet,
     isLoading,
     isSubmitting,
     error,
@@ -27,6 +29,32 @@ export default function CheckoutReviewPage() {
     setPaymentMethod,
     submitOrder,
   } = useCheckoutReview();
+
+  // Helper to format currency
+  const formatCurrency = (amount: number): string => {
+    return new Intl.NumberFormat('vi-VN', {
+      style: 'currency',
+      currency: 'VND',
+    }).format(amount);
+  };
+
+  // Check if wallet has insufficient balance
+  const isWalletInsufficient = paymentMethod === 'WALLET' &&
+    walletBalance !== null &&
+    computed !== null &&
+    walletBalance < computed.totalToPay;
+
+  // Calculate missing amount
+  const missingAmount = (paymentMethod === 'WALLET' && computed && walletBalance !== null)
+    ? computed.totalToPay - walletBalance
+    : 0;
+
+  // Determine if submit should be disabled due to wallet
+  const isWalletDisabled = paymentMethod === 'WALLET' && (
+    isLoadingWallet ||
+    walletBalance === null ||
+    isWalletInsufficient
+  );
 
   // No draft - show empty state
   if (!isLoading && !draft) {
@@ -98,10 +126,10 @@ export default function CheckoutReviewPage() {
     );
   }
 
-  const paymentMethods: { value: PaymentMethod; label: string }[] = [
-    { value: 'MOMO', label: VI.checkout.payment.momo },
-    { value: 'VNPAY', label: VI.checkout.payment.vnpay },
-    { value: 'WALLET', label: VI.checkout.payment.wallet },
+  const paymentMethods: { value: PaymentMethod; label: string; desc: string; icon: string; color: string; bgColor: string }[] = [
+    { value: 'MOMO', label: VI.checkout.payment.momo, desc: VI.checkout.payment.momoDesc, icon: '🔴', color: 'text-pink-600', bgColor: 'bg-pink-50' },
+    { value: 'VNPAY', label: VI.checkout.payment.vnpay, desc: VI.checkout.payment.vnpayDesc, icon: '💳', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    { value: 'WALLET', label: VI.checkout.payment.wallet, desc: VI.checkout.payment.walletDesc, icon: '👛', color: 'text-amber-600', bgColor: 'bg-amber-50' },
   ];
 
   return (
@@ -363,11 +391,59 @@ export default function CheckoutReviewPage() {
               variant="default"
               size="lg"
               className="w-full rounded-full"
-              disabled={!policyAccepted || isSubmitting || !selectedAddressId}
+              disabled={!policyAccepted || isSubmitting || !selectedAddressId || isWalletDisabled}
               onClick={submitOrder}
             >
               {isSubmitting ? VI.checkout.actions.submitting : VI.checkout.actions.submit}
             </Button>
+
+            {/* Wallet Insufficient Balance Warning */}
+            {paymentMethod === 'WALLET' && isWalletInsufficient && (
+              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">
+                      {VI.profile.wallet.checkoutValidation.insufficientTitle}
+                    </p>
+                    <div className="mt-2 space-y-1 text-xs text-amber-700">
+                      <p>
+                        {VI.profile.wallet.checkoutValidation.balanceLabel}: {formatCurrency(walletBalance ?? 0)}
+                      </p>
+                      <p>
+                        {VI.profile.wallet.checkoutValidation.totalLabel}: {formatCurrency(computed?.totalToPay ?? 0)}
+                      </p>
+                      <p className="font-medium">
+                        {VI.profile.wallet.checkoutValidation.missingLabel}: {formatCurrency(missingAmount)}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="rounded-full bg-amber-500 hover:bg-amber-600"
+                    onClick={() => navigate('/profile/wallet/topup')}
+                  >
+                    {VI.profile.wallet.checkoutValidation.topUpCta}
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* Wallet Loading State */}
+            {paymentMethod === 'WALLET' && isLoadingWallet && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+                <p className="text-sm text-slate-500">{VI.profile.wallet.loading}</p>
+              </div>
+            )}
+
+            {/* Wallet Success State - show balance */}
+            {paymentMethod === 'WALLET' && !isLoadingWallet && walletBalance !== null && !isWalletInsufficient && (
+              <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
+                <p className="text-sm text-green-700">
+                  {VI.profile.wallet.checkoutValidation.payWithWalletNote}: {formatCurrency(walletBalance)}
+                </p>
+              </div>
+            )}
 
             {/* Back Link */}
             <div className="text-center">
