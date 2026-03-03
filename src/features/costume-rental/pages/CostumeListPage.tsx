@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { FilterState, SortKey } from "../types"
+import type { FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
@@ -11,7 +11,7 @@ import { Button } from "@/shared/components/Button"
 
 const PAGE_SIZE = 16
 
-const tagOptions = [
+const tagOptions: Array<{ key: TagKey; label: string }> = [
   { key: "anime", label: "Anime" },
   { key: "game", label: "Game" },
   { key: "event", label: "Event" },
@@ -20,7 +20,7 @@ const tagOptions = [
   { key: "adult18", label: "18+" },
 ]
 
-const regionOptions = [
+const regionOptions: Array<{ key: RegionKey; label: string }> = [
   { key: "hcm", label: "TP. Hồ Chí Minh" },
   { key: "hn", label: "Hà Nội" },
   { key: "dn", label: "Đà Nẵng" },
@@ -131,7 +131,7 @@ export default function CostumeListPage() {
           100% { opacity: 0.6; transform: translateY(0px); }
         }
       `}</style>
-      <div className="mx-auto w-full max-w-7xl px-4 pt-10">
+      <div className="mx-auto w-full pt-10">
         <div
           className={
             "rounded-3xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-6 py-8 text-center shadow-[0_12px_28px_rgba(236,72,153,0.16)] backdrop-blur transition-all duration-300 ease-out " +
@@ -148,7 +148,7 @@ export default function CostumeListPage() {
           </h1>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[300px_1fr]">
+        <div className="mt-8 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:gap-7">
           <FilterSidebar
             filters={filters}
             regions={regionOptions}
