@@ -178,6 +178,7 @@ export interface Costume {
   name: string
   description: string
   size: string
+  rentPurpose: string
   numberOfItems: number
   pricePerDay: number
   depositAmount: number

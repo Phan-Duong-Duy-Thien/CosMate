@@ -1,41 +1,36 @@
 import * as React from "react"
-import { useSearchParams } from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 import { HeroCarousel } from "../components/home/HeroCarousel"
 import { ProductSection } from "../components/home/ProductSection"
 import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
 import { TagChips } from "../components/home/TagChips"
-import { bannerSlides, products, shops, tagList } from "../mocks/home.mock"
-import type { BannerSlide, TagKey, UIState } from "./home.types"
+import { bannerSlides, shops, tagList } from "../mocks/home.mock"
+import type { BannerSlide, Product, TagKey, UIState } from "./home.types"
+import { useFeaturedCostumes } from "@/features/costume-rental/hooks/useFeaturedCostumes"
 import { Button } from "@/shared/components/Button"
+import { VI } from "@/shared/i18n/vi"
 
 const HomePage = () => {
-  const [searchParams, setSearchParams] = useSearchParams()
-  const [uiState, setUiState] = React.useState<UIState>("loading")
+  const navigate = useNavigate()
   const [activeTag, setActiveTag] = React.useState<TagKey>("anime")
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [isQuizOpen, setIsQuizOpen] = React.useState(false)
   const productSectionRef = React.useRef<HTMLDivElement>(null)
 
-  React.useEffect(() => {
-    const timer = window.setTimeout(() => {
-      setUiState("success")
-    }, 120)
-    return () => window.clearTimeout(timer)
-  }, [])
-
-  const searchValue = (searchParams.get("q") ?? "").trim().toLowerCase()
+  const { items, isLoading, error } = useFeaturedCostumes()
 
   const filteredProducts = React.useMemo(() => {
-    return products.filter((product) => {
-      const matchesTag = product.tags.includes(activeTag)
-      const matchesSearch = searchValue
-        ? product.name.toLowerCase().includes(searchValue)
-        : true
-      return matchesTag && matchesSearch
-    })
-  }, [activeTag, searchValue])
+    return items
+      .map<Product>((costume) => ({
+        id: costume.id,
+        name: costume.name,
+        pricePerDay: costume.pricePerDay,
+        status: costume.status,
+        imageUrls: costume.imageUrls ?? [],
+      }))
+  }, [items])
 
   React.useEffect(() => {
     const elements = Array.from(
@@ -44,10 +39,16 @@ const HomePage = () => {
 
     // Show all homepage blocks immediately without requiring scroll.
     elements.forEach((element) => element.setAttribute("data-visible", "true"))
-  }, [uiState, filteredProducts.length])
+  }, [error, filteredProducts.length, isLoading])
 
   const displayState: UIState =
-    uiState === "success" && filteredProducts.length === 0 ? "empty" : uiState
+    isLoading
+      ? "loading"
+      : error
+        ? "error"
+        : filteredProducts.length === 0
+          ? "empty"
+          : "success"
 
   const handleCtaClick = (slide: BannerSlide) => {
     if (slide.actionType === "quiz") {
@@ -68,13 +69,6 @@ const HomePage = () => {
         ? prev.filter((id) => id !== productId)
         : [...prev, productId]
     )
-  }
-
-  const handleClearFilters = () => {
-    setActiveTag("anime")
-    const next = new URLSearchParams(searchParams)
-    next.delete("q")
-    setSearchParams(next, { replace: true })
   }
 
   return (
@@ -105,17 +99,15 @@ const HomePage = () => {
 
             {displayState === "error" && (
               <StatusCard
-                title="Ôi không!"
-                description="Có lỗi xảy ra khi tải dữ liệu. Vui lòng thử lại nhé."
+                title={VI.general.home.featured.errorTitle}
+                description={error ?? VI.general.home.featured.errorDescription}
               />
             )}
 
             {displayState === "empty" && (
               <StatusCard
-                title="Không tìm thấy trang phục"
-                description="Thử đổi bộ lọc hoặc từ khóa khác nhé."
-                actionLabel="Xóa bộ lọc"
-                onAction={handleClearFilters}
+                title={VI.general.home.featured.emptyTitle}
+                description={VI.general.home.featured.emptyDescription}
               />
             )}
 
@@ -125,6 +117,8 @@ const HomePage = () => {
                 wishlistIds={wishlistIds}
                 onToggleWishlist={handleToggleWishlist}
                 sectionRef={productSectionRef}
+                onViewDetail={(productId) => navigate(`/costumes/${productId}`)}
+                onViewAll={() => navigate("/costumes")}
               />
             )}
 
@@ -165,7 +159,7 @@ const HomeSkeleton = () => (
     <div className="animate-pulse space-y-6">
       <div className="h-8 w-64 rounded-full bg-pink-100" />
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-        {Array.from({ length: 6 }).map((_, index) => (
+        {Array.from({ length: 10 }).map((_, index) => (
           <div
             key={`skeleton-${index}`}
             className="h-80 rounded-2xl bg-slate-100"

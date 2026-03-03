@@ -23,6 +23,9 @@ import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import bgImage from "@/assets/background.jpg"
 import sideBannerImage from "@/assets/anh1.jpg"
+import quizBannerImage1 from "@/assets/quiz1.jpg"
+import quizBannerImage2 from "@/assets/quiz2.jpg"
+import quizBannerImage3 from "@/assets/quiz3.jpg"
 
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
@@ -34,6 +37,11 @@ export default function CosplayerSiteLayout() {
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
   const isWideContentPage =
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
+  const sideBannerSlides = React.useMemo(
+    () => [sideBannerImage, quizBannerImage1, quizBannerImage2, quizBannerImage3],
+    []
+  )
+  const [sideBannerIndex, setSideBannerIndex] = React.useState(0)
 
   const loggedIn = isAuthenticated()
 
@@ -100,6 +108,18 @@ export default function CosplayerSiteLayout() {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
+
+  React.useEffect(() => {
+    if (!isHomePage) return
+    const interval = window.setInterval(() => {
+      setSideBannerIndex((prev) => (prev + 1) % sideBannerSlides.length)
+    }, 2000)
+    return () => window.clearInterval(interval)
+  }, [isHomePage, sideBannerSlides.length])
+
+  const handleAdvanceSideBanner = () => {
+    setSideBannerIndex((prev) => (prev + 1) % sideBannerSlides.length)
+  }
 
   const handleSearchChange = (value: string) => {
     const next = new URLSearchParams(searchParams)
@@ -251,9 +271,12 @@ export default function CosplayerSiteLayout() {
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-6 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
                 <aside className="hidden lg:block lg:pt-8">
                   <div className="w-full">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div
+                      className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      onMouseEnter={handleAdvanceSideBanner}
+                    >
                       <img
-                        src={sideBannerImage}
+                        src={sideBannerSlides[sideBannerIndex]}
                         alt="Trang tri ben trai"
                         className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
                       />
@@ -278,9 +301,12 @@ export default function CosplayerSiteLayout() {
 
                 <aside className="hidden lg:block lg:pt-8">
                   <div className="w-full">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
+                    <div
+                      className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                      onMouseEnter={handleAdvanceSideBanner}
+                    >
                       <img
-                        src={sideBannerImage}
+                        src={sideBannerSlides[(sideBannerIndex + 1) % sideBannerSlides.length]}
                         alt="Trang tri ben phai"
                         className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
                       />

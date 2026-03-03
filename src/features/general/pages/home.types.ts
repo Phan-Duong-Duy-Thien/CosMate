@@ -21,15 +21,11 @@ export interface BannerSlide {
 }
 
 export interface Product {
-  id: string
+  id: number
   name: string
-  shopName: string
-  tags: TagKey[]
-  isAdult: boolean
-  rating: number
-  priceMin: number
-  priceMax: number
-  imageUrl: string
+  pricePerDay: number
+  status: string
+  imageUrls: string[]
 }
 
 export interface Shop {
