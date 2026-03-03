@@ -344,6 +344,26 @@ export const VI = {
       createBtn: "Tạo trang phục mới",
       listBtn: "Xem danh sách",
     },
+
+    activation: {
+      title: "Kích hoạt tài khoản Provider",
+      subtitle: "Bạn cần đăng ký gói dịch vụ để bắt đầu sử dụng các tính năng của Provider.",
+      choosePlan: "Chọn gói dịch vụ",
+      paymentMethod: "Phương thức thanh toán",
+      payWithVnpay: "VNPAY",
+      payWithMomo: "MoMo",
+      ctaSubscribe: "Đăng ký ngay",
+      subscribing: "Đang xử lý...",
+      loadingPlans: "Đang tải gói dịch vụ...",
+      loadingProfile: "Đang kiểm tra tài khoản...",
+      errorGeneric: "Có lỗi xảy ra. Vui lòng thử lại.",
+      planMonth: "Gói 1 tháng",
+      planQuarter: "Gói 3 tháng",
+      planYear: "Gói 12 tháng",
+      planCustom: "tháng",
+      selectPlanRequired: "Vui lòng chọn gói dịch vụ.",
+      selectMethodRequired: "Vui lòng chọn phương thức thanh toán.",
+    },
   },
 
   /**

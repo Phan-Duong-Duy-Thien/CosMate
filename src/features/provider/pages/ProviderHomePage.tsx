@@ -1,15 +1,26 @@
-import { Card, Row, Col, Statistic, Button, Space, Typography } from 'antd';
+import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
 import { Package, ShoppingBag, Calendar, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
+import { useProviderGate } from '../hooks/useProviderGate';
+import { ProviderActivationGate } from '../components/ProviderActivationGate';
 
 const { Text }= Typography;
 
 export default function ProviderHomePage() {
   const navigate = useNavigate();
+
+  // Verification gating
+  const {
+    verified, profileLoading,
+    plans, plansLoading, plansError,
+    selectedPlanId, setSelectedPlanId,
+    selectedMethod, setSelectedMethod,
+    handleSubscribe, subscribing, subscribeError,
+  } = useProviderGate();
 
   // Convert provider sidebar items to DashboardLayout format
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
@@ -53,6 +64,33 @@ export default function ProviderHomePage() {
 
   return (
     <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider">
+      {/* Profile loading state */}
+      {profileLoading && (
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <Spin size="large" />
+          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+        </div>
+      )}
+
+      {/* Activation gate — shown when verified === false */}
+      {!profileLoading && verified === false && (
+        <ProviderActivationGate
+          plans={plans}
+          plansLoading={plansLoading}
+          plansError={plansError}
+          selectedPlanId={selectedPlanId}
+          onSelectPlan={setSelectedPlanId}
+          selectedMethod={selectedMethod}
+          onSelectMethod={setSelectedMethod}
+          onSubscribe={handleSubscribe}
+          subscribing={subscribing}
+          subscribeError={subscribeError}
+        />
+      )}
+
+      {/* Dashboard content — shown only when verified */}
+      {!profileLoading && verified === true && (
+        <>
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboard.welcome}</h2>
         <p style={{ color: '#6B7280', fontSize: 14 }}>
@@ -167,6 +205,8 @@ export default function ProviderHomePage() {
           </Card>
         </Col>
       </Row>
+      </>
+      )}
     </DashboardLayout>
   );
 }
