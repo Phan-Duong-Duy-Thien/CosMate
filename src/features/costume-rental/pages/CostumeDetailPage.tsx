@@ -222,6 +222,7 @@ export default function CostumeDetailPage() {
               label={VI.costumeRental.description}
               value={costume.description}
               fullWidth
+              preWrap
             />
           </div>
 
@@ -306,15 +307,17 @@ function ApiField({
   label,
   value,
   fullWidth,
+  preWrap,
 }: {
   label: string
   value: string
   fullWidth?: boolean
+  preWrap?: boolean
 }) {
   return (
     <div className={fullWidth ? "md:col-span-2" : undefined}>
       <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className="mt-1 text-sm text-slate-700">{value}</p>
+      <p className={`mt-1 text-sm text-slate-700${preWrap ? " whitespace-pre-line" : ""}`}>{value}</p>
     </div>
   )
 }

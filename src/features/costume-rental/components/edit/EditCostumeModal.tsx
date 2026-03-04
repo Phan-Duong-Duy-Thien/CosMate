@@ -86,6 +86,7 @@ export default function EditCostumeModal({
               surcharges={detail.surcharges ?? []}
               rentalOptions={detail.rentalOptions ?? []}
               accessories={detail.accessories ?? []}
+              numberOfItems={detail.numberOfItems ?? 1}
               onUpdateSurcharge={onUpdateSurcharge}
               onUpdateRentalOption={onUpdateRentalOption}
               onUpdateAccessory={onUpdateAccessory}

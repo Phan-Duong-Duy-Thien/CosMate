@@ -8,6 +8,8 @@
 import { useState } from 'react'
 import { message } from 'antd'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
+import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
+import { VI } from '@/shared/i18n/vi'
 import type {
   CreateCostumeBasicPayload,
   SurchargeInput,
@@ -42,6 +44,7 @@ function getProviderIdFromToken(): number | null {
 export interface UseCreateCostumeWizardReturn {
   phase: 1 | 2
   costumeId: number | null
+  numberOfItems: number
   isPhase1Loading: boolean
   isPhase2Loading: boolean
   phase1Error: string | null
@@ -67,6 +70,7 @@ export interface UseCreateCostumeWizardReturn {
 export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   const [phase, setPhase] = useState<1 | 2>(1)
   const [costumeId, setCostumeId] = useState<number | null>(null)
+  const [numberOfItems, setNumberOfItems] = useState<number>(1)
   const [isPhase1Loading, setIsPhase1Loading] = useState(false)
   const [isPhase2Loading, setIsPhase2Loading] = useState(false)
   const [phase1Error, setPhase1Error] = useState<string | null>(null)
@@ -92,6 +96,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
       setCostumeId(result.id)
+      setNumberOfItems(values.numberOfItems)
       setPhase(2)
     }catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
@@ -117,6 +122,22 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase2Error(null)
     setIsPhase2Loading(true)
     try {
+      // Validate rental options
+      const roResult = validateRentalOptions(rentalOptions)
+      if (!roResult.valid) {
+        const msg = VI.costumeRental.rentalOptions[roResult.errorKey!.split('.').pop() as keyof typeof VI.costumeRental.rentalOptions] as string
+        setPhase2Error(msg)
+        message.error(msg)
+        throw new Error(msg)
+      }
+      // Validate accessories
+      const accResult = validateAccessories(accessories, numberOfItems)
+      if (!accResult.valid) {
+        const msg = VI.costumeRental.accessories.reachedMaxItems
+        setPhase2Error(msg)
+        message.error(msg)
+        throw new Error(msg)
+      }
       await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions })
     }catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Luu thong tin bo sung that bai.'
@@ -151,6 +172,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   return {
     phase,
     costumeId,
+    numberOfItems,
     isPhase1Loading,
     isPhase2Loading,
     phase1Error,

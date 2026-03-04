@@ -22,6 +22,7 @@ import {
   Typography,
   Divider,
   Switch,
+  Alert,
 } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type {
@@ -37,6 +38,7 @@ import type {
   AccessoryInput,
 } from '../../types'
 import { VI } from '@/shared/i18n/vi'
+import { canAddRentalOption, canAddAccessory } from '../../services/validateCostumeConstraints'
 
 const { Text } = Typography
 
@@ -464,6 +466,7 @@ interface FeesTabProps {
   surcharges: CostumeSurcharge[]
   rentalOptions: CostumeRentalOption[]
   accessories: CostumeAccessory[]
+  numberOfItems: number
   onUpdateSurcharge: (id: number, values: SurchargeUpdateInput) => Promise<void>
   onUpdateRentalOption: (id: number, values: RentalOptionUpdateInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
@@ -486,6 +489,7 @@ export default function FeesTab({
   surcharges,
   rentalOptions,
   accessories,
+  numberOfItems,
   onUpdateSurcharge,
   onUpdateRentalOption,
   onUpdateAccessory,
@@ -502,6 +506,9 @@ export default function FeesTab({
   onCreateRentalOption,
   onCreateAccessory,
 }: FeesTabProps) {
+  const addRentalOptionDisabled = !canAddRentalOption(rentalOptions.length)
+  const addAccessoryDisabled = !canAddAccessory(accessories.length, numberOfItems)
+
   return (
     <div>
       {/* Surcharges */}
@@ -538,11 +545,17 @@ export default function FeesTab({
         <Button
           size="small"
           icon={<PlusOutlined />}
+          disabled={addAccessoryDisabled}
+          title={addAccessoryDisabled ? VI.costumeRental.accessories.reachedMaxItems : undefined}
           onClick={() => setCreateAccessoryModalOpen(true)}
         >
           {VI.costumeRental.accessories.add}
         </Button>
       </Space>
+      {addAccessoryDisabled && (
+        <Alert type="warning" description={VI.costumeRental.accessories.reachedMaxItems}
+          showIcon style={{ marginBottom: 8 }} />
+      )}
       {accessories.length === 0 ? (
         <Text type="secondary">{VI.costumeRental.accessories.empty}</Text>
       ) : (
@@ -566,11 +579,17 @@ export default function FeesTab({
         <Button
           size="small"
           icon={<PlusOutlined />}
+          disabled={addRentalOptionDisabled}
+          title={addRentalOptionDisabled ? VI.costumeRental.rentalOptions.maxFourReached : undefined}
           onClick={() => setCreateRentalOptionModalOpen(true)}
         >
           {VI.costumeRental.rentalOptions.add}
         </Button>
       </Space>
+      {addRentalOptionDisabled && (
+        <Alert type="warning" description={VI.costumeRental.rentalOptions.maxFourReached}
+          showIcon style={{ marginBottom: 8 }} />
+      )}
       {rentalOptions.length === 0 ? (
         <Text type="secondary">{VI.costumeRental.rentalOptions.empty}</Text>
       ) : (

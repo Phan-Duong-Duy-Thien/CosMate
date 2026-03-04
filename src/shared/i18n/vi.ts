@@ -639,6 +639,9 @@ export const VI = {
       updateSuccess: "Cập nhật gói thuê thành công!",
       createError: "Thêm gói thuê thất bại.",
       updateError: "Cập nhật gói thuê thất bại.",
+      requireExactlyFour: "Phải có đúng 4 gói thuê (FEST, SHOOT, TEST, EVENT) trước khi lưu.",
+      duplicateName: "Tên gói thuê bị trùng. Mỗi loại gói chỉ được thêm một lần.",
+      maxFourReached: "Đã đạt tối đa 4 gói thuê.",
       form: {
         name: "Loại gói",
         namePlaceholder: "Chọn loại gói",
@@ -659,6 +662,7 @@ export const VI = {
       updateSuccess: "Cập nhật phụ kiện thành công!",
       createError: "Thêm phụ kiện thất bại.",
       updateError: "Cập nhật phụ kiện thất bại.",
+      reachedMaxItems: "Đã đạt số lượng phụ kiện tối đa cho trang phục này.",
       required: "Bắt buộc",
       optional: "Tùy chọn",
       form: {

@@ -112,6 +112,7 @@ export default function ProviderCreateCostumePage() {
                   surcharges={wizard.surcharges}
                   accessories={wizard.accessories}
                   rentalOptions={wizard.rentalOptions}
+                  numberOfItems={wizard.numberOfItems}
                   onAddSurcharge={wizard.addSurcharge}
                   onUpdateSurcharge={wizard.updateSurcharge}
                   onRemoveSurcharge={wizard.removeSurcharge}

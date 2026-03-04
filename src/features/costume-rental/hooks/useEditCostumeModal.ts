@@ -24,6 +24,7 @@ import {
   createAccessoryService,
   updateAccessoryService,
 } from '../services/costumeRental.service'
+import { canAddRentalOption, canAddAccessory } from '../services/validateCostumeConstraints'
 import type {
   Costume,
   UpdateCostumeBasicInput,
@@ -229,6 +230,11 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const handleCreateRentalOption = useCallback(
     async (values: RentalOptionInput) => {
       if (!editingId) return
+      const currentCount = detail?.rentalOptions?.length ?? 0
+      if (!canAddRentalOption(currentCount)) {
+        message.error(VI.costumeRental.rentalOptions.maxFourReached)
+        return
+      }
       setRentalOptionSubmitting(true)
       try {
         const updatedDetail = await createRentalOptionService(editingId, values)
@@ -253,6 +259,12 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const handleCreateAccessory = useCallback(
     async (values: AccessoryInput) => {
       if (!editingId) return
+      const currentCount = detail?.accessories?.length ?? 0
+      const numberOfItems = detail?.numberOfItems ?? 1
+      if (!canAddAccessory(currentCount, numberOfItems)) {
+        message.error(VI.costumeRental.accessories.reachedMaxItems)
+        return
+      }
       setAccessorySubmitting(true)
       try {
         const updatedDetail = await createAccessoryService(editingId, values)
