@@ -7,7 +7,8 @@ import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { VI } from "@/shared/i18n/vi"
-import { EditProfileModal } from "../components/EditProfileModal"
+import EditProfileModal from "../components/EditProfileModal"
+import { AddressModal } from "../components/AddressModal"
 import { ProfileCover } from "../components/ProfileCover"
 import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
@@ -33,6 +34,7 @@ export default function CosplayerProfilePage() {
   const [coverImageUrl, setCoverImageUrl] = useState<string | null>(null)
   const [isPageVisible, setIsPageVisible] = useState(false)
   const [showAllAddresses, setShowAllAddresses] = useState(false)
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
 
@@ -223,9 +225,19 @@ export default function CosplayerProfilePage() {
                 </Card>
 
                 <Card className="border-violet-300/85 bg-gradient-to-br from-violet-200/65 to-white p-5 shadow-[0_10px_30px_rgba(139,92,246,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(139,92,246,0.18)]">
-                  <p className="text-base font-semibold text-slate-900">
-                    {VI.profile.addresses.title}
-                  </p>
+                  <div className="mb-3 flex items-center justify-between">
+                    <p className="text-base font-semibold text-slate-900">
+                      {VI.profile.addresses.title}
+                    </p>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setIsAddressModalOpen(true)}
+                    >
+                      + {VI.profile.address.button.add}
+                    </Button>
+                  </div>
 
                   {addressesLoading ? (
                     <p className="mt-3 text-sm text-slate-600">
@@ -292,14 +304,19 @@ export default function CosplayerProfilePage() {
         profile={profile}
         onProfileUpdated={setProfile}
       />
+      <AddressModal
+        open={isAddressModalOpen}
+        onOpenChange={setIsAddressModalOpen}
+        userId={userId}
+      />
       <Dialog open={isAvatarPreviewOpen} onOpenChange={setIsAvatarPreviewOpen}>
-        <DialogContent className="max-h-[92vh] w-auto max-w-[96vw] bg-black/95 p-4 sm:p-6">
+        <DialogContent className="max-h-[92vh] w-auto max-w-[96vw] rounded-none bg-transparent p-0 shadow-none">
           <div className="flex justify-center">
             {profile?.avatarUrl ? (
               <img
                 src={profile.avatarUrl}
                 alt={VI.profile.cover.avatarPreviewTitle}
-                className="h-auto max-h-[82vh] w-auto max-w-[92vw] rounded-xl object-contain"
+                className="h-auto max-h-[90vh] w-auto max-w-[94vw] rounded-lg object-contain"
               />
             ) : (
               <div className="flex h-52 w-52 items-center justify-center rounded-full bg-pink-100 text-5xl font-bold text-pink-700">
@@ -311,7 +328,7 @@ export default function CosplayerProfilePage() {
       </Dialog>
 
       <Dialog open={isCoverPreviewOpen} onOpenChange={setIsCoverPreviewOpen}>
-        <DialogContent className="max-h-[92vh] w-auto max-w-[98vw] bg-black/95 p-3 sm:p-5">
+        <DialogContent className="max-h-[92vh] w-auto max-w-[98vw] rounded-none bg-transparent p-0 shadow-none">
           <div className="flex justify-center">
             <img
               src={
@@ -319,7 +336,7 @@ export default function CosplayerProfilePage() {
                 "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1600' height='600'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='0'%3E%3Cstop stop-color='%23fbcfe8'/%3E%3Cstop offset='0.5' stop-color='%23ddd6fe'/%3E%3Cstop offset='1' stop-color='%23bfdbfe'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='100%25' height='100%25' fill='url(%23g)'/%3E%3C/svg%3E"
               }
               alt={VI.profile.cover.coverPreviewTitle}
-              className="h-auto max-h-[84vh] w-auto max-w-[96vw] rounded-xl object-contain"
+              className="h-auto max-h-[90vh] w-auto max-w-[96vw] rounded-lg object-contain"
             />
           </div>
         </DialogContent>

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import type { AdminUserProfile } from "@/features/admin/types"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
+import { useUserProfile as useHeaderUserProfile } from "@/app/providers/UserProfileProvider"
 import { VI } from "@/shared/i18n/vi"
 import * as userProfileService from "../services/userProfile.service"
 
@@ -28,6 +29,7 @@ export function useUserProfile() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const userId = getUserId()
+  const { setUserProfile } = useHeaderUserProfile()
 
   const fetchProfile = useCallback(async () => {
     if (!userId) {
@@ -42,12 +44,17 @@ export function useUserProfile() {
       setError(null)
       const result = await getUserProfile(userId)
       setProfile(result)
+      // Sync to header context
+      setUserProfile({
+        avatarUrl: result.avatarUrl,
+        fullName: result.fullName,
+      })
     } catch {
       setError(VI.common.status.error)
     } finally {
       setLoading(false)
     }
-  }, [userId])
+  }, [userId, setUserProfile])
 
   useEffect(() => {
     void fetchProfile()
@@ -65,6 +72,8 @@ export function useUserProfile() {
         setError(null)
         const updatedProfile = await userProfileService.uploadAvatar(userId, file)
         setProfile(updatedProfile)
+        // Sync to header context
+        setUserProfile({ avatarUrl: updatedProfile.avatarUrl })
         return true
       } catch {
         setError(VI.profile.messages.uploadAvatarFailed)
@@ -73,7 +82,7 @@ export function useUserProfile() {
         setUploadingAvatar(false)
       }
     },
-    [userId]
+    [userId, setUserProfile]
   )
 
   return {

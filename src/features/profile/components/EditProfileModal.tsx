@@ -57,7 +57,7 @@ interface EditProfileModalProps {
   onProfileUpdated: (profile: AdminUserProfile) => void
 }
 
-export function EditProfileModal({
+export default function EditProfileModal({
   open,
   onOpenChange,
   userId,
@@ -334,7 +334,7 @@ export function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "basic"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("basic")}
@@ -346,7 +346,7 @@ export function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "address"
-                ? "bg-white text-slate-900 shadow-sm"
+                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("address")}
@@ -441,7 +441,7 @@ export function EditProfileModal({
                 >
                   {VI.common.actions.cancel}
                 </Button>
-                <Button type="submit" size="sm" disabled={updatingProfile}>
+                <Button type="submit" size="sm" variant="default" disabled={updatingProfile}>
                   {updatingProfile
                     ? VI.common.status.loading
                     : VI.profile.editModal.saveBasicInfo}
@@ -462,7 +462,7 @@ export function EditProfileModal({
                   variant="outline"
                   onClick={handleOpenCreateAddress}
                 >
-                  {VI.profile.address.button.add}
+                  + {VI.profile.address.button.add}
                 </Button>
               </div>
 

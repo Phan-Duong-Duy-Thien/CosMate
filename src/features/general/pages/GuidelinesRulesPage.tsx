@@ -128,10 +128,10 @@ export default function GuidelinesRulesPage() {
                   key={tab.key}
                   type="button"
                   className={cn(
-                    "rounded-full px-4 py-2 text-[17px] font-medium transition-all duration-200 active:scale-[0.98]",
+                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                     activeView === tab.key
-                      ? "bg-pink-500 text-white"
+                      ? "bg-[#FDCCD7] text-pink-900 border-2 border-[#FDCCD7]"
                       : "bg-pink-50 text-pink-700 hover:bg-pink-100"
                   )}
                   onClick={() => setActiveView(tab.key)}
