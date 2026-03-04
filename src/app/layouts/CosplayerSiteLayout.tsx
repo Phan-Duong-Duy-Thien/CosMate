@@ -21,11 +21,16 @@ import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
+import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import bgImage from "@/assets/background.jpg"
-import sideBannerImage from "@/assets/anh1.jpg"
+import sideBannerImage1 from "@/assets/anh1.jpg"
+import sideBannerImage2 from "@/assets/quiz1.jpg"
+import sideBannerImage3 from "@/assets/quiz2.jpg"
+import sideBannerImage4 from "@/assets/quiz3.jpg"
 
 function computeInitials(fullName: string | null): string {
   if (!fullName) return "U"
@@ -40,14 +45,45 @@ export default function CosplayerSiteLayout() {
   const location = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
+  const [bannerIndex, setBannerIndex] = React.useState(0)
+  const bannerImages = [sideBannerImage1, sideBannerImage2, sideBannerImage3, sideBannerImage4]
+
+  // Auto-rotate side banners
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerIndex((prev) => (prev + 1) % bannerImages.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [bannerImages.length])
   const searchValue = searchParams.get("q") ?? ""
   const { setItems } = useBreadcrumb()
-  const { userProfile } = useUserProfile()
+  const { userProfile, setUserProfile } = useUserProfile()
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
   const isWideContentPage =
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
+
+  // Auto-fetch profile when logged in but no profile data
+  React.useEffect(() => {
+    const fetchProfile = async () => {
+      if (loggedIn && !userProfile.avatarUrl && !userProfile.fullName) {
+        const userId = getUserId()
+        if (userId) {
+          try {
+            const profile = await getUserProfile(userId)
+            setUserProfile({
+              avatarUrl: profile.avatarUrl,
+              fullName: profile.fullName,
+            })
+          } catch (error) {
+            console.error("Failed to fetch profile:", error)
+          }
+        }
+      }
+    }
+    fetchProfile()
+  }, [loggedIn, userProfile, setUserProfile])
 
   // Set default breadcrumbs based on route
   React.useEffect(() => {
@@ -152,16 +188,7 @@ export default function CosplayerSiteLayout() {
     </Link>
 
     {/* NAV (NO overflow-hidden to avoid clipping) */}
-    <nav className="hidden flex-1 items-center justify-center gap-3 whitespace-nowrap md:flex">
-      <Button
-        variant="ghost"
-        size="sm"
-        className="whitespace-nowrap text-slate-700 hover:text-pink-600 hover:bg-pink-50"
-        onClick={() => navigate("/")}
-      >
-        Trang chủ
-      </Button>
-
+    <nav className="hidden flex-1 items-center justify-center gap-2 whitespace-nowrap md:flex lg:gap-3">
       <DropdownMenu
         triggerLabel={
           <span className="inline-flex items-center gap-1">
@@ -308,9 +335,9 @@ export default function CosplayerSiteLayout() {
                   <div className="w-full">
                     <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                       <img
-                        src={sideBannerImage}
+                        src={bannerImages[bannerIndex]}
                         alt="Trang tri ben trai"
-                        className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-[360px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out"
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
@@ -335,9 +362,9 @@ export default function CosplayerSiteLayout() {
                   <div className="w-full">
                     <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                       <img
-                        src={sideBannerImage}
+                        src={bannerImages[bannerIndex]}
                         alt="Trang tri ben phai"
-                        className="h-[360px] w-full rounded-2xl object-cover transition-transform duration-500 group-hover:scale-105"
+                        className="h-[360px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out"
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
                         <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
@@ -486,3 +513,5 @@ export default function CosplayerSiteLayout() {
     </div>
   )
 }
+
+

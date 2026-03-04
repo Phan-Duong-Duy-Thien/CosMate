@@ -1,4 +1,5 @@
 import * as React from "react"
+import { isAuthenticated } from "@/features/auth/utils/authStorage"
 
 export interface UserProfileState {
   avatarUrl: string | null
@@ -8,6 +9,7 @@ export interface UserProfileState {
 interface UserProfileContextValue {
   userProfile: UserProfileState
   setUserProfile: (profile: Partial<UserProfileState>) => void
+  refreshProfile: () => void
 }
 
 const STORAGE_KEY = "cosmate:userProfile"
@@ -45,8 +47,35 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     })
   }, [])
 
+  // Function to refresh profile - called after login
+  const refreshProfile = React.useCallback(() => {
+    // Clear stored profile on login so it will be fetched fresh
+    if (isAuthenticated()) {
+      setUserProfileState({ avatarUrl: null, fullName: null })
+      localStorage.removeItem(STORAGE_KEY)
+      // Dispatch event to trigger profile fetch in components
+      window.dispatchEvent(new Event("profile:refresh"))
+    }
+  }, [])
+
+  // Listen for auth changes to refresh profile
+  React.useEffect(() => {
+    const handleAuthChange = () => {
+      if (isAuthenticated()) {
+        refreshProfile()
+      } else {
+        // User logged out, clear profile
+        setUserProfileState({ avatarUrl: null, fullName: null })
+        localStorage.removeItem(STORAGE_KEY)
+      }
+    }
+
+    window.addEventListener("auth:changed", handleAuthChange)
+    return () => window.removeEventListener("auth:changed", handleAuthChange)
+  }, [refreshProfile])
+
   return (
-    <UserProfileContext.Provider value={{ userProfile, setUserProfile }}>
+    <UserProfileContext.Provider value={{ userProfile, setUserProfile, refreshProfile }}>
       {children}
     </UserProfileContext.Provider>
   )
