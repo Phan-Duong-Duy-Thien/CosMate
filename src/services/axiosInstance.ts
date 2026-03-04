@@ -12,9 +12,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 15000,
-  headers: {
-    'Content-Type': 'application/json',
-  },
+  // Don't set Content-Type here - let axios auto-detect for FormData
 });
 
 // TEMP DEBUG: Verify baseURL configuration
@@ -29,11 +27,20 @@ axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('cosmate_access_token');
     const tokenType = localStorage.getItem('cosmate_token_type') || 'Bearer';
-    
+
     if (token && config.headers) {
       config.headers.Authorization = `${tokenType} ${token}`;
     }
-    
+
+    // Handle Content-Type for FormData vs JSON
+    if (config.data instanceof FormData) {
+      // Let axios auto-set Content-Type with boundary for FormData
+      delete config.headers['Content-Type'];
+    } else if (config.headers && !config.headers['Content-Type']) {
+      // Default to JSON for other requests
+      config.headers['Content-Type'] = 'application/json';
+    }
+
     return config;
   },
   (error: AxiosError) => {
