@@ -5,10 +5,11 @@
  * No React, no API calls. Returns structured error strings (i18n keys resolved by caller).
  */
 
-import type { RentalOptionInput, AccessoryInput } from '../types'
+import type { RentalOptionInput, AccessoryInput, RentalOptionName } from '../types'
 
 const MAX_RENTAL_OPTIONS = 4
 const REQUIRED_RENTAL_OPTIONS = 4
+const REQUIRED_RENTAL_OPTION_NAMES: RentalOptionName[] = ['FEST', 'SHOOT', 'TEST', 'EVENT']
 
 /** Normalize a name for duplicate comparison */
 function normalize(name: string): string {
@@ -25,7 +26,8 @@ export interface ValidationResult {
  * Validate rental options list before submit.
  * Rules:
  *  1. Must have exactly 4 options.
- *  2. Names must be unique (case-insensitive, trimmed).
+ *  2. Must have all required names: FEST, SHOOT, TEST, EVENT.
+ *  3. Names must be unique (case-insensitive, trimmed).
  */
 export function validateRentalOptions(
   rentalOptions: RentalOptionInput[],
@@ -34,6 +36,15 @@ export function validateRentalOptions(
     return { valid: false, errorKey: 'costume.rentalOptions.requireExactlyFour' }
   }
 
+  // Check all required names are present
+  const providedNames = new Set(rentalOptions.map(opt => normalize(opt.name)))
+  for (const requiredName of REQUIRED_RENTAL_OPTION_NAMES) {
+    if (!providedNames.has(requiredName.toLowerCase())) {
+      return { valid: false, errorKey: 'costume.rentalOptions.missingRequiredName' }
+    }
+  }
+
+  // Check for duplicates
   const seen = new Set<string>()
   for (const opt of rentalOptions) {
     const key = normalize(opt.name)

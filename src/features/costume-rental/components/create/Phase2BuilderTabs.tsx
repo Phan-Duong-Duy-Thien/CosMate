@@ -177,75 +177,107 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
 }
 
 // ─── Rental Option Tab ────────────────────────────────────────────────────────
+// Fixed 4 rental packages: FEST, SHOOT, TEST, EVENT
+// No add/remove - each package is always visible
 
 interface RentalOptionTabProps {
   items: RentalOptionInput[]
   onAdd: (item: RentalOptionInput) => void
   onUpdate: (index: number, item: RentalOptionInput) => void
-  onRemove: (index: number) => void
 }
 
-function RentalOptionTab({ items, onAdd, onUpdate, onRemove }: RentalOptionTabProps) {
-  const [open, setOpen] = useState(false)
-  const [editIndex, setEditIndex] = useState<number | null>(null)
-  const [form] = Form.useForm<RentalOptionInput>()
-  const addDisabled = !canAddRentalOption(items.length)
+const RENTAL_OPTION_LABELS: Record<RentalOptionName, string> = {
+  FEST: 'Festival',
+  SHOOT: 'Shooting',
+  TEST: 'Thử đồ',
+  EVENT: 'Sự kiện',
+}
 
-  const openAdd = () => { form.resetFields(); setEditIndex(null); setOpen(true) }
-  const openEdit = (index: number) => { form.setFieldsValue(items[index]); setEditIndex(index); setOpen(true) }
-  const handleOk = async () => {
-    const values = await form.validateFields()
-    editIndex !== null ? onUpdate(editIndex, values) : onAdd(values)
-    setOpen(false)
+function RentalOptionTab({ items, onAdd, onUpdate }: RentalOptionTabProps) {
+  // Build a map from current items for easy lookup
+  const itemsMap = new Map<RentalOptionName, RentalOptionInput>()
+  items.forEach((item) => {
+    itemsMap.set(item.name, item)
+  })
+
+  const handleChange = (name: RentalOptionName, field: 'price' | 'description', value: number | string) => {
+    const existing = itemsMap.get(name)
+    const updated: RentalOptionInput = {
+      name,
+      price: field === 'price' ? (value as number) : (existing?.price ?? 0),
+      description: field === 'description' ? (value as string) : (existing?.description ?? ''),
+    }
+    // Find index in items array
+    const idx = items.findIndex((item) => item.name === name)
+    if (idx >= 0) {
+      onUpdate(idx, updated)
+    } else {
+      // If not exists yet, add it
+      onAdd(updated)
+    }
+  }
+
+  // Ensure we have entries for all 4 types
+  const getValue = (name: RentalOptionName, field: 'price' | 'description'): number | string => {
+    const item = itemsMap.get(name)
+    if (item) {
+      return field === 'price' ? item.price : item.description
+    }
+    return field === 'price' ? 0 : ''
   }
 
   return (
     <div>
-      <Button icon={<PlusOutlined />} onClick={openAdd} disabled={addDisabled}
-        title={addDisabled ? VI.costumeRental.rentalOptions.maxFourReached : undefined}
-        style={{ marginBottom: 16 }}>
-        {VI.costumeRental.rentalOptions.add}
-      </Button>
-      {addDisabled && (
-        <Alert type="warning" message={VI.costumeRental.rentalOptions.maxFourReached}
-          showIcon style={{ marginBottom: 12 }} />
-      )}
-      <Space direction="vertical" style={{ width: '100%' }}>
-        {items.map((item, i) => (
-          <Card key={i} size="small" extra={
-            <Space>
-              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(i)} />
-              <Popconfirm title={VI.costumeRental.rentalOptions.form.name} onConfirm={() => onRemove(i)}>
-                <Button size="small" danger icon={<DeleteOutlined />} />
-              </Popconfirm>
-            </Space>
-          }>
-            <Text strong>{item.name}</Text><br />
-            <Text type="secondary">{item.description}</Text><br />
-            <Text>{item.price.toLocaleString('vi-VN')} VNĐ</Text>
-          </Card>
-        ))}
+      <Alert
+        type="info"
+        message="Bắt buộc phải nhập đầy đủ thông tin cho cả 4 gói thuê"
+        showIcon
+        style={{ marginBottom: 16 }}
+      />
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        {RENTAL_OPTION_NAMES.map((name) => {
+          const item = itemsMap.get(name)
+          const hasValue = item && (item.price > 0 || item.description)
+
+          return (
+            <Card
+              key={name}
+              size="small"
+              title={
+                <span>
+                  {name} - {RENTAL_OPTION_LABELS[name]}
+                  {!hasValue && <Text type="danger" style={{ marginLeft: 8 }}>(Chưa nhập)</Text>}
+                </span>
+              }
+              style={{ borderColor: hasValue ? '#52c41a' : '#ffccc7' }}
+            >
+              <Form layout="vertical">
+                <Form.Item
+                  label={VI.costumeRental.rentalOptions.form.price}
+                  required
+                  style={{ marginBottom: 12 }}
+                >
+                  <InputNumber
+                    min={0}
+                    value={getValue(name, 'price')}
+                    onChange={(value) => handleChange(name, 'price', value ?? 0)}
+                    style={{ width: '100%' }}
+                    placeholder="Nhập giá thuê"
+                  />
+                </Form.Item>
+                <Form.Item label={VI.costumeRental.rentalOptions.form.description}>
+                  <Input.TextArea
+                    value={getValue(name, 'description')}
+                    onChange={(e) => handleChange(name, 'description', e.target.value)}
+                    placeholder="Mô tả gói thuê (thời gian, điều kiện...)"
+                    rows={2}
+                  />
+                </Form.Item>
+              </Form>
+            </Card>
+          )
+        })}
       </Space>
-      <Modal title={editIndex !== null ? VI.costumeRental.rentalOptions.edit : VI.costumeRental.rentalOptions.add}
-        open={open} onOk={handleOk} onCancel={() => setOpen(false)}
-        okText={VI.costumeRental.common.save} cancelText={VI.costumeRental.common.cancel}>
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label={VI.costumeRental.rentalOptions.form.name} rules={[{ required: true }]}>
-            <Select placeholder={VI.costumeRental.rentalOptions.form.namePlaceholder}>
-              {RENTAL_OPTION_NAMES.map((n) => (
-                <Select.Option key={n} value={n}>{n}</Select.Option>
-              ))}
-            </Select>
-          </Form.Item>
-          <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price}
-            rules={[{ required: true }]}>
-            <InputNumber min={0} style={{ width: '100%' }} />
-          </Form.Item>
-          <Form.Item name="description" label={VI.costumeRental.rentalOptions.form.description}>
-            <Input />
-          </Form.Item>
-        </Form>
-      </Modal>
     </div>
   )
 }
@@ -265,7 +297,6 @@ interface Phase2BuilderTabsProps {
   onRemoveAccessory: (i: number) => void
   onAddRentalOption: (item: RentalOptionInput) => void
   onUpdateRentalOption: (i: number, item: RentalOptionInput) => void
-  onRemoveRentalOption: (i: number) => void
   onFinish: () => Promise<void>
   loading: boolean
   error: string | null
@@ -284,7 +315,6 @@ export default function Phase2BuilderTabs({
   onRemoveAccessory,
   onAddRentalOption,
   onUpdateRentalOption,
-  onRemoveRentalOption,
   onFinish,
   loading,
   error,
@@ -310,8 +340,7 @@ export default function Phase2BuilderTabs({
       key: 'rentalOptions',
       label: VI.costumeRental.rentalOptions.title,
       children: (
-        <RentalOptionTab items={rentalOptions} onAdd={onAddRentalOption}
-          onUpdate={onUpdateRentalOption} onRemove={onRemoveRentalOption} />
+        <RentalOptionTab items={rentalOptions} onAdd={onAddRentalOption} onUpdate={onUpdateRentalOption} />
       ),
     },
   ]
