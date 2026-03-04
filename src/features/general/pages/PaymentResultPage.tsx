@@ -5,6 +5,9 @@
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
+import { getRoles } from '@/features/auth/services/tokenStorage';
+import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
+import type { UserRole } from '@/types/auth';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
 
@@ -46,11 +49,20 @@ export default function PaymentResultPage() {
 
   const handlePrimaryAction = () => {
     if (isSuccess) {
-      navigate('/');
+      // Get user roles and redirect to appropriate page
+      const roles = getRoles() as UserRole[];
+      const redirectPath = getRedirectPath(roles);
+      navigate(redirectPath);
     } else {
       // Payment failed - go to checkout to retry payment
       navigate('/rent/checkout');
     }
+  };
+
+  // Get role-based redirect path for home button
+  const getHomeRedirectPath = () => {
+    const roles = getRoles() as UserRole[];
+    return getRedirectPath(roles);
   };
 
   return (
@@ -122,7 +134,7 @@ export default function PaymentResultPage() {
             >
               {isSuccess ? VI.paymentResult.primarySuccessCta : VI.paymentResult.primaryFailedCta}
             </Button>
-            <Link to="/">
+            <Link to={getHomeRedirectPath()}>
               <Button
                 variant="outline"
                 size="lg"

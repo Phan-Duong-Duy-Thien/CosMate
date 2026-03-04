@@ -8,19 +8,23 @@
  */
 
 import { useNavigate } from 'react-router-dom'
-import { notification, Steps, Typography, Row, Col, Card } from 'antd'
+import { notification, Steps, Typography, Row, Col, Card, Spin } from 'antd'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
 import type { DashboardSidebarItem }from '@/app/layouts/DashboardLayout'
 import { providerSidebarItems } from '@/features/provider/constants/sidebar'
 import { useCreateCostumeWizard } from '../hooks/useCreateCostumeWizard'
 import Phase1BasicInfoForm from '../components/create/Phase1BasicInfoForm'
 import Phase2BuilderTabs from '../components/create/Phase2BuilderTabs'
+import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
+import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
+import { VI } from '@/shared/i18n/vi'
 
 const { Title } = Typography
 
 export default function ProviderCreateCostumePage() {
   const navigate = useNavigate()
   const wizard = useCreateCostumeWizard()
+  const gate = useProviderGate()
 
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
     const Icon = item.icon
@@ -51,59 +55,82 @@ export default function ProviderCreateCostumePage() {
       sidebarItems={sidebarItems}
       brandName="CosMate Provider"
     >
-      <Row justify="center">
-        <Col xs={24}sm={22}md={20} lg={18} xl={16}>
-          <Title level={3}style={{ marginBottom: 24 }}>
-            Đăng trang phục mới
-          </Title>
+      {gate.profileLoading && (
+        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+          <Spin size="large" />
+          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+        </div>
+      )}
+      {!gate.profileLoading && gate.verified === false && (
+        <ProviderActivationGate
+          plans={gate.plans}
+          plansLoading={gate.plansLoading}
+          plansError={gate.plansError}
+          selectedPlanId={gate.selectedPlanId}
+          onSelectPlan={gate.setSelectedPlanId}
+          selectedMethod={gate.selectedMethod}
+          onSelectMethod={gate.setSelectedMethod}
+          onSubscribe={gate.handleSubscribe}
+          subscribing={gate.subscribing}
+          subscribeError={gate.subscribeError}
+        />
+      )}
+      {!gate.profileLoading && gate.verified === true && (
+        <Row justify="center">
+          <Col xs={24}sm={22}md={20} lg={18} xl={16}>
+            <Title level={3}style={{ marginBottom: 24 }}>
+              Đăng trang phục mới
+            </Title>
 
-          <Steps
-            current={wizard.phase - 1}
-            style={{ marginBottom: 32 }}
-            items={[
-              { title: 'Thông tin cơ bản' },
-              { title: 'Phụ phí & Gói thuê' },
-            ]}
-          />
+            <Steps
+              current={wizard.phase - 1}
+              style={{ marginBottom: 32 }}
+              items={[
+                { title: 'Thông tin cơ bản' },
+                { title: 'Phụ phí & Gói thuê' },
+              ]}
+            />
 
-          <Card
-            bordered={false}
-            style={{
-              borderRadius: 12,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-            }}
-          >
-            {wizard.phase === 1 && (
-              <Phase1BasicInfoForm
-                onSubmit={wizard.handlePhase1Submit}
-                loading={wizard.isPhase1Loading}
-                error={wizard.phase1Error}
-                disabled={wizard.isPhase1Loading}
-              />
-            )}
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: 12,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+              }}
+            >
+              {wizard.phase === 1 && (
+                <Phase1BasicInfoForm
+                  onSubmit={wizard.handlePhase1Submit}
+                  loading={wizard.isPhase1Loading}
+                  error={wizard.phase1Error}
+                  disabled={wizard.isPhase1Loading}
+                />
+              )}
 
-            {wizard.phase === 2 && (
-              <Phase2BuilderTabs
-                surcharges={wizard.surcharges}
-                accessories={wizard.accessories}
-                rentalOptions={wizard.rentalOptions}
-                onAddSurcharge={wizard.addSurcharge}
-                onUpdateSurcharge={wizard.updateSurcharge}
-                onRemoveSurcharge={wizard.removeSurcharge}
-                onAddAccessory={wizard.addAccessory}
-                onUpdateAccessory={wizard.updateAccessory}
-                onRemoveAccessory={wizard.removeAccessory}
-                onAddRentalOption={wizard.addRentalOption}
-                onUpdateRentalOption={wizard.updateRentalOption}
-                onRemoveRentalOption={wizard.removeRentalOption}
-                onFinish={handlePhase2Finish}
-                loading={wizard.isPhase2Loading}
-                error={wizard.phase2Error}
-              />
-            )}
-          </Card>
-        </Col>
-      </Row>
+              {wizard.phase === 2 && (
+                <Phase2BuilderTabs
+                  surcharges={wizard.surcharges}
+                  accessories={wizard.accessories}
+                  rentalOptions={wizard.rentalOptions}
+                  numberOfItems={wizard.numberOfItems}
+                  onAddSurcharge={wizard.addSurcharge}
+                  onUpdateSurcharge={wizard.updateSurcharge}
+                  onRemoveSurcharge={wizard.removeSurcharge}
+                  onAddAccessory={wizard.addAccessory}
+                  onUpdateAccessory={wizard.updateAccessory}
+                  onRemoveAccessory={wizard.removeAccessory}
+                  onAddRentalOption={wizard.addRentalOption}
+                  onUpdateRentalOption={wizard.updateRentalOption}
+                  onRemoveRentalOption={wizard.removeRentalOption}
+                  onFinish={handlePhase2Finish}
+                  loading={wizard.isPhase2Loading}
+                  error={wizard.phase2Error}
+                />
+              )}
+            </Card>
+          </Col>
+        </Row>
+      )}
     </DashboardLayout>
   )
 }

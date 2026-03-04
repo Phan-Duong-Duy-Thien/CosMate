@@ -8,6 +8,9 @@
 import { useState } from 'react'
 import { message } from 'antd'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
+import { uploadMainThenDetails } from '../services/costumeImages.service'
+import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
+import { VI } from '@/shared/i18n/vi'
 import type {
   CreateCostumeBasicPayload,
   SurchargeInput,
@@ -20,7 +23,6 @@ interface JwtPayload {
   [key: string]: unknown
 }
 
-/** Decode JWT payload without a library dependency */
 function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const base64 = token.split('.')[1]
@@ -42,6 +44,7 @@ function getProviderIdFromToken(): number | null {
 export interface UseCreateCostumeWizardReturn {
   phase: 1 | 2
   costumeId: number | null
+  numberOfItems: number
   isPhase1Loading: boolean
   isPhase2Loading: boolean
   phase1Error: string | null
@@ -67,6 +70,7 @@ export interface UseCreateCostumeWizardReturn {
 export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   const [phase, setPhase] = useState<1 | 2>(1)
   const [costumeId, setCostumeId] = useState<number | null>(null)
+  const [numberOfItems, setNumberOfItems] = useState<number>(1)
   const [isPhase1Loading, setIsPhase1Loading] = useState(false)
   const [isPhase2Loading, setIsPhase2Loading] = useState(false)
   const [phase1Error, setPhase1Error] = useState<string | null>(null)
@@ -91,7 +95,24 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
       if (import.meta.env.DEV) {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
+
+      if (values.imageFiles && values.imageFiles.length > 0) {
+        try {
+          const { failedDetailIndices } = await uploadMainThenDetails(result.id, values.imageFiles)
+          if (failedDetailIndices.length > 0) {
+            message.warning(VI.costumeRental.images.uploadDetailPartialError)
+          }
+        } catch (imgErr) {
+          const msg = imgErr instanceof Error ? imgErr.message : VI.costumeRental.images.uploadError
+          setPhase1Error(msg)
+          message.error(msg)
+          setIsPhase1Loading(false)
+          return
+        }
+      }
+
       setCostumeId(result.id)
+      setNumberOfItems(values.numberOfItems)
       setPhase(2)
     }catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
@@ -102,7 +123,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   }
 
   const handlePhase2Submit = async () => {
-    // Guard: costumeId must be set by Phase 1 before Phase 2 can run
     if (costumeId === null || typeof costumeId !== 'number') {
       const errMsg = 'Thieu costumeId. Vui long hoan thanh buoc 1 truoc.'
       setPhase2Error(errMsg)
@@ -117,6 +137,20 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase2Error(null)
     setIsPhase2Loading(true)
     try {
+      const roResult = validateRentalOptions(rentalOptions)
+      if (!roResult.valid) {
+        const msg = VI.costumeRental.rentalOptions[roResult.errorKey!.split('.').pop() as keyof typeof VI.costumeRental.rentalOptions] as string
+        setPhase2Error(msg)
+        message.error(msg)
+        throw new Error(msg)
+      }
+      const accResult = validateAccessories(accessories, numberOfItems)
+      if (!accResult.valid) {
+        const msg = VI.costumeRental.accessories.reachedMaxItems
+        setPhase2Error(msg)
+        message.error(msg)
+        throw new Error(msg)
+      }
       await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions })
     }catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Luu thong tin bo sung that bai.'
@@ -127,21 +161,18 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     }
   }
 
-  // Surcharge list helpers
   const addSurcharge = (item: SurchargeInput) => setSurcharges((p) => [...p, item])
   const updateSurcharge = (i: number, item: SurchargeInput) =>
     setSurcharges((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeSurcharge = (i: number) =>
     setSurcharges((p) => p.filter((_, idx) => idx !== i))
 
-  // Accessory list helpers
   const addAccessory = (item: AccessoryInput) => setAccessories((p) => [...p, item])
   const updateAccessory = (i: number, item: AccessoryInput) =>
     setAccessories((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeAccessory = (i: number) =>
     setAccessories((p) => p.filter((_, idx) => idx !== i))
 
-  // Rental option list helpers
   const addRentalOption = (item: RentalOptionInput) => setRentalOptions((p) => [...p, item])
   const updateRentalOption = (i: number, item: RentalOptionInput) =>
     setRentalOptions((p) => p.map((x, idx) => (idx === i ? item : x)))
@@ -151,6 +182,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   return {
     phase,
     costumeId,
+    numberOfItems,
     isPhase1Loading,
     isPhase2Loading,
     phase1Error,

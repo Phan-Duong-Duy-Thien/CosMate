@@ -74,7 +74,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       </Form.Item>
 
       <Form.Item label="Mô tả" name="description">
-        <TextArea rows={3} placeholder="Mô tả trang phục" />
+        <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" />
       </Form.Item>
 
       <Form.Item

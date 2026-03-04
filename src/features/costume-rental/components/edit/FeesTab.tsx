@@ -22,6 +22,7 @@ import {
   Typography,
   Divider,
   Switch,
+  Alert,
 } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type {
@@ -37,6 +38,7 @@ import type {
   AccessoryInput,
 } from '../../types'
 import { VI } from '@/shared/i18n/vi'
+import { canAddRentalOption, canAddAccessory } from '../../services/validateCostumeConstraints'
 
 const { Text } = Typography
 
@@ -170,143 +172,173 @@ function SurchargeCreateModal({ open, onCancel, onSubmit, saving }: SurchargeCre
   )
 }
 
-// ─── Rental option edit inline modal ─────────────────────────────────────────
+// ─── Rental option - Fixed 4 packages: FEST, SHOOT, TEST, EVENT ─────────────────
 
 interface RentalOptionEditProps {
-  item: CostumeRentalOption
+  items: CostumeRentalOption[]
   onSave: (id: number, values: RentalOptionUpdateInput) => Promise<void>
+  onCreate: (values: RentalOptionInput) => Promise<void>
   saving: boolean
 }
 
-function RentalOptionCard({ item, onSave, saving }: RentalOptionEditProps) {
-  const [open, setOpen] = useState(false)
+const RENTAL_OPTION_LABELS: Record<RentalOptionName, string> = {
+  FEST: 'Festival',
+  SHOOT: 'Shooting',
+  TEST: 'Thử đồ',
+  EVENT: 'Sự kiện',
+}
+
+function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEditProps) {
+  // Build a map from current items for easy lookup
+  const itemsMap = new Map<RentalOptionName, CostumeRentalOption>()
+  items.forEach((item) => {
+    itemsMap.set(item.name as RentalOptionName, item)
+  })
+
+  const [editingName, setEditingName] = useState<RentalOptionName | null>(null)
   const [form] = Form.useForm<RentalOptionUpdateInput>()
 
-  const handleOpen = () => {
-    form.setFieldsValue({ name: item.name as RentalOptionName, price: item.price, description: item.description })
-    setOpen(true)
+  // Form for creating new rental option
+  const [createForm] = Form.useForm<RentalOptionInput>()
+
+  const handleEdit = (name: RentalOptionName) => {
+    const item = itemsMap.get(name)
+    if (item) {
+      form.setFieldsValue({ name: item.name as RentalOptionName, price: item.price, description: item.description })
+      setEditingName(name)
+    }
   }
 
-  const handleOk = async () => {
+  const handleSave = async () => {
     const values = await form.validateFields()
-    await onSave(item.id, values)
-    setOpen(false)
+    const item = itemsMap.get(editingName!)
+    if (item) {
+      await onSave(item.id, values)
+    }
+    setEditingName(null)
+  }
+
+  const handleCancelEdit = () => {
+    setEditingName(null)
+    form.resetFields()
+  }
+
+  // Create modal state
+  const [createModalOpen, setCreateModalOpen] = useState(false)
+  const [creatingName, setCreatingName] = useState<RentalOptionName | null>(null)
+
+  const openCreateModal = (name: RentalOptionName) => {
+    setCreatingName(name)
+    createForm.setFieldsValue({ name, price: 0, description: '' })
+    setCreateModalOpen(true)
+  }
+
+  const handleCreate = async () => {
+    const values = await createForm.validateFields()
+    await onCreate(values)
+    setCreateModalOpen(false)
+    setCreatingName(null)
   }
 
   return (
     <>
-      <Card
-        size="small"
-        extra={
-          <Button size="small" icon={<EditOutlined />} onClick={handleOpen}>
-            {VI.costumeRental.common.edit}
-          </Button>
-        }
-        style={{ marginBottom: 8 }}
-      >
-        <Text strong>{item.name}</Text>
-        <br />
-        <Text type="secondary">{item.description}</Text>
-        <br />
-        <Text>{item.price.toLocaleString('vi-VN')} VNĐ</Text>
-      </Card>
+      <Alert
+        type="info"
+        message="Bắt buộc phải nhập đầy đủ thông tin cho cả 4 gói thuê"
+        showIcon
+        style={{ marginBottom: 16 }}
+      />
+      <Space direction="vertical" style={{ width: '100%' }} size="middle">
+        {RENTAL_OPTION_NAMES.map((name) => {
+          const item = itemsMap.get(name)
+          const hasValue = item && (item.price > 0 || item.description)
 
+          // If editing this item
+          if (editingName === name && item) {
+            return (
+              <Card
+                key={name}
+                size="small"
+                title={`${name} - ${RENTAL_OPTION_LABELS[name]}`}
+                style={{ borderColor: '#1890ff' }}
+              >
+                <Form form={form} layout="vertical">
+                  <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price} rules={[{ required: true }]}>
+                    <InputNumber min={0} style={{ width: '100%' }} />
+                  </Form.Item>
+                  <Form.Item name="description" label={VI.costumeRental.rentalOptions.form.description}>
+                    <Input.TextArea rows={2} />
+                  </Form.Item>
+                  <Space>
+                    <Button type="primary" onClick={handleSave} loading={saving}>Lưu</Button>
+                    <Button onClick={handleCancelEdit}>Hủy</Button>
+                  </Space>
+                </Form>
+              </Card>
+            )
+          }
+
+          return (
+            <Card
+              key={name}
+              size="small"
+              title={
+                <span>
+                  {name} - {RENTAL_OPTION_LABELS[name]}
+                  {!hasValue && <Text type="danger" style={{ marginLeft: 8 }}>(Chưa nhập)</Text>}
+                </span>
+              }
+              extra={
+                item ? (
+                  <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(name)}>
+                    {VI.costumeRental.common.edit}
+                  </Button>
+                ) : (
+                  <Button size="small" type="primary" onClick={() => openCreateModal(name)}>
+                    Thêm mới
+                  </Button>
+                )
+              }
+              style={{ borderColor: hasValue ? '#52c41a' : '#ffccc7' }}
+            >
+              {item ? (
+                <>
+                  <Text type="secondary">{item.description}</Text>
+                  <br />
+                  <Text strong>{item.price.toLocaleString('vi-VN')} VNĐ</Text>
+                </>
+              ) : (
+                <Text type="secondary">Chưa có thông tin gói thuê. Nhấn "Thêm mới" để nhập.</Text>
+              )}
+            </Card>
+          )
+        })}
+      </Space>
+
+      {/* Create Modal */}
       <Modal
-        title={VI.costumeRental.rentalOptions.edit}
-        open={open}
-        onOk={handleOk}
-        onCancel={() => setOpen(false)}
-        okText={VI.costumeRental.common.save}
-        cancelText={VI.costumeRental.common.cancel}
+        title={`Thêm gói thuê ${creatingName ? `- ${creatingName} - ${RENTAL_OPTION_LABELS[creatingName]}` : ''}`}
+        open={createModalOpen}
+        onOk={handleCreate}
+        onCancel={() => { setCreateModalOpen(false); setCreatingName(null) }}
+        okText="Thêm"
+        cancelText="Hủy"
         confirmLoading={saving}
         destroyOnClose
       >
-        <Form form={form} layout="vertical">
-          <Form.Item name="name" label={VI.costumeRental.rentalOptions.form.name} rules={[{ required: true }]}>
-            <Select placeholder={VI.costumeRental.rentalOptions.form.namePlaceholder}>
-              {RENTAL_OPTION_NAMES.map((n) => (
-                <Select.Option key={n} value={n}>
-                  {n}
-                </Select.Option>
-              ))}
-            </Select>
+        <Form form={createForm} layout="vertical">
+          <Form.Item name="name" label={VI.costumeRental.rentalOptions.form.name}>
+            <Input disabled />
           </Form.Item>
-          <Form.Item
-            name="price"
-            label={VI.costumeRental.rentalOptions.form.price}
-            rules={[{ required: true }]}
-          >
+          <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price} rules={[{ required: true }]}>
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="description" label={VI.costumeRental.rentalOptions.form.description}>
-            <Input />
+            <Input.TextArea rows={2} />
           </Form.Item>
         </Form>
       </Modal>
     </>
-  )
-}
-
-// ─── Rental option create modal ─────────────────────────────────────────────
-
-interface RentalOptionCreateModalProps {
-  open: boolean
-  onCancel: () => void
-  onSubmit: (values: RentalOptionInput) => Promise<void>
-  saving: boolean
-}
-
-function RentalOptionCreateModal({ open, onCancel, onSubmit, saving }: RentalOptionCreateModalProps) {
-  const [form] = Form.useForm<RentalOptionInput>()
-
-  const handleOk = async () => {
-    const values = await form.validateFields()
-    await onSubmit(values)
-    form.resetFields()
-  }
-
-  const handleCancel = () => {
-    form.resetFields()
-    onCancel()
-  }
-
-  return (
-    <Modal
-      title={VI.costumeRental.rentalOptions.add}
-      open={open}
-      onOk={handleOk}
-      onCancel={handleCancel}
-      okText={VI.costumeRental.common.save}
-      cancelText={VI.costumeRental.common.cancel}
-      confirmLoading={saving}
-      destroyOnClose
-    >
-      <Form form={form} layout="vertical">
-        <Form.Item
-          name="name"
-          label={VI.costumeRental.rentalOptions.form.name}
-          rules={[{ required: true, message: VI.costumeRental.rentalOptions.form.namePlaceholder }]}
-        >
-          <Select placeholder={VI.costumeRental.rentalOptions.form.namePlaceholder}>
-            {RENTAL_OPTION_NAMES.map((n) => (
-              <Select.Option key={n} value={n}>
-                {n}
-              </Select.Option>
-            ))}
-          </Select>
-        </Form.Item>
-        <Form.Item
-          name="price"
-          label={VI.costumeRental.rentalOptions.form.price}
-          rules={[{ required: true, message: VI.costumeRental.rentalOptions.form.pricePlaceholder }]}
-        >
-          <InputNumber min={0} placeholder={VI.costumeRental.rentalOptions.form.pricePlaceholder} style={{ width: '100%' }} />
-        </Form.Item>
-        <Form.Item name="description" label={VI.costumeRental.rentalOptions.form.description}>
-          <Input placeholder={VI.costumeRental.rentalOptions.form.descriptionPlaceholder} />
-        </Form.Item>
-      </Form>
-    </Modal>
   )
 }
 
@@ -464,6 +496,7 @@ interface FeesTabProps {
   surcharges: CostumeSurcharge[]
   rentalOptions: CostumeRentalOption[]
   accessories: CostumeAccessory[]
+  numberOfItems: number
   onUpdateSurcharge: (id: number, values: SurchargeUpdateInput) => Promise<void>
   onUpdateRentalOption: (id: number, values: RentalOptionUpdateInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
@@ -486,6 +519,7 @@ export default function FeesTab({
   surcharges,
   rentalOptions,
   accessories,
+  numberOfItems,
   onUpdateSurcharge,
   onUpdateRentalOption,
   onUpdateAccessory,
@@ -502,6 +536,9 @@ export default function FeesTab({
   onCreateRentalOption,
   onCreateAccessory,
 }: FeesTabProps) {
+  const addRentalOptionDisabled = !canAddRentalOption(rentalOptions.length)
+  const addAccessoryDisabled = !canAddAccessory(accessories.length, numberOfItems)
+
   return (
     <div>
       {/* Surcharges */}
@@ -538,11 +575,17 @@ export default function FeesTab({
         <Button
           size="small"
           icon={<PlusOutlined />}
+          disabled={addAccessoryDisabled}
+          title={addAccessoryDisabled ? VI.costumeRental.accessories.reachedMaxItems : undefined}
           onClick={() => setCreateAccessoryModalOpen(true)}
         >
           {VI.costumeRental.accessories.add}
         </Button>
       </Space>
+      {addAccessoryDisabled && (
+        <Alert type="warning" description={VI.costumeRental.accessories.reachedMaxItems}
+          showIcon style={{ marginBottom: 8 }} />
+      )}
       {accessories.length === 0 ? (
         <Text type="secondary">{VI.costumeRental.accessories.empty}</Text>
       ) : (
@@ -560,31 +603,14 @@ export default function FeesTab({
 
       <Divider />
 
-      {/* Rental Options */}
-      <Space style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-        <Text strong>{VI.costumeRental.rentalOptions.title}</Text>
-        <Button
-          size="small"
-          icon={<PlusOutlined />}
-          onClick={() => setCreateRentalOptionModalOpen(true)}
-        >
-          {VI.costumeRental.rentalOptions.add}
-        </Button>
-      </Space>
-      {rentalOptions.length === 0 ? (
-        <Text type="secondary">{VI.costumeRental.rentalOptions.empty}</Text>
-      ) : (
-        <Space direction="vertical" style={{ width: '100%' }}>
-          {rentalOptions.map((r) => (
-            <RentalOptionCard
-              key={r.id}
-              item={r}
-              onSave={onUpdateRentalOption}
-              saving={rentalOptionSubmitting}
-            />
-          ))}
-        </Space>
-      )}
+      {/* Rental Options - Fixed 4 packages */}
+      <Text strong style={{ display: 'block', marginBottom: 8 }}>{VI.costumeRental.rentalOptions.title}</Text>
+      <RentalOptionSection
+        items={rentalOptions}
+        onSave={onUpdateRentalOption}
+        onCreate={onCreateRentalOption}
+        saving={rentalOptionSubmitting}
+      />
 
       {/* Create Modals */}
       <SurchargeCreateModal
@@ -598,12 +624,6 @@ export default function FeesTab({
         onCancel={() => setCreateAccessoryModalOpen(false)}
         onSubmit={onCreateAccessory}
         saving={accessorySubmitting}
-      />
-      <RentalOptionCreateModal
-        open={createRentalOptionModalOpen}
-        onCancel={() => setCreateRentalOptionModalOpen(false)}
-        onSubmit={onCreateRentalOption}
-        saving={rentalOptionSubmitting}
       />
     </div>
   )

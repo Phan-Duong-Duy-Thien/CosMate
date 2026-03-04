@@ -7,7 +7,7 @@
  * No direct API calls in this file.
  */
 
-import { Button, Table, Tag, Typography, Space, Modal, Image, Descriptions, List, Alert } from 'antd'
+import { Button, Table, Tag, Typography, Space, Modal, Image, Descriptions, List, Alert, Spin } from 'antd'
 import type { TableProps }from 'antd'
 import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined }from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
@@ -18,6 +18,9 @@ import { useProviderCostumes }from '../hooks/useProviderCostumes'
 import { useEditCostumeModal }from '../hooks/useEditCostumeModal'
 import EditCostumeModal from '../components/edit/EditCostumeModal'
 import type { Costume, CostumeStatus }from '../types'
+import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
+import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
+import { VI } from '@/shared/i18n/vi'
 
 const { Title, Text } = Typography
 
@@ -174,6 +177,8 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
 export default function ProviderCostumeListPage() {
   const navigate = useNavigate()
 
+  const gate = useProviderGate()
+
   const {
     costumes,
     isLoading,
@@ -296,6 +301,28 @@ export default function ProviderCostumeListPage() {
       sidebarItems={sidebarItems}
       brandName="CosMate Provider"
     >
+        {/* Verification gate */}
+        {gate.profileLoading && (
+          <div style={{ textAlign: 'center', padding: '80px 0' }}>
+            <Spin size="large" />
+            <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+          </div>
+        )}
+        {!gate.profileLoading && gate.verified === false && (
+          <ProviderActivationGate
+            plans={gate.plans}
+            plansLoading={gate.plansLoading}
+            plansError={gate.plansError}
+            selectedPlanId={gate.selectedPlanId}
+            onSelectPlan={gate.setSelectedPlanId}
+            selectedMethod={gate.selectedMethod}
+            onSelectMethod={gate.setSelectedMethod}
+            onSubscribe={gate.handleSubscribe}
+            subscribing={gate.subscribing}
+            subscribeError={gate.subscribeError}
+          />
+        )}
+        {!gate.profileLoading && gate.verified === true && (<>
         {/* Header row */}
         <div
           style={{
@@ -348,6 +375,7 @@ export default function ProviderCostumeListPage() {
         bordered={false}
         style={{ borderRadius: 8 }}
       />
+      </>)}
     </DashboardLayout>
 
       {/* View-only detail modal */}
@@ -382,6 +410,17 @@ export default function ProviderCostumeListPage() {
         setCreateAccessoryModalOpen={editModal.setCreateAccessoryModalOpen}
         onCreateAccessory={editModal.handleCreateAccessory}
         onUpdateAccessory={editModal.handleUpdateAccessory}
+        mainImages={editModal.mainImages}
+        detailImages={editModal.detailImages}
+        imagesLoading={editModal.imagesLoading}
+        canDeleteMain={editModal.canDeleteMain}
+        deleting={editModal.deleting}
+        replacing={editModal.replacing}
+        uploading={editModal.uploading}
+        onDeleteDetail={editModal.deleteDetail}
+        onReplaceMain={editModal.handleReplaceMain}
+        onReplaceDetail={editModal.handleReplaceDetail}
+        onAddDetail={editModal.addDetail}
       />
     </>
   )

@@ -344,6 +344,26 @@ export const VI = {
       createBtn: "Tạo trang phục mới",
       listBtn: "Xem danh sách",
     },
+
+    activation: {
+      title: "Kích hoạt tài khoản Provider",
+      subtitle: "Bạn cần đăng ký gói dịch vụ để bắt đầu sử dụng các tính năng của Provider.",
+      choosePlan: "Chọn gói dịch vụ",
+      paymentMethod: "Phương thức thanh toán",
+      payWithVnpay: "VNPAY",
+      payWithMomo: "MoMo",
+      ctaSubscribe: "Đăng ký ngay",
+      subscribing: "Đang xử lý...",
+      loadingPlans: "Đang tải gói dịch vụ...",
+      loadingProfile: "Đang kiểm tra tài khoản...",
+      errorGeneric: "Có lỗi xảy ra. Vui lòng thử lại.",
+      planMonth: "Gói 1 tháng",
+      planQuarter: "Gói 3 tháng",
+      planYear: "Gói 12 tháng",
+      planCustom: "tháng",
+      selectPlanRequired: "Vui lòng chọn gói dịch vụ.",
+      selectMethodRequired: "Vui lòng chọn phương thức thanh toán.",
+    },
   },
 
   /**
@@ -585,6 +605,7 @@ export const VI = {
       title: "Chỉnh sửa trang phục",
       basicInfoTab: "Thông tin cơ bản",
       feesTab: "Phụ phí & Gói thuê",
+      imagesTab: "Hình ảnh",
       loadingDetail: "Đang tải dữ liệu...",
       loadError: "Không thể tải dữ liệu trang phục.",
     },
@@ -619,6 +640,9 @@ export const VI = {
       updateSuccess: "Cập nhật gói thuê thành công!",
       createError: "Thêm gói thuê thất bại.",
       updateError: "Cập nhật gói thuê thất bại.",
+      requireExactlyFour: "Phải có đúng 4 gói thuê (FEST, SHOOT, TEST, EVENT) trước khi lưu.",
+      duplicateName: "Tên gói thuê bị trùng. Mỗi loại gói chỉ được thêm một lần.",
+      maxFourReached: "Đã đạt tối đa 4 gói thuê.",
       form: {
         name: "Loại gói",
         namePlaceholder: "Chọn loại gói",
@@ -639,6 +663,7 @@ export const VI = {
       updateSuccess: "Cập nhật phụ kiện thành công!",
       createError: "Thêm phụ kiện thất bại.",
       updateError: "Cập nhật phụ kiện thất bại.",
+      reachedMaxItems: "Đã đạt số lượng phụ kiện tối đa cho trang phục này.",
       required: "Bắt buộc",
       optional: "Tùy chọn",
       form: {
@@ -657,6 +682,23 @@ export const VI = {
       save: "Lưu",
       cancel: "Hủy",
       edit: "Sửa",
+    },
+
+    // Costume Images
+    images: {
+      title: "Hình ảnh trang phục",
+      main: "Ảnh chính (MAIN)",
+      detail: "Ảnh chi tiết (DETAIL)",
+      noImages: "Chưa có ảnh.",
+      addDetail: "Thêm ảnh chi tiết",
+      uploadMainRequired: "Vui lòng tải lên ít nhất 1 ảnh chính.",
+      deleteMainNotAllowed: "Không thể xóa ảnh chính duy nhất. Hãy thêm ảnh chính mới trước.",
+      replaceMain: "Thay ảnh chính",
+      delete: "Xóa",
+      replace: "Thay ảnh",
+      uploadError: "Tải ảnh lên thất bại. Vui lòng thử lại.",
+      uploadDetailPartialError: "Một số ảnh chi tiết tải lên thất bại. Bạn có thể thêm lại trong phần chỉnh sửa.",
+      deleteError: "Xóa ảnh thất bại. Vui lòng thử lại.",
     },
   },
 

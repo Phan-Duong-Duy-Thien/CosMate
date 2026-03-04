@@ -24,6 +24,7 @@ import {
   createAccessoryService,
   updateAccessoryService,
 } from '../services/costumeRental.service'
+import { canAddRentalOption, canAddAccessory } from '../services/validateCostumeConstraints'
 import type {
   Costume,
   UpdateCostumeBasicInput,
@@ -35,6 +36,8 @@ import type {
   AccessoryUpdateInput,
 } from '../types'
 import { VI } from '@/shared/i18n/vi'
+import { useCostumeImages } from './useCostumeImages'
+import { useCostumeImageActions } from './useCostumeImageActions'
 
 /** Read providerId from JWT payload – same pattern as useCreateCostumeWizard */
 function getProviderIdFromToken(): number | null {
@@ -229,6 +232,11 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const handleCreateRentalOption = useCallback(
     async (values: RentalOptionInput) => {
       if (!editingId) return
+      const currentCount = detail?.rentalOptions?.length ?? 0
+      if (!canAddRentalOption(currentCount)) {
+        message.error(VI.costumeRental.rentalOptions.maxFourReached)
+        return
+      }
       setRentalOptionSubmitting(true)
       try {
         const updatedDetail = await createRentalOptionService(editingId, values)
@@ -253,6 +261,12 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const handleCreateAccessory = useCallback(
     async (values: AccessoryInput) => {
       if (!editingId) return
+      const currentCount = detail?.accessories?.length ?? 0
+      const numberOfItems = detail?.numberOfItems ?? 1
+      if (!canAddAccessory(currentCount, numberOfItems)) {
+        message.error(VI.costumeRental.accessories.reachedMaxItems)
+        return
+      }
       setAccessorySubmitting(true)
       try {
         const updatedDetail = await createAccessoryService(editingId, values)
@@ -294,6 +308,22 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     [editingId, onSuccess],
   )
 
+  // ── Image hooks ───────────────────────────────────────────────────────────
+  const {
+    mainImages,
+    detailImages,
+    allImages,
+    loading: imagesLoading,
+    error: imagesError,
+    refetch: refetchImages,
+  } = useCostumeImages(editingId)
+
+  const imageHooks = useCostumeImageActions({
+    costumeId: editingId,
+    mainImages,
+    refetch: refetchImages,
+  })
+
   return {
     // Modal state
     open,
@@ -330,5 +360,14 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setCreateAccessoryModalOpen,
     handleCreateAccessory,
     handleUpdateAccessory,
+
+    // Image hooks
+    mainImages,
+    detailImages,
+    allImages,
+    imagesLoading,
+    imagesError,
+    refetchImages,
+    ...imageHooks,
   }
 }
