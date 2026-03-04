@@ -11,8 +11,10 @@
 
 import { Modal, Tabs, Spin } from 'antd'
 import type { Costume, UpdateCostumeBasicInput, SurchargeUpdateInput, RentalOptionUpdateInput, SurchargeInput, RentalOptionInput, AccessoryInput, AccessoryUpdateInput } from '../../types'
+import type { CostumeImage } from '../../api/costumeImages.api'
 import EditBasicInfoForm from './EditBasicInfoForm'
 import FeesTab from './FeesTab'
+import ImagesTab from './ImagesTab'
 import { VI } from '@/shared/i18n/vi'
 
 interface Props {
@@ -38,6 +40,18 @@ interface Props {
   setCreateAccessoryModalOpen: (open: boolean) => void
   onCreateAccessory: (values: AccessoryInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
+  // Images tab
+  mainImages: CostumeImage[]
+  detailImages: CostumeImage[]
+  imagesLoading: boolean
+  canDeleteMain: boolean
+  deleting: number | null
+  replacing: number | null
+  uploading: boolean
+  onDeleteDetail: (imageId: number) => void
+  onReplaceMain: (imageId: number, file: File) => void
+  onReplaceDetail: (imageId: number, file: File) => void
+  onAddDetail: (file: File) => void
 }
 
 export default function EditCostumeModal({
@@ -63,6 +77,17 @@ export default function EditCostumeModal({
   setCreateAccessoryModalOpen,
   onCreateAccessory,
   onUpdateAccessory,
+  mainImages,
+  detailImages,
+  imagesLoading,
+  canDeleteMain,
+  deleting,
+  replacing,
+  uploading,
+  onDeleteDetail,
+  onReplaceMain,
+  onReplaceDetail,
+  onAddDetail,
 }: Props) {
   const tabItems = detail
     ? [
@@ -102,6 +127,25 @@ export default function EditCostumeModal({
               onCreateSurcharge={onCreateSurcharge}
               onCreateRentalOption={onCreateRentalOption}
               onCreateAccessory={onCreateAccessory}
+            />
+          ),
+        },
+        {
+          key: 'images',
+          label: VI.costumeRental.editCostume.imagesTab,
+          children: (
+            <ImagesTab
+              mainImages={mainImages}
+              detailImages={detailImages}
+              loading={imagesLoading}
+              canDeleteMain={canDeleteMain}
+              deleting={deleting}
+              replacing={replacing}
+              uploading={uploading}
+              onDeleteDetail={onDeleteDetail}
+              onReplaceMain={onReplaceMain}
+              onReplaceDetail={onReplaceDetail}
+              onAddDetail={onAddDetail}
             />
           ),
         },

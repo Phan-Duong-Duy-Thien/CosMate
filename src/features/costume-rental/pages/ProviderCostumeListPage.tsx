@@ -410,6 +410,17 @@ export default function ProviderCostumeListPage() {
         setCreateAccessoryModalOpen={editModal.setCreateAccessoryModalOpen}
         onCreateAccessory={editModal.handleCreateAccessory}
         onUpdateAccessory={editModal.handleUpdateAccessory}
+        mainImages={editModal.mainImages}
+        detailImages={editModal.detailImages}
+        imagesLoading={editModal.imagesLoading}
+        canDeleteMain={editModal.canDeleteMain}
+        deleting={editModal.deleting}
+        replacing={editModal.replacing}
+        uploading={editModal.uploading}
+        onDeleteDetail={editModal.deleteDetail}
+        onReplaceMain={editModal.handleReplaceMain}
+        onReplaceDetail={editModal.handleReplaceDetail}
+        onAddDetail={editModal.addDetail}
       />
     </>
   )

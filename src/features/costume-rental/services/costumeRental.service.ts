@@ -1,7 +1,7 @@
-﻿/**
+/**
  * Costume Rental Service
  *
- * Orchestration layer â€“ coordinates multiple API calls.
+ * Orchestration layer - coordinates multiple API calls.
  * Called by hooks only; never by components or pages.
  */
 
@@ -17,7 +17,12 @@ import type {
   SurchargeInput,
   AccessoryInput,
   RentalOptionInput,
-}from '../types'
+} from '../types'
+import {
+  normalizeSurcharges,
+  normalizeRentalOptions,
+  normalizeAccessories,
+} from './normalizeCostumeInputs'
 
 export interface Phase2Lists {
   surcharges: SurchargeInput[]
@@ -26,7 +31,7 @@ export interface Phase2Lists {
 }
 
 /**
- * Phase 1 â€“ create the costume record and return its id.
+ * Phase 1 - create the costume record and return its id.
  */
 export async function submitPhase1(
   payload: CreateCostumeBasicPayload,
@@ -35,43 +40,47 @@ export async function submitPhase1(
 }
 
 /**
- * Phase 2 â€“ batch-submit surcharges, accessories, and rental options.
+ * Phase 2 - batch-submit surcharges, accessories, and rental options.
+ * Normalizes all inputs before sending to prevent coercion bugs.
  * Runs sequentially to avoid race conditions on the backend.
  */
 export async function submitPhase2Batch(
   costumeId: number,
   lists: Phase2Lists,
 ): Promise<void> {
-  for (const item of lists.surcharges) {
+  const surcharges = normalizeSurcharges(lists.surcharges)
+  const accessories = normalizeAccessories(lists.accessories)
+  const rentalOptions = normalizeRentalOptions(lists.rentalOptions)
+
+  for (const item of surcharges) {
     await createSurcharge(costumeId, item)
   }
-  for (const item of lists.accessories) {
+  for (const item of accessories) {
     await createAccessory(costumeId, item)
   }
-  for (const item of lists.rentalOptions) {
+  for (const item of rentalOptions) {
     await createRentalOption(costumeId, item)
   }
 }
-
-// â”€â”€â”€ Edit Costume Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import {
   updateCostumeBasic as apiUpdateCostumeBasic,
   updateSurcharge as apiUpdateSurcharge,
   updateRentalOption as apiUpdateRentalOption,
   updateAccessory as apiUpdateAccessory,
-}from '../api/costumeRental.api'
+} from '../api/costumeRental.api'
 import type {
   UpdateCostumeBasicInput,
   SurchargeUpdateInput,
   RentalOptionUpdateInput,
   AccessoryUpdateInput,
 } from '../types'
+import {
+  normalizeSurchargeUpdate,
+  normalizeRentalOptionUpdate,
+  normalizeAccessoryUpdate,
+} from './normalizeCostumeInputs'
 
-/**
- * Build FormData for PUT /api/costumes/{id}.
- * Mirrors createCostumeMultipart but omits surcharges/accessories/rentalOptions.
- */
 export function buildUpdateCostumeFormData(
   input: UpdateCostumeBasicInput,
   providerId: number,
@@ -90,7 +99,6 @@ export function buildUpdateCostumeFormData(
   return form
 }
 
-/** PUT /api/costumes/{id} */
 export async function updateCostumeBasic(
   id: number,
   input: UpdateCostumeBasicInput,
@@ -100,80 +108,56 @@ export async function updateCostumeBasic(
   await apiUpdateCostumeBasic(id, formData)
 }
 
-/** PUT /api/surcharges/{id}*/
 export async function updateSurcharge(
   id: number,
   input: SurchargeUpdateInput,
 ): Promise<void> {
-  await apiUpdateSurcharge(id, input)
+  await apiUpdateSurcharge(id, normalizeSurchargeUpdate(input))
 }
 
-/** PUT /api/rental-options/{id} */
 export async function updateRentalOption(
   id: number,
   input: RentalOptionUpdateInput,
 ): Promise<void> {
-  await apiUpdateRentalOption(id, input)
+  await apiUpdateRentalOption(id, normalizeRentalOptionUpdate(input))
 }
-
-// â”€â”€â”€ Create Surcharge / Rental Option for Edit Modal â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 import { getCostumeById } from '../api/costumeRental.api'
 import type { Costume } from '../types'
 
-/**
- * Create a new surcharge for a costume.
- * POST /api/surcharges/costume/{costumeId}
- * Then refetch costume detail and return updated data.
- */
 export async function createSurchargeService(
   costumeId: number,
   payload: SurchargeInput,
 ): Promise<Costume> {
-  await createSurcharge(costumeId, payload)
+  await createSurcharge(costumeId, normalizeSurcharges([payload])[0])
   const res = await getCostumeById(costumeId)
   return res.result
 }
 
-/**
- * Create a new rental option for a costume.
- * POST /api/rental-options/costume/{costumeId}
- * Then refetch costume detail and return updated data.
- */
 export async function createRentalOptionService(
   costumeId: number,
   payload: RentalOptionInput,
 ): Promise<Costume> {
-  await createRentalOption(costumeId, payload)
+  await createRentalOption(costumeId, normalizeRentalOptions([payload])[0])
   const res = await getCostumeById(costumeId)
   return res.result
 }
 
-/**
- * Create a new accessory for a costume.
- * POST /api/accessories/costume/{costumeId}
- * Then refetch costume detail and return updated data.
- */
 export async function createAccessoryService(
   costumeId: number,
   payload: AccessoryInput,
 ): Promise<Costume> {
-  await createAccessory(costumeId, payload)
+  await createAccessory(costumeId, normalizeAccessories([payload])[0])
   const res = await getCostumeById(costumeId)
   return res.result
 }
 
-/**
- * Update an existing accessory.
- * PUT /api/accessories/{id}
- * Then refetch costume detail and return updated data.
- */
 export async function updateAccessoryService(
   accessoryId: number,
   payload: AccessoryUpdateInput,
   costumeId: number,
 ): Promise<Costume> {
-  await apiUpdateAccessory(accessoryId, payload)
+  await apiUpdateAccessory(accessoryId, normalizeAccessoryUpdate(payload))
   const res = await getCostumeById(costumeId)
   return res.result
 }

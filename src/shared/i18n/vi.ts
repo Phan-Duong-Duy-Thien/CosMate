@@ -605,6 +605,7 @@ export const VI = {
       title: "Chỉnh sửa trang phục",
       basicInfoTab: "Thông tin cơ bản",
       feesTab: "Phụ phí & Gói thuê",
+      imagesTab: "Hình ảnh",
       loadingDetail: "Đang tải dữ liệu...",
       loadError: "Không thể tải dữ liệu trang phục.",
     },
@@ -681,6 +682,23 @@ export const VI = {
       save: "Lưu",
       cancel: "Hủy",
       edit: "Sửa",
+    },
+
+    // Costume Images
+    images: {
+      title: "Hình ảnh trang phục",
+      main: "Ảnh chính (MAIN)",
+      detail: "Ảnh chi tiết (DETAIL)",
+      noImages: "Chưa có ảnh.",
+      addDetail: "Thêm ảnh chi tiết",
+      uploadMainRequired: "Vui lòng tải lên ít nhất 1 ảnh chính.",
+      deleteMainNotAllowed: "Không thể xóa ảnh chính duy nhất. Hãy thêm ảnh chính mới trước.",
+      replaceMain: "Thay ảnh chính",
+      delete: "Xóa",
+      replace: "Thay ảnh",
+      uploadError: "Tải ảnh lên thất bại. Vui lòng thử lại.",
+      uploadDetailPartialError: "Một số ảnh chi tiết tải lên thất bại. Bạn có thể thêm lại trong phần chỉnh sửa.",
+      deleteError: "Xóa ảnh thất bại. Vui lòng thử lại.",
     },
   },
 

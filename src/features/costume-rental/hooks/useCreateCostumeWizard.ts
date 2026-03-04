@@ -8,6 +8,7 @@
 import { useState } from 'react'
 import { message } from 'antd'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
+import { uploadMainThenDetails } from '../services/costumeImages.service'
 import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
 import type {
@@ -22,7 +23,6 @@ interface JwtPayload {
   [key: string]: unknown
 }
 
-/** Decode JWT payload without a library dependency */
 function decodeJwtPayload(token: string): JwtPayload | null {
   try {
     const base64 = token.split('.')[1]
@@ -95,6 +95,22 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
       if (import.meta.env.DEV) {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
+
+      if (values.imageFiles && values.imageFiles.length > 0) {
+        try {
+          const { failedDetailIndices } = await uploadMainThenDetails(result.id, values.imageFiles)
+          if (failedDetailIndices.length > 0) {
+            message.warning(VI.costumeRental.images.uploadDetailPartialError)
+          }
+        } catch (imgErr) {
+          const msg = imgErr instanceof Error ? imgErr.message : VI.costumeRental.images.uploadError
+          setPhase1Error(msg)
+          message.error(msg)
+          setIsPhase1Loading(false)
+          return
+        }
+      }
+
       setCostumeId(result.id)
       setNumberOfItems(values.numberOfItems)
       setPhase(2)
@@ -107,7 +123,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   }
 
   const handlePhase2Submit = async () => {
-    // Guard: costumeId must be set by Phase 1 before Phase 2 can run
     if (costumeId === null || typeof costumeId !== 'number') {
       const errMsg = 'Thieu costumeId. Vui long hoan thanh buoc 1 truoc.'
       setPhase2Error(errMsg)
@@ -122,7 +137,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase2Error(null)
     setIsPhase2Loading(true)
     try {
-      // Validate rental options
       const roResult = validateRentalOptions(rentalOptions)
       if (!roResult.valid) {
         const msg = VI.costumeRental.rentalOptions[roResult.errorKey!.split('.').pop() as keyof typeof VI.costumeRental.rentalOptions] as string
@@ -130,7 +144,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         message.error(msg)
         throw new Error(msg)
       }
-      // Validate accessories
       const accResult = validateAccessories(accessories, numberOfItems)
       if (!accResult.valid) {
         const msg = VI.costumeRental.accessories.reachedMaxItems
@@ -148,21 +161,18 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     }
   }
 
-  // Surcharge list helpers
   const addSurcharge = (item: SurchargeInput) => setSurcharges((p) => [...p, item])
   const updateSurcharge = (i: number, item: SurchargeInput) =>
     setSurcharges((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeSurcharge = (i: number) =>
     setSurcharges((p) => p.filter((_, idx) => idx !== i))
 
-  // Accessory list helpers
   const addAccessory = (item: AccessoryInput) => setAccessories((p) => [...p, item])
   const updateAccessory = (i: number, item: AccessoryInput) =>
     setAccessories((p) => p.map((x, idx) => (idx === i ? item : x)))
   const removeAccessory = (i: number) =>
     setAccessories((p) => p.filter((_, idx) => idx !== i))
 
-  // Rental option list helpers
   const addRentalOption = (item: RentalOptionInput) => setRentalOptions((p) => [...p, item])
   const updateRentalOption = (i: number, item: RentalOptionInput) =>
     setRentalOptions((p) => p.map((x, idx) => (idx === i ? item : x)))

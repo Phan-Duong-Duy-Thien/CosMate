@@ -36,6 +36,8 @@ import type {
   AccessoryUpdateInput,
 } from '../types'
 import { VI } from '@/shared/i18n/vi'
+import { useCostumeImages } from './useCostumeImages'
+import { useCostumeImageActions } from './useCostumeImageActions'
 
 /** Read providerId from JWT payload – same pattern as useCreateCostumeWizard */
 function getProviderIdFromToken(): number | null {
@@ -306,6 +308,22 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     [editingId, onSuccess],
   )
 
+  // ── Image hooks ───────────────────────────────────────────────────────────
+  const {
+    mainImages,
+    detailImages,
+    allImages,
+    loading: imagesLoading,
+    error: imagesError,
+    refetch: refetchImages,
+  } = useCostumeImages(editingId)
+
+  const imageHooks = useCostumeImageActions({
+    costumeId: editingId,
+    mainImages,
+    refetch: refetchImages,
+  })
+
   return {
     // Modal state
     open,
@@ -342,5 +360,14 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setCreateAccessoryModalOpen,
     handleCreateAccessory,
     handleUpdateAccessory,
+
+    // Image hooks
+    mainImages,
+    detailImages,
+    allImages,
+    imagesLoading,
+    imagesError,
+    refetchImages,
+    ...imageHooks,
   }
 }

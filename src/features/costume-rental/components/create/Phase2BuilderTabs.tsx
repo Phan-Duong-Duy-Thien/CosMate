@@ -89,8 +89,8 @@ function SurchargeTab({ items, onAdd, onUpdate, onRemove }: SurchargeTabProps) {
             <Input />
           </Form.Item>
           <Form.Item name="price" label={VI.costumeRental.surcharges.form.price}
-            rules={[{ required: true }, { type: 'number', max: 10000, message: 'Giá phụ phí tối đa 10,000 VNĐ' }]}>
-            <InputNumber min={0} max={10000} style={{ width: '100%' }} />
+            rules={[{ required: true }]}>
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
         </Form>
       </Modal>
@@ -238,8 +238,8 @@ function RentalOptionTab({ items, onAdd, onUpdate, onRemove }: RentalOptionTabPr
             </Select>
           </Form.Item>
           <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price}
-            rules={[{ required: true }, { type: 'number', max: 500000, message: 'Giá gói thuê tối đa 500,000 VNĐ' }]}>
-            <InputNumber min={0} max={500000} style={{ width: '100%' }} />
+            rules={[{ required: true }]}>
+            <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
           <Form.Item name="description" label={VI.costumeRental.rentalOptions.form.description}>
             <Input />
