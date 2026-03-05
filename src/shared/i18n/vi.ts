@@ -600,7 +600,7 @@ export const VI = {
     providerId: "ID nhà cung cấp",
     imageUrls: "Danh sách ảnh",
     isRequired: "Bắt buộc",
-    detailSectionTitle: "Thông tin chi tiết từ API",
+    detailSectionTitle: "Thông tin chi tiết",
 
     // Validation messages
     validation: {

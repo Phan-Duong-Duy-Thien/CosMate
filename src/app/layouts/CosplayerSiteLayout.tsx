@@ -96,16 +96,12 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.costumes },
       ])
-    } else if (path.startsWith("/costumes/")) {
+    } else if (path.startsWith("/costumes/") && !path.includes("/checkout")) {
+      // Dynamic costume detail pages - set default, page will update with actual name
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.costumes, to: "/costumes" },
-        { label: VI.common.breadcrumb.checkout },
-      ])
-    } else if (path === "/profile") {
-      setItems([
-        { label: VI.common.breadcrumb.home, to: "/" },
-        { label: VI.common.breadcrumb.profile },
+        { label: "Đang tải..." },
       ])
     } else if (path === "/rent/checkout") {
       setItems([
@@ -321,16 +317,14 @@ export default function CosplayerSiteLayout() {
       </button>
     </div>
   </div>
-
-  {/* Breadcrumbs */}
-  {items.length > 0 && (
-    <div className="mx-auto w-full max-w-6xl px-4 pt-4">
-      <Breadcrumbs items={items} />
-    </div>
-  )}
 </header>
 
-<main className="flex-1 pt-[116px] md:pt-[64px]">
+{/* Breadcrumbs - always render to maintain layout stability */}
+<div className="mx-auto w-full max-w-6xl px-4 pt-4">
+  <Breadcrumbs items={items} />
+</div>
+
+<main className="flex-1 pt-[64px] md:pt-[64px]">
         {isHomePage ? (
           <div className="relative">
             <div

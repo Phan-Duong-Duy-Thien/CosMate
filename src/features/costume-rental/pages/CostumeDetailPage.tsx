@@ -8,11 +8,13 @@ import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
   const navigate = useNavigate()
+  const { setItems } = useBreadcrumb()
 
   const {
     costume,
@@ -36,6 +38,17 @@ export default function CostumeDetailPage() {
 
   // Validation error state
   const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  // Set breadcrumb when costume data is loaded
+  React.useEffect(() => {
+    if (costume) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: costume.name },
+      ])
+    }
+  }, [costume, setItems])
 
   // Convert date string to ISO format for backend
   const convertToIsoDateTime = (dateString: string): string => {
@@ -160,9 +173,6 @@ export default function CostumeDetailPage() {
   return (
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-6xl px-4 pt-8">
-        <div className="text-xs text-slate-500">
-          CosMate &gt; Thuê đồ Cosplay &gt; {costume.name}
-        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <MediaGallery
@@ -200,12 +210,9 @@ export default function CostumeDetailPage() {
           </h2>
 
           <div className="grid gap-4 md:grid-cols-2">
-            <ApiField label="ID" value={String(costume.id)} />
-            <ApiField label={VI.costumeRental.providerId} value={String(costume.providerId)} />
             <ApiField label={VI.costumeRental.costumeName} value={costume.name} />
             <ApiField label={VI.costumeRental.status} value={costume.status} />
             <ApiField label={VI.costumeRental.size} value={costume.size} />
-            <ApiField label={VI.costumeRental.rentPurpose} value={costume.rentPurpose} />
             <ApiField
               label={VI.costumeRental.numberOfItems}
               value={String(costume.numberOfItems)}
