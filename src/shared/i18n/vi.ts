@@ -463,6 +463,14 @@ export const VI = {
       review: "Đánh giá",
       historyPlaceholder: "Lịch sử mua hàng sẽ hiển thị tại đây.",
       filterLabel: "Bộ lọc hiện tại",
+      tabAll: "Tất cả",
+      tabWaitConfirm: "Chờ xác nhận",
+      tabWaitShipping: "Chờ giao hàng",
+      tabInUse: "Đang sử dụng",
+      tabCompleted: "Hoàn thành",
+      tabCancelled: "Đã hủy",
+      empty: "Không có đơn hàng nào",
+      loadError: "Không thể tải danh sách đơn hàng",
     },
 
     wallet: {
