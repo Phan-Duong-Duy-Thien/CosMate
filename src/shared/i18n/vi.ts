@@ -204,7 +204,7 @@ export const VI = {
    */
   auth: {
     login: {
-      title: "Chào mừng trở lại CosMate",
+      title: "Mừng bạn đến với CosMate",
       subtitle: "Đăng nhập để tiếp tục hành trình cosplay của bạn",
       emailOrUsername: "Email hoặc tên người dùng",
       emailOrUsernamePlaceholder: "Nhập email hoặc tên người dùng của bạn",

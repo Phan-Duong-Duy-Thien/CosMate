@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react"
 import type { AdminUserProfile } from "@/features/admin/types"
 import { getUserId } from "@/features/auth/services/tokenStorage"
+import { useUserProfile as useHeaderUserProfile } from "@/app/providers/UserProfileProvider"
 import { VI } from "@/shared/i18n/vi"
 import * as userProfileService from "../services/userProfile.service"
 import type { UpdateUserProfilePayload } from "../types"
@@ -17,6 +18,7 @@ export function useEditProfile({
   onProfileUpdated,
 }: UseEditProfileOptions) {
   const userId = getUserId()
+  const { setUserProfile } = useHeaderUserProfile()
   const [fullName, setFullName] = useState("")
   const [phone, setPhone] = useState("")
   const [updatingProfile, setUpdatingProfile] = useState(false)
@@ -69,6 +71,7 @@ export function useEditProfile({
       setError(null)
       const updatedProfile = await userProfileService.updateProfile(userId, payload)
       onProfileUpdated?.(updatedProfile)
+      setUserProfile({ fullName: updatedProfile.fullName })
       setSuccess(VI.profile.editModal.updateSuccess)
       return true
     } catch (err) {
@@ -93,6 +96,7 @@ export function useEditProfile({
       setError(null)
       const updatedProfile = await userProfileService.uploadAvatar(userId, file)
       onProfileUpdated?.(updatedProfile)
+      setUserProfile({ avatarUrl: updatedProfile.avatarUrl })
       setSuccess(VI.profile.editModal.uploadAvatarSuccess)
       return true
     } catch (err) {
