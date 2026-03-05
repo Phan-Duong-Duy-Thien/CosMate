@@ -50,3 +50,32 @@ export interface CreateOrderParams {
   selectedAccessoryIds: number[];
   selectedRentalOptionId: number | null;
 }
+
+// Order item from GET /api/orders/user/{userId}
+export type OrderStatus =
+  | 'UNPAID'
+  | 'PAID'
+  | 'PREPARING'
+  | 'SHIPPING_OUT'
+  | 'DELIVERING_OUT'
+  | 'IN_USE'
+  | 'RETURNED'
+  | 'COMPLETED'
+  | 'CANCELLED';
+
+export interface OrderItem {
+  id: number;
+  status: OrderStatus;
+  totalAmount: number;
+  depositAmount: number;
+  rentDay: number;
+  rentStart: string;
+  rentEnd: string;
+  costumeId: number;
+  costumeName: string;
+  costumeImage: string;
+  cosplayerId: number;
+  cosplayerName: string;
+  createdAt: string;
+  updatedAt: string;
+}

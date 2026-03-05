@@ -3,7 +3,7 @@
  * Handles order creation API calls
  */
 import axiosInstance from '@/services/axiosInstance';
-import type { CreateOrderPayload, CreateOrderResponse } from '../types';
+import type { CreateOrderPayload, CreateOrderResponse, OrderItem } from '../types';
 
 interface ApiResponse<T> {
   code: number;
@@ -24,6 +24,18 @@ export async function createOrder(
   const response = await axiosInstance.post<ApiResponse<CreateOrderResponse>>(
     `/api/orders?cosplayerId=${cosplayerId}`,
     payload
+  );
+  return response.data.result;
+}
+
+/**
+ * Get all orders for a user
+ * @param userId - The user ID
+ * @returns List of orders for the user
+ */
+export async function getOrdersByUserId(userId: number): Promise<OrderItem[]> {
+  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+    `/api/orders/user/${userId}`
   );
   return response.data.result;
 }

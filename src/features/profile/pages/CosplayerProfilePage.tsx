@@ -2,6 +2,7 @@ import { type ChangeEvent, useEffect, useRef, useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useUserProfile } from "../hooks/useUserProfile"
 import { useUserAddresses } from "../hooks/useUserAddresses"
+import { usePurchaseOrders } from "../hooks/usePurchaseOrders"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
@@ -35,9 +36,18 @@ export default function CosplayerProfilePage() {
   const [showAllAddresses, setShowAllAddresses] = useState(false)
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
+  const { counts } = usePurchaseOrders("all")
 
   const displayedAddresses = showAllAddresses ? addresses : addresses.slice(0, 1)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
+
+  // Map UI shortcut keys to tab keys
+  const shortcutToTabMap: Record<string, string> = {
+    pendingConfirm: "wait_confirm",
+    pendingPickup: "wait_shipping",
+    shipping: "wait_shipping",
+    review: "completed",
+  }
 
   const orderShortcuts = [
     {
@@ -198,6 +208,8 @@ export default function CosplayerProfilePage() {
                   <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
                     {orderShortcuts.map((item, index) => {
                       const Icon = item.icon
+                      const tabKey = shortcutToTabMap[item.key]
+                      const count = tabKey ? counts[tabKey as keyof typeof counts] || 0 : 0
                       const tileToneClass =
                         index % 2 === 0
                           ? "border-fuchsia-200 bg-white/85 hover:bg-pink-50/80"
@@ -208,12 +220,12 @@ export default function CosplayerProfilePage() {
                           type="button"
                           className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] ${tileToneClass}`}
                           onClick={() =>
-                            navigate(`/profile/purchase-history?tab=${item.key}`)
+                            navigate(`/profile/purchase-history?tab=${tabKey}`)
                           }
                         >
                           <div className="flex items-center justify-between">
                             <Icon className="h-4 w-4 text-purple-600" />
-                            <span className="text-xs font-semibold text-slate-600">0</span>
+                            <span className="text-xs font-semibold text-slate-600">{count}</span>
                           </div>
                           <p className="mt-2 text-xs font-medium text-slate-700">{item.label}</p>
                         </button>

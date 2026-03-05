@@ -17,6 +17,7 @@ import type { MenuProps } from "antd"
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
+import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
@@ -33,7 +34,7 @@ export default function CosplayerSiteLayout() {
   const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const searchValue = searchParams.get("q") ?? ""
-  const { setItems } = useBreadcrumb()
+  const { items, setItems } = useBreadcrumb()
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
   const isWideContentPage =
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
@@ -259,6 +260,13 @@ export default function CosplayerSiteLayout() {
           </div>
         </div>
       </header>
+
+      {/* Breadcrumbs */}
+      {items.length > 0 && (
+        <div className="mx-auto w-full max-w-6xl px-4 pt-4">
+          <Breadcrumbs items={items} />
+        </div>
+      )}
 
       <main className="flex-1">
         {isHomePage ? (
