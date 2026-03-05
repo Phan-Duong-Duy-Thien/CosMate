@@ -129,11 +129,13 @@ export default function PurchaseHistoryPage() {
             })}
           </div>
 
-          {/* Current Filter Info */}
-          <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-            <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
-            <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
-          </div>
+          {/* Current Filter Info - only show when not on "all" tab */}
+          {tab !== "all" && (
+            <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
+              <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
+              <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+            </div>
+          )}
 
           {/* Content */}
           <div className="mt-6">

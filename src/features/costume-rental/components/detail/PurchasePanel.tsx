@@ -70,7 +70,7 @@ export const PurchasePanel = ({
                       : "border-slate-200 bg-white text-slate-600"
                   )}
                 >
-                  {opt.name}(+{opt.price.toLocaleString("vi-VN")}VNĐ)
+                  {opt.name}({opt.price.toLocaleString("vi-VN")}VNĐ)
                 </button>
               ))}
             </div>
@@ -125,7 +125,7 @@ export const PurchasePanel = ({
                     {acc.name}
                     {acc.isRequired && <span className="text-xs text-pink-500"> (bắt buộc)</span>}
                   </span>
-                  <span className="font-semibold text-slate-900">+{acc.price.toLocaleString("vi-VN")} VNĐ</span>
+                  <span className="font-semibold text-slate-900">{acc.price.toLocaleString("vi-VN")} VNĐ</span>
                 </label>
               ))}
             </div>
@@ -139,7 +139,7 @@ export const PurchasePanel = ({
               {costume.surcharges.map((s) => (
                 <div key={s.id} className="flex items-center justify-between rounded-2xl border border-slate-100 bg-white px-3 py-2">
                   <span>{s.name}</span>
-                  <span className="font-semibold text-slate-900">+{s.price.toLocaleString("vi-VN")} VNĐ</span>
+                  <span className="font-semibold text-slate-900">{s.price.toLocaleString("vi-VN")} VNĐ</span>
                 </div>
               ))}
             </div>

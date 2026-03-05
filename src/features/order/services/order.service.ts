@@ -123,3 +123,31 @@ export async function submitOrderAndHandleResult(
   window.location.href = failedUrl;
   return { redirected: true };
 }
+
+/**
+ * Prepare an order (update status to PREPARING)
+ * @param orderId - The order ID
+ * @returns Updated order
+ */
+export async function prepareOrder(orderId: number) {
+  return orderApi.prepareOrder(orderId);
+}
+
+/**
+ * Get orders for a provider
+ * @param providerId - The provider ID
+ * @returns List of orders for the provider
+ */
+export async function fetchProviderOrders(providerId: number) {
+  const result = await orderApi.getOrdersByProvider(providerId);
+  return result;
+}
+
+/**
+ * Prepare a provider's order (update status to PREPARING)
+ * @param orderId - The order ID
+ * @returns Updated order
+ */
+export async function prepareProviderOrder(orderId: number) {
+  return orderApi.prepareOrder(orderId);
+}

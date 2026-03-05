@@ -5,6 +5,7 @@ import {
   Calendar,
   Star,
   Settings,
+  ClipboardList,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -41,6 +42,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.costumeCreate,
     icon: Package,
     path: '/provider-rental/costumes/create',
+  },
+  {
+    key: 'orders',
+    label: VI.provider.orders.title,
+    icon: ClipboardList,
+    path: '/provider-rental/orders',
   },
   {
     key: 'bookings',

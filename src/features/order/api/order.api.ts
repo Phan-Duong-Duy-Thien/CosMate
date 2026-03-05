@@ -29,6 +29,18 @@ export async function createOrder(
 }
 
 /**
+ * Get all orders for a provider
+ * @param providerId - The provider ID
+ * @returns List of orders for the provider
+ */
+export async function getOrdersByProvider(providerId: number): Promise<OrderItem[]> {
+  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+    `/api/orders/provider/${providerId}`
+  );
+  return response.data.result;
+}
+
+/**
  * Get all orders for a user
  * @param userId - The user ID
  * @returns List of orders for the user
@@ -36,6 +48,18 @@ export async function createOrder(
 export async function getOrdersByUserId(userId: number): Promise<OrderItem[]> {
   const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
     `/api/orders/user/${userId}`
+  );
+  return response.data.result;
+}
+
+/**
+ * Prepare an order (update status to PREPARING)
+ * @param orderId - The order ID
+ * @returns Updated order
+ */
+export async function prepareOrder(orderId: number): Promise<OrderItem> {
+  const response = await axiosInstance.post<ApiResponse<OrderItem>>(
+    `/api/orders/${orderId}/prepare`
   );
   return response.data.result;
 }

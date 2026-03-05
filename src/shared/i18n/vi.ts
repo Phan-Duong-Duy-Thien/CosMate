@@ -364,6 +364,29 @@ export const VI = {
       selectPlanRequired: "Vui lòng chọn gói dịch vụ.",
       selectMethodRequired: "Vui lòng chọn phương thức thanh toán.",
     },
+
+    orders: {
+      title: "Quản lý đơn thuê",
+      tabs: {
+        paid: "Chờ xác nhận",
+        preparing: "Chờ giao hàng",
+      },
+      table: {
+        orderId: "Mã đơn",
+        cosplayer: "Cosplayer",
+        total: "Tổng tiền",
+        createdAt: "Ngày tạo",
+        status: "Trạng thái",
+        action: "Hành động",
+      },
+      actions: {
+        prepare: "Xác nhận chuẩn bị",
+      },
+      toast: {
+        prepareSuccess: "Xác nhận chuẩn bị đơn thuê thành công",
+        prepareFailed: "Không thể xác nhận chuẩn bị đơn thuê",
+      },
+    },
   },
 
   /**
