@@ -4,7 +4,15 @@ import { Link, useNavigate, useParams } from "react-router-dom"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
+import { ProviderShopCard } from "../components/detail/ProviderShopCard"
+import { ProductInfoSections } from "../components/detail/ProductInfoSections"
+import { ProductReviewsSection } from "../components/detail/ProductReviewsSection"
+import { MyReviewForm } from "../components/detail/MyReviewForm"
+import { MoreFromShop } from "../components/detail/MoreFromShop"
 import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
+import { useProviderInfo } from "../hooks/useProviderInfo"
+import { useCreateReview } from "../hooks/useCreateReview"
+import { getMockReviewPermission } from "../mocks/reviewPermission.mock"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -38,6 +46,51 @@ export default function CostumeDetailPage() {
 
   // Validation error state
   const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  // Get current user ID
+  const currentUserId = getUserId()
+
+  // Fetch provider info
+  const { provider, loading: providerLoading } = useProviderInfo(costume?.providerId)
+
+  // Review permission and submission
+  const { submit: submitReview, loading: reviewSubmitting } = useCreateReview()
+  const reviewPermission = getMockReviewPermission(
+    costume ? Number(costume.id) : 0,
+    currentUserId ?? undefined
+  )
+
+  // Handlers for shop actions
+  const handleChat = () => {
+    console.log("Chat clicked - to be implemented with chat system")
+    // Future: navigate to chat or open chat modal
+  }
+
+  const handleViewShop = () => {
+    console.log("View shop clicked - to be implemented with shop profile page")
+    // Future: navigate to shop profile page /shop/:providerId (route not yet created)
+    // For now, show placeholder - the route will be added when shop profile page is built
+  }
+
+  const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
+    if (!currentUserId || !reviewPermission.orderId) {
+      alert("Bạn cần đăng nhập để gửi đánh giá")
+      return
+    }
+
+    const result = await submitReview({
+      cosplayerId: currentUserId,
+      orderId: reviewPermission.orderId,
+      rating: data.rating,
+      comment: data.comment,
+      images: data.images,
+    })
+
+    if (result) {
+      alert("Đánh giá của bạn đã được gửi thành công!")
+      // Optionally: refetch reviews or prepend the new review to the list
+    }
+  }
 
   // Set breadcrumb when costume data is loaded
   React.useEffect(() => {
@@ -204,85 +257,62 @@ export default function CostumeDetailPage() {
           )}
         </div>
 
-        <div className="mt-8 space-y-6 rounded-3xl border border-pink-100 bg-white/85 p-6">
-          <h2 className="text-xl font-semibold text-slate-900">
-            {VI.costumeRental.detailSectionTitle}
-          </h2>
-
-          <div className="grid gap-4 md:grid-cols-2">
-            <ApiField label={VI.costumeRental.costumeName} value={costume.name} />
-            <ApiField label={VI.costumeRental.status} value={costume.status} />
-            <ApiField label={VI.costumeRental.size} value={costume.size} />
-            <ApiField
-              label={VI.costumeRental.numberOfItems}
-              value={String(costume.numberOfItems)}
-            />
-            <ApiField
-              label={VI.costumeRental.pricePerDay}
-              value={`${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ`}
-            />
-            <ApiField
-              label={VI.costumeRental.depositAmount}
-              value={`${costume.depositAmount.toLocaleString("vi-VN")} VNĐ`}
-            />
-            <ApiField
-              label={VI.costumeRental.description}
-              value={costume.description}
-              fullWidth
-              preWrap
+        {/* Shop Info Card */}
+        {provider && (
+          <div className="mt-8">
+            <ProviderShopCard
+              provider={provider}
+              onChat={handleChat}
+              onViewShop={handleViewShop}
             />
           </div>
+        )}
 
-          <div>
-            <h3 className="text-base font-semibold text-slate-900">
-              {VI.costumeRental.imageUrls}
-            </h3>
-            <ul className="mt-2 space-y-1 text-sm text-slate-600">
-              {costume.imageUrls.map((imageUrl) => (
-                <li key={imageUrl} className="break-all">{imageUrl}</li>
-              ))}
-            </ul>
-          </div>
-
-          <ApiListSection title={VI.costumeRental.surcharges.title}>
-            {costume.surcharges.map((surcharge) => (
-              <li key={surcharge.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <p className="font-semibold text-slate-900">{surcharge.name}</p>
-                <p className="text-sm text-slate-600">{surcharge.description}</p>
-                <p className="text-sm text-pink-600">
-                  {surcharge.price.toLocaleString("vi-VN")} VNĐ
-                </p>
-              </li>
-            ))}
-          </ApiListSection>
-
-          <ApiListSection title={VI.costumeRental.accessories.title}>
-            {costume.accessories.map((accessory) => (
-              <li key={accessory.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <p className="font-semibold text-slate-900">{accessory.name}</p>
-                <p className="text-sm text-slate-600">{accessory.description}</p>
-                <p className="text-sm text-pink-600">
-                  {accessory.price.toLocaleString("vi-VN")} VNĐ
-                </p>
-                <p className="text-xs text-slate-500">
-                  {VI.costumeRental.isRequired}: {String(accessory.isRequired)}
-                </p>
-              </li>
-            ))}
-          </ApiListSection>
-
-          <ApiListSection title={VI.costumeRental.rentalOptions.title}>
-            {costume.rentalOptions.map((option) => (
-              <li key={option.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
-                <p className="font-semibold text-slate-900">{option.name}</p>
-                <p className="text-sm text-slate-600">{option.description}</p>
-                <p className="text-sm text-pink-600">
-                  {option.price.toLocaleString("vi-VN")} VNĐ
-                </p>
-              </li>
-            ))}
-          </ApiListSection>
+        {/* Product Info Sections */}
+        <div className="mt-8 space-y-6">
+          <ProductInfoSections
+            details={[
+              { label: VI.costumeRental.costumeName, value: costume.name },
+              { label: VI.costumeRental.status, value: costume.status },
+              { label: VI.costumeRental.size, value: costume.size },
+              { label: VI.costumeRental.numberOfItems, value: String(costume.numberOfItems) },
+              { label: VI.costumeRental.pricePerDay, value: `${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ` },
+              { label: VI.costumeRental.depositAmount, value: `${costume.depositAmount.toLocaleString("vi-VN")} VNĐ` },
+            ]}
+            description={costume.description}
+          />
         </div>
+
+        {/* Reviews Section */}
+        {costume.id && (
+          <div className="mt-8">
+            <ProductReviewsSection costumeId={Number(costume.id)} />
+          </div>
+        )}
+
+        {/* My Review Form */}
+        {reviewPermission.canReview && currentUserId && (
+          <div className="mt-6">
+            <MyReviewForm
+              canReview={reviewPermission.canReview}
+              orderId={reviewPermission.orderId}
+              cosplayerId={currentUserId}
+              onSubmit={handleReviewSubmit}
+              loading={reviewSubmitting}
+            />
+          </div>
+        )}
+
+        {/* More from Shop */}
+        {provider && (
+          <div className="mt-8">
+            <MoreFromShop
+              providerId={provider.id}
+              onSelectCostume={(id) => navigate(`/costumes/${id}`)}
+              currentCostumeId={String(costume.id)}
+            />
+          </div>
+        )}
 
         {/* No Address Confirmation Modal */}
         {showNoAddressModal && (

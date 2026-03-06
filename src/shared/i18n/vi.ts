@@ -625,6 +625,27 @@ export const VI = {
     isRequired: "Bắt buộc",
     detailSectionTitle: "Thông tin chi tiết",
 
+    // Costume Detail Page Enhancements
+    detail: {
+      productDetailTitle: "CHI TIẾT SẢN PHẨM",
+      productDescriptionTitle: "MÔ TẢ SẢN PHẨM",
+      shopFeatured: "Shop nổi bật",
+      chatNow: "Chat ngay",
+      viewShop: "Xem shop",
+      rentalCount: "Lượt thuê",
+      reviewsTitle: "Đánh giá",
+      myReviewTitle: "Đánh giá của tôi",
+      writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
+      submitReview: "Gửi đánh giá",
+      moreFromShop: "Sản phẩm khác của shop",
+      noReviews: "Chưa có đánh giá nào.",
+      ratingLabel: "Đánh giá",
+      totalReviews: "đánh giá",
+      writeReview: "Viết đánh giá",
+      uploadImages: "Tải ảnh lên",
+      addPhotos: "Thêm ảnh",
+    },
+
     // Validation messages
     validation: {
       missingRentStart: "Vui lòng chọn ngày bắt đầu thuê",
