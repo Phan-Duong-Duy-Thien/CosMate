@@ -10,7 +10,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { getCostumeById } from "../api/costume.api"
-import type { Costume, QuoteBreakdown }from "../types"
+import type { Costume, QuoteBreakdown } from "../types"
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
 
@@ -33,22 +33,30 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     if (!costumeId) return
     const numId = Number(costumeId)
     if (isNaN(numId)) {
-      setError("ID trang phá»¥c khĂ´ng há»£p lá»‡.")
+      setError("ID trang phuc khong hop le.")
       setIsLoading(false)
       return
     }
     setIsLoading(true)
     setError(null)
     try {
+      // Call real API
       const data = await getCostumeById(numId)
-      setCostume(data)
+
+      // Mock rentalsCount for testing (API chua tra ve truong nay)
+      const dataWithRentalsCount = {
+        ...data,
+        rentalsCount: 150, // Mock value for testing
+      }
+
+      setCostume(dataWithRentalsCount)
       const firstOption = data.rentalOptions?.[0] ?? null
       setSelectedRentalOptionId(firstOption?.id ?? null)
       setCheckedOptionalIds(new Set())
       setDays(1)
       setStartDate("")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "KhĂ´ng thá»ƒ táº£i chi tiáº¿t trang phá»¥c.")
+      setError(err instanceof Error ? err.message : "Khong the tai chi tiet trang phuc.")
     } finally {
       setIsLoading(false)
     }
