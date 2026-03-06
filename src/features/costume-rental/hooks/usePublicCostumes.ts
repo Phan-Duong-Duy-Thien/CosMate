@@ -8,15 +8,15 @@
  * No direct API calls from page or components.
  */
 
-import { useState, useEffect, useCallback } from "react"
-import { getCostumes } from "../api/costume.api"
-import type { CostumeItem, Costume } from "../types"
+import { useState, useEffect, useCallback } from 'react'
+import { getCostumes } from '../api/costume.api'
+import type { CostumeItem, Costume } from '../types'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
 function resolveImageUrl(url: string): string {
-  if (!url) return ""
-  if (url.startsWith("http://") || url.startsWith("https://")) return url
+  if (!url) return ''
+  if (url.startsWith('http://') || url.startsWith('https://')) return url
   return `${API_BASE}${url}`
 }
 
@@ -46,25 +46,25 @@ function mapCostumeToItem(costume: Costume): CostumeItem {
 
   return {
     id: String(costume.id),
-    name: costume.name ?? "",
-    description: costume.description ?? "",
-    characterName: "â€”",
-    seriesName: "",
-    seriesType: "anime",
+    name: costume.name ?? '',
+    description: costume.description ?? '',
+    characterName: '—',
+    seriesName: '',
+    seriesType: 'anime',
     shopId: String(costume.providerId),
-    shopName: "â€”",
+    shopName: '—',
     tags: [],
     isAdult18: false,
-    bestSeller: costume.status !== "RENTED",
-    isAvailable: costume.status === "AVAILABLE",
+    bestSeller: costume.status !== 'RENTED',
+    isAvailable: costume.status === 'AVAILABLE',
     rating: 0,
     reviewCount: 0,
-    rentalsCount: 0,
+    rentalsCount: costume.rentalsCount ?? 0,
     priceMin,
     priceMax,
-    brand: "",
-    brandType: "non_brand",
-    region: "hcm",
+    brand: '',
+    brandType: 'non_brand',
+    region: 'hcm',
     images: images.length > 0 ? images : [],
     hasAccessories: accessoryCount > 0,
     accessoryCount: accessoryCount > 0 ? accessoryCount : undefined,
@@ -74,11 +74,11 @@ function mapCostumeToItem(costume: Costume): CostumeItem {
       price: a.price,
     })),
     sizeOptions: costume.size
-      ? [costume.size.toLowerCase() as CostumeItem["sizeOptions"][number]]
+      ? [costume.size.toLowerCase() as CostumeItem['sizeOptions'][number]]
       : [],
     createdAt: new Date().toISOString(),
     details: [],
-    rentalPurposes: ["fes_shoot"],
+    rentalPurposes: ['fes_shoot'],
     basePriceByPurpose: {
       test: costume.pricePerDay ?? 0,
       fes_shoot: costume.pricePerDay ?? 0,
@@ -98,11 +98,13 @@ export function usePublicCostumes() {
     setIsLoading(true)
     setError(null)
     try {
+      // Call real API
       const costumes = await getCostumes()
-      const mapped = costumes.map(mapCostumeToItem)
+      // Mock rentalsCount for testing (API chua tra ve truong nay)
+      const mapped = costumes.map((c) => mapCostumeToItem({ ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) }))
       setItems(mapped)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "KhĂ´ng thá»ƒ táº£i danh sĂ¡ch trang phá»¥c.")
+      setError(err instanceof Error ? err.message : 'Khong the tai danh sach trang phuc.')
     }finally {
       setIsLoading(false)
     }

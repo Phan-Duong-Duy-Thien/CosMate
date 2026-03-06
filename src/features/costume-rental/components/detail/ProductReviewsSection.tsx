@@ -25,14 +25,14 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
-        <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+      <div className="inline-block rounded-xl border-2 border-[#FDCCD7] bg-[#FDCCD7] px-3 py-1.5">
+        <h3 className="text-base font-bold tracking-wide text-slate-800 text-center">
           {VI.costumeRental.detail.reviewsTitle}
         </h3>
       </div>
 
       {/* Rating Summary */}
-      <Card className="border-pink-100 bg-white p-5">
+      <Card className="rounded-xl border border-pink-100 bg-white p-5">
         <div className="flex flex-wrap items-center gap-4">
           <div>
             <p className="text-3xl font-semibold text-pink-600">{average.toFixed(1)}</p>

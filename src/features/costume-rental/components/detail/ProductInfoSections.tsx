@@ -14,12 +14,12 @@ export function ProductInfoSections({ details, description }: ProductInfoSection
     <div className="space-y-6">
       {/* Product Details Section */}
       <div>
-        <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
-          <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+        <div className="inline-block rounded-xl border-2 border-[#FDCCD7] bg-white px-3 py-1.5">
+          <h3 className="text-base font-bold tracking-wide text-slate-800 text-center">
             {VI.costumeRental.detail.productDetailTitle}
           </h3>
         </div>
-        <Card className="mt-3 border-pink-100 bg-white p-5">
+        <Card className="mt-3 rounded-xl border border-pink-100 bg-white p-5">
           <div className="grid gap-4 md:grid-cols-2">
             {details.map((detail, index) => (
               <div key={index}>
@@ -33,12 +33,12 @@ export function ProductInfoSections({ details, description }: ProductInfoSection
 
       {/* Product Description Section */}
       <div>
-        <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
-          <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+        <div className="inline-block rounded-xl border-2 border-[#FDCCD7] bg-white px-3 py-1.5">
+          <h3 className="text-base font-bold tracking-wide text-slate-800 text-center">
             {VI.costumeRental.detail.productDescriptionTitle}
           </h3>
         </div>
-        <Card className="mt-3 border-pink-100 bg-white p-5">
+        <Card className="mt-3 rounded-xl border border-pink-100 bg-white p-5">
           <p className="whitespace-pre-line text-sm text-slate-600">{description}</p>
         </Card>
       </div>

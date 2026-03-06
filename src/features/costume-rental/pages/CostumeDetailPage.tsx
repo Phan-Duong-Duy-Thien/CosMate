@@ -67,9 +67,9 @@ export default function CostumeDetailPage() {
   }
 
   const handleViewShop = () => {
-    console.log("View shop clicked - to be implemented with shop profile page")
-    // Future: navigate to shop profile page /shop/:providerId (route not yet created)
-    // For now, show placeholder - the route will be added when shop profile page is built
+    if (provider?.id) {
+      navigate(`/shop/${provider.id}`)
+    }
   }
 
   const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
@@ -232,6 +232,7 @@ export default function CostumeDetailPage() {
             images={resolvedImages}
             isAdult18={false}
             bestSeller={costume.status !== "RENTED"}
+            rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
             hasAccessories={accessoryCount > 0}
             accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
           />

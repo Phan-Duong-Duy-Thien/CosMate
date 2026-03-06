@@ -188,6 +188,7 @@ export interface Costume {
   surcharges: CostumeSurcharge[]
   accessories: CostumeAccessory[]
   rentalOptions: CostumeRentalOption[]
+  rentalsCount?: number
 }
 
 /**

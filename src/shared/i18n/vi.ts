@@ -299,6 +299,60 @@ export const VI = {
    * Provider dashboard text
    */
   provider: {
+    // Shop Profile (Public)
+    shop: {
+      title: "Hồ sơ shop",
+      verified: "Đã xác minh",
+      featured: "Shop nổi bật",
+      chat: "Chat ngay",
+      follow: "Theo dõi",
+      contact: "Liên hệ",
+      facebook: "Facebook",
+      messenger: "Messenger",
+      website: "Website",
+      policies: {
+        title: "Chính sách shop",
+        rental: "Điều kiện thuê",
+        deposit: "Tiền cọc",
+        damage: "Chính sách hư hỏng",
+        lateReturn: "Phạt trả muộn",
+        cancellation: "Hủy/Hoàn tiền",
+        notes: "Lưu ý khác",
+      },
+      stats: {
+        rentals: "Lượt thuê",
+        reviews: "Đánh giá",
+        rating: "Đánh giá",
+      },
+      reviews: {
+        title: "Đánh giá shop",
+        summary: "Đánh giá",
+        noReviews: "Chưa có đánh giá nào.",
+        writeReview: "Viết đánh giá",
+      },
+      products: {
+        title: "Sản phẩm của shop",
+        searchPlaceholder: "Tìm sản phẩm...",
+        sort: {
+          label: "Sắp xếp",
+          bestSelling: "Bán chạy",
+          newest: "Mới nhất",
+        },
+        filter: {
+          price: "Lọc theo giá",
+          minPrice: "Giá từ",
+          maxPrice: "đến",
+        },
+        noProducts: "Shop chưa có sản phẩm nào.",
+      },
+      recommended: {
+        title: "Gợi ý sản phẩm phù hợp với bạn",
+      },
+      accessory: "Có phụ kiện",
+      noAccessory: "Không phụ kiện",
+      rental: "lượt thuê",
+    },
+
     dashboard: {
       title: "Bảng điều khiển Provider",
       welcome: "Chào mừng trở lại, Provider!",
