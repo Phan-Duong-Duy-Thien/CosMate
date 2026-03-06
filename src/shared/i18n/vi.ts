@@ -367,9 +367,20 @@ export const VI = {
 
     orders: {
       title: "Quản lý đơn thuê",
+      searchPlaceholder: "Tìm kiếm theo mã đơn, ID cosplayer...",
       tabs: {
+        all: "Tất cả",
+        unpaid: "Chưa thanh toán",
         paid: "Chờ xác nhận",
         preparing: "Chờ giao hàng",
+        shippingOut: "Đang giao hàng",
+        deliveringOut: "Đang giao hàng",
+        inUse: "Đang sử dụng",
+        shippingBack: "Đang trả hàng",
+        completed: "Hoàn thành",
+        cancelled: "Đã hủy",
+        dispute: "Tranh chấp",
+        extending: "Gia hạn",
       },
       table: {
         orderId: "Mã đơn",

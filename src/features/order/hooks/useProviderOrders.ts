@@ -6,13 +6,30 @@ import { fetchProviderOrders, prepareProviderOrder } from '../services/order.ser
 import { getAuth } from '@/features/auth/services/tokenStorage';
 import type { OrderItem, OrderStatus } from '../types';
 
-type TabKey = 'PAID' | 'PREPARING';
+// Fixed status tabs configuration
+export const ORDER_STATUS_TABS: Array<{ key: OrderStatus | 'ALL'; label: string }> = [
+  { key: 'ALL', label: 'all' },
+  { key: 'UNPAID', label: 'unpaid' },
+  { key: 'PAID', label: 'paid' },
+  { key: 'PREPARING', label: 'preparing' },
+  { key: 'SHIPPING_OUT', label: 'shippingOut' },
+  { key: 'DELIVERING_OUT', label: 'deliveringOut' },
+  { key: 'IN_USE', label: 'inUse' },
+  { key: 'SHIPPING_BACK', label: 'shippingBack' },
+  { key: 'COMPLETED', label: 'completed' },
+  { key: 'CANCELLED', label: 'cancelled' },
+  { key: 'DISPUTE', label: 'dispute' },
+  { key: 'EXTENDING', label: 'extending' },
+];
+
+type TabKey = OrderStatus | 'ALL';
 
 export function useProviderOrders() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>('PAID');
+  const [activeTab, setActiveTab] = useState<TabKey>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
   const [preparingOrderId, setPreparingOrderId] = useState<number | null>(null);
 
   // Get providerId from JWT token
@@ -65,16 +82,40 @@ export function useProviderOrders() {
     refetch();
   }, [providerId]);
 
-  // Filter orders by active tab
+  // Filter orders by active tab and search term
   const filteredOrders = useMemo(() => {
-    if (activeTab === 'PAID') {
-      return orders.filter((order) => order.status === 'PAID');
+    let result = orders;
+
+    // Filter by tab
+    if (activeTab !== 'ALL') {
+      result = result.filter((order) => order.status === activeTab);
     }
-    if (activeTab === 'PREPARING') {
-      return orders.filter((order) => order.status === 'PREPARING');
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(
+        (order) =>
+          order.id.toString().includes(term) ||
+          order.cosplayerId.toString().includes(term) ||
+          (order.cosplayerName && order.cosplayerName.toLowerCase().includes(term))
+      );
     }
-    return orders;
-  }, [orders, activeTab]);
+
+    return result;
+  }, [orders, activeTab, searchTerm]);
+
+  // Get count for each status tab
+  const tabCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    counts['ALL'] = orders.length;
+    ORDER_STATUS_TABS.forEach((tab) => {
+      if (tab.key !== 'ALL') {
+        counts[tab.key] = orders.filter((order) => order.status === tab.key).length;
+      }
+    });
+    return counts;
+  }, [orders]);
 
   // Prepare order action
   const prepareOrder = async (orderId: number) => {
@@ -97,6 +138,9 @@ export function useProviderOrders() {
     error,
     activeTab,
     setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    tabCounts,
     refetch,
     prepareOrder,
     preparingOrderId,

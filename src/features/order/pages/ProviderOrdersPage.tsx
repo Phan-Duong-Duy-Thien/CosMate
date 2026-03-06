@@ -1,23 +1,20 @@
 /**
  * ProviderOrdersPage
- * 
+ *
  * Provider rental dashboard page for order management
  * Orchestrates: tabs, table, actions
  * No axios calls - uses hook for data/actions
  */
 
-import { useState } from 'react';
-import { Table, Tabs, Button, Tag, Space, message } from 'antd';
+import { Table, Tabs, Button, Tag, Space, message, Input } from 'antd';
 import type { TableProps } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, SearchOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '@/features/provider/constants/sidebar';
-import { useProviderOrders } from '../hooks/useProviderOrders';
+import { useProviderOrders, ORDER_STATUS_TABS } from '../hooks/useProviderOrders';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderItem } from '../types';
-
-type TabKey = 'PAID' | 'PREPARING';
 
 export default function ProviderOrdersPage() {
   const {
@@ -26,6 +23,9 @@ export default function ProviderOrdersPage() {
     error,
     activeTab,
     setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    tabCounts,
     refetch,
     prepareOrder,
     preparingOrderId,
@@ -64,17 +64,20 @@ export default function ProviderOrdersPage() {
   // Get status tag color
   const getStatusTag = (status: string) => {
     const statusConfig: Record<string, { color: string; text: string }> = {
+      UNPAID: { color: 'default', text: 'Chưa thanh toán' },
       PAID: { color: 'orange', text: 'Chờ xác nhận' },
       PREPARING: { color: 'blue', text: 'Chờ giao hàng' },
-      SHIPPING_OUT: { color: 'cyan', text: 'Đang giao' },
-      DELIVERING_OUT: { color: 'cyan', text: 'Đang giao' },
+      SHIPPING_OUT: { color: 'cyan', text: 'Đang giao hàng' },
+      DELIVERING_OUT: { color: 'cyan', text: 'Đang giao hàng' },
       IN_USE: { color: 'purple', text: 'Đang sử dụng' },
+      SHIPPING_BACK: { color: 'volcano', text: 'Đang trả hàng' },
       RETURNED: { color: 'green', text: 'Đã trả' },
       COMPLETED: { color: 'green', text: 'Hoàn thành' },
       CANCELLED: { color: 'red', text: 'Đã hủy' },
-      UNPAID: { color: 'default', text: 'Chưa thanh toán' },
+      DISPUTE: { color: 'magenta', text: 'Tranh chấp' },
+      EXTENDING: { color: 'gold', text: 'Gia hạn' },
     };
-    
+
     const config = statusConfig[status] || { color: 'default', text: status };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
@@ -145,37 +148,28 @@ export default function ProviderOrdersPage() {
     },
   ];
 
-  // Tab items
-  const tabItems = [
-    {
-      key: 'PAID',
-      label: VI.provider.orders.tabs.paid,
-      children: (
-        <Table
-          dataSource={orders}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          locale={{ emptyText: VI.common.status.noData }}
-        />
-      ),
-    },
-    {
-      key: 'PREPARING',
-      label: VI.provider.orders.tabs.preparing,
-      children: (
-        <Table
-          dataSource={orders}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          locale={{ emptyText: VI.common.status.noData }}
-        />
-      ),
-    },
-  ];
+  // Tab items - generated from fixed configuration
+  const tabItems = ORDER_STATUS_TABS.map((tab) => ({
+    key: tab.key,
+    label: (
+      <span>
+        {VI.provider.orders.tabs[tab.label as keyof typeof VI.provider.orders.tabs]}
+        <span style={{ marginLeft: 4, opacity: 0.6 }}>
+          ({tabCounts[tab.key] ?? 0})
+        </span>
+      </span>
+    ),
+    children: (
+      <Table
+        dataSource={orders}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: VI.common.status.noData }}
+      />
+    ),
+  }));
 
   return (
     <DashboardLayout
@@ -188,9 +182,20 @@ export default function ProviderOrdersPage() {
           {error}
         </div>
       )}
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder={VI.provider.orders.searchPlaceholder}
+          allowClear
+          enterButton={<SearchOutlined />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onSearch={setSearchTerm}
+          style={{ maxWidth: 400 }}
+        />
+      </div>
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as TabKey)}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
         items={tabItems}
       />
     </DashboardLayout>
