@@ -47,12 +47,8 @@ export function ProviderShopCard({ provider, onChat, onViewShop }: ProviderShopC
           <p className="text-xs text-slate-400">{VI.costumeRental.detail.ratingLabel}</p>
           <p className="font-semibold flex items-center gap-1">
             <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-            {rating.toFixed(1)}/10
+            {rating.toFixed(1)}/10 <span className="font-normal text-slate-500">({totalReviews} {VI.costumeRental.detail.totalReviews})</span>
           </p>
-        </div>
-        <div>
-          <p className="text-xs text-slate-400">{VI.costumeRental.detail.totalReviews}</p>
-          <p className="font-semibold">{totalReviews} đánh giá</p>
         </div>
       </div>
 
