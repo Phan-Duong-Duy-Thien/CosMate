@@ -1,14 +1,17 @@
 import { useNavigate } from 'react-router-dom';
 import { Button, Result } from 'antd';
 import { ShieldX } from 'lucide-react';
+import { VI } from '@/shared/i18n/vi';
 
 /**
  * Global "No Permission" Page
  * 
  * Shown when user tries to access a route they don't have permission for
+ * or when their provider type is not yet supported
  * 
  * TRIGGERED BY:
  * - ProtectedRoute component when role check fails
+ * - Login redirect for unsupported provider types (PROVIDER_PHOTOGRAPH, PROVIDER_EVENT_STAFF)
  * - Manual navigation to /no-permission
  */
 export default function NoPermissionPage() {
@@ -27,14 +30,14 @@ export default function NoPermissionPage() {
       <Result
         icon={<ShieldX size={64} color="#faad14" />}
         status="warning"
-        title="Access Denied"
-        subTitle="You don't have permission to access this page. Please contact your administrator if you believe this is an error."
+        title={VI.common.permission.accessDenied}
+        subTitle={VI.common.permission.noPermissionMessage}
         extra={[
           <Button type="primary" key="home" onClick={() => navigate('/')}>
-            Go to Home
+            {VI.common.permission.goHome}
           </Button>,
           <Button key="login" onClick={() => navigate('/login')}>
-            Go to Login
+            {VI.common.permission.goLogin}
           </Button>,
         ]}
       />

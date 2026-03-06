@@ -5,8 +5,10 @@ import {
   Calendar,
   Star,
   Settings,
+  ClipboardList,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { VI } from '@/shared/i18n/vi';
 
 /**
  * Provider sidebar menu item structure
@@ -25,37 +27,49 @@ export type ProviderSidebarItem = {
 export const providerSidebarItems: ProviderSidebarItem[] = [
   {
     key: 'dashboard',
-    label: 'Dashboard',
+    label: VI.provider.sidebar.dashboard,
     icon: LayoutDashboard,
-    path: '/provider',
+    path: '/provider-rental',
   },
   {
-    key: 'services',
-    label: 'My Services / Listings',
+    key: 'costumeList',
+    label: VI.provider.sidebar.costumeList,
     icon: Package,
-    path: '/provider/services',
+    path: '/provider-rental/costumes',
+  },
+  {
+    key: 'costumeCreate',
+    label: VI.provider.sidebar.costumeCreate,
+    icon: Package,
+    path: '/provider-rental/costumes/create',
+  },
+  {
+    key: 'orders',
+    label: VI.provider.orders.title,
+    icon: ClipboardList,
+    path: '/provider-rental/orders',
   },
   {
     key: 'bookings',
-    label: 'Bookings',
+    label: VI.provider.sidebar.bookings,
     icon: ShoppingBag,
     path: '/provider/bookings',
   },
   {
     key: 'schedule',
-    label: 'Schedule / Availability',
+    label: VI.provider.sidebar.schedule,
     icon: Calendar,
     path: '/provider/schedule',
   },
   {
     key: 'reviews',
-    label: 'Reviews',
+    label: VI.provider.sidebar.reviews,
     icon: Star,
     path: '/provider/reviews',
   },
   {
     key: 'settings',
-    label: 'Profile / Settings',
+    label: VI.provider.sidebar.settings,
     icon: Settings,
     path: '/provider/settings',
   },

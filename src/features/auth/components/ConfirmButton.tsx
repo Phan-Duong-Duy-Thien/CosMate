@@ -1,6 +1,7 @@
 import { Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
+import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 
 type ConfirmButtonProps = {
@@ -39,7 +40,7 @@ export function ConfirmButton({
       )}
     >
       {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-      {loading ? "Loading..." : label}
+      {loading ? VI.common.status.loadingEllipsis : label}
     </Button>
   )
 }

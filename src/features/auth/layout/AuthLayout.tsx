@@ -20,7 +20,7 @@ export function AuthLayout({ left, children, variant = "split" }: AuthLayoutProp
   return (
     <section className="min-h-dvh w-full overflow-hidden bg-[linear-gradient(135deg,#E9D5FF_0%,#FBCFE8_100%)]">
       <div className="grid min-h-dvh w-full grid-cols-1 lg:grid-cols-2">
-        <div className="hidden w-full items-center justify-center p-8 lg:flex">
+        <div className="hidden w-full items-stretch justify-center lg:flex">
           {left}
         </div>
         <div className="flex w-full min-h-dvh items-stretch justify-center bg-white">

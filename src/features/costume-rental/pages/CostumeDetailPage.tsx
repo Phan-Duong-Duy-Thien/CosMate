@@ -1,168 +1,132 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
-import { costumeItems } from "../mocks/costumes.mock"
-import { shops } from "../mocks/shops.mock"
-import type { QuoteBreakdown, RentalPurpose, SizeKey, UIState } from "../types"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
-import { DetailTabs } from "../components/detail/DetailTabs"
-import { ReviewsSection } from "../components/detail/ReviewsSection"
-import { ShopInfoCard } from "../components/detail/ShopInfoCard"
-import { RelatedCostumeList } from "../components/detail/RelatedCostumeList"
-
-const tagLabelMap: Record<string, string> = {
-  anime: "Anime",
-  game: "Game",
-  event: "Event",
-  photoshoot: "Photoshoot",
-  new: "New",
-  adult18: "18+",
-}
-
-const reviewSamples = [
-  {
-    id: "review-1",
-    author: "Ngọc Anh",
-    rating: 5,
-    content: "Đồ lên form đẹp, phụ kiện đầy đủ, giao đúng hẹn.",
-    date: "20/01/2026",
-    hasMedia: true,
-  },
-  {
-    id: "review-2",
-    author: "Minh Khoa",
-    rating: 4,
-    content: "Vải mềm, dễ mặc, shop tư vấn nhanh.",
-    date: "15/01/2026",
-  },
-  {
-    id: "review-3",
-    author: "Hà Linh",
-    rating: 5,
-    content: "Rất hợp chụp fes, màu lên ảnh xinh.",
-    date: "10/01/2026",
-    hasMedia: true,
-  },
-]
+import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
+import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserAddresses } from "@/features/profile/services/userAddress.service"
+import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
+import { VI } from "@/shared/i18n/vi"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
   const navigate = useNavigate()
-  const [uiState, setUiState] = React.useState<UIState>("loading")
-  const [errorMessage, setErrorMessage] = React.useState("")
+  const { setItems } = useBreadcrumb()
 
-  const costume = React.useMemo(
-    () => costumeItems.find((item) => item.id === costumeId),
-    [costumeId]
-  )
-  const shop = React.useMemo(
-    () => shops.find((item) => item.id === costume?.shopId),
-    [costume]
-  )
+  const {
+    costume,
+    isLoading,
+    error,
+    resolvedImages,
+    days,
+    setDays,
+    startDate,
+    setStartDate,
+    selectedRentalOptionId,
+    setSelectedRentalOptionId,
+    checkedOptionalIds,
+    toggleOptionalAccessory,
+    quote,
+    refetch,
+  }= usePublicCostumeDetail(costumeId)
 
-  const [purpose, setPurpose] = React.useState<RentalPurpose>("fes_shoot")
-  const [size, setSize] = React.useState<SizeKey | null>(null)
-  const [days, setDays] = React.useState(1)
-  const [startDate, setStartDate] = React.useState("")
-  const [accessoryIds, setAccessoryIds] = React.useState<string[]>([])
-  const [isInCart, setIsInCart] = React.useState(false)
-  const [activeTab, setActiveTab] = React.useState("details")
-  const [showTerms, setShowTerms] = React.useState(false)
+  // Modal state for "no address" confirmation
+  const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
 
+  // Validation error state
+  const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  // Set breadcrumb when costume data is loaded
   React.useEffect(() => {
-    setSize(null)
-    setDays(1)
-    setStartDate("")
-    setAccessoryIds([])
-    setIsInCart(false)
-    setActiveTab("details")
-  }, [costumeId])
-
-  React.useEffect(() => {
-    setUiState("loading")
-    setErrorMessage("")
-    const delay = 400 + Math.round(Math.random() * 300)
-    const timer = window.setTimeout(() => {
-      if (costumeId === "error") {
-        setUiState("error")
-        setErrorMessage("Không thể tải chi tiết trang phục.")
-        return
-      }
-      if (!costume) {
-        setUiState("notFound")
-        return
-      }
-      setPurpose(costume.rentalPurposes[1] ?? costume.rentalPurposes[0])
-      setSize(costume.sizeOptions[0] ?? null)
-      setUiState("success")
-    }, delay)
-    return () => window.clearTimeout(timer)
-  }, [costumeId, costume])
-
-  const accessoryTotal = React.useMemo(() => {
-    if (!costume) return 0
-    return costume.accessoryOptions
-      .filter((option) => accessoryIds.includes(option.id))
-      .reduce((sum, option) => sum + option.price, 0)
-  }, [costume, accessoryIds])
-
-  const quote: QuoteBreakdown = React.useMemo(() => {
-    if (!costume) {
-      return {
-        rentalPrice: 0,
-        accessoryTotal: 0,
-        laundryFee: 0,
-        deposit: 0,
-        total: 0,
-      }
+    if (costume) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
+        { label: costume.name },
+      ])
     }
-    const rentalPrice = costume.basePriceByPurpose[purpose] * days
-    const total =
-      rentalPrice + accessoryTotal + costume.laundryFee + costume.deposit
-    return {
-      rentalPrice,
-      accessoryTotal,
-      laundryFee: costume.laundryFee,
-      deposit: costume.deposit,
-      total,
-    }
-  }, [costume, purpose, days, accessoryTotal])
+  }, [costume, setItems])
 
-  const relatedItems = React.useMemo(() => {
-    if (!costume) return []
-    return costumeItems
-      .filter((item) => item.shopId === costume.shopId && item.id !== costume.id)
-      .slice(0, 8)
-  }, [costume])
-
-  const handleToggleAccessory = (id: string) => {
-    setAccessoryIds((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]
-    )
+  // Convert date string to ISO format for backend
+  const convertToIsoDateTime = (dateString: string): string => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    // Set to start of day in local time, then format as ISO without milliseconds
+    date.setHours(0, 0, 0, 0)
+    return date.toISOString().split('.')[0] // Remove milliseconds
   }
 
-  const handleRentNow = () => {
+  const handleRentNow = async () => {
     if (!costume) return
-    if (!size) {
-      alert("Vui lòng chọn kích thước.")
+
+    // Validate rentStart is selected
+    if (!startDate) {
+      setValidationError(VI.costumeRental.validation.missingRentStart)
       return
     }
-    if (costume.isAdult18) {
-      const confirmed = window.confirm(
-        "Trang phục này dành cho người trên 18 tuổi. Bạn có muốn tiếp tục?"
-      )
-      if (!confirmed) return
-    }
-    if (days < 1) {
-      setDays(1)
+
+    // Validate rentDay is valid
+    if (!days || days <= 0) {
+      setValidationError(VI.costumeRental.validation.invalidRentDay)
       return
     }
-    setIsInCart(true)
+
+    // Clear validation error
+    setValidationError(null)
+
+    // Get current user ID
+    const userId = getUserId()
+
+    if (!userId) {
+      // Not logged in - redirect to login with return URL
+      const currentUrl = window.location.pathname
+      navigate(`/login?returnTo=${encodeURIComponent(currentUrl)}`)
+      return
+    }
+
+    // Convert startDate to ISO format for backend
+    const rentStartIso = convertToIsoDateTime(startDate)
+
+    // Save rental draft to sessionStorage
+    saveDraft({
+      costumeId: costume.id,
+      rentDay: days,
+      rentStart: rentStartIso,
+      selectedAccessoryIds: Array.from(checkedOptionalIds),
+      selectedRentalOptionId,
+    })
+
+    // Check if user has addresses
+    try {
+      const addresses = await getUserAddresses(userId)
+
+      if (addresses.length === 0) {
+        // No addresses - show confirmation modal
+        setShowNoAddressModal(true)
+      } else {
+        // Has addresses - proceed to checkout
+        navigate('/rent/checkout')
+      }
+    } catch (err) {
+      console.error('Failed to check addresses:', err)
+      // On error, show modal as fallback
+      setShowNoAddressModal(true)
+    }
   }
 
-  if (uiState === "loading") {
+  const handleNoAddressConfirm = () => {
+    setShowNoAddressModal(false)
+    navigate('/profile/addresses/new?returnTo=/rent/checkout')
+  }
+
+  const handleNoAddressCancel = () => {
+    setShowNoAddressModal(false)
+  }
+
+  if (isLoading) {
     return (
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
@@ -174,18 +138,13 @@ export default function CostumeDetailPage() {
     )
   }
 
-  if (uiState === "error") {
+  if (error) {
     return (
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
           <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
-            <p>{errorMessage}</p>
-            <Button
-              variant="soft"
-              size="sm"
-              className="mt-4 rounded-full"
-              onClick={() => navigate(0)}
-            >
+            <p>{error}</p>
+            <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={refetch}>
               Thử lại
             </Button>
           </div>
@@ -194,16 +153,14 @@ export default function CostumeDetailPage() {
     )
   }
 
-  if (uiState === "notFound" || !costume || !shop) {
+  if (!costume) {
     return (
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10 text-center">
           <div className="rounded-3xl border border-pink-100 bg-white/80 p-10 text-sm text-slate-600">
             Không tìm thấy trang phục bạn yêu cầu.
             <div className="mt-4">
-              <Link to="/costumes" className="text-pink-600 underline">
-                Quay lại danh sách
-              </Link>
+              <Link to="/costumes" className="text-pink-600 underline">Quay lại danh sách</Link>
             </div>
           </div>
         </div>
@@ -211,133 +168,178 @@ export default function CostumeDetailPage() {
     )
   }
 
-  const breadcrumbTag =
-    costume.tags.find((tag) => tag !== "adult18") ?? costume.tags[0]
+  const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
 
   return (
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-6xl px-4 pt-8">
-        <div className="text-xs text-slate-500">
-          CosMate &gt; Thuê đồ Cosplay &gt; {tagLabelMap[breadcrumbTag] ?? "Cosplay"}{" "}
-          &gt; {costume.name}
-        </div>
 
         <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <MediaGallery
-            images={costume.images}
-            videoUrl={costume.videoUrl}
-            isAdult18={costume.isAdult18}
-            bestSeller={costume.bestSeller}
-            hasAccessories={costume.hasAccessories}
-            accessoryCount={costume.accessoryCount}
+            images={resolvedImages}
+            isAdult18={false}
+            bestSeller={costume.status !== "RENTED"}
+            hasAccessories={accessoryCount > 0}
+            accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
           />
           <PurchasePanel
             costume={costume}
-            purpose={purpose}
-            size={size}
             days={days}
             startDate={startDate}
-            accessoryIds={accessoryIds}
+            selectedRentalOptionId={selectedRentalOptionId}
+            checkedOptionalIds={checkedOptionalIds}
             quote={quote}
-            onPurposeChange={setPurpose}
-            onSizeChange={setSize}
             onDaysChange={setDays}
             onStartDateChange={setStartDate}
-            onToggleAccessory={handleToggleAccessory}
+            onSelectRentalOption={setSelectedRentalOptionId}
+            onToggleOptionalAccessory={toggleOptionalAccessory}
             onRentNow={handleRentNow}
-            onAddToCart={() => setIsInCart((prev) => !prev)}
-            isInCart={isInCart}
           />
+
+          {/* Validation Error */}
+          {validationError && (
+            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
+              {validationError}
+            </div>
+          )}
         </div>
 
-        <div className="mt-8 space-y-6">
-          <DetailTabs
-            tabs={[
-              { key: "details", label: "Chi tiết sản phẩm" },
-              { key: "description", label: "Mô tả" },
-              { key: "terms", label: "Điều khoản & Quy định shop" },
-              { key: "reviews", label: "Đánh giá" },
-              { key: "related", label: "Sản phẩm khác của shop" },
-            ]}
-            activeKey={activeTab}
-            onChange={setActiveTab}
-          >
-            {activeTab === "details" && (
-              <div className="space-y-3">
-                {costume.details.map((item) => (
-                  <div
-                    key={item.label}
-                    className="flex flex-wrap items-center justify-between rounded-2xl border border-slate-100 bg-white px-4 py-3 text-sm text-slate-600"
-                  >
-                    <span className="font-semibold text-slate-700">
-                      {item.label}
-                    </span>
-                    <span>{item.value}</span>
-                  </div>
-                ))}
-              </div>
-            )}
+        <div className="mt-8 space-y-6 rounded-3xl border border-pink-100 bg-white/85 p-6">
+          <h2 className="text-xl font-semibold text-slate-900">
+            {VI.costumeRental.detailSectionTitle}
+          </h2>
 
-            {activeTab === "description" && (
-              <p className="text-sm leading-relaxed text-slate-600">
-                {costume.description}
-              </p>
-            )}
+          <div className="grid gap-4 md:grid-cols-2">
+            <ApiField label={VI.costumeRental.costumeName} value={costume.name} />
+            <ApiField label={VI.costumeRental.status} value={costume.status} />
+            <ApiField label={VI.costumeRental.size} value={costume.size} />
+            <ApiField
+              label={VI.costumeRental.numberOfItems}
+              value={String(costume.numberOfItems)}
+            />
+            <ApiField
+              label={VI.costumeRental.pricePerDay}
+              value={`${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ`}
+            />
+            <ApiField
+              label={VI.costumeRental.depositAmount}
+              value={`${costume.depositAmount.toLocaleString("vi-VN")} VNĐ`}
+            />
+            <ApiField
+              label={VI.costumeRental.description}
+              value={costume.description}
+              fullWidth
+              preWrap
+            />
+          </div>
 
-            {activeTab === "terms" && (
-              <div className="space-y-4 text-sm text-slate-600">
-                <div>
-                  <p className="font-semibold text-slate-700">Quy định shop</p>
-                  <ul className="mt-2 list-disc space-y-1 pl-5">
-                    {shop.rules.map((rule) => (
-                      <li key={rule}>{rule}</li>
-                    ))}
-                  </ul>
-                </div>
-                <div className="rounded-2xl border border-slate-100 bg-white p-4">
-                  <p className="font-semibold text-slate-700">Chính sách</p>
-                  <p className="mt-2 text-sm text-slate-600">
-                    {shop.policiesSummary}
-                  </p>
-                </div>
-                <div>
-                  <button
-                    type="button"
-                    className="text-pink-600 underline"
-                    onClick={() => setShowTerms((prev) => !prev)}
-                  >
-                    {showTerms ? "Thu gọn điều khoản" : "Xem điều khoản đầy đủ"}
-                  </button>
-                  {showTerms && (
-                    <p className="mt-2 text-sm text-slate-600">{shop.terms}</p>
-                  )}
-                </div>
-                <p className="text-xs text-slate-400">
-                  Điều khoản riêng của shop chỉ có giá trị bổ sung, không loại trừ
-                  quy định nền tảng.
+          <div>
+            <h3 className="text-base font-semibold text-slate-900">
+              {VI.costumeRental.imageUrls}
+            </h3>
+            <ul className="mt-2 space-y-1 text-sm text-slate-600">
+              {costume.imageUrls.map((imageUrl) => (
+                <li key={imageUrl} className="break-all">{imageUrl}</li>
+              ))}
+            </ul>
+          </div>
+
+          <ApiListSection title={VI.costumeRental.surcharges.title}>
+            {costume.surcharges.map((surcharge) => (
+              <li key={surcharge.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{surcharge.name}</p>
+                <p className="text-sm text-slate-600">{surcharge.description}</p>
+                <p className="text-sm text-pink-600">
+                  {surcharge.price.toLocaleString("vi-VN")} VNĐ
                 </p>
-              </div>
-            )}
+              </li>
+            ))}
+          </ApiListSection>
 
-            {activeTab === "reviews" && (
-              <ReviewsSection
-                average={costume.rating}
-                total={costume.reviewCount}
-                reviews={reviewSamples}
-              />
-            )}
+          <ApiListSection title={VI.costumeRental.accessories.title}>
+            {costume.accessories.map((accessory) => (
+              <li key={accessory.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{accessory.name}</p>
+                <p className="text-sm text-slate-600">{accessory.description}</p>
+                <p className="text-sm text-pink-600">
+                  {accessory.price.toLocaleString("vi-VN")} VNĐ
+                </p>
+                <p className="text-xs text-slate-500">
+                  {VI.costumeRental.isRequired}: {String(accessory.isRequired)}
+                </p>
+              </li>
+            ))}
+          </ApiListSection>
 
-            {activeTab === "related" && (
-              <RelatedCostumeList
-                items={relatedItems}
-                onSelect={(id) => navigate(`/costumes/${id}`)}
-              />
-            )}
-          </DetailTabs>
-
-          <ShopInfoCard shop={shop} />
+          <ApiListSection title={VI.costumeRental.rentalOptions.title}>
+            {costume.rentalOptions.map((option) => (
+              <li key={option.id} className="rounded-xl border border-slate-100 bg-slate-50 p-3">
+                <p className="font-semibold text-slate-900">{option.name}</p>
+                <p className="text-sm text-slate-600">{option.description}</p>
+                <p className="text-sm text-pink-600">
+                  {option.price.toLocaleString("vi-VN")} VNĐ
+                </p>
+              </li>
+            ))}
+          </ApiListSection>
         </div>
+
+        {/* No Address Confirmation Modal */}
+        {showNoAddressModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-xl">
+              <h3 className="text-lg font-semibold text-slate-900">
+                {VI.checkout.noAddress.title}
+              </h3>
+              <p className="mt-2 text-sm text-slate-600">
+                {VI.checkout.noAddress.message}
+              </p>
+              <div className="mt-6 flex gap-3">
+                <Button variant="outline" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressCancel}>
+                  {VI.checkout.noAddress.cancel}
+                </Button>
+                <Button variant="default" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressConfirm}>
+                  {VI.checkout.noAddress.confirm}
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </section>
+  )
+}
+
+function ApiField({
+  label,
+  value,
+  fullWidth,
+  preWrap,
+}: {
+  label: string
+  value: string
+  fullWidth?: boolean
+  preWrap?: boolean
+}) {
+  return (
+    <div className={fullWidth ? "md:col-span-2" : undefined}>
+      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
+      <p className={`mt-1 text-sm text-slate-700${preWrap ? " whitespace-pre-line" : ""}`}>{value}</p>
+    </div>
+  )
+}
+
+function ApiListSection({
+  title,
+  children,
+}: {
+  title: string
+  children: React.ReactNode
+}) {
+  return (
+    <div>
+      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
+      <ul className="mt-2 space-y-2">{children}</ul>
+    </div>
   )
 }

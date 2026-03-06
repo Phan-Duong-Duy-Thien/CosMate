@@ -3,6 +3,7 @@ import { Users, ShoppingBag, Shirt, TrendingUp } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { adminSidebarItems } from '../constants/sidebar';
+import { VI } from '@/shared/i18n/vi';
 
 export default function AdminHomePage() {
   // Convert admin sidebar items to DashboardLayout format
@@ -19,25 +20,25 @@ export default function AdminHomePage() {
   // TODO: Fetch real stats from API when implemented
   const stats = [
     {
-      title: 'Total Users',
+      title: VI.admin.dashboard.stats.totalUsers,
       value: 2458,
       icon: <Users size={24} />,
       color: '#7C3AED',
     },
     {
-      title: 'Active Bookings',
+      title: VI.admin.dashboard.stats.activeBookings,
       value: 128,
       icon: <ShoppingBag size={24} />,
       color: '#EC4899',
     },
     {
-      title: 'Total Costumes',
+      title: VI.admin.dashboard.stats.totalCostumes,
       value: 5432,
       icon: <Shirt size={24} />,
       color: '#10B981',
     },
     {
-      title: 'Revenue (VND)',
+      title: VI.admin.dashboard.stats.revenue,
       value: 123456789,
       icon: <TrendingUp size={24} />,
       color: '#F59E0B',
@@ -46,11 +47,11 @@ export default function AdminHomePage() {
   ];
 
   return (
-    <DashboardLayout title="Admin Dashboard" sidebarItems={sidebarItems} brandName="CosMate Admin">
+    <DashboardLayout title={VI.admin.dashboard.title} sidebarItems={sidebarItems} brandName={VI.common.appNameAdmin}>
       <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>Welcome back, Admin!</h2>
+        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.admin.dashboard.welcome}</h2>
         <p style={{ color: '#6B7280', fontSize: 14 }}>
-          Here's what's happening with CosMate today.
+          {VI.admin.dashboard.todayOverview}
         </p>
       </div>
 
@@ -96,23 +97,23 @@ export default function AdminHomePage() {
       <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
         <Col xs={24} lg={12}>
           <Card
-            title="Recent Activity"
+            title={VI.admin.dashboard.sections.recentActivity}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
             <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
-              TODO: Display recent user activities, bookings, and system events
+              {VI.admin.dashboard.sections.recentActivityPlaceholder}
             </p>
           </Card>
         </Col>
         <Col xs={24} lg={12}>
           <Card
-            title="Quick Stats"
+            title={VI.admin.dashboard.sections.quickStats}
             bordered={false}
             style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
           >
             <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
-              TODO: Display charts, graphs, and trending data
+              {VI.admin.dashboard.sections.quickStatsPlaceholder}
             </p>
           </Card>
         </Col>

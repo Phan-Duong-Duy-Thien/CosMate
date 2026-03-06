@@ -13,12 +13,13 @@ export interface ButtonProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   default:
-    "bg-pink-500 text-white hover:bg-pink-600 focus-visible:ring-pink-300",
+    "bg-[#FDCCD7] text-slate-900 hover:bg-pink-300 focus-visible:ring-pink-300",
   ghost: "bg-transparent hover:bg-pink-50 text-slate-700",
   outline:
-    "border border-slate-200 bg-white hover:bg-slate-50 text-slate-700",
+    "border-2 border-[#FDCCD7] bg-transparent hover:bg-[#FDCCD7] text-slate-700",
   soft: "bg-pink-100 text-pink-700 hover:bg-pink-200",
-  link: "bg-transparent text-pink-600 hover:text-pink-700 underline-offset-4 hover:underline",
+  link:
+    "bg-transparent text-pink-600 hover:text-pink-700 decoration-1 underline-offset-2 hover:underline",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

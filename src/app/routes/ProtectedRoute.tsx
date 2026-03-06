@@ -39,6 +39,10 @@ export function ProtectedRoute({
   // Get user roles from decoded JWT
   const userRoles = getRoles();
 
+  // TEMP: Debug logs to verify role matching
+  console.log('[ProtectedRoute] userRoles:', userRoles);
+  console.log('[ProtectedRoute] allowedRoles:', allowedRoles);
+
   // Check if user has no roles (not logged in or invalid token)
   if (!userRoles || userRoles.length === 0) {
     console.warn('🔒 ProtectedRoute: No roles found, redirecting to /login');
@@ -47,6 +51,8 @@ export function ProtectedRoute({
 
   // Check if user has any of the allowed roles
   const hasPermission = userRoles.some((role) => allowedRoles.includes(role as UserRole));
+
+  console.log('[ProtectedRoute] hasPermission:', hasPermission); // TEMP debug
 
   if (!hasPermission) {
     console.warn(
@@ -59,5 +65,6 @@ export function ProtectedRoute({
   }
 
   // User is authorized, render child routes
+  console.log('✅ ProtectedRoute: Access granted'); // TEMP debug
   return <Outlet />;
 }

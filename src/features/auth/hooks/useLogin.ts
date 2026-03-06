@@ -1,6 +1,8 @@
 import { useCallback, useState } from "react"
 import { message } from "antd"
 
+import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 import { loginWithGoogle } from "@/services/authService"
 import type { LoginFormValues } from "../types"
 import { login } from "../api/auth.api"
@@ -29,7 +31,7 @@ export function useLogin() {
       // Check response code (0 means success in this API)
       if (response.code !== 0) {
         console.warn("⚠️ Login failed with code:", response.code, response.message)
-        setFormError(response.message || "Login failed. Please try again.")
+        setFormError(response.message || VI.auth.login.messages.loginFailed)
         return null
       }
 
@@ -37,18 +39,18 @@ export function useLogin() {
       saveAuth(response.result)
       console.log("💾 Token saved successfully")
 
-      // Get roles from decoded JWT
+      // Get user roles for redirect
       const roles = getRoles()
       console.log("👤 User roles:", roles)
 
       // Show success message
-      message.success("Login successful! Welcome back to CosMate 🎉")
+      message.success(VI.auth.login.messages.loginSuccess)
 
       // Return roles for redirect logic
       return roles
     } catch (error) {
       console.error("❌ Login error:", error)
-      setFormError("Unable to sign in. Please check your credentials and try again.")
+      setFormError(VI.auth.login.messages.invalidCredentials)
       return null
     } finally {
       setSubmitting(false)

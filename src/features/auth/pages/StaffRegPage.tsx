@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
 import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 import { useRegister } from "../hooks/useRegister"
 import { AuthLayout } from "../layout/AuthLayout"
 import { RegisterForm } from "../components/RegisterForm"
 
 export default function StaffRegPage() {
-  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER)
+  const { submitting, formError, handleRegister } = useRegister(ROLE.PROVIDER_EVENT_STAFF)
 
   return (
     <AuthLayout
@@ -52,10 +53,10 @@ export default function StaffRegPage() {
       <div className="flex w-full flex-col justify-center gap-[clamp(16px,2vw,24px)] px-[clamp(24px,4vw,48px)] py-[clamp(24px,4vw,48px)]">
         <div className="space-y-2 text-center">
           <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
-            Create Event Staff Account
+            Create Event Staff Provider Account
           </h1>
           <p className="text-sm text-[#6B7280] sm:text-base">
-            Join as event staff and support amazing cosplay events.
+            Join as an event staff provider and support amazing cosplay events.
           </p>
         </div>
 
@@ -98,12 +99,12 @@ export default function StaffRegPage() {
 
         <div className="flex flex-col gap-2 text-center text-sm text-[#6B7280]">
           <span>
-            Already have an account?{" "}
+            {VI.auth.register.haveAccount}{" "}
             <Link
               to="/login"
               className="font-medium text-[#7C3AED] hover:text-[#6D28D9]"
             >
-              Sign in
+              {VI.auth.register.signIn}
             </Link>
           </span>
         </div>

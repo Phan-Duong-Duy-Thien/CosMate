@@ -3,6 +3,7 @@ import { Lock, Mail } from "lucide-react"
 
 import type { LoginFormValues } from "../types"
 import { AuthForm } from "./AuthForm"
+import { VI } from "@/shared/i18n/vi"
 
 type LoginFormProps = {
   onSubmit: (values: LoginFormValues) => void | Promise<void>
@@ -17,20 +18,20 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
     <AuthForm<LoginFormValues>
       form={form}
       onFinish={onSubmit}
-      submitLabel="Login"
+      submitLabel={VI.common.actions.login}
       submitting={submitting}
       formError={formError}
     >
       <Form.Item
         className="mb-0"
-        label="Email or Username"
+        label={VI.auth.login.emailOrUsername}
         name="usernameOrEmail"
         rules={[
-          { required: true, message: "Email or username is required." },
+          { required: true, message: VI.auth.login.validation.emailRequired },
         ]}
       >
         <Input
-          placeholder="Enter your email or username"
+          placeholder={VI.auth.login.emailOrUsernamePlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
@@ -40,15 +41,15 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
 
       <Form.Item
         className="mb-0"
-        label="Password"
+        label={VI.auth.login.password}
         name="password"
         rules={[
-          { required: true, message: "Password is required." },
-          { min: 6, message: "Password must be at least 6 characters." },
+          { required: true, message: VI.auth.login.validation.passwordRequired },
+          { min: 6, message: VI.auth.login.validation.passwordMinLength },
         ]}
       >
         <Input.Password
-          placeholder="Enter your password"
+          placeholder={VI.auth.login.passwordPlaceholder}
           size="large"
           disabled={submitting}
           prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}

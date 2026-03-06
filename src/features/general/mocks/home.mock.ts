@@ -1,4 +1,6 @@
-import type { BannerSlide, Product, Shop, TagKey } from "../pages/home.types"
+import type { BannerSlide, Shop, TagKey } from "../pages/home.types"
+import bannerGameImage from "@/assets/banner game.jpg"
+import bannerMarinImage from "@/assets/banner marin.jpg"
 
 export const bannerSlides: BannerSlide[] = [
   {
@@ -8,31 +10,18 @@ export const bannerSlides: BannerSlide[] = [
     actionType: "tag",
     tag: "game",
     pill: "Bộ sưu tập mới",
-    ctaLabel: "Xem ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1400&q=80",
+    ctaLabel: "⋆˙⟡ Trang phục theo game",
+    imageUrl: bannerGameImage,
   },
   {
-    id: "slide-anime",
-    title: "Trang phục theo Anime",
-    subtitle: "Khám phá bộ sưu tập cosplay anime mới nhất",
+    id: "slide-marin",
+    title: "Trang phục Marin",
+    subtitle: "Phong cách nổi bật, dễ thương cho buổi chụp hình và sự kiện.",
     actionType: "tag",
     tag: "anime",
-    pill: "Bộ sưu tập mới",
-    ctaLabel: "Xem ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=1400&q=80",
-  },
-  {
-    id: "slide-quiz",
-    title: "Bạn hợp cosplay nhân vật nào nhất?",
-    subtitle: "Trả lời 5 câu hỏi nhanh để khám phá vibe nhân vật phù hợp với bạn.",
-    hint: "⏱ Mất ~1 phút • Gợi ý trang phục & shop phù hợp",
-    actionType: "quiz",
-    pill: "Quiz nhanh",
-    ctaLabel: "Làm quiz ngay",
-    imageUrl:
-      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?auto=format&fit=crop&w=1400&q=80",
+    pill: "Bộ sưu tập nổi bật",
+    ctaLabel: "⋆˙⟡ Trang phục theo Anime",
+    imageUrl: bannerMarinImage,
   },
 ]
 
@@ -43,153 +32,6 @@ export const tagList: { key: TagKey; label: string }[] = [
   { key: "photoshoot", label: "Photoshoot" },
   { key: "new", label: "New" },
   { key: "adult", label: "18+" },
-]
-
-export const products: Product[] = [
-  {
-    id: "p-01",
-    name: "Set Nezuko Kimono Pastel",
-    shopName: "Hana Cosplay",
-    tags: ["anime", "new"],
-    isAdult: false,
-    rating: 4.9,
-    priceMin: 250,
-    priceMax: 400,
-    imageUrl:
-      "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-02",
-    name: "Mikasa Scout Uniform",
-    shopName: "Otaku Closet",
-    tags: ["anime", "event"],
-    isAdult: false,
-    rating: 4.8,
-    priceMin: 280,
-    priceMax: 420,
-    imageUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-03",
-    name: "Ahri K/DA Spark",
-    shopName: "Kitsune Rent",
-    tags: ["game", "photoshoot"],
-    isAdult: false,
-    rating: 4.7,
-    priceMin: 320,
-    priceMax: 520,
-    imageUrl:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-04",
-    name: "Jinx Street Neon",
-    shopName: "Hextech Wardrobe",
-    tags: ["game", "new"],
-    isAdult: false,
-    rating: 4.9,
-    priceMin: 300,
-    priceMax: 550,
-    imageUrl:
-      "https://images.unsplash.com/photo-1487412912498-0447578fcca8?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-05",
-    name: "Sailor Moon Classic",
-    shopName: "Moonlight Studio",
-    tags: ["anime", "event"],
-    isAdult: false,
-    rating: 4.6,
-    priceMin: 220,
-    priceMax: 360,
-    imageUrl:
-      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-06",
-    name: "Cyber Maid Noir 18+",
-    shopName: "Noir Atelier",
-    tags: ["adult", "photoshoot"],
-    isAdult: true,
-    rating: 4.8,
-    priceMin: 380,
-    priceMax: 620,
-    imageUrl:
-      "https://images.unsplash.com/photo-1503342394128-c104d54dba01?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-07",
-    name: "Genshin Lumine Breeze",
-    shopName: "Teyvat Wardrobe",
-    tags: ["game", "event"],
-    isAdult: false,
-    rating: 4.9,
-    priceMin: 260,
-    priceMax: 410,
-    imageUrl:
-      "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-08",
-    name: "Kimetsu Tanjiro Set",
-    shopName: "Hashira House",
-    tags: ["anime", "photoshoot"],
-    isAdult: false,
-    rating: 4.7,
-    priceMin: 240,
-    priceMax: 390,
-    imageUrl:
-      "https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-09",
-    name: "Violet Evergarden Dress",
-    shopName: "Everlight",
-    tags: ["anime", "new"],
-    isAdult: false,
-    rating: 4.9,
-    priceMin: 330,
-    priceMax: 520,
-    imageUrl:
-      "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-10",
-    name: "Yennefer Mystic 18+",
-    shopName: "Witcher Wardrobe",
-    tags: ["game", "adult"],
-    isAdult: true,
-    rating: 4.6,
-    priceMin: 350,
-    priceMax: 600,
-    imageUrl:
-      "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-11",
-    name: "Makima Office Chic",
-    shopName: "Chainsaw Studio",
-    tags: ["anime", "event"],
-    isAdult: false,
-    rating: 4.8,
-    priceMin: 270,
-    priceMax: 430,
-    imageUrl:
-      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?auto=format&fit=crop&w=900&q=80",
-  },
-  {
-    id: "p-12",
-    name: "Persona Velvet Dress",
-    shopName: "Velvet Club",
-    tags: ["game", "photoshoot"],
-    isAdult: false,
-    rating: 4.7,
-    priceMin: 300,
-    priceMax: 480,
-    imageUrl:
-      "https://images.unsplash.com/photo-1503342394128-c104d54dba01?auto=format&fit=crop&w=900&q=80",
-  },
 ]
 
 export const shops: Shop[] = [

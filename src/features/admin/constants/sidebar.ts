@@ -7,6 +7,7 @@ import {
   Settings,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { VI } from '@/shared/i18n/vi';
 
 /**
  * Admin sidebar menu item structure
@@ -25,37 +26,37 @@ export type AdminSidebarItem = {
 export const adminSidebarItems: AdminSidebarItem[] = [
   {
     key: 'dashboard',
-    label: 'Dashboard',
+    label: VI.admin.sidebar.dashboard,
     icon: LayoutDashboard,
     path: '/admin',
   },
   {
     key: 'users',
-    label: 'Users Management',
+    label: VI.admin.sidebar.users,
     icon: Users,
     path: '/admin/users',
   },
   {
     key: 'bookings',
-    label: 'Bookings / Orders',
+    label: VI.admin.sidebar.bookings,
     icon: ShoppingBag,
     path: '/admin/bookings',
   },
   {
     key: 'costumes',
-    label: 'Costumes / Rentals',
+    label: VI.admin.sidebar.costumes,
     icon: Shirt,
     path: '/admin/costumes',
   },
   {
     key: 'reports',
-    label: 'Reports',
+    label: VI.admin.sidebar.reports,
     icon: BarChart3,
     path: '/admin/reports',
   },
   {
     key: 'settings',
-    label: 'Settings',
+    label: VI.admin.sidebar.settings,
     icon: Settings,
     path: '/admin/settings',
   },
