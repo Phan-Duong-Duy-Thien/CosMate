@@ -47,7 +47,7 @@ export default function CosplayerProfilePage() {
   const shortcutToTabMap: Record<string, string> = {
     pendingConfirm: "wait_confirm",
     pendingPickup: "wait_shipping",
-    shipping: "wait_shipping",
+    shipping: "shipping_combined",
     review: "completed",
   }
 

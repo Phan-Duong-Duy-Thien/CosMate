@@ -1,15 +1,30 @@
-import { useMemo } from "react"
+import { useState, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
+import { message } from "antd"
 import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
+import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
+import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
+import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
 import { PackageCheck, Clock, Truck, CheckCircle, XCircle } from "lucide-react"
+
+// Format date safely
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('vi-VN');
+};
 
 const TAB_LABELS: Record<OrderTab, string> = {
   all: VI.profile.orders.tabAll,
   wait_confirm: VI.profile.orders.tabWaitConfirm,
   wait_shipping: VI.profile.orders.tabWaitShipping,
+  shipping_out: VI.profile.orders.tabShippingOut,
+  delivering_out: VI.profile.orders.tabDeliveringOut,
   in_use: VI.profile.orders.tabInUse,
+  shipping_back: VI.profile.orders.tabShippingBack,
   completed: VI.profile.orders.tabCompleted,
   cancelled: VI.profile.orders.tabCancelled,
 }
@@ -18,7 +33,10 @@ const TAB_ICONS: Record<OrderTab, React.ElementType> = {
   all: PackageCheck,
   wait_confirm: Clock,
   wait_shipping: Truck,
+  shipping_out: Truck,
+  delivering_out: Truck,
   in_use: PackageCheck,
+  shipping_back: Truck,
   completed: CheckCircle,
   cancelled: XCircle,
 }
@@ -29,7 +47,19 @@ export default function PurchaseHistoryPage() {
   const tabParam = searchParams.get("tab") as OrderTab | null
   const tab: OrderTab = tabParam && tabParam in TAB_LABELS ? tabParam : "all"
 
-  const { filteredOrders, counts, loading, error } = usePurchaseOrders(tab)
+  const { filteredOrders, counts, loading, error, confirmDelivery, confirmingDeliveryId, returnOrder, returningOrderId } = usePurchaseOrders(tab)
+
+  // Confirm delivery modal state
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false)
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
+
+  // Return order modal state
+  const [returnModalOpen, setReturnModalOpen] = useState(false)
+  const [returnOrderId, setReturnOrderId] = useState<number | null>(null)
+
+  // Detail drawer state
+  const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
+  const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
 
   const currentFilterLabel = useMemo(() => {
     return TAB_LABELS[tab]
@@ -39,17 +69,56 @@ export default function PurchaseHistoryPage() {
     navigate(`/profile/purchase-history?tab=${newTab}`)
   }
 
+  const handleConfirmDelivery = (orderId: number) => {
+    setSelectedOrderId(orderId)
+    setConfirmModalOpen(true)
+  }
+
+  const handleConfirmSubmit = async (data: { images: File[]; notes: string[] }) => {
+    if (!selectedOrderId) return
+    const success = await confirmDelivery(selectedOrderId, data.images, data.notes)
+    if (success) {
+      message.success(VI.profile.orders.toastConfirmDeliverySuccess)
+      setConfirmModalOpen(false)
+      setSelectedOrderId(null)
+    } else {
+      message.error(VI.profile.orders.toastConfirmDeliveryFailed)
+    }
+  }
+
+  // Handle return order
+  const handleReturnOrder = (orderId: number) => {
+    setReturnOrderId(orderId)
+    setReturnModalOpen(true)
+  }
+
+  const handleReturnSubmit = async (data: { trackingCode: string; images: File[]; notes: string[] }) => {
+    if (!returnOrderId) return
+    const success = await returnOrder(returnOrderId, data.trackingCode, data.images, data.notes)
+    if (success) {
+      message.success(VI.profile.orders.toastReturnSuccess)
+      setReturnModalOpen(false)
+      setReturnOrderId(null)
+    } else {
+      message.error(VI.profile.orders.toastReturnFailed)
+    }
+  }
+
   const renderOrderItem = (order: (typeof filteredOrders)[number]) => {
     const statusLabel = {
       PAID: VI.profile.orders.tabWaitConfirm,
       PREPARING: VI.profile.orders.tabWaitShipping,
-      SHIPPING_OUT: VI.profile.orders.tabInUse,
-      DELIVERING_OUT: VI.profile.orders.tabInUse,
+      SHIPPING_OUT: VI.profile.orders.statusShippingOut,
+      DELIVERING_OUT: VI.profile.orders.statusDeliveringOut,
       IN_USE: VI.profile.orders.tabInUse,
+      SHIPPING_BACK: VI.profile.orders.statusShippingBack,
       RETURNED: VI.profile.orders.tabCompleted,
       COMPLETED: VI.profile.orders.tabCompleted,
       CANCELLED: VI.profile.orders.tabCancelled,
     }[order.status] || order.status
+
+    const isDeliveringOut = order.status === 'DELIVERING_OUT'
+    const isInUse = order.status === 'IN_USE'
 
     return (
       <div
@@ -75,15 +144,49 @@ export default function PurchaseHistoryPage() {
             <p className="mt-1 text-sm text-slate-600">
               {VI.profile.orders.orderId}: #{order.id}
             </p>
+            <span className="mt-1 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+              {statusLabel}
+            </span>
           </div>
-          <div className="flex items-center justify-between">
+          <div className="mt-2 flex items-center justify-between">
             <span className="text-sm font-medium text-slate-500">
-              {new Date(order.rentStart).toLocaleDateString("vi-VN")} -{" "}
-              {new Date(order.rentEnd).toLocaleDateString("vi-VN")}
+              {formatDate(order.rentStart)} - {formatDate(order.rentEnd)}
             </span>
             <span className="font-semibold text-purple-600">
               {order.totalAmount.toLocaleString("vi-VN")} ₫
             </span>
+          </div>
+          <div className="mt-2 flex items-center justify-end gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setDetailOrderId(order.id)
+                setDetailDrawerOpen(true)
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              {VI.order.actions.viewDetail}
+            </button>
+            {isDeliveringOut && (
+              <button
+                type="button"
+                onClick={() => handleConfirmDelivery(order.id)}
+                disabled={confirmingDeliveryId === order.id}
+                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+              >
+                {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
+              </button>
+            )}
+            {isInUse && (
+              <button
+                type="button"
+                onClick={() => handleReturnOrder(order.id)}
+                disabled={returningOrderId === order.id}
+                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+              >
+                {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -161,6 +264,40 @@ export default function PurchaseHistoryPage() {
           </div>
         </Card>
       </div>
+
+      {/* Confirm Delivery Modal */}
+      <ConfirmDeliveryModal
+        open={confirmModalOpen}
+        orderId={selectedOrderId || 0}
+        loading={!!confirmingDeliveryId}
+        onCancel={() => {
+          setConfirmModalOpen(false)
+          setSelectedOrderId(null)
+        }}
+        onSubmit={handleConfirmSubmit}
+      />
+
+      {/* Return Order Modal */}
+      <ReturnOrderModal
+        open={returnModalOpen}
+        orderId={returnOrderId || 0}
+        loading={!!returningOrderId}
+        onCancel={() => {
+          setReturnModalOpen(false)
+          setReturnOrderId(null)
+        }}
+        onSubmit={handleReturnSubmit}
+      />
+
+      {/* Order Detail Drawer */}
+      <OrderDetailDrawer
+        open={detailDrawerOpen}
+        orderId={detailOrderId}
+        onClose={() => {
+          setDetailDrawerOpen(false)
+          setDetailOrderId(null)
+        }}
+      />
     </section>
   )
 }
