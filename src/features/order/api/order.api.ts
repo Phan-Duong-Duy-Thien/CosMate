@@ -11,6 +11,28 @@ interface ApiResponse<T> {
   result: T;
 }
 
+// Ship order response types
+interface ShipImage {
+  id: number;
+  imageUrl: string;
+  stage: string;
+  note: string;
+  confirm: boolean;
+}
+
+interface ShipTracking {
+  id: number;
+  trackingCode: string;
+  trackingStatus: string;
+  stage: string;
+  createdAt: string;
+}
+
+interface ShipOrderResult {
+  images: ShipImage[];
+  tracking: ShipTracking;
+}
+
 /**
  * Create a new order
  * @param cosplayerId - The cosplayer user ID
@@ -61,5 +83,42 @@ export async function prepareOrder(orderId: number): Promise<OrderItem> {
   const response = await axiosInstance.post<ApiResponse<OrderItem>>(
     `/api/orders/${orderId}/prepare`
   );
+  return response.data.result;
+}
+
+/**
+ * Ship an order (update status to SHIPPING_OUT)
+ * @param orderId - The order ID
+ * @param trackingCode - The tracking code for shipment
+ * @param notes - Array of notes mapped to images by index
+ * @param images - Array of image files
+ * @returns Ship order result with images and tracking info
+ */
+export async function shipOrder(
+  orderId: number,
+  trackingCode: string,
+  notes: string[],
+  images: File[]
+): Promise<ShipOrderResult> {
+  const formData = new FormData();
+
+  // Append each image with the same key 'images'
+  images.forEach((file) => {
+    formData.append('images', file);
+  });
+
+  const response = await axiosInstance.post<ApiResponse<ShipOrderResult>>(
+    `/api/orders/${orderId}/ship?trackingCode=${encodeURIComponent(trackingCode)}`,
+    formData,
+    {
+      params: {
+        notes: notes,
+      },
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }
+  );
+
   return response.data.result;
 }
