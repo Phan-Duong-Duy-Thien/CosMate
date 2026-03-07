@@ -3,7 +3,7 @@
  * Orchestrates order creation and data formatting
  */
 import * as orderApi from '../api/order.api';
-import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod } from '../types';
+import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod, OrderDetail } from '../types';
 import { clearDraft } from '../utils/rentalDraftStorage';
 
 /**
@@ -150,4 +150,80 @@ export async function fetchProviderOrders(providerId: number) {
  */
 export async function prepareProviderOrder(orderId: number) {
   return orderApi.prepareOrder(orderId);
+}
+
+/**
+ * Deliver out a provider's order (update status to DELIVERING_OUT)
+ * @param orderId - The order ID
+ * @returns Updated order
+ */
+export async function deliverOutProviderOrder(orderId: number) {
+  return orderApi.deliverOutOrder(orderId);
+}
+
+/**
+ * Ship a provider's order (update status to SHIPPING_OUT)
+ * @param orderId - The order ID
+ * @param trackingCode - The tracking code for shipment
+ * @param notes - Array of notes mapped to images by index
+ * @param images - Array of image files
+ * @returns Ship order result with images and tracking info
+ */
+export async function shipProviderOrder(
+  orderId: number,
+  trackingCode: string,
+  notes: string[],
+  images: File[]
+) {
+  return orderApi.shipOrder(orderId, trackingCode, notes, images);
+}
+
+/**
+ * Confirm delivery of an order (update status to IN_USE)
+ * @param orderId - The order ID
+ * @param images - Array of image files
+ * @param notes - Array of notes (one per image)
+ * @returns Updated order
+ */
+export async function confirmDeliveryOrder(
+  orderId: number,
+  images: File[],
+  notes: string[]
+) {
+  return orderApi.confirmDeliveryOrder(orderId, images, notes);
+}
+
+/**
+ * Fetch order detail by ID
+ * @param orderId - The order ID
+ * @returns Order detail with all related data
+ */
+export async function fetchOrderDetail(orderId: number): Promise<OrderDetail> {
+  return orderApi.getOrderById(orderId);
+}
+
+/**
+ * Complete a provider's order (update status to COMPLETED)
+ * @param orderId - The order ID
+ * @returns Updated order
+ */
+export async function completeProviderOrder(orderId: number) {
+  return orderApi.completeOrder(orderId);
+}
+
+/**
+ * Return a cosplayer's order (update status to SHIPPING_BACK)
+ * @param orderId - The order ID
+ * @param trackingCode - The tracking code for return shipment
+ * @param notes - Array of notes (one per image)
+ * @param images - Array of image files
+ * @returns Updated order
+ */
+export async function returnCosplayerOrder(
+  orderId: number,
+  trackingCode: string,
+  notes: string[],
+  images: File[]
+) {
+  return orderApi.returnOrder(orderId, trackingCode, notes, images);
 }

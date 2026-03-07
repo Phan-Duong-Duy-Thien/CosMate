@@ -15,6 +15,7 @@ interface MediaGalleryProps {
   videoUrl?: string
   isAdult18: boolean
   bestSeller: boolean
+  rentalsCount?: number
   hasAccessories: boolean
   accessoryCount?: number
 }
@@ -24,6 +25,7 @@ export const MediaGallery = ({
   videoUrl,
   isAdult18,
   bestSeller,
+  rentalsCount,
   hasAccessories,
   accessoryCount,
 }: MediaGalleryProps) => {
@@ -53,6 +55,11 @@ export const MediaGallery = ({
           {isAdult18 && <Badge className="bg-pink-500 text-white">18+</Badge>}
           {bestSeller && (
             <Badge className="bg-amber-100 text-amber-700">Bán chạy</Badge>
+          )}
+          {rentalsCount && rentalsCount > 0 && (
+            <Badge className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700">
+              {rentalsCount} lượt thuê
+            </Badge>
           )}
           {hasAccessories && (
             <Badge className="bg-violet-100 text-violet-700">

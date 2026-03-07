@@ -2,18 +2,38 @@
  * Hook for fetching provider orders with filtering
  */
 import { useState, useEffect, useMemo } from 'react';
-import { fetchProviderOrders, prepareProviderOrder } from '../services/order.service';
+import { fetchProviderOrders, prepareProviderOrder, deliverOutProviderOrder, shipProviderOrder, completeProviderOrder } from '../services/order.service';
 import { getAuth } from '@/features/auth/services/tokenStorage';
 import type { OrderItem, OrderStatus } from '../types';
 
-type TabKey = 'PAID' | 'PREPARING';
+// Fixed status tabs configuration
+export const ORDER_STATUS_TABS: Array<{ key: OrderStatus | 'ALL'; label: string }> = [
+  { key: 'ALL', label: 'all' },
+  { key: 'UNPAID', label: 'unpaid' },
+  { key: 'PAID', label: 'paid' },
+  { key: 'PREPARING', label: 'preparing' },
+  { key: 'SHIPPING_OUT', label: 'shippingOut' },
+  { key: 'DELIVERING_OUT', label: 'deliveringOut' },
+  { key: 'IN_USE', label: 'inUse' },
+  { key: 'SHIPPING_BACK', label: 'shippingBack' },
+  { key: 'COMPLETED', label: 'completed' },
+  { key: 'CANCELLED', label: 'cancelled' },
+  { key: 'DISPUTE', label: 'dispute' },
+  { key: 'EXTENDING', label: 'extending' },
+];
+
+type TabKey = OrderStatus | 'ALL';
 
 export function useProviderOrders() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<TabKey>('PAID');
+  const [activeTab, setActiveTab] = useState<TabKey>('ALL');
+  const [searchTerm, setSearchTerm] = useState('');
   const [preparingOrderId, setPreparingOrderId] = useState<number | null>(null);
+  const [deliveringOutOrderId, setDeliveringOutOrderId] = useState<number | null>(null);
+  const [shippingOrderId, setShippingOrderId] = useState<number | null>(null);
+  const [completingOrderId, setCompletingOrderId] = useState<number | null>(null);
 
   // Get providerId from JWT token
   const providerId = useMemo(() => {
@@ -65,16 +85,38 @@ export function useProviderOrders() {
     refetch();
   }, [providerId]);
 
-  // Filter orders by active tab
+  // Filter orders by active tab and search term
   const filteredOrders = useMemo(() => {
-    if (activeTab === 'PAID') {
-      return orders.filter((order) => order.status === 'PAID');
+    let result = orders;
+
+    // Filter by tab
+    if (activeTab !== 'ALL') {
+      result = result.filter((order) => order.status === activeTab);
     }
-    if (activeTab === 'PREPARING') {
-      return orders.filter((order) => order.status === 'PREPARING');
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase().trim();
+      result = result.filter(
+        (order) =>
+          order.id.toString().includes(term) ||
+          order.cosplayerId.toString().includes(term) ||
+          (order.cosplayerName && order.cosplayerName.toLowerCase().includes(term))
+      );
     }
-    return orders;
-  }, [orders, activeTab]);
+
+    return result;
+  }, [orders, activeTab, searchTerm]);
+
+  // Get count for each status tab
+  const tabCounts = useMemo(() => {
+    const counts: Record<string, number> = { ALL: orders.length };
+    // Single pass through orders - O(n) instead of O(n*m)
+    orders.forEach((order) => {
+      counts[order.status] = (counts[order.status] || 0) + 1;
+    });
+    return counts;
+  }, [orders]);
 
   // Prepare order action
   const prepareOrder = async (orderId: number) => {
@@ -90,6 +132,53 @@ export function useProviderOrders() {
     }
   };
 
+  // Deliver out order action
+  const deliverOutOrder = async (orderId: number) => {
+    setDeliveringOutOrderId(orderId);
+    try {
+      await deliverOutProviderOrder(orderId);
+      await refetch();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setDeliveringOutOrderId(null);
+    }
+  };
+
+  // Ship order action
+  const shipOrder = async (
+    orderId: number,
+    trackingCode: string,
+    notes: string[],
+    images: File[]
+  ) => {
+    setShippingOrderId(orderId);
+    try {
+      await shipProviderOrder(orderId, trackingCode, notes, images);
+      await refetch();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setShippingOrderId(null);
+    }
+  };
+
+  // Complete order action
+  const completeOrder = async (orderId: number) => {
+    setCompletingOrderId(orderId);
+    try {
+      await completeProviderOrder(orderId);
+      await refetch();
+      return true;
+    } catch {
+      return false;
+    } finally {
+      setCompletingOrderId(null);
+    }
+  };
+
   return {
     orders: filteredOrders,
     allOrders: orders,
@@ -97,9 +186,18 @@ export function useProviderOrders() {
     error,
     activeTab,
     setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    tabCounts,
     refetch,
     prepareOrder,
     preparingOrderId,
+    deliverOutOrder,
+    deliveringOutOrderId,
+    shipOrder,
+    shippingOrderId,
+    completeOrder,
+    completingOrderId,
     providerId,
   };
 }

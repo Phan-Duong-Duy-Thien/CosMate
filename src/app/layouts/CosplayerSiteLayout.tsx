@@ -12,6 +12,8 @@ import {
   Search,
   ShoppingCart,
   Youtube,
+  Smartphone,
+  
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar } from "antd"
 import type { MenuProps } from "antd"
@@ -32,6 +34,8 @@ import sideBannerImage1 from "@/assets/anh1.jpg"
 import sideBannerImage2 from "@/assets/quiz1.jpg"
 import sideBannerImage3 from "@/assets/quiz2.jpg"
 import sideBannerImage4 from "@/assets/quiz3.jpg"
+import ghnLogo from "@/assets/ghn.jpg"
+import appIcon from "@/assets/react.svg"
 
 function computeInitials(fullName: string | null): string {
   if (!fullName) return "U"
@@ -401,7 +405,8 @@ export default function CosplayerSiteLayout() {
         )}
       </main>
 
-      <footer className="bg-pink-100/90 text-slate-700">
+
+<footer className="bg-pink-100/90 text-slate-700">
   <div className="mx-auto w-full max-w-7xl px-6 py-10">
     <div className="grid gap-10 md:grid-cols-12 items-start">
       
@@ -416,30 +421,48 @@ export default function CosplayerSiteLayout() {
           đáng tin cậy. Mọi giao dịch minh bạch, an toàn và sẵn sàng cho mọi lễ hội.
         </p>
 
+        {/* Social links */}
         <div className="flex items-center gap-3 pt-1">
-          <button
-            type="button"
+          
+          <a
+            href="https://www.instagram.com/tnhideyansu/"
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label="Instagram"
             className="rounded-full bg-pink-200 p-2 hover:bg-pink-300 transition"
           >
             <Instagram className="h-4 w-4 text-pink-700" />
-          </button>
+          </a>
 
-          <button
-            type="button"
+          <a
+            href="https://www.facebook.com/konanachan13"
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label="Facebook"
             className="rounded-full bg-pink-200 p-2 hover:bg-pink-300 transition"
           >
             <Facebook className="h-4 w-4 text-pink-700" />
-          </button>
+          </a>
 
-          <button
-            type="button"
+          <a
+            href="https://www.youtube.com/"
+            target="_blank"
+            rel="noopener noreferrer"
             aria-label="Youtube"
             className="rounded-full bg-pink-200 p-2 hover:bg-pink-300 transition"
           >
             <Youtube className="h-4 w-4 text-pink-700" />
+          </a>
+
+          {/* Mobile app (future) */}
+          <button
+            type="button"
+            aria-label="Mobile App"
+            className="rounded-full bg-pink-200 p-2 hover:bg-pink-300 transition"
+          >
+            <Smartphone className="h-4 w-4 text-pink-700" />
           </button>
+
         </div>
       </div>
 
@@ -498,6 +521,36 @@ export default function CosplayerSiteLayout() {
             </div>
 
           </div>
+
+          {/* Đơn vị giao hàng */}
+          <div className="pt-3 space-y-2">
+            <p className="text-sm font-medium text-slate-700">
+              Đơn vị giao hàng
+            </p>
+
+            <div className="flex items-center gap-2">
+              <img
+                src={ghnLogo}
+                alt="GiaoHangNhanh"
+                className="h-6 w-auto rounded"
+              />
+              <span className="text-sm text-slate-600">
+                GiaoHangNhanh
+              </span>
+            </div>
+          </div>
+
+          {/* Hình thức thanh toán */}
+          <div className="pt-2 space-y-1">
+            <p className="text-sm font-medium text-slate-700">
+              Hình thức thanh toán
+            </p>
+
+            <p className="text-sm text-slate-600">
+              Ví • MoMo • VNPay
+            </p>
+          </div>
+
         </div>
 
       </div>

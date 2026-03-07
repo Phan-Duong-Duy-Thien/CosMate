@@ -45,6 +45,11 @@ export const CostumeCard = ({
         {costume.bestSeller && (
           <Badge className="bg-amber-100 text-amber-700">Bán chạy</Badge>
         )}
+        {costume.rentalsCount > 0 && (
+          <Badge className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700">
+            {costume.rentalsCount} lượt thuê
+          </Badge>
+        )}
         {costume.hasAccessories && (
           <Badge className="bg-violet-100 text-violet-700">
             Có phụ kiện

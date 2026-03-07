@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__ide__getDiagnostics",
+      "Bash(npx tsc --noEmit)",
+      "Bash(npx tsc --noEmit --skipLibCheck)",
+      "Bash(npx tsc:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(rm:*)",
+      "mcp__ide__getDiagnostics"
+    ]
+  }
+}

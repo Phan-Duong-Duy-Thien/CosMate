@@ -299,6 +299,60 @@ export const VI = {
    * Provider dashboard text
    */
   provider: {
+    // Shop Profile (Public)
+    shop: {
+      title: "Hồ sơ shop",
+      verified: "Đã xác minh",
+      featured: "Shop nổi bật",
+      chat: "Chat ngay",
+      follow: "Theo dõi",
+      contact: "Liên hệ",
+      facebook: "Facebook",
+      messenger: "Messenger",
+      website: "Website",
+      policies: {
+        title: "Chính sách shop",
+        rental: "Điều kiện thuê",
+        deposit: "Tiền cọc",
+        damage: "Chính sách hư hỏng",
+        lateReturn: "Phạt trả muộn",
+        cancellation: "Hủy/Hoàn tiền",
+        notes: "Lưu ý khác",
+      },
+      stats: {
+        rentals: "Lượt thuê",
+        reviews: "Đánh giá",
+        rating: "Đánh giá",
+      },
+      reviews: {
+        title: "Đánh giá shop",
+        summary: "Đánh giá",
+        noReviews: "Chưa có đánh giá nào.",
+        writeReview: "Viết đánh giá",
+      },
+      products: {
+        title: "Sản phẩm của shop",
+        searchPlaceholder: "Tìm sản phẩm...",
+        sort: {
+          label: "Sắp xếp",
+          bestSelling: "Bán chạy",
+          newest: "Mới nhất",
+        },
+        filter: {
+          price: "Lọc theo giá",
+          minPrice: "Giá từ",
+          maxPrice: "đến",
+        },
+        noProducts: "Shop chưa có sản phẩm nào.",
+      },
+      recommended: {
+        title: "Gợi ý sản phẩm phù hợp với bạn",
+      },
+      accessory: "Có phụ kiện",
+      noAccessory: "Không phụ kiện",
+      rental: "lượt thuê",
+    },
+
     dashboard: {
       title: "Bảng điều khiển Provider",
       welcome: "Chào mừng trở lại, Provider!",
@@ -367,9 +421,21 @@ export const VI = {
 
     orders: {
       title: "Quản lý đơn thuê",
+      searchPlaceholder: "Tìm kiếm theo mã đơn, ID cosplayer...",
       tabs: {
+        all: "Tất cả",
+        unpaid: "Chưa thanh toán",
         paid: "Chờ xác nhận",
         preparing: "Chờ giao hàng",
+        shippingOut: "Đang giao hàng",
+        deliveringOut: "Chờ nhận hàng",
+        inUse: "Đang sử dụng",
+        shippingBack: "Đang trả hàng",
+        returned: "Đã trả",
+        completed: "Hoàn thành",
+        cancelled: "Đã hủy",
+        dispute: "Tranh chấp",
+        extending: "Gia hạn",
       },
       table: {
         orderId: "Mã đơn",
@@ -381,10 +447,35 @@ export const VI = {
       },
       actions: {
         prepare: "Xác nhận chuẩn bị",
+        deliverOut: "Giao hàng",
+        ship: "Gửi hàng",
+        complete: "Hoàn tất",
+      },
+      shipModal: {
+        title: "Gửi hàng",
+        trackingCode: "Mã vận đơn",
+        trackingCodePlaceholder: "Nhập mã vận đơn",
+        images: "Hình ảnh",
+        noteLabel: "Ghi chú",
+        notePlaceholder: "Nhập ghi chú cho hình ảnh này",
+        submit: "Gửi hàng",
+        cancel: "Hủy",
       },
       toast: {
         prepareSuccess: "Xác nhận chuẩn bị đơn thuê thành công",
         prepareFailed: "Không thể xác nhận chuẩn bị đơn thuê",
+        deliverOutSuccess: "Cập nhật trạng thái giao hàng thành công",
+        deliverOutFailed: "Không thể cập nhật trạng thái giao hàng",
+        shipSuccess: "Gửi hàng thành công",
+        shipFailed: "Không thể gửi hàng",
+        completeSuccess: "Hoàn tất đơn thuê thành công",
+        completeFailed: "Không thể hoàn tất đơn thuê",
+      },
+      validation: {
+        trackingRequired: "Vui lòng nhập mã vận đơn",
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
+        noteRequired: "Vui lòng nhập ghi chú cho tất cả hình ảnh",
+        noteImageMismatch: "Số lượng ghi chú không khớp với số lượng hình ảnh",
       },
     },
   },
@@ -531,11 +622,40 @@ export const VI = {
       tabAll: "Tất cả",
       tabWaitConfirm: "Chờ xác nhận",
       tabWaitShipping: "Chờ giao hàng",
+      tabShippingOut: "Đang giao",
+      tabDeliveringOut: "Chờ nhận",
       tabInUse: "Đang sử dụng",
+      tabShippingBack: "Đang trả hàng",
       tabCompleted: "Hoàn thành",
       tabCancelled: "Đã hủy",
       empty: "Không có đơn hàng nào",
       loadError: "Không thể tải danh sách đơn hàng",
+      // Status labels for list
+      statusShippingOut: "Đang giao",
+      statusDeliveringOut: "Chờ nhận",
+      statusShippingBack: "Đang trả hàng",
+      // Actions
+      actionViewDetail: "Xem chi tiết đơn",
+      actionConfirmDelivery: "Xác nhận nhận hàng",
+      actionProcessing: "Đang xử lý...",
+      // Toast messages
+      toastConfirmDeliverySuccess: "Xác nhận nhận hàng thành công",
+      toastConfirmDeliveryFailed: "Không thể xác nhận nhận hàng",
+      toastReturnSuccess: "Gửi yêu cầu trả hàng thành công",
+      toastReturnFailed: "Không thể gửi yêu cầu trả hàng",
+      // Return order action
+      actionReturn: "Trả hàng",
+      returnTrackingCode: "Mã vận đơn",
+      returnTrackingCodePlaceholder: "Nhập mã vận đơn",
+      returnImages: "Hình ảnh xác nhận",
+      // Validation
+      validation: {
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
+      },
+      validationReturn: {
+        trackingRequired: "Vui lòng nhập mã vận đơn",
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
+      },
     },
 
     wallet: {
@@ -598,6 +718,46 @@ export const VI = {
   },
 
   /**
+   * Order detail text
+   */
+  order: {
+    detail: {
+      title: "Chi tiết đơn hàng",
+      basicInfo: "Thông tin cơ bản",
+      orderId: "Mã đơn",
+      status: "Trạng thái",
+      totalAmount: "Tổng tiền",
+      createdAt: "Ngày tạo",
+      rentalInfo: "Thông tin thuê",
+      size: "Kích cỡ",
+      numberOfItems: "Số lượng",
+      rentDay: "Số ngày thuê",
+      rentStart: "Ngày bắt đầu",
+      rentEnd: "Ngày kết thúc",
+      depositAmount: "Tiền cọc",
+      rentAmount: "Tiền thuê",
+      surchargeAmount: "Phụ phí",
+      accessoriesAmount: "Phụ kiện",
+      rentOptionAmount: "Gói thuê",
+      rentalOptions: "Gói thuê",
+      accessories: "Phụ kiện",
+      surcharges: "Phụ phí",
+      addresses: "Địa chỉ",
+      cosplayerAddress: "Địa chỉ người thuê",
+      providerAddress: "Địa chỉ nhà cung cấp",
+      trackings: "Theo dõi vận chuyển",
+      images: "Hình ảnh",
+      empty: "Không có dữ liệu",
+      trackingCode: "Mã vận đơn",
+      trackingStatus: "Trạng thái",
+      stage: "Giai đoạn",
+    },
+    actions: {
+      viewDetail: "Xem chi tiết",
+    },
+  },
+
+  /**
    * Costume rental / shopping text
    */
   costumeRental: {
@@ -624,6 +784,27 @@ export const VI = {
     imageUrls: "Danh sách ảnh",
     isRequired: "Bắt buộc",
     detailSectionTitle: "Thông tin chi tiết",
+
+    // Costume Detail Page Enhancements
+    detail: {
+      productDetailTitle: "CHI TIẾT SẢN PHẨM",
+      productDescriptionTitle: "MÔ TẢ SẢN PHẨM",
+      shopFeatured: "Shop nổi bật",
+      chatNow: "Chat ngay",
+      viewShop: "Xem shop",
+      rentalCount: "Lượt thuê",
+      reviewsTitle: "Đánh giá",
+      myReviewTitle: "Đánh giá của tôi",
+      writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
+      submitReview: "Gửi đánh giá",
+      moreFromShop: "Sản phẩm khác của shop",
+      noReviews: "Chưa có đánh giá nào.",
+      ratingLabel: "Đánh giá",
+      totalReviews: "đánh giá",
+      writeReview: "Viết đánh giá",
+      uploadImages: "Tải ảnh lên",
+      addPhotos: "Thêm ảnh",
+    },
 
     // Validation messages
     validation: {

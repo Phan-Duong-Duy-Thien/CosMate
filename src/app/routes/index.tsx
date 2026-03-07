@@ -32,6 +32,7 @@ import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
 import AdminHomePage from "@/features/admin/pages/AdminHomePage"
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
+import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
 import ProviderCostumeListPage from "@/features/costume-rental/pages/ProviderCostumeListPage"
 import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderCreateCostumePage"
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
@@ -58,6 +59,7 @@ export default function AppRoutes() {
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
         <Route path="staff/:staffId" element={<StaffProfilePage />} />
+        <Route path="shop/:providerId" element={<ShopProfilePage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
         <Route path="register/cosplayer" element={<CosplayerRegPage />} />

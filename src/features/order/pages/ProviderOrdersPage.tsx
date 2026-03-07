@@ -1,23 +1,23 @@
 /**
  * ProviderOrdersPage
- * 
+ *
  * Provider rental dashboard page for order management
  * Orchestrates: tabs, table, actions
  * No axios calls - uses hook for data/actions
  */
 
 import { useState } from 'react';
-import { Table, Tabs, Button, Tag, Space, message } from 'antd';
+import { Table, Tabs, Button, Tag, Space, message, Input } from 'antd';
 import type { TableProps } from 'antd';
-import { CheckCircleOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, SearchOutlined, CarOutlined, SendOutlined, EyeOutlined, FlagOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '@/features/provider/constants/sidebar';
-import { useProviderOrders } from '../hooks/useProviderOrders';
+import { useProviderOrders, ORDER_STATUS_TABS } from '../hooks/useProviderOrders';
+import { ShipOrderModal } from '../components/ShipOrderModal';
+import { OrderDetailDrawer } from '../components/OrderDetailDrawer';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderItem } from '../types';
-
-type TabKey = 'PAID' | 'PREPARING';
 
 export default function ProviderOrdersPage() {
   const {
@@ -26,10 +26,27 @@ export default function ProviderOrdersPage() {
     error,
     activeTab,
     setActiveTab,
+    searchTerm,
+    setSearchTerm,
+    tabCounts,
     refetch,
     prepareOrder,
     preparingOrderId,
+    deliverOutOrder,
+    deliveringOutOrderId,
+    shipOrder,
+    shippingOrderId,
+    completeOrder,
+    completingOrderId,
   } = useProviderOrders();
+
+  // Ship modal state
+  const [shipModalOpen, setShipModalOpen] = useState(false);
+  const [shipOrderId, setShipOrderId] = useState<number | null>(null);
+
+  // Detail drawer state
+  const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
+  const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   // Convert provider sidebar items to DashboardLayout format
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
@@ -64,17 +81,20 @@ export default function ProviderOrdersPage() {
   // Get status tag color
   const getStatusTag = (status: string) => {
     const statusConfig: Record<string, { color: string; text: string }> = {
-      PAID: { color: 'orange', text: 'Chờ xác nhận' },
-      PREPARING: { color: 'blue', text: 'Chờ giao hàng' },
-      SHIPPING_OUT: { color: 'cyan', text: 'Đang giao' },
-      DELIVERING_OUT: { color: 'cyan', text: 'Đang giao' },
-      IN_USE: { color: 'purple', text: 'Đang sử dụng' },
-      RETURNED: { color: 'green', text: 'Đã trả' },
-      COMPLETED: { color: 'green', text: 'Hoàn thành' },
-      CANCELLED: { color: 'red', text: 'Đã hủy' },
-      UNPAID: { color: 'default', text: 'Chưa thanh toán' },
+      UNPAID: { color: 'default', text: VI.provider.orders.tabs.unpaid },
+      PAID: { color: 'orange', text: VI.provider.orders.tabs.paid },
+      PREPARING: { color: 'blue', text: VI.provider.orders.tabs.preparing },
+      SHIPPING_OUT: { color: 'cyan', text: VI.provider.orders.tabs.shippingOut },
+      DELIVERING_OUT: { color: 'cyan', text: VI.provider.orders.tabs.deliveringOut },
+      IN_USE: { color: 'purple', text: VI.provider.orders.tabs.inUse },
+      SHIPPING_BACK: { color: 'volcano', text: VI.provider.orders.tabs.shippingBack },
+      RETURNED: { color: 'green', text: VI.provider.orders.tabs.returned },
+      COMPLETED: { color: 'green', text: VI.provider.orders.tabs.completed },
+      CANCELLED: { color: 'red', text: VI.provider.orders.tabs.cancelled },
+      DISPUTE: { color: 'magenta', text: VI.provider.orders.tabs.dispute },
+      EXTENDING: { color: 'gold', text: VI.provider.orders.tabs.extending },
     };
-    
+
     const config = statusConfig[status] || { color: 'default', text: status };
     return <Tag color={config.color}>{config.text}</Tag>;
   };
@@ -86,6 +106,46 @@ export default function ProviderOrdersPage() {
       message.success(VI.provider.orders.toast.prepareSuccess);
     } else {
       message.error(VI.provider.orders.toast.prepareFailed);
+    }
+  };
+
+  // Handle deliver out action
+  const handleDeliverOut = async (orderId: number) => {
+    const success = await deliverOutOrder(orderId);
+    if (success) {
+      message.success(VI.provider.orders.toast.deliverOutSuccess);
+    } else {
+      message.error(VI.provider.orders.toast.deliverOutFailed);
+    }
+  };
+
+  // Handle complete action
+  const handleComplete = async (orderId: number) => {
+    const success = await completeOrder(orderId);
+    if (success) {
+      message.success(VI.provider.orders.toast.completeSuccess);
+    } else {
+      message.error(VI.provider.orders.toast.completeFailed);
+    }
+  };
+
+  // Handle ship action
+  const handleShip = (orderId: number) => {
+    setShipOrderId(orderId);
+    setShipModalOpen(true);
+  };
+
+  // Handle ship submit
+  const handleShipSubmit = async (data: { trackingCode: string; notes: string[]; images: File[] }) => {
+    if (!shipOrderId) return;
+
+    const success = await shipOrder(shipOrderId, data.trackingCode, data.notes, data.images);
+    if (success) {
+      message.success(VI.provider.orders.toast.shipSuccess);
+      setShipModalOpen(false);
+      setShipOrderId(null);
+    } else {
+      message.error(VI.provider.orders.toast.shipFailed);
     }
   };
 
@@ -125,10 +185,20 @@ export default function ProviderOrdersPage() {
     {
       title: VI.provider.orders.table.action,
       key: 'action',
-      width: 150,
-      render: (_: unknown, record: OrderItem) => {
-        if (record.status === 'PAID') {
-          return (
+      width: 300,
+      render: (_: unknown, record: OrderItem) => (
+        <Space size="small">
+          <Button
+            size="small"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              setSelectedOrderId(record.id);
+              setDetailDrawerOpen(true);
+            }}
+          >
+            {VI.order.actions.viewDetail}
+          </Button>
+          {record.status === 'PAID' && (
             <Button
               type="primary"
               size="small"
@@ -138,44 +208,67 @@ export default function ProviderOrdersPage() {
             >
               {VI.provider.orders.actions.prepare}
             </Button>
-          );
-        }
-        return null;
-      },
+          )}
+          {record.status === 'PREPARING' && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<SendOutlined />}
+              loading={shippingOrderId === record.id}
+              onClick={() => handleShip(record.id)}
+            >
+              {VI.provider.orders.actions.ship}
+            </Button>
+          )}
+          {record.status === 'SHIPPING_OUT' && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<CarOutlined />}
+              loading={deliveringOutOrderId === record.id}
+              onClick={() => handleDeliverOut(record.id)}
+            >
+              {VI.provider.orders.actions.deliverOut}
+            </Button>
+          )}
+          {record.status === 'SHIPPING_BACK' && (
+            <Button
+              type="primary"
+              size="small"
+              icon={<FlagOutlined />}
+              loading={completingOrderId === record.id}
+              onClick={() => handleComplete(record.id)}
+            >
+              {VI.provider.orders.actions.complete}
+            </Button>
+          )}
+        </Space>
+      ),
     },
   ];
 
-  // Tab items
-  const tabItems = [
-    {
-      key: 'PAID',
-      label: VI.provider.orders.tabs.paid,
-      children: (
-        <Table
-          dataSource={orders}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          locale={{ emptyText: VI.common.status.noData }}
-        />
-      ),
-    },
-    {
-      key: 'PREPARING',
-      label: VI.provider.orders.tabs.preparing,
-      children: (
-        <Table
-          dataSource={orders}
-          columns={columns}
-          loading={loading}
-          rowKey="id"
-          pagination={{ pageSize: 10 }}
-          locale={{ emptyText: VI.common.status.noData }}
-        />
-      ),
-    },
-  ];
+  // Tab items - generated from fixed configuration
+  const tabItems = ORDER_STATUS_TABS.map((tab) => ({
+    key: tab.key,
+    label: (
+      <span>
+        {VI.provider.orders.tabs[tab.label as keyof typeof VI.provider.orders.tabs]}
+        <span style={{ marginLeft: 4, opacity: 0.6 }}>
+          ({tabCounts[tab.key] ?? 0})
+        </span>
+      </span>
+    ),
+    children: (
+      <Table
+        dataSource={orders}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: VI.common.status.noData }}
+      />
+    ),
+  }));
 
   return (
     <DashboardLayout
@@ -188,10 +281,39 @@ export default function ProviderOrdersPage() {
           {error}
         </div>
       )}
+      <div style={{ marginBottom: 16 }}>
+        <Input.Search
+          placeholder={VI.provider.orders.searchPlaceholder}
+          allowClear
+          enterButton={<SearchOutlined />}
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onSearch={setSearchTerm}
+          style={{ maxWidth: 400 }}
+        />
+      </div>
       <Tabs
         activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as TabKey)}
+        onChange={(key) => setActiveTab(key as typeof activeTab)}
         items={tabItems}
+      />
+      <ShipOrderModal
+        open={shipModalOpen}
+        orderId={shipOrderId || 0}
+        loading={!!shippingOrderId}
+        onCancel={() => {
+          setShipModalOpen(false);
+          setShipOrderId(null);
+        }}
+        onSubmit={handleShipSubmit}
+      />
+      <OrderDetailDrawer
+        open={detailDrawerOpen}
+        orderId={selectedOrderId}
+        onClose={() => {
+          setDetailDrawerOpen(false);
+          setSelectedOrderId(null);
+        }}
       />
     </DashboardLayout>
   );

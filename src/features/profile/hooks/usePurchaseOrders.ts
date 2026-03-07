@@ -2,19 +2,26 @@
  * Purchase Orders Hook
  * Fetches and filters orders for the current user
  */
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getOrdersByUserId } from '@/features/order/api/order.api';
+import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
 
 // Map UI tab to backend status
 const TAB_STATUS_MAP: Record<string, OrderStatus[]> = {
   wait_confirm: ['PAID'],
   wait_shipping: ['PREPARING'],
-  in_use: ['SHIPPING_OUT', 'DELIVERING_OUT', 'IN_USE'],
+  shipping_out: ['SHIPPING_OUT'],
+  delivering_out: ['DELIVERING_OUT'],
+  in_use: ['IN_USE'],
+  shipping_back: ['SHIPPING_BACK'],
   completed: ['RETURNED', 'COMPLETED'],
   cancelled: ['CANCELLED'],
 };
+
+// Combined shipping status for profile summary (SHIPPING_OUT + DELIVERING_OUT)
+export const SHIPPING_STATUSES: OrderStatus[] = ['SHIPPING_OUT', 'DELIVERING_OUT'];
 
 export type OrderTab = 'all' | keyof typeof TAB_STATUS_MAP;
 
@@ -22,9 +29,13 @@ export interface OrderCounts {
   all: number;
   wait_confirm: number;
   wait_shipping: number;
+  shipping_out: number;
+  delivering_out: number;
   in_use: number;
+  shipping_back: number;
   completed: number;
   cancelled: number;
+  shipping_combined: number; // Combined count for profile summary
 }
 
 export interface UsePurchaseOrdersResult {
@@ -33,12 +44,19 @@ export interface UsePurchaseOrdersResult {
   counts: OrderCounts;
   loading: boolean;
   error: string | null;
+  refetch: () => Promise<void>;
+  confirmDelivery: (orderId: number, images: File[], notes: string[]) => Promise<boolean>;
+  confirmingDeliveryId: number | null;
+  returnOrder: (orderId: number, trackingCode: string, images: File[], notes: string[]) => Promise<boolean>;
+  returningOrderId: number | null;
 }
 
 export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResult {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
+  const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
 
   const userId = getUserId();
 
@@ -89,11 +107,61 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       all: orders.length,
       wait_confirm: countByStatuses(TAB_STATUS_MAP.wait_confirm),
       wait_shipping: countByStatuses(TAB_STATUS_MAP.wait_shipping),
+      shipping_out: countByStatuses(TAB_STATUS_MAP.shipping_out),
+      delivering_out: countByStatuses(TAB_STATUS_MAP.delivering_out),
       in_use: countByStatuses(TAB_STATUS_MAP.in_use),
+      shipping_back: countByStatuses(TAB_STATUS_MAP.shipping_back),
       completed: countByStatuses(TAB_STATUS_MAP.completed),
       cancelled: countByStatuses(TAB_STATUS_MAP.cancelled),
+      // Combined shipping count for profile summary (SHIPPING_OUT + DELIVERING_OUT)
+      shipping_combined: countByStatuses(SHIPPING_STATUSES),
     };
   }, [orders]);
+
+  // Refetch orders
+  const refetch = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await getOrdersByUserId(userId);
+      setOrders(data);
+    } catch (err) {
+      console.error('Failed to refetch orders:', err);
+    }
+  }, [userId]);
+
+  // Confirm delivery action
+  const confirmDelivery = useCallback(
+    async (orderId: number, images: File[], notes: string[]) => {
+      setConfirmingDeliveryId(orderId);
+      try {
+        await confirmDeliveryOrder(orderId, images, notes);
+        await refetch();
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setConfirmingDeliveryId(null);
+      }
+    },
+    [refetch]
+  );
+
+  // Return order action
+  const returnOrder = useCallback(
+    async (orderId: number, trackingCode: string, images: File[], notes: string[]) => {
+      setReturningOrderId(orderId);
+      try {
+        await returnCosplayerOrder(orderId, trackingCode, notes, images);
+        await refetch();
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setReturningOrderId(null);
+      }
+    },
+    [refetch]
+  );
 
   return {
     orders,
@@ -101,5 +169,10 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     counts,
     loading,
     error,
+    refetch,
+    confirmDelivery,
+    confirmingDeliveryId,
+    returnOrder,
+    returningOrderId,
   };
 }
