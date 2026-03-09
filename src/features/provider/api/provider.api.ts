@@ -23,3 +23,29 @@ export async function getProviderByUserId(userId: number): Promise<ProviderProfi
   console.log('[getProviderByUserId] raw response.data:', response.data);
   return response.data.result;
 }
+
+/**
+ * Provider review types
+ */
+export interface ProviderReview {
+  id: number;
+  orderId: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  images: {
+    id: number;
+    url: string;
+  }[];
+}
+
+/**
+ * GET /api/reviews/provider/{providerId}
+ * Returns reviews for a specific provider.
+ */
+export async function getReviewsByProvider(providerId: number): Promise<ProviderReview[]> {
+  const response = await axiosInstance.get<ApiResponse<ProviderReview[]>>(
+    `/api/reviews/provider/${providerId}`
+  );
+  return response.data.result;
+}

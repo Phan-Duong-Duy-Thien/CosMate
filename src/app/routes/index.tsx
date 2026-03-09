@@ -37,6 +37,7 @@ import ProviderCostumeListPage from "@/features/costume-rental/pages/ProviderCos
 import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderCreateCostumePage"
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
+import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
 
 export default function AppRoutes() {
   return (
@@ -80,6 +81,7 @@ export default function AppRoutes() {
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
+        <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
       </Route>
 
       {/* Global Error Pages */}

@@ -7,7 +7,9 @@ import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
 import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
-import { PackageCheck, Clock, Truck, CheckCircle, XCircle } from "lucide-react"
+import { ReviewModal } from "@/features/order/components/ReviewModal"
+import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
+import { PackageCheck, Clock, Truck, CheckCircle, XCircle, Star } from "lucide-react"
 
 // Format date safely
 const formatDate = (dateString: string | undefined | null): string => {
@@ -47,7 +49,14 @@ export default function PurchaseHistoryPage() {
   const tabParam = searchParams.get("tab") as OrderTab | null
   const tab: OrderTab = tabParam && tabParam in TAB_LABELS ? tabParam : "all"
 
-  const { filteredOrders, counts, loading, error, confirmDelivery, confirmingDeliveryId, returnOrder, returningOrderId } = usePurchaseOrders(tab)
+  const { filteredOrders, counts, loading, error, confirmDelivery, confirmingDeliveryId, returnOrder, returningOrderId, refetch } = usePurchaseOrders(tab)
+
+  // Review modal state
+  const [reviewModalOpen, setReviewModalOpen] = useState(false)
+  const [reviewOrderId, setReviewOrderId] = useState<number | null>(null)
+  const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
+
+  const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
 
   // Confirm delivery modal state
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
@@ -104,6 +113,34 @@ export default function PurchaseHistoryPage() {
     }
   }
 
+  // Handle review order
+  const handleReviewOrder = (orderId: number, cosplayerId: number) => {
+    setReviewOrderId(orderId)
+    setReviewCosplayerId(cosplayerId)
+    setReviewModalOpen(true)
+  }
+
+  const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
+    if (!reviewOrderId || !reviewCosplayerId) return
+    const success = await submitReview({
+      cosplayerId: reviewCosplayerId,
+      orderId: reviewOrderId,
+      rating: data.rating,
+      comment: data.comment,
+      images: data.images,
+    })
+    if (success) {
+      message.success(VI.profile.orders.toastReviewSuccess)
+      setReviewModalOpen(false)
+      setReviewOrderId(null)
+      setReviewCosplayerId(null)
+      // Optionally refetch orders
+      refetch()
+    } else {
+      message.error(VI.profile.orders.toastReviewFailed)
+    }
+  }
+
   const renderOrderItem = (order: (typeof filteredOrders)[number]) => {
     const statusLabel = {
       PAID: VI.profile.orders.tabWaitConfirm,
@@ -119,6 +156,7 @@ export default function PurchaseHistoryPage() {
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
+    const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     return (
       <div
@@ -185,6 +223,17 @@ export default function PurchaseHistoryPage() {
                 className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
               >
                 {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
+              </button>
+            )}
+            {isCompleted && (
+              <button
+                type="button"
+                onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
+                disabled={reviewingOrderId === order.id}
+                className="flex items-center gap-1 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+              >
+                <Star className="h-4 w-4" />
+                {reviewingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
               </button>
             )}
           </div>
@@ -297,6 +346,20 @@ export default function PurchaseHistoryPage() {
           setDetailDrawerOpen(false)
           setDetailOrderId(null)
         }}
+      />
+
+      {/* Review Modal */}
+      <ReviewModal
+        open={reviewModalOpen}
+        orderId={reviewOrderId || 0}
+        cosplayerId={reviewCosplayerId || 0}
+        loading={!!reviewingOrderId}
+        onCancel={() => {
+          setReviewModalOpen(false)
+          setReviewOrderId(null)
+          setReviewCosplayerId(null)
+        }}
+        onSubmit={handleReviewSubmit}
       />
     </section>
   )

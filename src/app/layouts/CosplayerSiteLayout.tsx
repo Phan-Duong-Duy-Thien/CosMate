@@ -24,7 +24,8 @@ import { Input } from "@shared/components/Input"
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
-import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
+import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
@@ -68,6 +69,25 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
+
+  // Portal Guard: Redirect non-cosplayer users to their correct portal
+  // This handles cases like: user logged in as PROVIDER, closes browser, reopens app
+  // The app loads CosplayerSiteLayout by default, but PROVIDER should be in provider dashboard
+  React.useEffect(() => {
+    if (loggedIn) {
+      const roles = getRoles() as import('@/types/auth').UserRole[]
+      // If user has roles but is not COSPLAYER, redirect to their correct portal
+      if (roles.length > 0) {
+        const correctPath = getRedirectPath(roles)
+        // Only redirect if the correct path is NOT the cosplayer home (/)
+        // This handles PROVIDER -> /provider-rental, ADMIN -> /admin
+        if (correctPath !== '/') {
+          console.log('[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:', correctPath)
+          navigate(correctPath, { replace: true })
+        }
+      }
+    }
+  }, [loggedIn, navigate])
 
   // Auto-fetch profile when logged in but no profile data
   React.useEffect(() => {
