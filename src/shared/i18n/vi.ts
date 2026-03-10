@@ -478,6 +478,20 @@ export const VI = {
         noteImageMismatch: "Số lượng ghi chú không khớp với số lượng hình ảnh",
       },
     },
+
+    reviews: {
+      title: "Quản lý đánh giá",
+      columns: {
+        reviewId: "Mã đánh giá",
+        orderId: "Mã đơn",
+        rating: "Số sao",
+        comment: "Nội dung",
+        images: "Hình ảnh",
+        createdAt: "Ngày tạo",
+      },
+      empty: "Chưa có đánh giá nào",
+      loadError: "Không thể tải danh sách đánh giá",
+    },
   },
 
   /**
@@ -655,6 +669,22 @@ export const VI = {
       validationReturn: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
+      },
+      // Review action
+      actionReview: "Đánh giá",
+      reviewModal: {
+        title: "Đánh giá đơn thuê",
+        ratingLabel: "Chọn số sao",
+        commentLabel: "Nội dung đánh giá",
+        commentPlaceholder: "Chia sẻ trải nghiệm của bạn...",
+        imagesLabel: "Thêm hình ảnh",
+        submit: "Gửi đánh giá",
+        cancel: "Hủy",
+      },
+      toastReviewSuccess: "Gửi đánh giá thành công",
+      toastReviewFailed: "Không thể gửi đánh giá",
+      validationReview: {
+        ratingRequired: "Vui lòng chọn số sao đánh giá",
       },
     },
 
