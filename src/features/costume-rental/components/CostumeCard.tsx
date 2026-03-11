@@ -86,6 +86,7 @@ export const CostumeCard = ({
       </h3>
       <p className="text-sm text-slate-500">Nhân vật: {costume.characterName}</p>
       <p className="text-sm text-slate-500">Shop: {costume.shopName}</p>
+      <p className="text-sm text-slate-500">Thương hiệu: {costume.brand || "non-brand"}</p>
       <div className="text-xs uppercase tracking-wide text-slate-400">
         Giá thuê
       </div>
