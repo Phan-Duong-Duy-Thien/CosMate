@@ -79,3 +79,89 @@ export interface OrderItem {
   createdAt: string;
   updatedAt: string;
 }
+
+// Order detail types from GET /api/orders/{id}
+export interface OrderDetailItem {
+  id: number;
+  orderId: number;
+  costumeId: number;
+  size: string;
+  numberOfItems: number;
+  rentDay: number;
+  rentStart: string;
+  rentEnd: string;
+  returnDay: string | null;
+  depositAmount: number;
+  rentAmount: number;
+  surchargeAmount: number;
+  accessoriesAmount: number;
+  rentOptionAmount: number;
+}
+
+export interface OrderSurcharge {
+  id: number;
+  orderId: number;
+  costumeId: number;
+  name: string;
+  description: string;
+  price: number;
+}
+
+export interface OrderAddress {
+  id: number;
+  orderId: number;
+  addressFrom: 'COSPLAYER' | 'PROVIDER';
+  name: string;
+  city: string;
+  district: string;
+  address: string;
+  phone: string;
+}
+
+export interface OrderAccessory {
+  id: number;
+  accessoryId: number;
+  name: string;
+  imageUrl: string;
+  price: number;
+}
+
+export interface OrderRentalOption {
+  id: number;
+  optionName: string;
+  price: number;
+  description: string;
+}
+
+export interface OrderImage {
+  id: number;
+  imageUrl: string;
+  stage: string;
+  note: string;
+  confirm: boolean;
+}
+
+export interface OrderTracking {
+  id: number;
+  trackingCode: string;
+  trackingStatus: string;
+  stage: string;
+  createdAt: string;
+}
+
+export interface OrderDetail {
+  id: number;
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: OrderStatus;
+  totalAmount: number;
+  createdAt: string;
+  details: OrderDetailItem[];
+  surcharges: OrderSurcharge[];
+  addresses: OrderAddress[];
+  accessories: OrderAccessory[];
+  rentalOptions: OrderRentalOption[];
+  images: OrderImage[];
+  trackings: OrderTracking[];
+}
