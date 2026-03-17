@@ -27,8 +27,12 @@ export function ProtectedRoute({
     const strRole = String(role).toUpperCase();
     if (strRole === '1') return 'SUPERADMIN';
     if (strRole === '2') return 'ADMIN';
-    if (strRole === '3') return 'STAFF';
-    if (strRole === '4') return 'COSPLAYER';
+    if (strRole === '3') return 'COSPLAYER';
+    if (strRole === '4') return 'PROVIDER';
+    if (strRole === '5') return 'PROVIDER_RENTAL';
+    if (strRole === '6') return 'PROVIDER_PHOTOGRAPH';
+    if (strRole === '7') return 'PROVIDER_EVENT_STAFF';
+    if (strRole === '8') return 'STAFF';
     return strRole;
   });
 
