@@ -1,12 +1,11 @@
 /**
  * AdminUsersPage
- * 
- * Main page for user management
+ * * Main page for user management
  * Orchestrates: toolbar, table, drawer
  * No axios calls - uses hook for data/actions
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
@@ -18,10 +17,13 @@ import {
   UnlockOutlined,
   StopOutlined,
   CheckCircleOutlined,
+  UploadOutlined, 
+  DownloadOutlined, 
+  FileExcelOutlined
 } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
-import { adminSidebarItems } from '../constants/sidebar';
 import { useAdminUsers } from '../hooks/useAdminUsers';
+import { useDynamicMenu } from '../hooks/useDynamicMenu';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
 import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
@@ -30,11 +32,17 @@ import { getRoleTagProps } from '../utils/userRole';
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 
-// No local helpers needed - using centralized status utils
-
 export default function AdminUsersPage() {
+  // Lấy Menu Động
+  const { sidebarItems } = useDynamicMenu();
+
   const {
-    filteredUsers,
+    users,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
     isLoading,
     searchText,
     setSearchText,
@@ -50,32 +58,32 @@ export default function AdminUsersPage() {
     profileLoading,
     openProfile,
     closeProfile,
+    handleExport,
+    handleDownloadTemplate,
+    handleImport,
+    isExporting,
+    isImporting,
   } = useAdminUsers();
 
-  // Detail modal state (selectedUser from list: roles + permission lookup)
+  // Detail modal state
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+
+  // Export and import state
+  const fileInputRef = useRef<HTMLInputElement>(null); 
 
   // Get current user info for permission checks
   const currentUserRoles = getRoles();
   const currentUserId = getUserId();
 
   /**
-   * Extract unique roles from all users (for filter dropdown)
+   * Extract unique roles and statuses for dropdowns
    */
-  const allRoles = Array.from(
-    new Set(filteredUsers.flatMap((user) => user.roles))
-  ).sort();
+  const allRoles = Array.from(new Set(users.flatMap((user) => user.roles))).sort();
+  const allStatuses = Array.from(new Set(users.map((user) => user.status))).sort();
 
   /**
-   * Extract unique statuses from all users (for filter dropdown)
-   */
-  const allStatuses = Array.from(
-    new Set(filteredUsers.map((user) => user.status))
-  ).sort();
-
-  /**
-   * Handle view detail: open modal and fetch profile from GET /api/users/{id}/profile
+   * Actions
    */
   const handleViewDetail = (user: AdminUser) => {
     setSelectedUser(user);
@@ -83,12 +91,7 @@ export default function AdminUsersPage() {
     openProfile(user.id);
   };
 
-  /**
-   * Handle lock/unlock action with confirmation
-   * Auto-close modal after success
-   */
   const handleLockToggle = async (user: AdminUser) => {
-    // Permission check
     const permission = canManageUser({
       currentUserRoles,
       currentUserId,
@@ -119,12 +122,7 @@ export default function AdminUsersPage() {
     });
   };
 
-  /**
-   * Handle ban/unban action with confirmation
-   * Auto-close modal after success
-   */
   const handleBanToggle = async (user: AdminUser) => {
-    // Permission check
     const permission = canManageUser({
       currentUserRoles,
       currentUserId,
@@ -162,15 +160,11 @@ export default function AdminUsersPage() {
     closeProfile();
   };
 
-  /**
-   * Build action menu items for each user row
-   */
   const buildActionMenu = (user: AdminUser): MenuProps['items'] => {
     const statusNorm = normalizeStatus(user.status);
     const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
     const userIsBanned = statusNorm === 'BANNED' || statusNorm.includes('BAN');
 
-    // Check permissions
     const permission = canManageUser({
       currentUserRoles,
       currentUserId,
@@ -206,28 +200,10 @@ export default function AdminUsersPage() {
     ];
   };
 
-  /**
-   * Table columns definition (compact: removed fullName, phone, createdAt)
-   */
   const columns: TableProps<AdminUser>['columns'] = [
-    {
-      title: VI.admin.users.columns.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
-    },
-    {
-      title: VI.admin.users.columns.username,
-      dataIndex: 'username',
-      key: 'username',
-      width: 150,
-    },
-    {
-      title: VI.admin.users.columns.email,
-      dataIndex: 'email',
-      key: 'email',
-      width: 220,
-    },
+    { title: VI.admin.users.columns.id, dataIndex: 'id', key: 'id', width: 80 },
+    { title: VI.admin.users.columns.username, dataIndex: 'username', key: 'username', width: 150 },
+    { title: VI.admin.users.columns.email, dataIndex: 'email', key: 'email', width: 220 },
     {
       title: VI.admin.users.columns.roles,
       dataIndex: 'roles',
@@ -235,13 +211,9 @@ export default function AdminUsersPage() {
       width: 240,
       render: (roles: string[]) => (
         <Space size={4} wrap>
-          {roles.map((role) => {
+          {(roles || []).map((role) => {
             const { color, label } = getRoleTagProps(role);
-            return (
-              <Tag key={role} color={color}>
-                {label}
-              </Tag>
-            );
+            return <Tag key={role} color={color}>{label}</Tag>;
           })}
         </Space>
       ),
@@ -261,18 +233,11 @@ export default function AdminUsersPage() {
       key: 'actions',
       width: 100,
       render: (_, user) => (
-        <Dropdown
-          menu={{ items: buildActionMenu(user) }}
-          trigger={['click']}
-          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking dropdown
-        >
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            loading={actionLoadingId === user.id}
-            onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
-          />
-        </Dropdown>
+        <div onClick={(e) => e.stopPropagation()}>
+          <Dropdown menu={{ items: buildActionMenu(user) }} trigger={['click']}>
+            <Button type="text" icon={<MoreOutlined />} loading={actionLoadingId === user.id} />
+          </Dropdown>
+        </div>
       ),
     },
   ];
@@ -284,111 +249,135 @@ export default function AdminUsersPage() {
           background-color: #f5f5f5 !important;
         }
       `}</style>
+
+      {/* Render Layout Động */}
       <DashboardLayout
         title={VI.admin.users.pageTitle}
-        sidebarItems={adminSidebarItems.map((item) => ({
-          key: item.key,
-          label: item.label,
-          icon: <item.icon size={18} />,
-          path: item.path,
-        }))}
+        sidebarItems={sidebarItems}
         brandName={VI.common.appNameAdmin}
       >
-      {/* Toolbar */}
-      <div style={{ marginBottom: 16 }}>
-        <Space wrap>
-          <Input
-            placeholder={VI.admin.users.toolbar.search}
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
-            allowClear
-          />
-          <Select
-            mode="multiple"
-            placeholder={VI.admin.users.toolbar.filterRole}
-            value={roleFilter}
-            onChange={setRoleFilter}
-            style={{ minWidth: 200 }}
-            options={allRoles.map((role) => ({ label: role, value: role }))}
-            allowClear
-          />
-          <Select
-            placeholder={VI.admin.users.toolbar.filterStatus}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ minWidth: 180 }}
-            options={allStatuses.map((status) => ({ label: status, value: status }))}
-            allowClear
-          />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={refetch}
-            loading={isLoading}
-          >
-            {VI.admin.users.toolbar.refresh}
-          </Button>
-        </Space>
-      </div>
+        {/* Toolbar */}
+        <div style={{ marginBottom: 16 }}>
+          <Space wrap>
+            <Button icon={<FileExcelOutlined />} onClick={handleDownloadTemplate}>
+              Tải File Mẫu
+            </Button>
 
-      {/* Table (clickable rows open detail drawer) */}
-      <Table<AdminUser>
-        columns={columns}
-        dataSource={filteredUsers}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{
-          pageSize: 20,
-          showTotal: (total) => `Tổng ${total} người dùng`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50', '100'],
-        }}
-        onRow={(user) => ({
-          onClick: () => handleViewDetail(user),
-          style: { cursor: 'pointer' },
-        })}
-        rowClassName="admin-user-row"
-      />
+            <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
+              Xuất Excel
+            </Button>
 
-      {/* Detail Modal: profile from GET /api/users/{id}/profile, roles from list */}
-      <UserDetailDrawer
-        open={drawerOpen}
-        selectedUserId={selectedUserId ?? null}
-        profile={profile}
-        profileLoading={profileLoading}
-        rolesFromList={selectedUser?.roles}
-        onClose={handleCloseDetail}
-        onBanToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
-          if (user) handleBanToggle(user);
-        }}
-        onLockToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
-          if (user) handleLockToggle(user);
-        }}
-        actionLoading={actionLoadingId !== null}
-        canManage={
-          selectedUser
-            ? canManageUser({
-                currentUserRoles,
-                currentUserId,
-                targetUserId: selectedUser.id,
-                targetUserRoles: selectedUser.roles,
-              }).allowed
-            : true
-        }
-        manageDisabledReason={
-          selectedUser
-            ? canManageUser({
-                currentUserRoles,
-                currentUserId,
-                targetUserId: selectedUser.id,
-                targetUserRoles: selectedUser.roles,
-              }).reason
-            : undefined
-        }
-      />
+            <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
+              Nhập Excel
+            </Button>
+
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              accept=".xlsx, .xls, .csv" 
+              style={{ display: 'none' }} 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleImport(file);
+                  e.target.value = '';
+                }
+              }}
+            />
+            <Input
+              placeholder={VI.admin.users.toolbar.search}
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 300 }}
+              allowClear
+            />
+            <Select
+              mode="multiple"
+              placeholder={VI.admin.users.toolbar.filterRole}
+              value={roleFilter}
+              onChange={setRoleFilter}
+              style={{ minWidth: 200 }}
+              options={allRoles.map((role) => ({ label: role, value: role }))}
+              allowClear
+            />
+            <Select
+              placeholder={VI.admin.users.toolbar.filterStatus}
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ minWidth: 180 }}
+              options={allStatuses.map((status) => ({ label: status, value: status }))}
+              allowClear
+            />
+            <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
+              {VI.admin.users.toolbar.refresh}
+            </Button>
+          </Space>
+        </div>
+
+        {/* Table */}
+        <Table<AdminUser>
+          columns={columns}
+          dataSource={users}
+          rowKey="id"
+          loading={isLoading}
+          pagination={{
+            current: page,
+            pageSize: pageSize,
+            total: total,
+            showTotal: (t) => `Tổng ${t} người dùng`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (newPage, newPageSize) => {
+              setPage(newPage);
+              setPageSize(newPageSize);
+            }
+          }}
+          onRow={(user) => ({
+            onClick: () => handleViewDetail(user),
+            style: { cursor: 'pointer' },
+          })}
+          rowClassName="admin-user-row"
+        />
+
+        {/* Detail Modal */}
+        <UserDetailDrawer
+          open={drawerOpen}
+          selectedUserId={selectedUserId ?? null}
+          profile={profile}
+          profileLoading={profileLoading}
+          rolesFromList={selectedUser?.roles}
+          onClose={handleCloseDetail}
+          onBanToggle={(userId) => {
+            const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
+            if (user) handleBanToggle(user);
+          }}
+          onLockToggle={(userId) => {
+            const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
+            if (user) handleLockToggle(user);
+          }}
+          actionLoading={actionLoadingId !== null}
+          canManage={
+            selectedUser
+              ? canManageUser({
+                  currentUserRoles,
+                  currentUserId,
+                  targetUserId: selectedUser.id,
+                  targetUserRoles: selectedUser.roles,
+                }).allowed
+              : true
+          }
+          manageDisabledReason={
+            selectedUser
+              ? canManageUser({
+                  currentUserRoles,
+                  currentUserId,
+                  targetUserId: selectedUser.id,
+                  targetUserRoles: selectedUser.roles,
+                }).reason
+              : undefined
+          }
+        />
       </DashboardLayout>
     </>
   );

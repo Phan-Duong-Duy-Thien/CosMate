@@ -83,3 +83,31 @@ export async function unlock(id: number): Promise<void> {
     throw new Error(response.message || 'Không thể mở khoá người dùng');
   }
 }
+
+/**
+ * Export users to Excel
+ */
+export async function exportUsersExcel(): Promise<Blob> {
+  return await api.exportUsersExcel();
+}
+
+/**
+ * Download template for import
+ */
+export async function downloadUserTemplate(): Promise<Blob> {
+  return await api.downloadUserTemplate();
+}
+
+/**
+ * Import users from Excel
+ */
+export async function importUsersExcel(file: File): Promise<any> {
+  return await api.importUsersExcel(file);
+}
+
+/**
+ * Get admin users page
+ */
+export async function getAdminUsersPage(params: any): Promise<any> {
+  return await api.getAdminUsersPage(params);
+}
