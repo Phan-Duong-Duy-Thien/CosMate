@@ -1,44 +1,38 @@
 import { ROLE, type UserRole } from '@/types/auth';
 
-/**
- * Determine the redirect path based on user roles
- * 
- * Priority order (first match wins):
- * 1. ADMIN → /admin
- * 2. PROVIDER_RENTAL → /provider-rental
- * 3. PROVIDER_PHOTOGRAPH → /no-permission (not yet supported)
- * 4. PROVIDER_EVENT_STAFF → /no-permission (not yet supported)
- * 5. COSPLAYER → /
- * 6. Default → /no-permission
- * 
- * @param roles - Array of user roles from JWT
- * @returns Path to redirect to
- */
-export function getRedirectPath(roles: UserRole[]): string {
+export function getRedirectPath(roles: any[]): string {
   if (!roles || roles.length === 0) {
     return '/login';
   }
 
-  // Priority 1: Admin
-  if (roles.includes(ROLE.ADMIN)) {
+  // Chuẩn hóa tất cả role về dạng chuỗi viết hoa để dễ so sánh
+  const normalizedRoles = roles.map(r => String(r).toUpperCase());
+
+  // Priority 1: Admin & Superadmin (Cho phép 'ADMIN', 'SUPERADMIN', '1', '2')
+  if (
+    normalizedRoles.includes(ROLE.ADMIN) || 
+    normalizedRoles.includes('2') ||
+    normalizedRoles.includes('SUPERADMIN') ||
+    normalizedRoles.includes('1')
+  ) {
     return '/admin';
   }
 
   // Priority 2: Provider Rental
-  if (roles.includes(ROLE.PROVIDER_RENTAL)) {
+  if (normalizedRoles.includes(ROLE.PROVIDER_RENTAL)) {
     return '/provider-rental';
   }
 
   // Priority 3: Unsupported provider types
   if (
-    roles.includes(ROLE.PROVIDER_PHOTOGRAPH) ||
-    roles.includes(ROLE.PROVIDER_EVENT_STAFF)
+    normalizedRoles.includes(ROLE.PROVIDER_PHOTOGRAPH) ||
+    normalizedRoles.includes(ROLE.PROVIDER_EVENT_STAFF)
   ) {
     return '/no-permission';
   }
 
-  // Priority 4: Cosplayer
-  if (roles.includes(ROLE.COSPLAYER)) {
+  // Priority 4: Cosplayer (Giả sử role_id = 4 là cosplayer)
+  if (normalizedRoles.includes(ROLE.COSPLAYER) || normalizedRoles.includes('4')) {
     return '/';
   }
 
