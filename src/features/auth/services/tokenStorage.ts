@@ -14,12 +14,12 @@ export function saveAuth(authData: LoginResult): void {
   // Decode JWT and save roles
   const payload = decodeJwtPayload(authData.token);
   
-  // Support both "roles" (array) and "role" (string) from JWT
+  // Hỗ trợ mảng roles, chuỗi role, và cả SỐ role_id từ Backend
   let roles: string[] = [];
   if (payload?.roles && Array.isArray(payload.roles)) {
-    roles = payload.roles;
-  } else if (payload?.role && typeof payload.role === 'string') {
-    roles = [payload.role];
+    roles = payload.roles.map(String);
+  } else if (payload?.role !== undefined && payload?.role !== null) {
+    roles = [String(payload.role)];
   }
   
   console.log('💾 Decoded JWT roles:', roles);
