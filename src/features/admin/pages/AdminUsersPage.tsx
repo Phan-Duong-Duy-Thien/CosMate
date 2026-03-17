@@ -6,7 +6,7 @@
  * No axios calls - uses hook for data/actions
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
@@ -29,12 +29,18 @@ import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
 import { getRoleTagProps } from '../utils/userRole';
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
+import { UploadOutlined, DownloadOutlined, FileExcelOutlined } from '@ant-design/icons';
 
 // No local helpers needed - using centralized status utils
 
 export default function AdminUsersPage() {
   const {
-    filteredUsers,
+    users,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
     isLoading,
     searchText,
     setSearchText,
@@ -50,11 +56,19 @@ export default function AdminUsersPage() {
     profileLoading,
     openProfile,
     closeProfile,
+    handleExport,
+    handleDownloadTemplate,
+    handleImport,
+    isExporting,
+    isImporting,
   } = useAdminUsers();
 
   // Detail modal state (selectedUser from list: roles + permission lookup)
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+
+  // Export and import state
+  const fileInputRef = useRef<HTMLInputElement>(null); 
 
   // Get current user info for permission checks
   const currentUserRoles = getRoles();
@@ -64,14 +78,14 @@ export default function AdminUsersPage() {
    * Extract unique roles from all users (for filter dropdown)
    */
   const allRoles = Array.from(
-    new Set(filteredUsers.flatMap((user) => user.roles))
+    new Set(users.flatMap((user) => user.roles))
   ).sort();
 
   /**
    * Extract unique statuses from all users (for filter dropdown)
    */
   const allStatuses = Array.from(
-    new Set(filteredUsers.map((user) => user.status))
+    new Set(users.map((user) => user.status))
   ).sort();
 
   /**
@@ -261,18 +275,18 @@ export default function AdminUsersPage() {
       key: 'actions',
       width: 100,
       render: (_, user) => (
-        <Dropdown
-          menu={{ items: buildActionMenu(user) }}
-          trigger={['click']}
-          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking dropdown
-        >
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            loading={actionLoadingId === user.id}
-            onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
-          />
-        </Dropdown>
+        <div onClick={(e) => e.stopPropagation()}>
+          <Dropdown
+            menu={{ items: buildActionMenu(user) }}
+            trigger={['click']}
+          >
+            <Button
+              type="text"
+              icon={<MoreOutlined />}
+              loading={actionLoadingId === user.id}
+            />
+          </Dropdown>
+        </div>
       ),
     },
   ];
@@ -297,6 +311,43 @@ export default function AdminUsersPage() {
       {/* Toolbar */}
       <div style={{ marginBottom: 16 }}>
         <Space wrap>
+          <Button 
+            icon={<FileExcelOutlined />} 
+            onClick={handleDownloadTemplate}
+          >
+            Tải File Mẫu
+          </Button>
+
+          <Button 
+            icon={<DownloadOutlined />} 
+            onClick={handleExport} 
+            loading={isExporting}
+          >
+            Xuất Excel
+          </Button>
+
+          <Button 
+            icon={<UploadOutlined />} 
+            loading={isImporting} 
+            onClick={() => fileInputRef.current?.click()}
+          >
+            Nhập Excel
+          </Button>
+
+          {/* Input ẩn dùng để mở hộp thoại chọn file */}
+          <input 
+            type="file" 
+            ref={fileInputRef}
+            accept=".xlsx, .xls, .csv" 
+            style={{ display: 'none' }} 
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) {
+                handleImport(file);
+                e.target.value = ''; // Reset lại để có thể chọn lại cùng 1 file
+              }
+            }}
+          />
           <Input
             placeholder={VI.admin.users.toolbar.search}
             prefix={<SearchOutlined />}
@@ -335,14 +386,20 @@ export default function AdminUsersPage() {
       {/* Table (clickable rows open detail drawer) */}
       <Table<AdminUser>
         columns={columns}
-        dataSource={filteredUsers}
+        dataSource={users} // Đã đổi thành users
         rowKey="id"
         loading={isLoading}
         pagination={{
-          pageSize: 20,
-          showTotal: (total) => `Tổng ${total} người dùng`,
+          current: page,
+          pageSize: pageSize,
+          total: total,
+          showTotal: (t) => `Tổng ${t} người dùng`,
           showSizeChanger: true,
           pageSizeOptions: ['10', '20', '50', '100'],
+          onChange: (newPage, newPageSize) => {
+            setPage(newPage);
+            setPageSize(newPageSize);
+          }
         }}
         onRow={(user) => ({
           onClick: () => handleViewDetail(user),
@@ -360,11 +417,11 @@ export default function AdminUsersPage() {
         rolesFromList={selectedUser?.roles}
         onClose={handleCloseDetail}
         onBanToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
+          const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
           if (user) handleBanToggle(user);
         }}
         onLockToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
+          const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
           if (user) handleLockToggle(user);
         }}
         actionLoading={actionLoadingId !== null}
