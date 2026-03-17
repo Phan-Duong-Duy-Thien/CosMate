@@ -1,21 +1,12 @@
 import { Card, Row, Col, Statistic } from 'antd';
 import { Users, ShoppingBag, Shirt, TrendingUp } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
-import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
-import { adminSidebarItems } from '../constants/sidebar';
+import { useDynamicMenu } from '../hooks/useDynamicMenu';
 import { VI } from '@/shared/i18n/vi';
 
 export default function AdminHomePage() {
-  // Convert admin sidebar items to DashboardLayout format
-  const sidebarItems: DashboardSidebarItem[] = adminSidebarItems.map((item) => {
-    const Icon = item.icon;
-    return {
-      key: item.key,
-      label: item.label,
-      icon: <Icon size={18} />,
-      path: item.path,
-    };
-  });
+  // Lấy data đệ quy từ Backend
+  const { sidebarItems } = useDynamicMenu();
 
   // TODO: Fetch real stats from API when implemented
   const stats = [
@@ -47,7 +38,11 @@ export default function AdminHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.admin.dashboard.title} sidebarItems={sidebarItems} brandName={VI.common.appNameAdmin}>
+    <DashboardLayout 
+      title={VI.admin.dashboard.title} 
+      sidebarItems={sidebarItems} 
+      brandName={VI.common.appNameAdmin}
+    >
       <div style={{ marginBottom: 24 }}>
         <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.admin.dashboard.welcome}</h2>
         <p style={{ color: '#6B7280', fontSize: 14 }}>

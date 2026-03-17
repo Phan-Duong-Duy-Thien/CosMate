@@ -1,5 +1,4 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import type { UserRole } from '@/types/auth';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 
 type ProtectedRouteProps = {

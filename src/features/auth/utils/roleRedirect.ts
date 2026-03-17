@@ -1,4 +1,4 @@
-import { ROLE, type UserRole } from '@/types/auth';
+import { ROLE} from '@/types/auth';
 
 export function getRedirectPath(roles: any[]): string {
   if (!roles || roles.length === 0) {
