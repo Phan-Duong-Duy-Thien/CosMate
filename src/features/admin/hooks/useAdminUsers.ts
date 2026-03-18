@@ -31,6 +31,14 @@ export function useAdminUsers() {
   const [profileLoading, setProfileLoading] = useState(false);
   const profileRequestIdRef = useRef(0);
 
+  // Export and import state
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(20);
+  const [total, setTotal] = useState(0);
+
   /**
    * Fetch users from backend
    */
@@ -38,8 +46,20 @@ export function useAdminUsers() {
     try {
       setIsLoading(true);
       setError(null);
-      const data = await adminUsersService.listUsers();
-      setUsers(data);
+      
+      const params: Record<string, any> = {
+        page: page - 1,
+        size: pageSize,
+      };
+
+      if (searchText) params.search = searchText;
+      if (statusFilter) params.status = statusFilter;
+
+      const data = await adminUsersService.getAdminUsersPage(params);
+      
+      setUsers(data.content || []);
+      setTotal(data.totalElements || 0);
+
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : VI.admin.users.messages.fetchError;
       setError(errorMessage);
@@ -47,7 +67,7 @@ export function useAdminUsers() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [page, pageSize, searchText, statusFilter]);
 
   /**
    * Initial fetch on mount
@@ -55,38 +75,6 @@ export function useAdminUsers() {
   useEffect(() => {
     fetchUsers();
   }, [fetchUsers]);
-
-  /**
-   * Filter users based on search and filters (client-side)
-   */
-  const filteredUsers = useMemo(() => {
-    return users.filter((user) => {
-      // Search filter
-      if (searchText) {
-        const search = searchText.toLowerCase();
-        const matchesSearch =
-          user.username.toLowerCase().includes(search) ||
-          user.email.toLowerCase().includes(search) ||
-          (user.fullName && user.fullName.toLowerCase().includes(search)) ||
-          (user.phone && user.phone.includes(search));
-        
-        if (!matchesSearch) return false;
-      }
-      
-      // Role filter
-      if (roleFilter.length > 0) {
-        const hasMatchingRole = user.roles.some((role) => roleFilter.includes(role));
-        if (!hasMatchingRole) return false;
-      }
-      
-      // Status filter
-      if (statusFilter) {
-        if (user.status !== statusFilter) return false;
-      }
-      
-      return true;
-    });
-  }, [users, searchText, roleFilter, statusFilter]);
 
   /**
    * Open profile modal: set selectedUserId and fetch profile.
@@ -166,10 +154,64 @@ export function useAdminUsers() {
     [fetchUsers]
   );
 
+  // Export and import
+  /**
+   * Trigger download of a blob file
+   */
+  const triggerDownload = (blob: Blob, fileName: string) => {
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', fileName);
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    window.URL.revokeObjectURL(url);
+  };
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const blob = await adminUsersService.exportUsersExcel();
+      triggerDownload(blob, `danh_sach_nguoi_dung_${new Date().getTime()}.xlsx`);
+      message.success('Xuất file thành công!');
+    } catch (err) {
+      message.error('Lỗi khi xuất file Excel');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleDownloadTemplate = async () => {
+    try {
+      const blob = await adminUsersService.downloadUserTemplate();
+      triggerDownload(blob, `user_template.xlsx`);
+    } catch (err) {
+      message.error('Lỗi khi tải file mẫu');
+    }
+  };
+
+  const handleImport = async (file: File) => {
+    try {
+      setIsImporting(true);
+      const res = await adminUsersService.importUsersExcel(file);
+      message.success(`Import thành công ${res.successCount} dòng, lỗi ${res.failureCount} dòng!`);
+      fetchUsers(); // Refresh lại danh sách
+    } catch (err) {
+      message.error('Lỗi khi import file Excel');
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   return {
-    // Data
+    // Data & Pagination
     users,
-    filteredUsers,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
     isLoading,
     error,
     
@@ -192,5 +234,12 @@ export function useAdminUsers() {
     profileLoading,
     openProfile,
     closeProfile,
+
+    // Export and import
+    isExporting,
+    isImporting,
+    handleExport,
+    handleDownloadTemplate,
+    handleImport,
   };
 }

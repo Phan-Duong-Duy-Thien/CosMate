@@ -17,6 +17,7 @@ export type DashboardSidebarItem = {
   label: string;
   icon?: ReactNode;
   path?: string;
+  children?: DashboardSidebarItem[];
 };
 
 type DashboardLayoutProps = {
@@ -74,6 +75,33 @@ export function DashboardLayout({
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
 
+  const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
+    return items.map((item) => {
+      // Nếu có menu con thì gọi đệ quy
+      if (item.children && item.children.length > 0) {
+        return {
+          key: item.key,
+          icon: item.icon,
+          label: item.label,
+          children: mapToAntdMenuItems(item.children), // Đệ quy ở đây
+        };
+      }
+      // Nếu là menu cấp cuối thì gắn sự kiện chuyển trang
+      return {
+        key: item.key,
+        icon: item.icon,
+        label: item.label,
+        onClick: () => {
+          if (item.path) {
+            navigate(item.path);
+          }
+        },
+      };
+    });
+  };
+
+  const menuItems: MenuProps['items'] = mapToAntdMenuItems(sidebarItems);
+
   // Set default breadcrumbs based on route
   useEffect(() => {
     const path = location.pathname;
@@ -106,18 +134,6 @@ export function DashboardLayout({
 
   // TODO: Read user info from auth context when implemented
   const userName = 'User';
-
-  // Convert sidebar items to Ant Design Menu format
-  const menuItems: MenuProps['items'] = sidebarItems.map((item) => ({
-    key: item.key,
-    icon: item.icon,
-    label: item.label,
-    onClick: () => {
-      if (item.path) {
-        navigate(item.path);
-      }
-    },
-  }));
 
   // Get current active menu key from pathname
   const currentPath = location.pathname;

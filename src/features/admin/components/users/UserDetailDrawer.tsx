@@ -6,6 +6,7 @@
  * No API calls - receives data and callbacks via props.
  */
 
+import React from 'react';
 import {
   Modal,
   Descriptions,
@@ -59,7 +60,7 @@ export function UserDetailModal({
 
   const renderActionButtons = () => {
     if (userId == null) return null;
-    const buttons: JSX.Element[] = [];
+    const buttons: React.ReactNode[] = [];
 
     if (statusNormalized === 'ACTIVE') {
       buttons.push(

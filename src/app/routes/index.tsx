@@ -70,7 +70,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Admin Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, 'ADMIN', 'SUPERADMIN', '1', '2', 1, 2] as any} />}>
         <Route path="/admin" element={<AdminHomePage />} />
         <Route path="/admin/users" element={<AdminUsersPage />}/>
       </Route>
