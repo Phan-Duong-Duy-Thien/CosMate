@@ -26,11 +26,11 @@ export function canManageUser(params: CanManageUserParams): PermissionResult {
     return { allowed: false, reason: 'Bạn không thể thao tác với chính mình.' };
   }
 
-  const isCurrentSuperadmin = currentUserRoles.some(r => String(r) === '1' || String(r).toUpperCase() === 'SUPERADMIN');
-  const isCurrentAdmin = currentUserRoles.some(r => String(r) === '2' || String(r).toUpperCase() === 'ADMIN');
+  const isCurrentSuperadmin = currentUserRoles?.some(r => String(r) === '1' || String(r).toUpperCase() === 'SUPERADMIN');
+  const isCurrentAdmin = currentUserRoles?.some(r => String(r) === '2' || String(r).toUpperCase() === 'ADMIN');
   
-  const isTargetSuperadmin = targetUserRoles.some(r => String(r) === '1' || String(r).toUpperCase() === 'SUPERADMIN');
-  const isTargetAdmin = targetUserRoles.some(r => String(r) === '2' || String(r).toUpperCase() === 'ADMIN');
+  const isTargetSuperadmin = targetUserRoles?.some(r => String(r) === '1' || String(r).toUpperCase() === 'SUPERADMIN');
+  const isTargetAdmin = targetUserRoles?.some(r => String(r) === '2' || String(r).toUpperCase() === 'ADMIN');
 
   // 2. Logic: SUPER ADMIN (1) chỉ quản lý ADMIN (2)
   if (isCurrentSuperadmin) {

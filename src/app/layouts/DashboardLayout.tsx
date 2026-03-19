@@ -75,6 +75,10 @@ export function DashboardLayout({
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
 
+  const handleMenuClick = (e: any) => {
+    navigate(e.key); 
+  };
+
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
       // Nếu có menu con thì gọi đệ quy
@@ -213,7 +217,8 @@ export function DashboardLayout({
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}
-          items={menuItems}
+          onClick={handleMenuClick} 
+          items={sidebarItems}
           style={{ borderRight: 0, marginTop: 16 }}
         />
       </Sider>
