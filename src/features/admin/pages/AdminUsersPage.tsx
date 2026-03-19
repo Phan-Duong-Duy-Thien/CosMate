@@ -19,11 +19,8 @@ import {
   CheckCircleOutlined,
   UploadOutlined, 
   DownloadOutlined, 
-  FileExcelOutlined
 } from '@ant-design/icons';
-import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { useAdminUsers } from '../hooks/useAdminUsers';
-import { useDynamicMenu } from '../hooks/useDynamicMenu';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
 import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
@@ -33,8 +30,6 @@ import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 
 export default function AdminUsersPage() {
-  // Lấy Menu Động
-  const { sidebarItems } = useDynamicMenu();
 
   const {
     users,
@@ -59,7 +54,6 @@ export default function AdminUsersPage() {
     openProfile,
     closeProfile,
     handleExport,
-    handleDownloadTemplate,
     handleImport,
     isExporting,
     isImporting,
@@ -251,18 +245,10 @@ export default function AdminUsersPage() {
       `}</style>
 
       {/* Render Layout Động */}
-      <DashboardLayout
-        title={VI.admin.users.pageTitle}
-        sidebarItems={sidebarItems}
-        brandName={VI.common.appNameAdmin}
-      >
+      <div className="w-full h-full">
         {/* Toolbar */}
         <div style={{ marginBottom: 16 }}>
           <Space wrap>
-            <Button icon={<FileExcelOutlined />} onClick={handleDownloadTemplate}>
-              Tải File Mẫu
-            </Button>
-
             <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
               Xuất Excel
             </Button>
@@ -378,7 +364,7 @@ export default function AdminUsersPage() {
               : undefined
           }
         />
-      </DashboardLayout>
+      </div>
     </>
   );
 }
