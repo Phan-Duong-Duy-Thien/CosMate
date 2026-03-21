@@ -33,6 +33,7 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
+  const today = new Date().toISOString().split('T')[0]
   const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
@@ -88,6 +89,7 @@ export const PurchasePanel = ({
             <input
               type="date"
               value={startDate}
+              min={today}
               onChange={(e) => onStartDateChange(e.target.value)}
               className="h-10 rounded-full border border-slate-200 px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
             />
