@@ -41,6 +41,8 @@ export const VI = {
       providerCostumes: "Quản lý trang phục",
       create: "Tạo mới",
       edit: "Chỉnh sửa",
+      providerPhotograph: "Provider Photographer",
+      providerEventStaff: "Provider Staff Sự kiện",
     },
 
     actions: {
@@ -390,6 +392,30 @@ export const VI = {
       schedule: "Lịch trình / Khả dụng",
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
+      // Event Staff
+      eventStaffDashboard: "Bảng điều khiển Staff",
+      eventStaffSchedule: "Lịch làm việc",
+      eventStaffBookings: "Đơn đặt Staff",
+      eventStaffReviews: "Đánh giá",
+      eventStaffSettings: "Hồ sơ / Cài đặt",
+      // Photograph
+      photographDashboard: "Bảng điều khiển PTG",
+      photographSchedule: "Lịch chụp",
+      photographBookings: "Đơn đặt PTG",
+      photographReviews: "Đánh giá",
+      photographSettings: "Hồ sơ / Cài đặt",
+    },
+
+    dashboardPhotograph: {
+      title: "Bảng điều khiển PTG",
+      welcome: "Chào mừng trở lại, Photographer!",
+      overview: "Quản lý dịch vụ chụp ảnh, lịch hẹn và đơn đặt của bạn từ đây.",
+    },
+
+    dashboardEventStaff: {
+      title: "Bảng điều khiển Staff Sự kiện",
+      welcome: "Chào mừng trở lại, Staff!",
+      overview: "Quản lý công việc, lịch trình và đơn đặt của bạn từ đây.",
     },
 
     costumeManagement: {

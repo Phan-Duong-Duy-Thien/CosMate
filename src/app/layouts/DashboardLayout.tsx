@@ -133,6 +133,22 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerCostumes, to: '/provider-rental/costumes' },
         { label: VI.common.breadcrumb.create },
       ]);
+    } else if (path === '/provider-photograph') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+      ]);
+    } else if (path.startsWith('/provider-photograph/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+      ]);
+    } else if (path === '/provider-event-staff') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+      ]);
+    } else if (path.startsWith('/provider-event-staff/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+      ]);
     }
   }, [location.pathname, setItems]);
 

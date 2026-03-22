@@ -46,7 +46,8 @@
       "Bash(powershell.exe -Command \"Get-ChildItem ''C:\\\\vm4w\\\\nodejs'' -ErrorAction SilentlyContinue | Select-Object Name\")",
       "Bash(powershell.exe -Command \"Get-Command node | Format-List *\")",
       "Bash(powershell.exe -Command \"Copy-Item ''C:\\\\Users\\\\Duy Thien\\\\AppData\\\\Local\\\\nvm\\\\v24.13.0\\\\node.exe'' ''C:\\\\Program Files\\\\nodejs\\\\node.exe'' -Force; Write-Output ''Copied''\")",
-      "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri ''https://nodejs.org/dist/v24.13.0/win-x64/node.exe'' -OutFile ''C:\\\\Users\\\\Duy Thien\\\\Downloads\\\\node-v24.13.0.exe''\")"
+      "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri ''https://nodejs.org/dist/v24.13.0/win-x64/node.exe'' -OutFile ''C:\\\\Users\\\\Duy Thien\\\\Downloads\\\\node-v24.13.0.exe''\")",
+      "Bash(npx vite:*)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Duy Thien"

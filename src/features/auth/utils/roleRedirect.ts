@@ -39,17 +39,23 @@ export function getRedirectPath(roles: any[]): string {
     return '/provider-rental';
   }
 
-  // Priority 3: Unsupported provider types
+  // Priority 3: Provider Photograph
   if (
     normalizedRoles.includes(ROLE.PROVIDER_PHOTOGRAPH) ||
-    normalizedRoles.includes('PROVIDER_PHOTOGRAPH') ||
+    normalizedRoles.includes('PROVIDER_PHOTOGRAPH')
+  ) {
+    return '/provider-photograph';
+  }
+
+  // Priority 4: Provider Event Staff
+  if (
     normalizedRoles.includes(ROLE.PROVIDER_EVENT_STAFF) ||
     normalizedRoles.includes('PROVIDER_EVENT_STAFF')
   ) {
-    return '/no-permission';
+    return '/provider-event-staff';
   }
 
-  // Priority 4: Cosplayer
+  // Priority 5: Cosplayer
   if (
     normalizedRoles.includes(ROLE.COSPLAYER) || 
     normalizedRoles.includes('COSPLAYER')
@@ -57,7 +63,7 @@ export function getRedirectPath(roles: any[]): string {
     return '/';
   }
 
-  // Priority 5: Staff
+  // Priority 6: Staff
   if (normalizedRoles.includes('STAFF')) {
     // Tạm thời tui đẩy STAFF về trang Admin nhé. 
     // Nếu sau này ông có trang riêng (ví dụ '/staff') thì sửa lại chỗ này!

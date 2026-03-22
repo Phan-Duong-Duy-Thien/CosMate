@@ -39,6 +39,8 @@ import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderC
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
 import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
+import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
+import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
 
 export default function AppRoutes() {
   return (
@@ -84,6 +86,16 @@ export default function AppRoutes() {
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
+      </Route>
+
+      {/* Provider Photograph Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_PHOTOGRAPH]} />}>
+        <Route path="/provider-photograph" element={<PhotographHomePage />} />
+      </Route>
+
+      {/* Provider Event Staff Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_EVENT_STAFF]} />}>
+        <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
       </Route>
 
       {/* Global Error Pages */}

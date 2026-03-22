@@ -6,6 +6,8 @@ import {
   Star,
   Settings,
   ClipboardList,
+  Camera,
+  Briefcase,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -72,5 +74,77 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.settings,
     icon: Settings,
     path: '/provider/settings',
+  },
+];
+
+/**
+ * Photograph Provider sidebar menu configuration
+ */
+export const photographSidebarItems: ProviderSidebarItem[] = [
+  {
+    key: 'dashboard',
+    label: VI.provider.sidebar.photographDashboard,
+    icon: LayoutDashboard,
+    path: '/provider-photograph',
+  },
+  {
+    key: 'schedule',
+    label: VI.provider.sidebar.photographSchedule,
+    icon: Calendar,
+    path: '/provider-photograph/schedule',
+  },
+  {
+    key: 'bookings',
+    label: VI.provider.sidebar.photographBookings,
+    icon: Camera,
+    path: '/provider-photograph/bookings',
+  },
+  {
+    key: 'reviews',
+    label: VI.provider.sidebar.photographReviews,
+    icon: Star,
+    path: '/provider-photograph/reviews',
+  },
+  {
+    key: 'settings',
+    label: VI.provider.sidebar.photographSettings,
+    icon: Settings,
+    path: '/provider-photograph/settings',
+  },
+];
+
+/**
+ * Event Staff Provider sidebar menu configuration
+ */
+export const eventStaffSidebarItems: ProviderSidebarItem[] = [
+  {
+    key: 'dashboard',
+    label: VI.provider.sidebar.eventStaffDashboard,
+    icon: LayoutDashboard,
+    path: '/provider-event-staff',
+  },
+  {
+    key: 'schedule',
+    label: VI.provider.sidebar.eventStaffSchedule,
+    icon: Calendar,
+    path: '/provider-event-staff/schedule',
+  },
+  {
+    key: 'bookings',
+    label: VI.provider.sidebar.eventStaffBookings,
+    icon: Briefcase,
+    path: '/provider-event-staff/bookings',
+  },
+  {
+    key: 'reviews',
+    label: VI.provider.sidebar.eventStaffReviews,
+    icon: Star,
+    path: '/provider-event-staff/reviews',
+  },
+  {
+    key: 'settings',
+    label: VI.provider.sidebar.eventStaffSettings,
+    icon: Settings,
+    path: '/provider-event-staff/settings',
   },
 ];
