@@ -32,12 +32,6 @@ export async function createService(
   form.append('providerId', String(payload.providerId));
   form.append('areas', payload.areas);
 
-  // DEBUG: Log FormData content
-  for (const [key, value] of form.entries()) {
-    if (key === 'areas') {
-      console.log(`[createService] FormData areas:`, value);
-    }
-  }
   form.append('minPrice', String(payload.minPrice));
   form.append('maxPrice', String(payload.maxPrice));
 
