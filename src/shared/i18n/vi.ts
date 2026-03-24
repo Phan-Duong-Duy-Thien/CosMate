@@ -237,17 +237,16 @@ export const VI = {
 
     forgotPassword: {
       title: "Quên mật khẩu",
-      subtitle: "Nhập địa chỉ email của bạn để nhận liên kết đặt lại mật khẩu.",
-      emailLabel: "Email",
-      emailPlaceholder: "Nhập địa chỉ email của bạn",
+      subtitle: "Nhập email hoặc tên người dùng của bạn để nhận liên kết đặt lại mật khẩu.",
+      identifierLabel: "Email hoặc tên người dùng",
+      identifierPlaceholder: "Nhập email hoặc tên người dùng",
       sendButton: "Gửi liên kết",
       back: "Quay lại đăng nhập",
       successTitle: "Kiểm tra email của bạn",
       successMessage: "Chúng tôi đã gửi liên kết đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư đến.",
       backToLogin: "Quay lại đăng nhập",
       validation: {
-        emailRequired: "Email là bắt buộc.",
-        emailInvalid: "Email không hợp lệ.",
+        identifierRequired: "Email hoặc tên người dùng là bắt buộc.",
       },
       messages: {
         sendError: "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.",

@@ -13,7 +13,7 @@ import { AuthLayout } from "../layout/AuthLayout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfirmButton } from "../components/ConfirmButton"
-import { resetPassword } from "../api/auth.api"
+import { useResetPassword } from "../hooks/useResetPassword"
 import { VI } from "@/shared/i18n/vi"
 
 export default function ResetPasswordPage() {
@@ -21,30 +21,23 @@ export default function ResetPasswordPage() {
   const token = searchParams.get("token")
 
   const [form] = Form.useForm()
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { submitting, submit } = useResetPassword()
 
   const handleSubmit = async (values: { newPassword: string; confirmPassword: string }) => {
-    if (!token) {
-      setError(VI.auth.resetPassword.messages.invalidToken)
-      return
-    }
     if (values.newPassword !== values.confirmPassword) {
-      setError(VI.auth.resetPassword.messages.passwordMismatch)
+      form.setFields([{ name: 'confirmPassword', errors: [VI.auth.resetPassword.messages.passwordMismatch] }])
       return
     }
 
-    setSubmitting(true)
-    setError(null)
-    try {
-      await resetPassword(token, values.newPassword)
+    if (!token) {
+      form.setFields([{ name: 'newPassword', errors: [VI.auth.resetPassword.messages.invalidToken] }])
+      return
+    }
+
+    const ok = await submit(token, values.newPassword)
+    if (ok) {
       setSubmitted(true)
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || VI.auth.resetPassword.messages.resetError
-      setError(msg)
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -100,10 +93,6 @@ export default function ResetPasswordPage() {
 
           <h2 className="mb-1 text-2xl font-bold text-[#111827]">{VI.auth.resetPassword.title}</h2>
           <p className="mb-6 text-sm text-[#6B7280]">{VI.auth.resetPassword.subtitle}</p>
-
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
-          )}
 
           <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-4">
             <Form.Item

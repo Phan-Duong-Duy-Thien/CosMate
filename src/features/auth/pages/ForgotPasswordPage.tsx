@@ -11,26 +11,18 @@ import { AuthLayout } from "../layout/AuthLayout"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { ConfirmButton } from "../components/ConfirmButton"
-import { forgotPassword } from "../api/auth.api"
+import { useForgotPasswordRequest } from "../hooks/useForgotPasswordRequest"
 import { VI } from "@/shared/i18n/vi"
 
 export default function ForgotPasswordPage() {
   const [form] = Form.useForm()
-  const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { submitting, submit } = useForgotPasswordRequest()
 
-  const handleSubmit = async (values: { email: string }) => {
-    setSubmitting(true)
-    setError(null)
-    try {
-      await forgotPassword(values.email)
+  const handleSubmit = async (values: { identifier: string }) => {
+    const ok = await submit(values.identifier)
+    if (ok) {
       setSubmitted(true)
-    } catch (err: any) {
-      const msg = err?.response?.data?.message || VI.auth.forgotPassword.messages.sendError
-      setError(msg)
-    } finally {
-      setSubmitting(false)
     }
   }
 
@@ -68,21 +60,16 @@ export default function ForgotPasswordPage() {
           <h2 className="mb-1 text-2xl font-bold text-[#111827]">{VI.auth.forgotPassword.title}</h2>
           <p className="mb-6 text-sm text-[#6B7280]">{VI.auth.forgotPassword.subtitle}</p>
 
-          {error && (
-            <div className="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-600">{error}</div>
-          )}
-
           <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-4">
             <Form.Item
-              label={VI.auth.forgotPassword.emailLabel}
-              name="email"
+              label={VI.auth.forgotPassword.identifierLabel}
+              name="identifier"
               rules={[
-                { required: true, message: VI.auth.forgotPassword.validation.emailRequired },
-                { type: "email", message: VI.auth.forgotPassword.validation.emailInvalid },
+                { required: true, message: VI.auth.forgotPassword.validation.identifierRequired },
               ]}
             >
               <Input
-                placeholder={VI.auth.forgotPassword.emailPlaceholder}
+                placeholder={VI.auth.forgotPassword.identifierPlaceholder}
                 size="large"
                 prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
                 className="h-11 rounded-full px-4"
