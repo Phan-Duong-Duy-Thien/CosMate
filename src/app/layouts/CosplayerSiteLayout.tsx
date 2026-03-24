@@ -13,7 +13,7 @@ import {
   ShoppingCart,
   Youtube,
   Smartphone,
-  
+
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar } from "antd"
 import type { MenuProps } from "antd"
@@ -210,6 +210,18 @@ export default function CosplayerSiteLayout() {
 
     {/* NAV */}
     <nav className="hidden flex-1 items-center justify-center gap-1.5 whitespace-nowrap text-sm md:flex lg:gap-2">
+      <Button
+        variant="ghost"
+        size="sm"
+        className={cn(
+          "hover:text-pink-600 hover:bg-pink-50",
+          isHomePage ? "text-pink-600 font-semibold bg-pink-50" : "text-slate-700"
+        )}
+        onClick={() => navigate("/")}
+      >
+        Trang chủ
+      </Button>
+
       <DropdownMenu
         triggerLabel={
           <span className="inline-flex items-center gap-1 font-medium">
