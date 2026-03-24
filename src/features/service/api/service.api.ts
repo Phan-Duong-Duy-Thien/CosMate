@@ -28,33 +28,16 @@ export async function createService(
   form.append('slotDurationHours', String(payload.slotDurationHours));
   form.append('pricePerSlot', String(payload.pricePerSlot));
   form.append('equipmentDepreciationCost', String(payload.equipmentDepreciationCost));
+  form.append('depositAmount', String(payload.depositAmount));
   form.append('providerId', String(payload.providerId));
   form.append('areas', payload.areas);
 
-  // DEBUG: Log FormData content
-  for (const [key, value] of form.entries()) {
-    if (key === 'areas') {
-      console.log(`[createService] FormData areas:`, value);
-    }
-  }
   form.append('minPrice', String(payload.minPrice));
   form.append('maxPrice', String(payload.maxPrice));
 
   for (const file of payload.albumFiles) {
     form.append('albumFiles', file);
   }
-
-  console.log('[createService] Sending payload:', {
-    serviceType: payload.serviceType,
-    description: payload.description,
-    slotDurationHours: payload.slotDurationHours,
-    pricePerSlot: payload.pricePerSlot,
-    equipmentDepreciationCost: payload.equipmentDepreciationCost,
-    providerId: payload.providerId,
-    areas: payload.areas,
-    minPrice: payload.minPrice,
-    maxPrice: payload.maxPrice,
-  });
 
   const response = await axiosInstance.post<ApiResponse<CreatedService>>(
     '/api/services',
