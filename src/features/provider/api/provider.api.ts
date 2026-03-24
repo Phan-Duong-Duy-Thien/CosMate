@@ -49,3 +49,22 @@ export async function getReviewsByProvider(providerId: number): Promise<Provider
   );
   return response.data.result;
 }
+
+/**
+ * PUT /api/providers/{id}
+ * Updates the provider profile fields.
+ */
+export interface UpdateProviderPayload {
+  shopName: string;
+  shopAddressId: number;
+  bio: string;
+  bankAccountNumber: string;
+  bankName: string;
+}
+
+export async function updateProviderProfile(
+  providerId: number,
+  payload: UpdateProviderPayload
+): Promise<void> {
+  await axiosInstance.put(`/api/providers/${providerId}`, payload);
+}

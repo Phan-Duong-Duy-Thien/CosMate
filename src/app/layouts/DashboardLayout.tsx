@@ -75,10 +75,6 @@ export function DashboardLayout({
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
 
-  const handleMenuClick = (e: any) => {
-    navigate(e.key); 
-  };
-
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
       // Nếu có menu con thì gọi đệ quy
@@ -179,7 +175,15 @@ export function DashboardLayout({
       key: 'profile',
       icon: <User size={16} />,
       label: VI.common.user.profile,
-      onClick: () => console.log('TODO: Navigate to profile'),
+      onClick: () => {
+        if (location.pathname.startsWith('/provider-photograph')) {
+          navigate('/provider-photograph/settings');
+        } else if (location.pathname.startsWith('/provider-event-staff')) {
+          navigate('/provider-event-staff/settings');
+        } else {
+          navigate('/provider/settings');
+        }
+      },
     },
     {
       type: 'divider',
@@ -233,8 +237,7 @@ export function DashboardLayout({
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}
-          onClick={handleMenuClick} 
-          items={sidebarItems}
+          items={menuItems}
           style={{ borderRight: 0, marginTop: 16 }}
         />
       </Sider>

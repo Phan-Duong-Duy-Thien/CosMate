@@ -8,6 +8,7 @@ import {
   ClipboardList,
   Camera,
   Briefcase,
+  PlusCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -88,6 +89,18 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph',
   },
   {
+    key: 'serviceList',
+    label: VI.service.sidebar.serviceList,
+    icon: Package,
+    path: '/provider-photograph/services',
+  },
+  {
+    key: 'serviceCreate',
+    label: VI.service.sidebar.createService,
+    icon: PlusCircle,
+    path: '/provider-photograph/serviceCreate',
+  },
+  {
     key: 'schedule',
     label: VI.provider.sidebar.photographSchedule,
     icon: Calendar,
@@ -122,6 +135,18 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.eventStaffDashboard,
     icon: LayoutDashboard,
     path: '/provider-event-staff',
+  },
+  {
+    key: 'serviceList',
+    label: VI.service.sidebar.serviceList,
+    icon: Package,
+    path: '/provider-event-staff/services',
+  },
+  {
+    key: 'serviceCreate',
+    label: VI.service.sidebar.createService,
+    icon: PlusCircle,
+    path: '/provider-event-staff/serviceCreate',
   },
   {
     key: 'schedule',

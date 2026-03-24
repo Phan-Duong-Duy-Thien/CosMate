@@ -19,6 +19,19 @@ export async function getUserAddresses(userId: number): Promise<UserAddress[]> {
 }
 
 /**
+ * Get a single user address by ID
+ * @param userId - User ID
+ * @param addressId - Address ID
+ * @returns User address
+ */
+export async function getAddressById(userId: number, addressId: number): Promise<UserAddress> {
+  const response = await axiosInstance.get<ApiResponse<UserAddress>>(
+    `/api/users/${userId}/addresses/${addressId}`
+  );
+  return response.data.result;
+}
+
+/**
  * Create a new user address
  * @param userId - User ID
  * @param payload - Address data

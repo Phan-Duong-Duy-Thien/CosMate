@@ -12,12 +12,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 15000,
-  // Don't set Content-Type here - let axios auto-detect for FormData
 });
-
-// TEMP DEBUG: Verify baseURL configuration
-console.log('🔧 [axiosInstance] baseURL =', axiosInstance.defaults.baseURL);
-console.log('🔧 [axiosInstance] env var =', import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Request Interceptor

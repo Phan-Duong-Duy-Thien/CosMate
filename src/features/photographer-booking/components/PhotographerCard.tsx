@@ -3,32 +3,42 @@ import { motion } from 'motion/react';
 import { ImageWithFallback } from '@/features/photographer-booking/mocks/ImageWithFallback';
 import { Badge } from './ui/badge';
 import { Link } from 'react-router';
+import type { PublicServiceItem } from '@/features/service/types';
 
-interface PhotographerCardProps {
-  id: string;
-  name: string;
-  avatar: string;
-  coverImage: string;
-  rating: number;
-  reviewsCount: number;
-  startingPrice: string;
-  tags: string[];
-  location: string;
+interface PhotographerCardProps extends PublicServiceItem {
+  displayName?: string;
+}
+
+function formatPrice(price: number | null): string {
+  if (price === null || price === undefined) return 'Liên hệ';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(price);
 }
 
 export function PhotographerCard({
   id,
-  name,
-  avatar,
-  coverImage,
-  rating,
-  reviewsCount,
-  startingPrice,
-  tags,
-  location
+  serviceType,
+  description,
+  imageUrls,
+  areas,
+  minPrice,
+  maxPrice,
+  pricePerSlot,
+  displayName,
 }: PhotographerCardProps) {
+  const coverImage = imageUrls?.[0] ?? '';
+  const avatar = imageUrls?.[1] ?? imageUrls?.[0] ?? '';
+  const name = displayName ?? (description ? description.slice(0, 40) : `Photographer #${id}`);
+  const location = areas?.[0]
+    ? `${areas[0].district}, ${areas[0].city}`
+    : 'Toàn quốc';
+  const startingPrice = formatPrice(minPrice ?? pricePerSlot ?? null);
+
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
@@ -37,17 +47,16 @@ export function PhotographerCard({
       <Link to={`/photographer/${id}`}>
         {/* Cover Image */}
         <div className="relative aspect-[4/3] overflow-hidden">
-          <ImageWithFallback 
-            src={coverImage} 
+          <ImageWithFallback
+            src={coverImage}
             alt={`${name}'s portfolio`}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
           />
           <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors" />
-          
-          <button 
+
+          <button
             onClick={(e) => {
               e.preventDefault();
-              // Save logic
             }}
             className="absolute top-4 right-4 p-2.5 rounded-full bg-white/90 backdrop-blur-sm text-gray-600 hover:text-pink-500 hover:bg-white transition-all shadow-sm"
           >
@@ -65,8 +74,8 @@ export function PhotographerCard({
         <div className="p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-gray-100">
-              <ImageWithFallback 
-                src={avatar} 
+              <ImageWithFallback
+                src={avatar}
                 alt={name}
                 className="w-full h-full object-cover"
               />
@@ -79,20 +88,15 @@ export function PhotographerCard({
             </div>
             <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
               <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
-              <span className="text-xs font-bold text-yellow-700">{rating}</span>
-              <span className="text-[10px] text-yellow-600 opacity-60">({reviewsCount})</span>
+              <span className="text-xs font-bold text-yellow-700">5.0</span>
+              <span className="text-[10px] text-yellow-600 opacity-60">(0)</span>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => (
-              <span 
-                key={tag} 
-                className="text-[10px] font-bold text-[#A090C5] bg-[#F8F7FF] px-2.5 py-1 rounded-full border border-[#ECE9FF] uppercase tracking-wider"
-              >
-                #{tag}
-              </span>
-            ))}
+            <span className="text-[10px] font-bold text-[#A090C5] bg-[#F8F7FF] px-2.5 py-1 rounded-full border border-[#ECE9FF] uppercase tracking-wider">
+              #{description ? description.slice(0, 20) : serviceType}
+            </span>
           </div>
         </div>
       </Link>

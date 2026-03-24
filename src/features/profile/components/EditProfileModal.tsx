@@ -3,7 +3,7 @@ import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
 import type { AdminUserProfile } from "@/features/admin/types"
-import type { UpsertUserAddressPayload, UserAddress, Province, District, Ward } from "../types"
+import type { UpsertUserAddressPayload, UserAddress, Province, District } from "../types"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useEditProfile } from "../hooks/useEditProfile"
@@ -73,9 +73,9 @@ export default function EditProfileModal({
     name: "",
     city: "",
     district: "",
-    ward: "",
     address: "",
     phone: "",
+    addressName: "",
   })
   const [addressFieldErrors, setAddressFieldErrors] = React.useState<
     Partial<Record<keyof UpsertUserAddressPayload, string>>
@@ -97,14 +97,10 @@ export default function EditProfileModal({
     setProvinceCode,
     districtCode,
     setDistrictCode,
-    wardCode,
-    setWardCode,
     provinces,
     districts,
-    wards,
     loadingProvinces,
     loadingDistricts,
-    loadingWards,
     error: locationError,
   } = useVnLocation()
 
@@ -136,9 +132,9 @@ export default function EditProfileModal({
         name: "",
         city: "",
         district: "",
-        ward: "",
         address: "",
         phone: "",
+        addressName: "",
       })
       setAddressFieldErrors({})
       setEditingAddressCity(null)
@@ -198,14 +194,13 @@ export default function EditProfileModal({
     setEditingAddressDistrict(null)
     setProvinceCode(null)
     setDistrictCode(null)
-    setWardCode(null)
     setAddressForm({
       name: "",
       city: "",
       district: "",
-      ward: "",
       address: "",
       phone: "",
+      addressName: "",
     })
     setAddressFieldErrors({})
     setIsAddressFormOpen(true)
@@ -214,19 +209,14 @@ export default function EditProfileModal({
   const handleOpenEditAddress = (item: UserAddress) => {
     setEditingAddressId(item.id)
     setEditingAddressCity(item.city)
-    // Try to extract ward from address field if it contains ward info
-    const addressParts = item.address.split(",")
-    const wardPart = addressParts.length > 1 ? addressParts[0].trim() : ""
-    const streetAddress = addressParts.length > 1 ? addressParts.slice(1).join(",").trim() : item.address
-    
     setEditingAddressDistrict(item.district)
     setAddressForm({
       name: item.name,
       city: item.city,
       district: item.district,
-      ward: wardPart,
-      address: streetAddress,
+      address: item.address,
       phone: item.phone,
+      addressName: (item as UserAddress & { addressName?: string }).addressName || "",
     })
     setAddressFieldErrors({})
     setIsAddressFormOpen(true)
@@ -250,18 +240,13 @@ export default function EditProfileModal({
   const handleSaveAddress = async () => {
     if (!validateAddress()) return
 
-    // Build address string with ward if available
-    const fullAddress = addressForm.ward 
-      ? `${addressForm.ward}, ${addressForm.address}`
-      : addressForm.address
-
     const payload: UpsertUserAddressPayload = {
       name: addressForm.name.trim(),
       city: addressForm.city.trim(),
       district: addressForm.district.trim(),
-      ward: addressForm.ward?.trim() || undefined,
-      address: fullAddress.trim(),
+      address: addressForm.address.trim(),
       phone: addressForm.phone.trim(),
+      addressName: addressForm.addressName.trim(),
     }
 
     const ok =
@@ -282,7 +267,6 @@ export default function EditProfileModal({
     setEditingAddressDistrict(null)
     setProvinceCode(null)
     setDistrictCode(null)
-    setWardCode(null)
     setAddressFieldErrors({})
   }
 
@@ -530,14 +514,14 @@ export default function EditProfileModal({
                 <div className="space-y-3">
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.name} <span className="text-pink-500">*</span>
+                      {VI.profile.address.form.recipientName} <span className="text-pink-500">*</span>
                     </label>
                     <Input
                       value={addressForm.name}
                       onChange={(e) =>
                         setAddressForm((prev) => ({ ...prev, name: e.target.value }))
                       }
-                      placeholder={VI.profile.address.form.namePlaceholder}
+                      placeholder={VI.profile.address.form.recipientNamePlaceholder}
                       className={cn(addressFieldErrors.name && "border-pink-300")}
                     />
                     {addressFieldErrors.name && (
@@ -578,7 +562,6 @@ export default function EditProfileModal({
                           ...prev,
                           city: selectedProvince?.name ?? "",
                           district: "",
-                          ward: "",
                         }))
                       }}
                       disabled={loadingProvinces}
@@ -615,7 +598,6 @@ export default function EditProfileModal({
                         setAddressForm((prev) => ({
                           ...prev,
                           district: selectedDistrict?.name ?? "",
-                          ward: "",
                         }))
                       }}
                       disabled={provinceCode == null || loadingDistricts}
@@ -640,37 +622,19 @@ export default function EditProfileModal({
 
                   <div>
                     <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.ward}
+                      {VI.profile.address.form.addressName} <span className="text-pink-500">*</span>
                     </label>
-                    <select
-                      value={wardCode ?? ""}
-                      onChange={(e) => {
-                        const nextCode = e.target.value ? Number(e.target.value) : null
-                        const selectedWard = wards.find(
-                          (w) => w.code === nextCode
-                        )
-                        setWardCode(nextCode)
-                        setAddressForm((prev) => ({
-                          ...prev,
-                          ward: selectedWard?.name ?? "",
-                        }))
-                      }}
-                      disabled={districtCode == null || loadingWards}
-                      className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2"
-                    >
-                      <option value="">
-                        {loadingWards
-                          ? VI.common.status.loading
-                          : districtCode
-                          ? VI.profile.address.form.wardPlaceholder
-                          : VI.profile.address.form.districtPlaceholder}
-                      </option>
-                      {wards.map((ward) => (
-                        <option key={ward.code} value={ward.code}>
-                          {ward.name}
-                        </option>
-                      ))}
-                    </select>
+                    <Input
+                      value={addressForm.addressName}
+                      onChange={(e) =>
+                        setAddressForm((prev) => ({ ...prev, addressName: e.target.value }))
+                      }
+                      placeholder={VI.profile.address.form.addressNamePlaceholder}
+                      className={cn(addressFieldErrors.addressName && "border-pink-300")}
+                    />
+                    {addressFieldErrors.addressName && (
+                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.addressName}</p>
+                    )}
                   </div>
 
                   <div>

@@ -79,9 +79,9 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
         name="phone"
         rules={[
           { required: true, message: VI.auth.register.validation.phoneRequired },
-          { 
-            pattern: /^0\d{9}$/, 
-            message: VI.auth.register.validation.phoneInvalid 
+          {
+            pattern: /^0\d{9}$/,
+            message: VI.auth.register.validation.phoneInvalid
           },
         ]}
       >

@@ -2,7 +2,7 @@ import * as React from "react"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
-import type { UpsertUserAddressPayload, UserAddress, Province, District, Ward } from "../types"
+import type { UpsertUserAddressPayload, UserAddress, Province, District } from "../types"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
@@ -59,9 +59,9 @@ export function AddressModal({
     name: "",
     city: "",
     district: "",
-    ward: "",
     address: "",
     phone: "",
+    addressName: "",
   })
   const [addressFieldErrors, setAddressFieldErrors] = React.useState<
     Partial<Record<keyof UpsertUserAddressPayload, string>>
@@ -84,14 +84,10 @@ export function AddressModal({
     setProvinceCode,
     districtCode,
     setDistrictCode,
-    wardCode,
-    setWardCode,
     provinces,
     districts,
-    wards,
     loadingProvinces,
     loadingDistricts,
-    loadingWards,
     error: locationError,
   } = useVnLocation()
 
@@ -101,14 +97,13 @@ export function AddressModal({
     setEditingAddressDistrict(null)
     setProvinceCode(null)
     setDistrictCode(null)
-    setWardCode(null)
     setAddressForm({
       name: "",
       city: "",
       district: "",
-      ward: "",
       address: "",
       phone: "",
+      addressName: "",
     })
     setAddressFieldErrors({})
     setIsAddressFormOpen(true)
@@ -117,18 +112,14 @@ export function AddressModal({
   const handleOpenEditAddress = (item: UserAddress) => {
     setEditingAddressId(item.id)
     setEditingAddressCity(item.city)
-    const addressParts = item.address.split(",")
-    const wardPart = addressParts.length > 1 ? addressParts[0].trim() : ""
-    const streetAddress = addressParts.length > 1 ? addressParts.slice(1).join(",").trim() : item.address
-
     setEditingAddressDistrict(item.district)
     setAddressForm({
       name: item.name,
       city: item.city,
       district: item.district,
-      ward: wardPart,
-      address: streetAddress,
+      address: item.address,
       phone: item.phone,
+      addressName: (item as UserAddress & { addressName?: string }).addressName || "",
     })
     setAddressFieldErrors({})
     setIsAddressFormOpen(true)
@@ -152,17 +143,13 @@ export function AddressModal({
   const handleSaveAddress = async () => {
     if (!validateAddress()) return
 
-    const fullAddress = addressForm.ward
-      ? `${addressForm.ward}, ${addressForm.address}`
-      : addressForm.address
-
     const payload: UpsertUserAddressPayload = {
       name: addressForm.name.trim(),
       city: addressForm.city.trim(),
       district: addressForm.district.trim(),
-      ward: addressForm.ward?.trim() || undefined,
-      address: fullAddress.trim(),
+      address: addressForm.address.trim(),
       phone: addressForm.phone.trim(),
+      addressName: addressForm.addressName.trim(),
     }
 
     const ok =
@@ -183,7 +170,6 @@ export function AddressModal({
     setEditingAddressDistrict(null)
     setProvinceCode(null)
     setDistrictCode(null)
-    setWardCode(null)
     setAddressFieldErrors({})
   }
 
@@ -210,9 +196,9 @@ export function AddressModal({
         name: "",
         city: "",
         district: "",
-        ward: "",
         address: "",
         phone: "",
+        addressName: "",
       })
       setAddressFieldErrors({})
       setEditingAddressCity(null)
@@ -333,14 +319,14 @@ export function AddressModal({
               <div className="space-y-3">
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
-                    {VI.profile.address.form.name} <span className="text-pink-500">*</span>
+                    {VI.profile.address.form.recipientName} <span className="text-pink-500">*</span>
                   </label>
                   <Input
                     value={addressForm.name}
                     onChange={(e) =>
                       setAddressForm((prev) => ({ ...prev, name: e.target.value }))
                     }
-                    placeholder={VI.profile.address.form.namePlaceholder}
+                    placeholder={VI.profile.address.form.recipientNamePlaceholder}
                     className={cn(addressFieldErrors.name && "border-pink-300")}
                   />
                   {addressFieldErrors.name && (
@@ -367,6 +353,23 @@ export function AddressModal({
 
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">
+                    {VI.profile.address.form.addressName} <span className="text-pink-500">*</span>
+                  </label>
+                  <Input
+                    value={addressForm.addressName}
+                    onChange={(e) =>
+                      setAddressForm((prev) => ({ ...prev, addressName: e.target.value }))
+                    }
+                    placeholder={VI.profile.address.form.addressNamePlaceholder}
+                    className={cn(addressFieldErrors.addressName && "border-pink-300")}
+                  />
+                  {addressFieldErrors.addressName && (
+                    <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.addressName}</p>
+                  )}
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-slate-700">
                     {VI.profile.address.form.city} <span className="text-pink-500">*</span>
                   </label>
                   <select
@@ -381,7 +384,6 @@ export function AddressModal({
                         ...prev,
                         city: selectedProvince?.name ?? "",
                         district: "",
-                        ward: "",
                       }))
                     }}
                     disabled={loadingProvinces}
@@ -418,7 +420,6 @@ export function AddressModal({
                       setAddressForm((prev) => ({
                         ...prev,
                         district: selectedDistrict?.name ?? "",
-                        ward: "",
                       }))
                     }}
                     disabled={provinceCode == null || loadingDistricts}
@@ -441,40 +442,6 @@ export function AddressModal({
                   )}
                 </div>
 
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-slate-700">
-                    {VI.profile.address.form.ward}
-                  </label>
-                  <select
-                    value={wardCode ?? ""}
-                    onChange={(e) => {
-                      const nextCode = e.target.value ? Number(e.target.value) : null
-                      const selectedWard = wards.find(
-                        (w) => w.code === nextCode
-                      )
-                      setWardCode(nextCode)
-                      setAddressForm((prev) => ({
-                        ...prev,
-                        ward: selectedWard?.name ?? "",
-                      }))
-                    }}
-                    disabled={districtCode == null || loadingWards}
-                    className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2"
-                  >
-                    <option value="">
-                      {loadingWards
-                        ? VI.common.status.loading
-                        : districtCode
-                        ? VI.profile.address.form.wardPlaceholder
-                        : VI.profile.address.form.districtPlaceholder}
-                    </option>
-                    {wards.map((ward) => (
-                      <option key={ward.code} value={ward.code}>
-                        {ward.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
 
                 <div>
                   <label className="mb-1 block text-sm font-medium text-slate-700">

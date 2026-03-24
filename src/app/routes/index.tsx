@@ -13,6 +13,8 @@ import ProviderRegPage from "@/features/auth/pages/ProviderRegPage"
 import StaffRegPage from "@/features/auth/pages/StaffRegPage"
 import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
+import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage"
+import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
 
 import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
@@ -41,6 +43,9 @@ import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
 import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
 import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
 import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
+import ProviderCreateServicePage from "@/features/service/pages/ProviderCreateServicePage"
+import ProviderServiceListPage from "@/features/service/pages/ProviderServiceListPage"
+import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 
 export default function AppRoutes() {
   return (
@@ -86,20 +91,31 @@ export default function AppRoutes() {
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
+        <Route path="/provider/settings" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Provider Photograph Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_PHOTOGRAPH]} />}>
         <Route path="/provider-photograph" element={<PhotographHomePage />} />
+        <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
+        <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
+        <Route path="/provider-photograph/settings" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Provider Event Staff Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_EVENT_STAFF]} />}>
         <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
+        <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
+        <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
+        <Route path="/provider-event-staff/settings" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Global Error Pages */}
       <Route path="/no-permission" element={<NoPermissionPage />} />
+
+      {/* Auth Pages (public) */}
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+      <Route path="/reset-password" element={<ResetPasswordPage />} />
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />

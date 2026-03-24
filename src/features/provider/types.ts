@@ -9,20 +9,35 @@
 export interface ProviderProfile {
   id: number;
   userId: number;
-  shopName: string;
+  shopName: string | null;
   description: string | null;
   verified: boolean;
   createdAt: string;
   updatedAt: string;
+  // Profile completion fields
+  shopAddressId: number | null;
+  bio: string | null;
+  bankAccountNumber: string | null;
+  bankName: string | null;
   // Extended fields for shop profile (may come from different endpoints or mock)
   avatarUrl?: string | null;
   coverImageUrl?: string | null;
-  bio?: string | null;
   phone?: string | null;
   email?: string | null;
   facebookUrl?: string | null;
   messengerUrl?: string | null;
   websiteUrl?: string | null;
+}
+
+/**
+ * Payload for updating provider profile
+ */
+export interface UpdateProviderProfilePayload {
+  shopName: string;
+  shopAddressId: number;
+  bio: string;
+  bankAccountNumber: string;
+  bankName: string;
 }
 
 /**

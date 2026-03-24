@@ -7,7 +7,7 @@ import { message } from 'antd';
 import { VI } from '@/shared/i18n/vi';
 import * as vnLocationApi from '../api/vnLocation.api';
 import * as userAddressService from '../services/userAddress.service';
-import type { Province, District, Ward } from '../types';
+import type { Province, District } from '../types';
 
 interface UseCreateAddressResult {
   // Form state
@@ -15,18 +15,16 @@ interface UseCreateAddressResult {
   phone: string;
   provinceCode: number | null;
   districtCode: number | null;
-  ward: Ward | null;
   streetAddress: string;
+  addressName: string;
 
   // Dropdown options
   provinces: Province[];
   districts: District[];
-  wards: Ward[];
 
   // Loading states
   isLoadingProvinces: boolean;
   isLoadingDistricts: boolean;
-  isLoadingWards: boolean;
   isSubmitting: boolean;
 
   // Setters
@@ -34,8 +32,8 @@ interface UseCreateAddressResult {
   setPhone: (value: string) => void;
   setProvinceCode: (code: number | null) => void;
   setDistrictCode: (code: number | null) => void;
-  setWard: (ward: Ward | null) => void;
   setStreetAddress: (value: string) => void;
+  setAddressName: (value: string) => void;
 
   // Actions
   submit: (userId: number, provinceName: string, districtName: string) => Promise<boolean>;
@@ -48,18 +46,16 @@ export function useCreateAddress(): UseCreateAddressResult {
   const [phone, setPhone] = useState('');
   const [provinceCode, setProvinceCode] = useState<number | null>(null);
   const [districtCode, setDistrictCode] = useState<number | null>(null);
-  const [ward, setWard] = useState<Ward | null>(null);
   const [streetAddress, setStreetAddress] = useState('');
+  const [addressName, setAddressName] = useState('');
 
   // Dropdown options
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
-  const [wards, setWards] = useState<Ward[]>([]);
 
   // Loading states
   const [isLoadingProvinces, setIsLoadingProvinces] = useState(false);
   const [isLoadingDistricts, setIsLoadingDistricts] = useState(false);
-  const [isLoadingWards, setIsLoadingWards] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Fetch provinces on mount
@@ -84,17 +80,13 @@ export function useCreateAddress(): UseCreateAddressResult {
     const fetchDistricts = async () => {
       if (provinceCode === null) {
         setDistricts([]);
-        setWards([]);
         setDistrictCode(null);
-        setWard(null);
         return;
       }
 
       setIsLoadingDistricts(true);
       setDistrictCode(null);
-      setWard(null);
       setDistricts([]);
-      setWards([]);
 
       try {
         const data = await vnLocationApi.fetchDistricts(provinceCode);
@@ -108,32 +100,6 @@ export function useCreateAddress(): UseCreateAddressResult {
     };
     fetchDistricts();
   }, [provinceCode]);
-
-  // Fetch wards when district changes
-  useEffect(() => {
-    const fetchWards = async () => {
-      if (districtCode === null) {
-        setWards([]);
-        setWard(null);
-        return;
-      }
-
-      setIsLoadingWards(true);
-      setWard(null);
-      setWards([]);
-
-      try {
-        const data = await vnLocationApi.fetchWards(districtCode);
-        setWards(data);
-      } catch (err) {
-        console.error('Failed to fetch wards:', err);
-        message.error('Không thể tải danh sách phường/xã');
-      } finally {
-        setIsLoadingWards(false);
-      }
-    };
-    fetchWards();
-  }, [districtCode]);
 
   const submit = useCallback(
     async (userId: number, provinceName: string, districtName: string): Promise<boolean> => {
@@ -152,10 +118,6 @@ export function useCreateAddress(): UseCreateAddressResult {
       }
       if (!districtCode) {
         message.error(VI.profile.address.validation.selectDistrict);
-        return false;
-      }
-      if (!ward) {
-        message.error(VI.profile.address.validation.selectWard);
         return false;
       }
       if (!streetAddress.trim()) {
@@ -177,8 +139,8 @@ export function useCreateAddress(): UseCreateAddressResult {
           phone,
           provinceCode,
           districtCode,
-          ward,
           streetAddress,
+          addressName,
         };
 
         await userAddressService.createUserAddress(userId, formData, provinceName, districtName);
@@ -192,7 +154,7 @@ export function useCreateAddress(): UseCreateAddressResult {
         setIsSubmitting(false);
       }
     },
-    [name, phone, provinceCode, districtCode, ward, streetAddress]
+    [name, phone, provinceCode, districtCode, streetAddress, addressName]
   );
 
   const reset = useCallback(() => {
@@ -200,10 +162,9 @@ export function useCreateAddress(): UseCreateAddressResult {
     setPhone('');
     setProvinceCode(null);
     setDistrictCode(null);
-    setWard(null);
     setStreetAddress('');
+    setAddressName('');
     setDistricts([]);
-    setWards([]);
   }, []);
 
   return {
@@ -212,18 +173,16 @@ export function useCreateAddress(): UseCreateAddressResult {
     phone,
     provinceCode,
     districtCode,
-    ward,
     streetAddress,
+    addressName,
 
     // Dropdown options
     provinces,
     districts,
-    wards,
 
     // Loading states
     isLoadingProvinces,
     isLoadingDistricts,
-    isLoadingWards,
     isSubmitting,
 
     // Setters
@@ -231,8 +190,8 @@ export function useCreateAddress(): UseCreateAddressResult {
     setPhone,
     setProvinceCode,
     setDistrictCode,
-    setWard,
     setStreetAddress,
+    setAddressName,
 
     // Actions
     submit,

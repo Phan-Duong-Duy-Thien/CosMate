@@ -5,18 +5,21 @@
  */
 import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
 import { Camera, Calendar, Star } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
 import { useProviderGate } from '../hooks/useProviderGate';
 import { ProviderActivationGate } from '../components/ProviderActivationGate';
+import { ProviderProfileCompletionGate } from '../components/ProviderProfileCompletionGate';
 
 const { Text } = Typography;
 
 export default function PhotographHomePage() {
+  const navigate = useNavigate();
   const {
-    verified, profileLoading,
+    verified, profileComplete, profileLoading,
     plans, plansLoading, plansError,
     selectedPlanId, setSelectedPlanId,
     selectedMethod, setSelectedMethod,
@@ -79,7 +82,11 @@ export default function PhotographHomePage() {
         />
       )}
 
-      {!profileLoading && verified === true && (
+      {!profileLoading && verified === true && profileComplete === false && (
+        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-photograph/settings')} />
+      )}
+
+      {!profileLoading && verified === true && profileComplete === true && (
         <>
           <div style={{ marginBottom: 24 }}>
             <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboardPhotograph.welcome}</h2>
