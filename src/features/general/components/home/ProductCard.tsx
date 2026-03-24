@@ -43,10 +43,12 @@ export const ProductCard = ({
       <div className="text-xs uppercase tracking-wide text-slate-400">
         {VI.costumeRental.status}: {product.status}
       </div>
-      
+
       <h3 className="line-clamp-2 text-base font-semibold text-slate-900">
         {product.name}
       </h3>
+      <p className="text-sm text-slate-500">Thương hiệu: {product.brand || "non-brand"}</p>
+      <p className="text-sm text-slate-500">{product.rentalsCount} lượt thuê</p>
       <div className="text-lg font-semibold text-pink-600">
         {product.pricePerDay.toLocaleString("vi-VN")} VNĐ
       </div>

@@ -26,6 +26,8 @@ export interface Product {
   pricePerDay: number
   status: string
   imageUrls: string[]
+  brand: string
+  rentalsCount: number
 }
 
 export interface Shop {
