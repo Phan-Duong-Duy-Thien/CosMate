@@ -1,4 +1,5 @@
 import * as React from "react"
+import { useSearchParams } from "react-router-dom"
 
 import {
   GUIDELINES_RULES_SECTIONS,
@@ -19,11 +20,41 @@ function getI18nValue(path: string): string {
   }, VI) as string
 }
 
+const SECTION_ID_FROM_TYPE: Record<string, string> = {
+  rental: "cosplay-rental",
+  photographer: "photographer",
+  staff: "staff",
+  refund: "orders-returns",
+  dispute: "complaints-disputes",
+}
+
 export default function GuidelinesRulesPage() {
+  // useSearchParams re-renders automatically when URL query params change,
+  // even when navigating to the same route with different query params.
+  const [searchParams] = useSearchParams()
+  const typeParam = searchParams.get("type")
+  const viewParam = searchParams.get("view")
+
   const [activeSectionId, setActiveSectionId] = React.useState(
-    GUIDELINES_RULES_SECTIONS[0]?.id
+    typeParam ? (SECTION_ID_FROM_TYPE[typeParam] ?? GUIDELINES_RULES_SECTIONS[0]?.id) : GUIDELINES_RULES_SECTIONS[0]?.id
   )
-  const [activeView, setActiveView] = React.useState<ContentView>("guide")
+  const [activeView, setActiveView] = React.useState<ContentView>(
+    viewParam === "rules" || viewParam === "guide" ? viewParam : "guide"
+  )
+
+  // Sync activeSectionId when typeParam changes (handles same-route navigation)
+  React.useEffect(() => {
+    if (typeParam && SECTION_ID_FROM_TYPE[typeParam]) {
+      setActiveSectionId(SECTION_ID_FROM_TYPE[typeParam])
+    }
+  }, [typeParam])
+
+  // Sync activeView when viewParam changes
+  React.useEffect(() => {
+    if (viewParam === "rules" || viewParam === "guide") {
+      setActiveView(viewParam)
+    }
+  }, [viewParam])
   const [pageVisible, setPageVisible] = React.useState(false)
   const [contentVisible, setContentVisible] = React.useState(true)
 

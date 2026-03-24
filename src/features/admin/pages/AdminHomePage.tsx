@@ -48,22 +48,22 @@ export default function AdminHomePage() {
 
   return (
     <DashboardLayout title={VI.admin.dashboard.title} sidebarItems={sidebarItems} brandName={VI.common.appNameAdmin}>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.admin.dashboard.welcome}</h2>
-        <p style={{ color: '#6B7280', fontSize: 14 }}>
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>{VI.admin.dashboard.welcome}</h2>
+        <p style={{ color: '#6B7280', fontSize: 13 }}>
           {VI.admin.dashboard.todayOverview}
         </p>
       </div>
 
       {/* Stats Cards */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[12, 12]}>
         {stats.map((stat, index) => (
           <Col xs={24} sm={12} lg={6} key={index}>
             <Card
               bordered={false}
               style={{
-                borderRadius: 12,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                borderRadius: 10,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -71,13 +71,13 @@ export default function AdminHomePage() {
                   title={stat.title}
                   value={stat.value}
                   prefix={stat.prefix}
-                  valueStyle={{ color: stat.color, fontSize: 24, fontWeight: 700 }}
+                  valueStyle={{ color: stat.color, fontSize: 22, fontWeight: 700 }}
                 />
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 12,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
                     backgroundColor: `${stat.color}15`,
                     display: 'flex',
                     alignItems: 'center',
@@ -94,7 +94,7 @@ export default function AdminHomePage() {
       </Row>
 
       {/* Quick Actions */}
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
         <Col xs={24} lg={12}>
           <Card
             title={VI.admin.dashboard.sections.recentActivity}

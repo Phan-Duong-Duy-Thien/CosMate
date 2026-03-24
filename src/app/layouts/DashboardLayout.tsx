@@ -207,7 +207,7 @@ export function DashboardLayout({
         {/* Header */}
         <Header
           style={{
-            padding: '0 24px',
+            padding: '0 20px',
             background: '#fff',
             borderBottom: '1px solid #f0f0f0',
             display: 'flex',
@@ -219,7 +219,7 @@ export function DashboardLayout({
           }}
         >
           {/* Left: Page Title */}
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{title}</h1>
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{title}</h1>
 
           {/* Right: User Dropdown */}
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
@@ -245,15 +245,15 @@ export function DashboardLayout({
         {/* Content Area */}
         <Content
           style={{
-            margin: 24,
-            padding: 24,
+            margin: 16,
+            padding: 20,
             background: '#fff',
             borderRadius: 8,
             minHeight: 280,
           }}
         >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? (

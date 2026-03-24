@@ -1,4 +1,4 @@
-import { Form, Input } from "antd"
+import { Checkbox, Form, Input } from "antd"
 import { Lock, Mail } from "lucide-react"
 
 import type { LoginFormValues } from "../types"
@@ -56,6 +56,17 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
+
+      <div className="flex items-center">
+        <Form.Item
+          className="mb-0"
+          name="rememberMe"
+          valuePropName="checked"
+          initialValue={false}
+        >
+          <Checkbox disabled={submitting}>{VI.auth.login.rememberMe}</Checkbox>
+        </Form.Item>
+      </div>
     </AuthForm>
   )
 }

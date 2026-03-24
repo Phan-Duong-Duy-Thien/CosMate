@@ -36,7 +36,7 @@ export function useLogin() {
       }
 
       // Save token and decode roles
-      saveAuth(response.result)
+      saveAuth(response.result, !!values.rememberMe)
       console.log("💾 Token saved successfully")
 
       // Get user roles for redirect

@@ -55,17 +55,17 @@ export const FilterSidebar = ({
   }
 
   return (
-    <aside className="w-full rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm backdrop-blur">
+    <aside className="w-full rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm backdrop-blur">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold uppercase text-slate-500">
-          Bộ lọc tìm kiếm
+        <h2 className="text-sm font-semibold text-slate-500">
+          Bộ lọc
         </h2>
-        <span className="rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold text-pink-700">
+        <span className="rounded-full bg-pink-100 px-2.5 py-0.5 text-xs font-semibold text-pink-700">
           {resultCount} kết quả
         </span>
       </div>
 
-      <div className="mt-5 space-y-6 text-sm">
+      <div className="mt-4 space-y-5 text-sm">
         <div className="space-y-3">
           <p className="font-semibold text-slate-700">Từ khóa</p>
           <Input
@@ -257,7 +257,7 @@ export const FilterSidebar = ({
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-3">
+      <div className="mt-5 flex flex-col gap-2">
         <Button
           type="button"
           variant="outline"

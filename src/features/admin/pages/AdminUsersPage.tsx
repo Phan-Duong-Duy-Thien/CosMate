@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message } from 'antd';
+import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message, Form } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -18,7 +18,12 @@ import {
   UnlockOutlined,
   StopOutlined,
   CheckCircleOutlined,
+  PlusOutlined,
+  DownloadOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
+import { register } from '@/features/auth/api/auth.api';
+import type { RegisterRequest } from '@/features/auth/types';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { adminSidebarItems } from '../constants/sidebar';
 import { useAdminUsers } from '../hooks/useAdminUsers';
@@ -29,6 +34,7 @@ import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
 import { getRoleTagProps } from '../utils/userRole';
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
+import { ROLE } from '@/types/auth';
 
 // No local helpers needed - using centralized status utils
 
@@ -55,6 +61,11 @@ export default function AdminUsersPage() {
   // Detail modal state (selectedUser from list: roles + permission lookup)
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+
+  // Create User modal state
+  const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
+  const [createUserForm] = Form.useForm();
+  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
 
   // Get current user info for permission checks
   const currentUserRoles = getRoles();
@@ -160,6 +171,69 @@ export default function AdminUsersPage() {
     setDrawerOpen(false);
     setSelectedUser(null);
     closeProfile();
+  };
+
+  /**
+   * Handle creating a new user
+   */
+  const handleCreateUser = async (values: {
+    username: string;
+    email: string;
+    password: string;
+    fullName: string;
+    phone: string;
+    role: string;
+  }) => {
+    setCreateUserSubmitting(true);
+    try {
+      const payload: RegisterRequest = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName,
+        phone: values.phone,
+        role: values.role as ROLE,
+      };
+      await register(payload);
+      message.success('Tạo người dùng thành công');
+      setCreateUserModalOpen(false);
+      createUserForm.resetFields();
+      refetch();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err.response?.data?.message || 'Tạo người dùng thất bại');
+    } finally {
+      setCreateUserSubmitting(false);
+    }
+  };
+
+  /**
+   * Export user list to CSV file with timestamp in filename
+   */
+  const handleExportUsers = () => {
+    const now = new Date();
+    const timestamp = now.toISOString().split('T')[0];
+    const headers = ['ID', 'Username', 'Email', 'Roles', 'Status'];
+    const rows = filteredUsers.map((user) => [
+      user.id,
+      user.username,
+      user.email,
+      user.roles.join('; '),
+      user.status,
+    ]);
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `users_export_${timestamp}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    message.success('Đã xuất file thành công');
   };
 
   /**
@@ -296,7 +370,7 @@ export default function AdminUsersPage() {
       >
       {/* Toolbar */}
       <div style={{ marginBottom: 16 }}>
-        <Space wrap>
+        <Space wrap style={{ marginBottom: 8 }}>
           <Input
             placeholder={VI.admin.users.toolbar.search}
             prefix={<SearchOutlined />}
@@ -330,6 +404,21 @@ export default function AdminUsersPage() {
             {VI.admin.users.toolbar.refresh}
           </Button>
         </Space>
+        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+          <Button
+            icon={<DownloadOutlined />}
+            onClick={handleExportUsers}
+          >
+            {VI.admin.users.toolbar.exportExcel}
+          </Button>
+          <Button
+            type="primary"
+            icon={<PlusOutlined />}
+            onClick={() => setCreateUserModalOpen(true)}
+          >
+            {VI.admin.users.toolbar.createUser}
+          </Button>
+        </div>
       </div>
 
       {/* Table (clickable rows open detail drawer) */}
@@ -389,6 +478,97 @@ export default function AdminUsersPage() {
             : undefined
         }
       />
+
+      {/* Create User Modal */}
+      <Modal
+        title={VI.admin.users.toolbar.createUser}
+        open={createUserModalOpen}
+        onCancel={() => {
+          setCreateUserModalOpen(false);
+          createUserForm.resetFields();
+        }}
+        footer={null}
+        destroyOnClose
+      >
+        <Form
+          form={createUserForm}
+          layout="vertical"
+          onFinish={handleCreateUser}
+          style={{ marginTop: 16 }}
+        >
+          <Form.Item
+            label={VI.auth.register.username}
+            name="username"
+            rules={[
+              { required: true, message: 'Vui lòng nhập tên đăng nhập' },
+              { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự' },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder={VI.auth.register.usernamePlaceholder} />
+          </Form.Item>
+          <Form.Item
+            label={VI.auth.register.fullName}
+            name="fullName"
+            rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+          >
+            <Input placeholder={VI.auth.register.fullNamePlaceholder} />
+          </Form.Item>
+          <Form.Item
+            label={VI.auth.register.email}
+            name="email"
+            rules={[
+              { required: true, message: 'Vui lòng nhập email' },
+              { type: 'email', message: 'Email không hợp lệ' },
+            ]}
+          >
+            <Input prefix={<UserOutlined />} placeholder={VI.auth.register.emailPlaceholder} />
+          </Form.Item>
+          <Form.Item
+            label={VI.auth.register.phone}
+            name="phone"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điện thoại' },
+              { pattern: /^0\d{9}$/, message: 'Số điện thoại phải có 10 số, bắt đầu bằng 0' },
+            ]}
+          >
+            <Input placeholder={VI.auth.register.phonePlaceholder} />
+          </Form.Item>
+          <Form.Item
+            label={VI.auth.register.password}
+            name="password"
+            rules={[
+              { required: true, message: 'Vui lòng nhập mật khẩu' },
+              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+            ]}
+          >
+            <Input.Password placeholder={VI.auth.register.passwordPlaceholder} />
+          </Form.Item>
+          <Form.Item
+            label="Vai trò"
+            name="role"
+            rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+          >
+            <Select placeholder="Chọn vai trò">
+              <Select.Option value={ROLE.COSPLAYER}>Cosplayer</Select.Option>
+              <Select.Option value={ROLE.PROVIDER}>Provider</Select.Option>
+              <Select.Option value={ROLE.PHOTOGRAPHER}>Photographer</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+            <Space>
+              <Button onClick={() => {
+                setCreateUserModalOpen(false);
+                createUserForm.resetFields();
+              }}>
+                {VI.common.actions.cancel || 'Hủy'}
+              </Button>
+              <Button type="primary" htmlType="submit" loading={createUserSubmitting}>
+                {VI.admin.users.toolbar.createUser}
+              </Button>
+            </Space>
+          </Form.Item>
+        </Form>
+      </Modal>
       </DashboardLayout>
     </>
   );
