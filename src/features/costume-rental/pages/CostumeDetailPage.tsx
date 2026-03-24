@@ -103,13 +103,17 @@ export default function CostumeDetailPage() {
     }
   }, [costume, setItems])
 
-  // Convert date string to ISO format for backend
-  const convertToIsoDateTime = (dateString: string): string => {
+  // Convert date string to YYYY-MM-DD for storage
+  // The backend appends T00:00:00 at submission time (order.service.ts)
+  const formatRentDate = (dateString: string): string => {
     if (!dateString) return ''
-    const date = new Date(dateString)
-    // Set to start of day in local time, then format as ISO without milliseconds
-    date.setHours(0, 0, 0, 0)
-    return date.toISOString().split('.')[0] // Remove milliseconds
+    // Parse using local time to avoid UTC timezone shift
+    const [year, month, day] = dateString.split('-').map(Number)
+    const localDate = new Date(year, month - 1, day)
+    const y = localDate.getFullYear()
+    const m = String(localDate.getMonth() + 1).padStart(2, '0')
+    const d = String(localDate.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
   }
 
   const handleRentNow = async () => {
@@ -141,13 +145,13 @@ export default function CostumeDetailPage() {
     }
 
     // Convert startDate to ISO format for backend
-    const rentStartIso = convertToIsoDateTime(startDate)
+    const rentStartFormatted = formatRentDate(startDate)
 
     // Save rental draft to sessionStorage
     saveDraft({
       costumeId: costume.id,
       rentDay: days,
-      rentStart: rentStartIso,
+      rentStart: rentStartFormatted,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
       selectedRentalOptionId,
     })

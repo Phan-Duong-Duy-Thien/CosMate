@@ -33,6 +33,7 @@ export interface CreateServiceFormData {
   slotDurationHours: number;
   pricePerSlot: number;
   equipmentDepreciationCost: number;
+  depositAmount: number;
   providerId: number;
   areas: ServiceArea[];
   albumFiles: File[];
@@ -50,6 +51,7 @@ export interface CreateServicePayload {
   slotDurationHours: number;
   pricePerSlot: number;
   equipmentDepreciationCost: number;
+  depositAmount: number;
   providerId: number;
   areas: string; // JSON.stringify([{ city, district }])
   albumFiles: File[];

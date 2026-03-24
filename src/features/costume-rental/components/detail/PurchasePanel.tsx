@@ -33,7 +33,7 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time
   const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0

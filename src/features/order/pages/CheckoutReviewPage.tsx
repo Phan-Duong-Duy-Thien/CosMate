@@ -234,7 +234,10 @@ export default function CheckoutReviewPage() {
                         {VI.checkout.summary.rentalDays}: {draft.rentDay} ngày | {VI.checkout.summary.pricePerDay}: {costume.pricePerDay.toLocaleString('vi-VN')}VNĐ
                       </p>
                       <p className="text-sm text-slate-500">
-                        {VI.checkout.summary.startDate}: {draft.rentStart}
+                        {VI.checkout.summary.startDate}: {draft.rentStart ? (() => {
+                          const [y, m, d] = draft.rentStart.split('-')
+                          return `${d}/${m}/${y}`
+                        })() : ''}
                       </p>
                     </div>
                   </div>

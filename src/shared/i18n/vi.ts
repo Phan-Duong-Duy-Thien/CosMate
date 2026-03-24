@@ -1109,6 +1109,7 @@ export const VI = {
         slotDurationHours: "Thời lượng mỗi slot (giờ)",
         pricePerSlot: "Giá mỗi slot",
         equipmentDepreciationCost: "Chi phí khấu hao thiết bị",
+        depositAmount: "Tiền cọc",
         minPrice: "Giá tối thiểu",
         maxPrice: "Giá tối đa",
         albumFiles: "Hình ảnh portfolio",

@@ -28,6 +28,7 @@ export async function createService(
   form.append('slotDurationHours', String(payload.slotDurationHours));
   form.append('pricePerSlot', String(payload.pricePerSlot));
   form.append('equipmentDepreciationCost', String(payload.equipmentDepreciationCost));
+  form.append('depositAmount', String(payload.depositAmount));
   form.append('providerId', String(payload.providerId));
   form.append('areas', payload.areas);
 
@@ -50,6 +51,7 @@ export async function createService(
     slotDurationHours: payload.slotDurationHours,
     pricePerSlot: payload.pricePerSlot,
     equipmentDepreciationCost: payload.equipmentDepreciationCost,
+    depositAmount: payload.depositAmount,
     providerId: payload.providerId,
     areas: payload.areas,
     minPrice: payload.minPrice,

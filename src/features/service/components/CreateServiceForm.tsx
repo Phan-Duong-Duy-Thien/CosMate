@@ -122,6 +122,7 @@ export function CreateServiceForm({
         slotDurationHours: values.slotDurationHours ?? 1,
         pricePerSlot: values.pricePerSlot ?? 0,
         equipmentDepreciationCost: values.equipmentDepreciationCost ?? 0,
+        depositAmount: values.depositAmount ?? 0,
         areas,
         albumFiles,
         minPrice: values.minPrice ?? 0,
@@ -271,6 +272,26 @@ export function CreateServiceForm({
               name="equipmentDepreciationCost"
               label={VI.service.create.form.equipmentDepreciationCost}
               rules={[{ required: false }]}
+              initialValue={0}
+            >
+              <Space.Compact style={{ width: '100%' }}>
+                <InputNumber
+                  min={0}
+                  step={10000}
+                  style={{ width: '100%' }}
+                  formatter={(value) =>
+                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                  }
+                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
+            </Form.Item>
+
+            <Form.Item
+              name="depositAmount"
+              label={VI.service.create.form.depositAmount}
+              rules={[{ required: true }]}
               initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>

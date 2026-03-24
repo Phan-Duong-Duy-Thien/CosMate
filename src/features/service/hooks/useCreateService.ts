@@ -39,6 +39,10 @@ export function useCreateService(): UseCreateServiceResult {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;
     }
+    if (formData.depositAmount < 0) {
+      message.error(VI.service.create.validation.nonNegativeNumber);
+      return false;
+    }
     if (formData.minPrice < 0 || formData.maxPrice < 0) {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;

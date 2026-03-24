@@ -19,11 +19,7 @@ import type {
 export async function submitService(
   formData: CreateServiceFormData
 ): Promise<CreatedService> {
-  // DEBUG: Log raw areas before stringify
-  console.log('[submitService] raw areas:', JSON.stringify(formData.areas));
-
   const areasJson = JSON.stringify(formData.areas);
-  console.log('[submitService] stringified areas:', areasJson);
 
   const payload: CreateServicePayload = {
     serviceType: formData.serviceType,
@@ -31,6 +27,7 @@ export async function submitService(
     slotDurationHours: formData.slotDurationHours,
     pricePerSlot: formData.pricePerSlot,
     equipmentDepreciationCost: formData.equipmentDepreciationCost,
+    depositAmount: formData.depositAmount,
     providerId: formData.providerId,
     areas: areasJson,
     albumFiles: formData.albumFiles,
