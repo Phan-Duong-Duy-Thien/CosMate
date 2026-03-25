@@ -5,6 +5,7 @@ import type { UserRole } from '@/types/auth';
 export type LoginFormValues = {
   usernameOrEmail: string
   password: string
+  rememberMe?: boolean
 }
 
 export type EmailLoginPayload = {

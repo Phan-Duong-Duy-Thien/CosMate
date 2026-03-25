@@ -21,13 +21,13 @@ export function MoreFromShop({ providerId, onSelectCostume, currentCostumeId }: 
 
   return (
     <div className="space-y-4">
-      <div className="inline-block rounded-xl border-2 border-[#FDCCD7] bg-[#FDCCD7] px-3 py-1.5">
-        <h3 className="text-base font-bold tracking-wide text-slate-800 text-center">
+      <div className="inline-block rounded-lg border-2 border-pink-200 bg-pink-50 px-3 py-1.5">
+        <h3 className="text-sm font-semibold text-slate-800 text-center">
           {VI.costumeRental.detail.moreFromShop}
         </h3>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
+      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {filteredItems.map((item) => (
           <ProductCard key={item.id} item={item} onClick={() => onSelectCostume(item.id)} />
         ))}

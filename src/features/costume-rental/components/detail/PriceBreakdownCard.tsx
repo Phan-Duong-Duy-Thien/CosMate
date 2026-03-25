@@ -6,9 +6,9 @@ interface PriceBreakdownCardProps {
 }
 
 export const PriceBreakdownCard = ({ quote, days }: PriceBreakdownCardProps) => (
-  <div className="rounded-3xl border border-pink-100 bg-white/90 p-4 shadow-sm">
-    <h3 className="text-sm font-semibold text-slate-700">Tạm tính</h3>
-    <div className="mt-3 space-y-2 text-sm text-slate-600">
+  <div className="rounded-2xl border border-pink-100 bg-white/90 p-3 shadow-sm">
+    <h3 className="text-sm font-medium text-slate-600">Tạm tính</h3>
+    <div className="mt-2 space-y-1.5 text-sm text-slate-600">
       <div className="flex items-center justify-between">
         <span>Giá thuê ({days} ngày)</span>
         <span className="font-semibold text-slate-900">{quote.rentalPrice.toLocaleString("vi-VN")}VNĐ</span>
@@ -36,7 +36,7 @@ export const PriceBreakdownCard = ({ quote, days }: PriceBreakdownCardProps) => 
         <span className="font-semibold text-slate-900">{quote.deposit.toLocaleString("vi-VN")}VNĐ</span>
       </div>
     </div>
-    <div className="mt-4 flex items-center justify-between border-t border-dashed border-slate-200 pt-3 text-base font-semibold text-pink-600">
+    <div className="mt-3 flex items-center justify-between border-t border-dashed border-pink-100 pt-2.5 text-base font-bold text-pink-600">
       <span>Tổng cần thanh toán</span>
       <span>{quote.total.toLocaleString("vi-VN")} VNĐ</span>
     </div>

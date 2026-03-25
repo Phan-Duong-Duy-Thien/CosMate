@@ -6,7 +6,6 @@ import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { SectionHeader } from "@/shared/components/SectionHeader"
-import { cn } from "@/lib/utils"
 
 interface ShopCarouselProps {
   shops: Shop[]
@@ -14,18 +13,6 @@ interface ShopCarouselProps {
 
 export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
   const scrollRef = React.useRef<HTMLDivElement>(null)
-  const [progress, setProgress] = React.useState(0)
-
-  const updateProgress = React.useCallback(() => {
-    if (!scrollRef.current) return
-    const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current
-    const maxScroll = scrollWidth - clientWidth
-    setProgress(maxScroll > 0 ? scrollLeft / maxScroll : 0)
-  }, [])
-
-  React.useEffect(() => {
-    updateProgress()
-  }, [updateProgress])
 
   const handleScrollBy = (amount: number) => {
     if (!scrollRef.current) return
@@ -60,9 +47,12 @@ export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
       />
       <div
         ref={scrollRef}
-        onScroll={updateProgress}
-        className="mt-6 flex gap-4 overflow-x-auto pb-4"
+        className="mt-6 flex gap-4 overflow-x-auto pb-4 scrollbar-hide"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
+        <style>{`
+          .scrollbar-hide::-webkit-scrollbar { display: none; }
+        `}</style>
         {shops.map((shop) => (
           <Card
             key={shop.id}
@@ -92,14 +82,6 @@ export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
             </div>
           </Card>
         ))}
-      </div>
-      <div className="h-2 w-full rounded-full bg-slate-100">
-        <div
-          className={cn(
-            "h-2 rounded-full bg-gradient-to-r from-pink-300 to-purple-300 transition-all"
-          )}
-          style={{ width: `${Math.max(progress * 100, 12)}%` }}
-        />
       </div>
     </section>
   )

@@ -3,39 +3,55 @@ import type { JwtPayload, LoginResult } from '../types';
 const TOKEN_KEY = 'cosmate_access_token';
 const TOKEN_TYPE_KEY = 'cosmate_token_type';
 const ROLES_KEY = 'cosmate_roles';
+const SESSION_TOKEN_KEY = 'cosmate_session_token';
+const SESSION_TOKEN_TYPE_KEY = 'cosmate_session_token_type';
+const SESSION_ROLES_KEY = 'cosmate_session_roles';
 
 /**
- * Save authentication data to localStorage
+ * Save authentication data to localStorage or sessionStorage
+ * @param authData - The auth result from login
+ * @param persistent - If true, use localStorage (remember me); otherwise sessionStorage
  */
-export function saveAuth(authData: LoginResult): void {
-  localStorage.setItem(TOKEN_KEY, authData.token);
-  localStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
+export function saveAuth(authData: LoginResult, persistent = false): void {
+  const storage = persistent ? localStorage : sessionStorage;
+
+  storage.setItem(TOKEN_KEY, authData.token);
+  storage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
 
   // Decode JWT and save roles
   const payload = decodeJwtPayload(authData.token);
-  
-  // Hỗ trợ mảng roles, chuỗi role, và cả SỐ role_id từ Backend
+
+  // Support both "roles" (array) and "role" (string) from JWT
   let roles: string[] = [];
   if (payload?.roles && Array.isArray(payload.roles)) {
-    roles = payload.roles.map(String);
-  } else if (payload?.role !== undefined && payload?.role !== null) {
-    roles = [String(payload.role)];
+    roles = payload.roles;
+  } else if (payload?.role && typeof payload.role === 'string') {
+    roles = [payload.role];
   }
-  
+
   console.log('💾 Decoded JWT roles:', roles);
-  localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
+  storage.setItem(ROLES_KEY, JSON.stringify(roles));
 
   // Dispatch event for UI to update without reload
   window.dispatchEvent(new Event('auth:changed'));
 }
 
 /**
- * Get authentication data from localStorage
+ * Get authentication data from sessionStorage (preferred) or localStorage (fallback).
+ * This allows "Remember Me" to persist across browser sessions.
  */
 export function getAuth(): { token: string; tokenType: string; roles: string[] } | null {
-  const token = localStorage.getItem(TOKEN_KEY);
-  const tokenType = localStorage.getItem(TOKEN_TYPE_KEY);
-  const rolesJson = localStorage.getItem(ROLES_KEY);
+  // Prefer sessionStorage (current tab session)
+  let token = sessionStorage.getItem(TOKEN_KEY);
+  let tokenType = sessionStorage.getItem(TOKEN_TYPE_KEY);
+  let rolesJson = sessionStorage.getItem(ROLES_KEY);
+
+  // Fallback to localStorage if not in sessionStorage (remember me case)
+  if (!token) {
+    token = localStorage.getItem(TOKEN_KEY);
+    tokenType = localStorage.getItem(TOKEN_TYPE_KEY);
+    rolesJson = localStorage.getItem(ROLES_KEY);
+  }
 
   if (!token) {
     return null;
@@ -51,12 +67,15 @@ export function getAuth(): { token: string; tokenType: string; roles: string[] }
 }
 
 /**
- * Clear all authentication data from localStorage
+ * Clear all authentication data from localStorage and sessionStorage
  */
 export function clearAuth(): void {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(TOKEN_TYPE_KEY);
   localStorage.removeItem(ROLES_KEY);
+  sessionStorage.removeItem(TOKEN_KEY);
+  sessionStorage.removeItem(TOKEN_TYPE_KEY);
+  sessionStorage.removeItem(ROLES_KEY);
 }
 
 /**
@@ -89,19 +108,25 @@ export function decodeJwtPayload(token: string): JwtPayload | null {
 }
 
 /**
- * Get user roles from localStorage
+ * Get user roles from sessionStorage (preferred) or localStorage (fallback)
  */
 export function getRoles(): string[] {
-  const rolesJson = localStorage.getItem(ROLES_KEY);
+  let rolesJson = sessionStorage.getItem(ROLES_KEY);
+  if (!rolesJson) {
+    rolesJson = localStorage.getItem(ROLES_KEY);
+  }
   return rolesJson ? JSON.parse(rolesJson) : [];
 }
 
 /**
- * Get current user ID from JWT token
- * Returns null if token is missing or invalid
+ * Get current user ID from JWT token.
+ * Checks sessionStorage first, then localStorage.
  */
 export function getUserId(): number | null {
-  const token = localStorage.getItem(TOKEN_KEY);
+  let token = sessionStorage.getItem(TOKEN_KEY);
+  if (!token) {
+    token = localStorage.getItem(TOKEN_KEY);
+  }
   if (!token) return null;
 
   const payload = decodeJwtPayload(token);

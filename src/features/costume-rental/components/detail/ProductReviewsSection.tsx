@@ -25,17 +25,17 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
   return (
     <div className="space-y-4">
-      <div className="inline-block rounded-xl border-2 border-[#FDCCD7] bg-[#FDCCD7] px-3 py-1.5">
-        <h3 className="text-base font-bold tracking-wide text-slate-800 text-center">
+      <div className="inline-block rounded-lg border-2 border-pink-200 bg-pink-50 px-3 py-1.5">
+        <h3 className="text-sm font-semibold text-slate-800 text-center">
           {VI.costumeRental.detail.reviewsTitle}
         </h3>
       </div>
 
       {/* Rating Summary */}
-      <Card className="rounded-xl border border-pink-100 bg-white p-5">
+      <Card className="rounded-xl border border-pink-100 bg-white p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <p className="text-3xl font-semibold text-pink-600">{average.toFixed(1)}</p>
+            <p className="text-2xl font-bold text-pink-600">{average.toFixed(1)}</p>
             <div className="mt-1 flex text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -53,7 +53,7 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
       {/* Reviews List */}
       {reviews.length === 0 ? (
-        <Card className="border-pink-100 bg-white p-5 text-center text-slate-500">
+        <Card className="border-pink-100 bg-white p-4 text-center text-sm text-slate-500">
           {VI.costumeRental.detail.noReviews}
         </Card>
       ) : (

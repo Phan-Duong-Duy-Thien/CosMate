@@ -55,7 +55,7 @@ const COSPLAY_RULE_GROUPS: GuidelinesRuleGroup[] = [
   {
     id: "cosplay-deposit-deduction",
     titleKey: "general.guidelinesRules.cosplayRules.groups.scheduleCancelTransfer",
-    ruleCodes: ["cos-deposit-nature", "cos-deduction-principle", "cos-conceal-fraud"],
+    ruleCodes: ["cos-deposit-nature", "cos-deduction-principle", "cos-conceal-fraud", "cos-pricing-principle", "cos-price-constraint", "cos-price-example", "cos-price-platform-control"],
   },
   {
     id: "cosplay-extend-cancel-late",
@@ -347,6 +347,10 @@ export const GUIDELINES_RULES_SECTIONS: GuidelinesSection[] = [
       "cos-deposit-nature",
       "cos-deduction-principle",
       "cos-conceal-fraud",
+      "cos-pricing-principle",
+      "cos-price-constraint",
+      "cos-price-example",
+      "cos-price-platform-control",
       "cos-valid-extension",
       "cos-late-return",
       "cos-invalid-cancel",

@@ -167,8 +167,24 @@ export function DashboardLayout({
 
       {/* Main Layout */}
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
-        <Header style={{ padding: '0 24px', background: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1 }}>
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{title}</h1>
+        {/* Header */}
+        <Header
+          style={{
+            padding: '0 20px',
+            background: '#fff',
+            borderBottom: '1px solid #f0f0f0',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            position: 'sticky',
+            top: 0,
+            zIndex: 1,
+          }}
+        >
+          {/* Left: Page Title */}
+          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{title}</h1>
+
+          {/* Right: User Dropdown */}
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
               <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
@@ -177,9 +193,18 @@ export function DashboardLayout({
           </Dropdown>
         </Header>
 
-        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 8, minHeight: 280 }}>
+        {/* Content Area */}
+        <Content
+          style={{
+            margin: 16,
+            padding: 20,
+            background: '#fff',
+            borderRadius: 8,
+            minHeight: 280,
+          }}
+        >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? <a href={item.to} onClick={(e) => { e.preventDefault(); navigate(item.to!); }} style={{ color: '#64748b', textDecoration: 'none', fontSize: 14 }}>{item.label}</a> : <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>{item.label}</span>}

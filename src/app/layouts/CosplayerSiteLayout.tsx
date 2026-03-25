@@ -13,6 +13,7 @@ import {
   Search,
   ShoppingCart,
   Youtube,
+  Smartphone,
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin } from "antd"
 
@@ -51,6 +52,14 @@ export default function CosplayerSiteLayout() {
   const [bannerIndex, setBannerIndex] = React.useState(0)
 
   const bannerImages = [sideBannerImage1, sideBannerImage2, sideBannerImage3, sideBannerImage4]
+
+  React.useEffect(() => {
+    const interval = setInterval(() => {
+      setBannerIndex((prev) => (prev + 1) % bannerImages.length)
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [bannerImages.length])
+
   const searchValue = searchParams.get("q") ?? ""
 
   const { setItems } = useBreadcrumb()
@@ -63,26 +72,19 @@ export default function CosplayerSiteLayout() {
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount } = useNotifications()
 
-  // Portal Guard: Redirect non-cosplayer users to their correct portal
-  // This handles cases like: user logged in as PROVIDER, closes browser, reopens app
-  // The app loads CosplayerSiteLayout by default, but PROVIDER should be in provider dashboard
   React.useEffect(() => {
     if (loggedIn) {
-      const roles = getRoles() as import('@/types/auth').UserRole[]
-      // If user has roles but is not COSPLAYER, redirect to their correct portal
+      const roles = getRoles() as import("@/types/auth").UserRole[]
       if (roles.length > 0) {
         const correctPath = getRedirectPath(roles)
-        // Only redirect if the correct path is NOT the cosplayer home (/)
-        // This handles PROVIDER -> /provider-rental, ADMIN -> /admin
-        if (correctPath !== '/') {
-          console.log('[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:', correctPath)
+        if (correctPath !== "/") {
+          console.log("[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:", correctPath)
           navigate(correctPath, { replace: true })
         }
       }
     }
   }, [loggedIn, navigate])
 
-  // Auto-fetch profile when logged in but no profile data
   React.useEffect(() => {
     const fetchProfile = async () => {
       if (loggedIn && !userProfile.avatarUrl && !userProfile.fullName) {
@@ -257,23 +259,40 @@ export default function CosplayerSiteLayout() {
           isScrolled && "border-pink-300/80 shadow-md"
         )}
       >
-        <div className="mx-auto flex h-[64px] w-full max-w-7xl items-center gap-4 px-6">
+        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4">
           <Link
             to="/"
-            className="shrink-0 whitespace-nowrap text-xl font-semibold text-pink-500 hover:text-pink-600"
+            className="shrink-0 whitespace-nowrap text-lg font-bold text-pink-500 hover:text-pink-600"
           >
             CosMate
           </Link>
 
-          <nav className="hidden flex-1 items-center justify-center gap-2 whitespace-nowrap md:flex lg:gap-3">
+          <nav className="hidden flex-1 items-center justify-center gap-1.5 whitespace-nowrap text-sm md:flex lg:gap-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "hover:bg-pink-50 hover:text-pink-600",
+                isHomePage ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
+              )}
+              onClick={() => navigate("/")}
+            >
+              Trang chủ
+            </Button>
+
             <DropdownMenu
               triggerLabel={
-                <span className="inline-flex items-center gap-1">
+                <span className="inline-flex items-center gap-1 font-medium">
                   Thuê đồ Cosplay
                   <ChevronDown className="h-4 w-4" />
                 </span>
               }
-              triggerClassName="text-slate-700 hover:text-pink-600 hover:bg-pink-50"
+              triggerClassName={cn(
+                "hover:bg-pink-50 hover:text-pink-600",
+                location.pathname.startsWith("/costumes")
+                  ? "rounded-lg bg-pink-50 px-2 py-1 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
               items={[
                 { label: "Anime", onSelect: () => navigate("/costumes?category=anime") },
                 { label: "Game", onSelect: () => navigate("/costumes?category=game") },
@@ -283,7 +302,10 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="text-slate-700 hover:bg-pink-50 hover:text-pink-600"
+              className={cn(
+                "hover:bg-pink-50 hover:text-pink-600",
+                location.pathname === "/quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
+              )}
             >
               Quiz
             </Button>
@@ -291,7 +313,12 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="hidden whitespace-nowrap text-slate-700 hover:bg-pink-50 hover:text-pink-600 lg:inline-flex"
+              className={cn(
+                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
+                location.pathname === "/guidelines-rules"
+                  ? "bg-pink-50 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
               onClick={() => navigate("/guidelines-rules")}
             >
               Hướng dẫn &amp; Quy định
@@ -300,7 +327,12 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="hidden whitespace-nowrap text-slate-700 hover:bg-pink-50 hover:text-pink-600 xl:inline-flex"
+              className={cn(
+                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 xl:inline-flex",
+                location.pathname === "/photographers"
+                  ? "bg-pink-50 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
               onClick={() => navigate("/photographers")}
             >
               Thuê Photographer
@@ -309,15 +341,20 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
-              className="hidden whitespace-nowrap text-slate-700 hover:bg-pink-50 hover:text-pink-600 2xl:inline-flex"
+              className={cn(
+                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 2xl:inline-flex",
+                location.pathname === "/staffs"
+                  ? "bg-pink-50 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
               onClick={() => navigate("/staffs")}
             >
               Thuê Staff
             </Button>
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-3">
-            <div className="relative hidden w-52 lg:block">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
+            <div className="relative hidden w-44 lg:block">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
               <Input
                 aria-label="Tìm kiếm"
@@ -344,31 +381,6 @@ export default function CosplayerSiteLayout() {
             >
               <MessageCircle className="h-5 w-5" />
             </button>
-
-            {loggedIn && (
-              <Popover
-                content={notifPopoverContent}
-                trigger="click"
-                placement="bottomRight"
-                arrow={false}
-                overlayClassName="notif-popover"
-                open={notifOpen}
-                onOpenChange={setNotifOpen}
-              >
-                <button
-                  type="button"
-                  aria-label="Thông báo"
-                  className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-                >
-                  <Bell className="h-5 w-5" />
-                  {unreadCount > 0 && (
-                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white">
-                      {unreadCount > 9 ? "9+" : unreadCount}
-                    </span>
-                  )}
-                </button>
-              </Popover>
-            )}
 
             <button
               type="button"
@@ -402,7 +414,7 @@ export default function CosplayerSiteLayout() {
           </div>
         </div>
 
-        <div className="mx-auto w-full max-w-7xl px-6 pb-4 md:hidden">
+        <div className="mx-auto w-full max-w-7xl px-4 pb-3 md:hidden">
           <div className="relative">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
             <Input
@@ -414,40 +426,42 @@ export default function CosplayerSiteLayout() {
                 handleSearchChange(e.target.value)
               }
             />
-            <button
-              type="button"
-              className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400"
-            >
+            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
               <Camera className="h-4 w-4 opacity-60" />
             </button>
           </div>
         </div>
       </header>
 
-      <main className="flex-1 pt-[64px] md:pt-[64px]">
+      <div className="mx-auto w-full max-w-7xl px-4 pt-3">
+        <Breadcrumbs items={items} />
+      </div>
+
+      <main className="flex-1 pt-[56px]">
         {isHomePage ? (
           <div className="relative">
             <div
               aria-hidden="true"
               className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
             />
-            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-4 lg:px-3 xl:px-4">
-              <div className="grid grid-cols-1 gap-4 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:grid-cols-[200px_minmax(0,1fr)_200px] xl:gap-6 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-                <aside className="hidden lg:block lg:pt-8">
-                  <div className="w-full">
+
+            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-2 lg:px-3 xl:px-4">
+              <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-5 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
+                <aside className="hidden pt-8 lg:block">
+                  <div className="sticky top-[72px]">
                     <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                       <img
                         src={bannerImages[bannerIndex]}
                         alt="Trang tri ben trai"
-                        className="h-[360px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out"
+                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
                       />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
                           Bạn là nhân vật nào?
                         </p>
                         <button
                           type="button"
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-pink-600"
+                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
                           Làm quiz ngay
                         </button>
@@ -460,21 +474,21 @@ export default function CosplayerSiteLayout() {
                   <Outlet />
                 </div>
 
-                <aside className="hidden lg:block lg:pt-8">
-                  <div className="w-full">
+                <aside className="hidden pt-8 lg:block">
+                  <div className="sticky top-[72px]">
                     <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
                       <img
                         src={bannerImages[bannerIndex]}
                         alt="Trang tri ben phai"
-                        className="h-[360px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out"
+                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
                       />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-sm font-semibold text-white drop-shadow backdrop-blur-sm">
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
+                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
                           Bạn là nhân vật nào?
                         </p>
                         <button
                           type="button"
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-2 text-xs font-semibold text-white shadow hover:bg-pink-600"
+                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
                           Làm quiz ngay
                         </button>
@@ -488,7 +502,7 @@ export default function CosplayerSiteLayout() {
         ) : (
           <div
             className={cn(
-              "mx-auto w-full py-4",
+              "mx-auto w-full",
               isWideContentPage
                 ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
                 : "max-w-7xl px-4 lg:px-6"
@@ -502,19 +516,17 @@ export default function CosplayerSiteLayout() {
       </main>
 
       <footer className="bg-pink-100/90 text-slate-700">
-        <div className="mx-auto w-full max-w-7xl px-6 py-10">
-          <div className="grid items-start gap-10 md:grid-cols-12">
-            <div className="space-y-4 self-start md:col-span-4">
-              <div className="text-5xl font-extrabold tracking-wide text-pink-600">
-                CosMate
-              </div>
+        <div className="mx-auto w-full max-w-7xl px-6 py-8">
+          <div className="grid items-start gap-8 md:grid-cols-12">
+            <div className="space-y-4 self-start md:col-span-5">
+              <div className="text-3xl font-bold text-pink-600">CosMate</div>
 
-              <p className="max-w-md text-sm leading-8 text-slate-600">
+              <p className="max-w-md text-sm leading-6 text-slate-600">
                 Nền tảng thuê đồ cosplay uy tín. Kết nối cosplayer và nhà cung cấp
                 đáng tin cậy. Mọi giao dịch minh bạch, an toàn và sẵn sàng cho mọi lễ hội.
               </p>
 
-              <div className="flex items-center gap-3 pt-1">
+              <div className="flex items-center gap-2 pt-1">
                 <a
                   href="https://www.instagram.com/tnhideyansu/"
                   target="_blank"
@@ -544,36 +556,91 @@ export default function CosplayerSiteLayout() {
                 >
                   <Youtube className="h-4 w-4 text-pink-700" />
                 </a>
+
+                <button
+                  type="button"
+                  aria-label="Mobile App"
+                  className="rounded-full bg-pink-200 p-2 transition hover:bg-pink-300"
+                >
+                  <Smartphone className="h-4 w-4 text-pink-700" />
+                </button>
               </div>
             </div>
 
-            <div className="grid items-start gap-6 md:col-span-8 md:grid-cols-4">
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-slate-800">Dịch vụ</h3>
+            <div className="grid grid-cols-3 items-start gap-5 md:col-span-7">
+              <div className="space-y-3 self-start">
+                <h3 className="text-base font-semibold leading-none text-slate-800">Dịch vụ</h3>
 
                 <ul className="space-y-2 text-sm text-slate-600">
-                  <li>Thuê trang phục</li>
-                  <li>Combo Photoshoot</li>
-                  <li>Thuê Staff</li>
+                  <li>
+                    <Link to="/costumes" className="transition-colors hover:text-pink-600">
+                      Thuê trang phục
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/photographers" className="transition-colors hover:text-pink-600">
+                      Combo Photoshoot
+                    </Link>
+                  </li>
+                  <li>
+                    <Link to="/staffs" className="transition-colors hover:text-pink-600">
+                      Thuê Staff
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-slate-800">
-                  Hướng dẫn & Quy định
+              <div className="space-y-3 self-start">
+                <h3 className="text-base font-semibold leading-none text-slate-800">
+                  Hướng dẫn &amp; Quy định
                 </h3>
 
                 <ul className="space-y-2 text-sm text-slate-600">
-                  <li>Quy trình thuê đồ cosplay</li>
-                  <li>Quy trình thuê Photographer</li>
-                  <li>Quy trình thuê Staff</li>
-                  <li>Chính sách đổi/trả/hoàn</li>
-                  <li>Tranh chấp & khiếu nại</li>
+                  <li>
+                    <Link
+                      to="/guidelines-rules?type=rental&view=guide"
+                      className="transition-colors hover:text-pink-600"
+                    >
+                      Quy trình thuê đồ cosplay
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/guidelines-rules?type=photographer&view=guide"
+                      className="transition-colors hover:text-pink-600"
+                    >
+                      Quy trình thuê Photographer
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/guidelines-rules?type=staff&view=guide"
+                      className="transition-colors hover:text-pink-600"
+                    >
+                      Quy trình thuê Staff
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/guidelines-rules?type=refund&view=guide"
+                      className="transition-colors hover:text-pink-600"
+                    >
+                      Chính sách đổi/trả/hoàn
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/guidelines-rules?type=dispute&view=guide"
+                      className="transition-colors hover:text-pink-600"
+                    >
+                      Tranh chấp &amp; khiếu nại
+                    </Link>
+                  </li>
                 </ul>
               </div>
 
-              <div className="space-y-3">
-                <h3 className="text-base font-semibold text-slate-800">Liên hệ</h3>
+              <div className="space-y-3 self-start">
+                <h3 className="text-base font-semibold leading-none text-slate-800">Liên hệ</h3>
 
                 <div className="space-y-2 text-sm text-slate-600">
                   <div className="flex items-start gap-2">
@@ -591,28 +658,18 @@ export default function CosplayerSiteLayout() {
                     <span>cosplaystore@cosmate.vn</span>
                   </div>
                 </div>
-              </div>
 
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <h3 className="text-base font-semibold text-slate-800">
-                    Đơn vị giao hàng
-                  </h3>
+                <div className="space-y-2 pt-3">
+                  <p className="text-sm font-medium text-slate-700">Đơn vị giao hàng</p>
 
                   <div className="flex items-center gap-2">
-                    <img
-                      src={ghnLogo}
-                      alt="GiaoHangNhanh"
-                      className="h-7 w-auto rounded-md border bg-white p-1"
-                    />
+                    <img src={ghnLogo} alt="GiaoHangNhanh" className="h-6 w-auto rounded" />
                     <span className="text-sm text-slate-600">GiaoHangNhanh</span>
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <h3 className="text-base font-semibold text-slate-800">
-                    Hình thức thanh toán
-                  </h3>
+                <div className="space-y-1 pt-2">
+                  <p className="text-sm font-medium text-slate-700">Hình thức thanh toán</p>
 
                   <p className="text-sm text-slate-600">Ví • MoMo • VNPay</p>
                 </div>
@@ -621,7 +678,7 @@ export default function CosplayerSiteLayout() {
           </div>
         </div>
 
-        <div className="border-t border-pink-300/60"></div>
+        <div className="border-t border-pink-300/60" />
 
         <div className="py-4 text-center text-xs text-slate-500">
           © 2026 CosMate. All rights reserved.

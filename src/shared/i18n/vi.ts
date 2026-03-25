@@ -158,6 +158,8 @@ export const VI = {
         refresh: "Làm mới",
         allRoles: "Tất cả vai trò",
         allStatuses: "Tất cả trạng thái",
+        createUser: "Tạo người dùng",
+        exportExcel: "Xuất Excel",
       },
 
       actions: {
@@ -224,6 +226,7 @@ export const VI = {
       forgotPassword: "Quên mật khẩu?",
       noAccount: "Mới sử dụng?",
       signUp: "Đăng ký",
+      rememberMe: "Ghi nhớ đăng nhập",
 
       stats: {
         costumes: "Trang phục",
@@ -1327,6 +1330,22 @@ export const VI = {
           "cos-conceal-fraud": {
             title: "Che giấu hoặc gian lận",
             desc: "Hành vi che giấu hư hỏng, cung cấp bằng chứng sai lệch hoặc cố tình trì hoãn trả đồ có thể bị xem là vi phạm nghiêm trọng.",
+          },
+          "cos-pricing-principle": {
+            title: "Nguyên tắc định giá theo thời gian thuê",
+            desc: "Giá thuê tài sản phải tuân theo nguyên tắc ưu đãi theo thời gian, theo đó tổng chi phí thuê cho nhiều ngày không được tính tuyến tính bằng cách nhân đơn giá ngày với số ngày thuê. Khi thời gian thuê tăng lên, chi phí trung bình cho mỗi ngày thuê phải giảm hoặc không được cao hơn đơn giá của ngày đầu tiên.",
+          },
+          "cos-price-constraint": {
+            title: "Ràng buộc tính toán giá",
+            desc: "Đối với mọi tài sản, hệ thống không cho phép cấu hình hoặc tính toán giá thuê theo dạng: Giá ngày N = Giá ngày 1 × N. Thay vào đó, tổng giá thuê phải được thiết lập theo hướng: Giá ngày thứ 2 trở đi ≤ giá ngày đầu tiên; Tổng giá thuê cho nhiều ngày < (giá ngày 1 × số ngày thuê).",
+          },
+          "cos-price-example": {
+            title: "Ví dụ minh họa",
+            desc: "Nếu giá thuê 1 ngày là 150.000 VNĐ, thì: Giá thuê 2 ngày không được phép là 300.000 VNĐ. Giá hợp lệ phải nhỏ hơn 300.000 VNĐ (ví dụ: 270.000 VNĐ). Ví dụ này không mang tính ràng buộc.",
+          },
+          "cos-price-platform-control": {
+            title: "Quyền kiểm soát của nền tảng",
+            desc: "CosMate có quyền từ chối, điều chỉnh hoặc cảnh báo các cấu hình giá không tuân thủ nguyên tắc này nhằm đảm bảo tính hợp lý, minh bạch và trải nghiệm người dùng.",
           },
           "cos-valid-extension": {
             title: "Gia hạn hợp lệ",

@@ -23,7 +23,7 @@ export function ProviderShopCard({ provider, onChat, onViewShop }: ProviderShopC
   const totalRentals = stats.totalRentals
 
   return (
-    <Card className="flex flex-col gap-4 border-pink-100 bg-white/90 p-5 shadow-sm sm:flex-row sm:items-center">
+    <Card className="flex flex-col gap-4 border-pink-100 bg-white/90 p-4 shadow-sm sm:flex-row sm:items-center">
       <div className="flex items-center gap-4">
         <img
           src={provider.avatarUrl || "https://via.placeholder.com/64"}
@@ -67,8 +67,7 @@ export function ProviderShopCard({ provider, onChat, onViewShop }: ProviderShopC
           type="button"
           variant="default"
           size="sm"
-          className="rounded-full gap-1"
-          style={{ backgroundColor: '#FDCCD7', color: '#BE185D' }}
+          className="rounded-full gap-1 bg-pink-100 text-pink-700 hover:bg-pink-200"
           onClick={onChat}
         >
           <MessageCircle className="h-4 w-4" />
