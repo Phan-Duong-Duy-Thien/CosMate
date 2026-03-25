@@ -34,6 +34,7 @@ import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
 import AdminHomePage from "@/features/admin/pages/AdminHomePage"
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import AdminMenusPage from "@/features/admin/pages/AdminMenusPage"
+import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
 import ProviderCostumeListPage from "@/features/costume-rental/pages/ProviderCostumeListPage"
@@ -79,9 +80,11 @@ export default function AppRoutes() {
 
       {/* Admin Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, 'ADMIN', 'SUPERADMIN', '1', '2', 1, 2] as any} />}>
-        <Route path="/admin" element={<AdminHomePage />} />
-        <Route path="/admin/users" element={<AdminUsersPage />}/>
-        <Route path="/admin/menus" element={<AdminMenusPage />}/>
+        <Route element={<AdminLayout />}> 
+          <Route path="/admin" element={<AdminHomePage />} />
+          <Route path="/admin/users" element={<AdminUsersPage />}/>
+          <Route path="/admin/menus" element={<AdminMenusPage />}/>
+        </Route>
       </Route>
 
       {/* Provider Rental Routes (Protected) */}
