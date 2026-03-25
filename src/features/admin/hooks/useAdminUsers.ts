@@ -54,6 +54,10 @@ export function useAdminUsers() {
 
       if (searchText) params.search = searchText;
       if (statusFilter) params.status = statusFilter;
+      
+      if (roleFilter && roleFilter.length > 0) {
+        params.role = roleFilter.join(',');
+      }
 
       const data = await adminUsersService.getAdminUsersPage(params);
       
@@ -67,7 +71,7 @@ export function useAdminUsers() {
     } finally {
       setIsLoading(false);
     }
-  }, [page, pageSize, searchText, statusFilter]);
+  }, [page, pageSize, searchText, statusFilter, roleFilter]);
 
   /**
    * Initial fetch on mount
@@ -173,7 +177,13 @@ export function useAdminUsers() {
     try {
       setIsExporting(true);
       const blob = await adminUsersService.exportUsersExcel();
-      triggerDownload(blob, `danh_sach_nguoi_dung_${new Date().getTime()}.xlsx`);
+      
+      // Tạo chuỗi thời gian format theo chuẩn YYYYMMDD_HHMMSS
+      const now = new Date();
+      const timeString = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+      
+      // Ghép tên danh sách với thời gian
+      triggerDownload(blob, `Danh_sach_nguoi_dung_${timeString}.xlsx`);
       message.success('Xuất file thành công!');
     } catch (err) {
       message.error('Lỗi khi xuất file Excel');

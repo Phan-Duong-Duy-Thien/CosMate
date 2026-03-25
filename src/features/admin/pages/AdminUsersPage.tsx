@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message } from 'antd';
+import { Table, Input, Select, Button, Space, Tag, Modal, message, Tooltip } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -56,6 +56,7 @@ export default function AdminUsersPage() {
     handleImport,
     isExporting,
     isImporting,
+    handleDownloadTemplate,
   } = useAdminUsers();
 
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -185,20 +186,49 @@ export default function AdminUsersPage() {
   };
 
   const columns: TableProps<AdminUser>['columns'] = [
-    { title: VI.admin.users.columns.id, dataIndex: 'id', key: 'id', width: 80 },
-    { title: VI.admin.users.columns.username, dataIndex: 'username', key: 'username', width: 150 },
-    { title: VI.admin.users.columns.email, dataIndex: 'email', key: 'email', width: 220 },
+    { 
+      title: VI.admin.users.columns.id, 
+      dataIndex: 'id', 
+      key: 'id', 
+      width: 70,
+      align: 'center' // Căn giữa ID
+    },
+    { 
+      // Gộp Username và Email thành khối "Người dùng"
+      title: 'Người dùng', 
+      key: 'userInfo', 
+      width: 250,
+      render: (_, record) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14 }}>{record.username}</span>
+          <span style={{ color: '#6b7280', fontSize: 13 }}>{record.email}</span>
+        </div>
+      )
+    },
+    { 
+      title: 'Số điện thoại', 
+      dataIndex: 'phone', 
+      key: 'phone', 
+      width: 140,
+      render: (phone: string | null) => {
+        if (!phone || phone.trim() === '') {
+          return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        }
+        return <span style={{ color: '#4b5563' }}>{phone}</span>; 
+      }
+    },
     {
       title: VI.admin.users.columns.roles,
       key: 'roles',
-      width: 240,
+      width: 200,
       render: (_, record) => {
         const rolesArray = getUserRolesArray(record);
+        if (rolesArray.length === 0) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
         return (
           <Space size={4} wrap>
             {rolesArray.map((role) => {
               const { color, label } = getRoleTagProps(role);
-              return <Tag key={role} color={color}>{label}</Tag>;
+              return <Tag key={role} color={color} style={{ margin: 0 }}>{label}</Tag>;
             })}
           </Space>
         );
@@ -208,23 +238,59 @@ export default function AdminUsersPage() {
       title: VI.admin.users.columns.status,
       dataIndex: 'status',
       key: 'status',
-      width: 150,
+      width: 130,
+      align: 'center', // Căn giữa Trạng thái nhìn cho gọn
       render: (status: string) => {
         const { color, label } = getStatusTagProps(status);
-        return <Tag color={color}>{label}</Tag>;
+        return <Tag color={color} style={{ margin: 0 }}>{label}</Tag>;
       },
     },
     {
       title: VI.admin.users.columns.actions,
       key: 'actions',
-      width: 100,
-      render: (_, user) => (
-        <div onClick={(e) => e.stopPropagation()}>
-          <Dropdown menu={{ items: buildActionMenu(user) }} trigger={['click']}>
-            <Button type="text" icon={<MoreOutlined />} loading={actionLoadingId === user.id} />
-          </Dropdown>
-        </div>
-      ),
+      width: 140,
+      align: 'center', // Căn giữa cột Hành động
+      render: (_, user) => {
+        const statusNorm = normalizeStatus(user.status);
+        const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
+        const userIsBanned = statusNorm === 'BANNED' || statusNorm.includes('BAN');
+
+        const permission = canManageUser({
+          currentUserRoles,
+          currentUserId,
+          targetUserId: user.id,
+          targetUserRoles: getUserRolesArray(user),
+        });
+
+        return (
+          <Space size={8} onClick={(e) => e.stopPropagation()}>
+            <Tooltip title={VI.admin.users.actions.viewDetail}>
+              <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(user)} />
+            </Tooltip>
+            
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
+              <Button 
+                type="text" 
+                icon={userIsLocked ? <UnlockOutlined /> : <LockOutlined />} 
+                onClick={() => handleLockToggle(user)} 
+                disabled={!permission.allowed || actionLoadingId === user.id}
+                style={{ color: userIsLocked ? '#52c41a' : '#faad14' }}
+              />
+            </Tooltip>
+
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
+              <Button 
+                type="text" 
+                danger={!userIsBanned}
+                icon={userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />} 
+                onClick={() => handleBanToggle(user)} 
+                disabled={!permission.allowed || actionLoadingId === user.id}
+                style={userIsBanned ? { color: '#52c41a' } : undefined}
+              />
+            </Tooltip>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -238,59 +304,70 @@ export default function AdminUsersPage() {
 
       <div className="w-full h-full">
         {/* Toolbar */}
-        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
-          <Space wrap>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+          
+          {/* TẦNG 1: TÌM KIẾM VÀ NÚT BẤM */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
             <Input
               placeholder={VI.admin.users.toolbar.search}
               prefix={<SearchOutlined />}
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 300 }}
+              style={{ width: 320, maxWidth: '100%' }}
               allowClear
             />
+            
+            <Space wrap>
+              <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
+                {VI.admin.users.toolbar.refresh || 'Làm mới'}
+              </Button>
+              
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                accept=".xlsx, .xls, .csv" 
+                style={{ display: 'none' }} 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleImport(file);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <Button icon={<DownloadOutlined />} onClick={handleDownloadTemplate}>
+                Tải file mẫu
+              </Button>
+              <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
+                Xuất Excel
+              </Button>
+              <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
+                Nhập Excel
+              </Button>
+            </Space>
+          </div>
+
+          {/* TẦNG 2: CÁC BỘ LỌC */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
             <Select
               mode="multiple"
               placeholder={VI.admin.users.toolbar.filterRole}
-              value={roleFilter}
+              value={roleFilter.length > 0 ? roleFilter : undefined}
               onChange={setRoleFilter}
-              style={{ minWidth: 200 }}
+              style={{ width: 260 }} 
+              maxTagCount="responsive"
               options={allRoles.map((role) => ({ label: role, value: role }))}
               allowClear
             />
             <Select
-              placeholder={VI.admin.users.toolbar.filterStatus}
-              value={statusFilter}
+              placeholder={VI.admin.users.toolbar.filterStatus || "Lọc theo trạng thái"}
+              value={statusFilter || undefined}
               onChange={setStatusFilter}
-              style={{ minWidth: 180 }}
+              style={{ width: 160 }}
               options={allStatuses.map((status) => ({ label: status, value: status }))}
               allowClear
             />
-            <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
-              {VI.admin.users.toolbar.refresh}
-            </Button>
-          </Space>
-
-          <Space wrap>
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              accept=".xlsx, .xls, .csv" 
-              style={{ display: 'none' }} 
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  handleImport(file);
-                  e.target.value = '';
-                }
-              }}
-            />
-            <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
-              Xuất Excel
-            </Button>
-            <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
-              Nhập Excel
-            </Button>
-          </Space>
+          </div>
         </div>
 
         {/* Table */}

@@ -12,7 +12,8 @@ export interface AdminUser {
   fullName: string | null;
   phone: string | null;
   status: string;
-  roles: string[];
+  role?: string;
+  roles?: string[];
   createdAt: string;
 }
 
