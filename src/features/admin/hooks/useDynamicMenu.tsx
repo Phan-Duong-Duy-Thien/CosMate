@@ -24,7 +24,8 @@ export function useDynamicMenu() {
     try {
       setLoading(true);
       const response = await axiosInstance.get('/api/v1/menus/active');
-      const menus = response.data?.result || response.data || [];
+      let menus = response.data?.result || response.data || [];
+      menus = menus.filter((menu: any) => menu.isActive === true);
 
       // 1. Code cứng 2 nút quan trọng nhất
       const safeMenus: DashboardSidebarItem[] = [
