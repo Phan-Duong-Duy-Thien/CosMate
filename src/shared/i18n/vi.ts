@@ -18,6 +18,15 @@
 
 export const VI = {
   /**
+   * Notification
+   */
+  notification: {
+    empty: "Không có thông báo nào",
+    viewAll: "Xem tất cả thông báo",
+    title: "Thông báo",
+  },
+
+  /**
    * Common shared text
    */
   common: {

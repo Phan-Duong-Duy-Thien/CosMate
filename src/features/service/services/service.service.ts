@@ -20,19 +20,25 @@ export async function submitService(
   formData: CreateServiceFormData
 ): Promise<CreatedService> {
   const areasJson = JSON.stringify(formData.areas);
+  console.log('[submitService] areasJson:', areasJson);
+
+  // Ant Design InputNumber with formatter/parser: if user submits without blurring,
+  // validateFields() returns formatted string (e.g. "150,000"). Normalize all numeric
+  // fields here so clean numbers reach the API regardless of blur state.
+  const num = (val: string | number): number => Number(String(val).replace(/,/g, ''));
 
   const payload: CreateServicePayload = {
     serviceType: formData.serviceType,
     description: formData.description,
-    slotDurationHours: formData.slotDurationHours,
-    pricePerSlot: formData.pricePerSlot,
-    equipmentDepreciationCost: formData.equipmentDepreciationCost,
-    depositAmount: formData.depositAmount,
+    slotDurationHours: num(formData.slotDurationHours),
+    pricePerSlot: num(formData.pricePerSlot),
+    equipmentDepreciationCost: num(formData.equipmentDepreciationCost),
+    depositAmount: num(formData.depositAmount),
     providerId: formData.providerId,
     areas: areasJson,
     albumFiles: formData.albumFiles,
-    minPrice: formData.minPrice,
-    maxPrice: formData.maxPrice,
+    minPrice: num(formData.minPrice),
+    maxPrice: num(formData.maxPrice),
   };
 
   return createService(payload);

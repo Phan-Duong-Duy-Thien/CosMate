@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom"
 import {
+  Bell,
   Camera,
   ChevronDown,
   Facebook,
@@ -13,8 +14,7 @@ import {
   ShoppingCart,
   Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar } from "antd"
-import type { MenuProps } from "antd"
+import { Button as AntButton, Dropdown, Avatar, Popover, Spin } from "antd"
 
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
@@ -24,6 +24,7 @@ import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
+import { useNotifications } from "@/features/notification/hooks/useNotifications"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
@@ -60,6 +61,7 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
+  const { notifications, loading: notifLoading, unreadCount } = useNotifications()
 
   // Portal Guard: Redirect non-cosplayer users to their correct portal
   // This handles cases like: user logged in as PROVIDER, closes browser, reopens app
@@ -144,6 +146,11 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
+    } else if (path === "/notifications") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.notification.title },
+      ])
     }
   }, [location.pathname, setItems])
 
@@ -178,6 +185,58 @@ export default function CosplayerSiteLayout() {
     { key: "profile", label: "Trang cá nhân", onClick: () => navigate("/profile") },
     { key: "logout", label: "Đăng xuất", danger: true, onClick: handleLogout },
   ]
+
+  const [notifOpen, setNotifOpen] = React.useState(false)
+
+  const notifPopoverContent = (
+    <div style={{ width: 320, background: "#fff", borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
+      <div style={{ maxHeight: 384, overflowY: "auto" }}>
+        <div style={{ borderBottom: "1px solid #f1f5f9", padding: "12px 16px", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
+          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
+        </div>
+        {notifLoading ? (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+            <Spin size="small" />
+          </div>
+        ) : notifications.length === 0 ? (
+          <div style={{ padding: 32, textAlign: "center", color: "#64748b", fontSize: 14 }}>{VI.notification.empty}</div>
+        ) : (
+          <>
+            {notifications.slice(0, 10).map((n) => (
+              <div
+                key={n.id}
+                onClick={() => {
+                  if (n.link) navigate(n.link)
+                  setNotifOpen(false)
+                }}
+                style={{ padding: "12px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
+                onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
+                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+              >
+                <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
+                  {n.header}
+                </p>
+                <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
+                  {n.content}
+                </p>
+              </div>
+            ))}
+          </>
+        )}
+      </div>
+      {notifications.length > 0 && (
+        <div
+          style={{ padding: "12px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9", background: "#fff", borderRadius: "0 0 16px 16px" }}
+          onClick={() => {
+            navigate("/notifications")
+            setNotifOpen(false)
+          }}
+        >
+          {VI.notification.viewAll}
+        </div>
+      )}
+    </div>
+  )
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden text-[#111827]">
@@ -285,6 +344,31 @@ export default function CosplayerSiteLayout() {
             >
               <MessageCircle className="h-5 w-5" />
             </button>
+
+            {loggedIn && (
+              <Popover
+                content={notifPopoverContent}
+                trigger="click"
+                placement="bottomRight"
+                arrow={false}
+                overlayClassName="notif-popover"
+                open={notifOpen}
+                onOpenChange={setNotifOpen}
+              >
+                <button
+                  type="button"
+                  aria-label="Thông báo"
+                  className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                >
+                  <Bell className="h-5 w-5" />
+                  {unreadCount > 0 && (
+                    <span className="absolute right-1 top-1 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[10px] font-bold text-white">
+                      {unreadCount > 9 ? "9+" : unreadCount}
+                    </span>
+                  )}
+                </button>
+              </Popover>
+            )}
 
             <button
               type="button"

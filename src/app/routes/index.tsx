@@ -18,6 +18,7 @@ import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
 
 import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
+import NotificationsPage from "@/features/general/pages/NotificationsPage"
 import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
@@ -56,6 +57,7 @@ export default function AppRoutes() {
       <Route path="/" element={<CosplayerSiteLayout />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
         <Route path="guidelines-rules" element={<GuidelinesRulesPage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />

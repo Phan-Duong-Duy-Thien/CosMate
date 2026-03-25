@@ -40,6 +40,14 @@ interface WardApiItem {
   province_code: number;
 }
 
+interface DistrictApiItem {
+  code: number;
+  name: string;
+  division_type: string;
+  codename: string;
+  province_code: number;
+}
+
 // ============================================================================
 // API client
 // ============================================================================
@@ -72,4 +80,15 @@ export async function fetchWardsByProvince(
   const data = await apiGet<ProvinceApiItem>(`/p/${provinceCode}?depth=2`);
   if (!data.wards) return [];
   return data.wards.map((w) => ({ code: w.code, name: w.name }));
+}
+
+/**
+ * Fetch districts (Quận / Huyện) for a given province code.
+ * Province Open API V2: GET /d?depth=2&province={provinceCode}
+ */
+export async function fetchDistrictsByProvince(
+  provinceCode: number
+): Promise<District[]> {
+  const data = await apiGet<DistrictApiItem[]>(`/d?depth=2&province=${provinceCode}`);
+  return data.map((d) => ({ code: d.code, name: d.name }));
 }

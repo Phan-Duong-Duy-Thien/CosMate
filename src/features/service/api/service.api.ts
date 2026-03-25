@@ -39,12 +39,33 @@ export async function createService(
     form.append('albumFiles', file);
   }
 
-  const response = await axiosInstance.post<ApiResponse<CreatedService>>(
-    '/api/services',
-    form
-  );
+  // DEBUG: log all FormData entries
+  const entries: Record<string, unknown> = {};
+  for (const [key, value] of form.entries()) {
+    if (value instanceof File) {
+      entries[key] = `[File: ${value.name}, ${value.size} bytes]`;
+    } else {
+      entries[key] = value;
+    }
+  }
+  console.log('[createService] FormData payload:', JSON.stringify(entries, null, 2));
+  console.log('[createService] serviceType value:', payload.serviceType);
+  console.log('[createService] areas JSON:', payload.areas);
 
-  return response.data.result;
+  console.log('[createService] POST /api/services with fields:', Object.keys(entries).join(', '));
+
+  try {
+    const response = await axiosInstance.post<ApiResponse<CreatedService>>(
+      '/api/services',
+      form
+    );
+    console.log('[createService] SUCCESS:', JSON.stringify(response.data));
+    return response.data.result;
+  } catch (err) {
+    const axiosErr = err as { response?: { data?: unknown; status?: number } };
+    console.error('[createService] FAILED:', JSON.stringify(axiosErr.response?.data), 'status:', axiosErr.response?.status);
+    throw err;
+  }
 }
 
 /**
