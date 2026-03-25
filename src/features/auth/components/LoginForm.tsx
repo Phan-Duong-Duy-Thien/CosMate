@@ -57,7 +57,7 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
         />
       </Form.Item>
 
-      <div className="flex items-center">
+      <div className="flex items-center justify-end">
         <Form.Item
           className="mb-0"
           name="rememberMe"

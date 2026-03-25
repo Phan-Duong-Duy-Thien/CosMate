@@ -71,7 +71,7 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead } = useNotifications()
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -88,24 +88,29 @@ export default function CosplayerSiteLayout() {
 
   React.useEffect(() => {
     const fetchProfile = async () => {
-      if (loggedIn && !userProfile.avatarUrl && !userProfile.fullName) {
-        const userId = getUserId()
-        if (userId) {
-          try {
-            const profile = await getUserProfile(userId)
-            setUserProfile({
-              avatarUrl: profile.avatarUrl,
-              fullName: profile.fullName,
-            })
-          } catch (error) {
-            console.error("Failed to fetch profile:", error)
-          }
+      if (!loggedIn) return
+
+      const userId = getUserId()
+      if (!userId) return
+
+      // Skip if already loaded
+      if (userProfile.avatarUrl || userProfile.fullName) return
+
+      try {
+        const profile = await getUserProfile(userId)
+        if (profile.avatarUrl || profile.fullName) {
+          setUserProfile({
+            avatarUrl: profile.avatarUrl ?? null,
+            fullName: profile.fullName ?? null,
+          })
         }
+      } catch {
+        // Silently fail on 403 or other errors - don't crash the layout
       }
     }
 
     fetchProfile()
-  }, [loggedIn, userProfile, setUserProfile])
+  }, [loggedIn, userProfile.avatarUrl, userProfile.fullName, setUserProfile])
 
   React.useEffect(() => {
     const path = location.pathname
@@ -208,7 +213,10 @@ export default function CosplayerSiteLayout() {
             {notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
-                onClick={() => {
+                onClick={async () => {
+                  if (!n.isRead) {
+                    await markNotificationRead(n.id)
+                  }
                   if (n.link) navigate(n.link)
                   setNotifOpen(false)
                 }}

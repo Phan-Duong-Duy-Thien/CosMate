@@ -44,7 +44,7 @@ function getTypeColor(type: string): string {
 
 export default function NotificationsPage() {
   const navigate = useNavigate()
-  const { notifications, loading, refetch } = useNotifications()
+  const { notifications, loading, refetch, markNotificationRead, markAllRead } = useNotifications()
   const loggedIn = isAuthenticated()
 
   if (!loggedIn) {
@@ -80,6 +80,15 @@ export default function NotificationsPage() {
             <ArrowLeft className="h-5 w-5" />
           </button>
           <h1 className="text-2xl font-bold text-slate-900">Thông báo</h1>
+          {notifications.some((n) => !n.isRead) && (
+            <button
+              type="button"
+              onClick={markAllRead}
+              className="ml-auto rounded-full border border-pink-200 bg-pink-50 px-3 py-1 text-xs font-medium text-pink-600 transition-colors hover:bg-pink-100"
+            >
+              Đánh dấu tất cả đã đọc
+            </button>
+          )}
         </div>
 
         {/* Content */}
@@ -100,8 +109,10 @@ export default function NotificationsPage() {
               {notifications.map((n) => (
                 <div
                   key={n.id}
-                  onClick={() => {
-                    if (n.link) navigate(n.link)
+                  onClick={async () => {
+                    if (!n.isRead) {
+                      await markNotificationRead(n.id)
+                    }
                   }}
                   className={`flex cursor-pointer items-start gap-3 px-5 py-4 transition-colors hover:bg-pink-50 ${
                     !n.isRead ? "bg-pink-50/50" : ""
