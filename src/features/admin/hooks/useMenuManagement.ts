@@ -24,16 +24,27 @@ export function useMenuManagement() {
       await menuApi.toggleMenuStatus(id);
       message.success('Cập nhật trạng thái thành công!');
       fetchMenus();
+      window.dispatchEvent(new Event('menuUpdated'));
     } catch (error) { message.error('Lỗi cập nhật'); }
   };
 
   const handleCreateMenu = async (values: any) => {
-    try { await menuApi.createMenu(values); message.success('Tạo Nhóm Menu thành công!'); fetchMenus(); } 
+    try { 
+      await menuApi.createMenu(values); 
+      message.success('Tạo Nhóm Menu thành công!'); 
+      fetchMenus(); 
+      window.dispatchEvent(new Event('menuUpdated'));
+    } 
     catch (error) { message.error('Lỗi tạo Menu'); }
   };
 
   const handleDeleteMenu = async (id: string) => {
-    try { await menuApi.deleteMenu(id); message.success('Xóa Menu thành công!'); fetchMenus(); } 
+    try { 
+      await menuApi.deleteMenu(id); 
+      message.success('Xóa Menu thành công!'); 
+      fetchMenus(); 
+      window.dispatchEvent(new Event('menuUpdated'));
+    } 
     catch (error) { message.error('Lỗi xóa Menu'); }
   };
 
@@ -42,12 +53,18 @@ export function useMenuManagement() {
       await menuApi.createMenuItem(values); 
       message.success('Thêm Link thành công! Hãy F5 để làm mới Sidebar.'); 
       fetchMenus(); 
+      window.dispatchEvent(new Event('menuUpdated'));
     } 
     catch (error) { message.error('Lỗi thêm Item'); }
   };
 
   const handleDeleteMenuItem = async (id: string) => {
-    try { await menuApi.deleteMenuItem(id); message.success('Xóa Link thành công!'); fetchMenus(); } 
+    try { 
+      await menuApi.deleteMenuItem(id); 
+      message.success('Xóa Link thành công!'); 
+      fetchMenus(); 
+      window.dispatchEvent(new Event('menuUpdated'));
+    } 
     catch (error) { message.error('Lỗi xóa Item'); }
   };
 
@@ -84,6 +101,7 @@ export function useMenuManagement() {
       await menuApi.importMenusExcel(file);
       message.success(`Import Menu thành công!`);
       fetchMenus();
+      window.dispatchEvent(new Event('menuUpdated'));
     } catch (err) { message.error('Backend chưa hỗ trợ API Nhập Excel Menu (HTTP 404)'); } 
     finally { setIsImporting(false); }
   };

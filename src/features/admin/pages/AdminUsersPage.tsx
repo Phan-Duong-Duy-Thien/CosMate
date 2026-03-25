@@ -1,10 +1,3 @@
-/**
- * AdminUsersPage
- * * Main page for user management
- * Orchestrates: toolbar, table, drawer
- * No axios calls - uses hook for data/actions
- */
-
 import { useState, useRef } from 'react';
 import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
@@ -19,11 +12,8 @@ import {
   CheckCircleOutlined,
   UploadOutlined, 
   DownloadOutlined, 
-  FileExcelOutlined
 } from '@ant-design/icons';
-import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { useAdminUsers } from '../hooks/useAdminUsers';
-import { useDynamicMenu } from '../hooks/useDynamicMenu';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
 import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
@@ -32,9 +22,13 @@ import { getRoleTagProps } from '../utils/userRole';
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 
+const getUserRolesArray = (user: any): string[] => {
+  if (user?.role) return [user.role];
+  if (user?.roles && Array.isArray(user.roles)) return user.roles;
+  return [];
+};
+
 export default function AdminUsersPage() {
-  // Lấy Menu Động
-  const { sidebarItems } = useDynamicMenu();
 
   const {
     users,
@@ -59,32 +53,22 @@ export default function AdminUsersPage() {
     openProfile,
     closeProfile,
     handleExport,
-    handleDownloadTemplate,
     handleImport,
     isExporting,
     isImporting,
   } = useAdminUsers();
 
-  // Detail modal state
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
-  // Export and import state
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
-  // Get current user info for permission checks
   const currentUserRoles = getRoles();
   const currentUserId = getUserId();
 
-  /**
-   * Extract unique roles and statuses for dropdowns
-   */
-  const allRoles = Array.from(new Set(users.flatMap((user) => user.roles))).sort();
+  const allRoles = Array.from(new Set(users.flatMap((user) => getUserRolesArray(user)))).sort();
   const allStatuses = Array.from(new Set(users.map((user) => user.status))).sort();
 
-  /**
-   * Actions
-   */
   const handleViewDetail = (user: AdminUser) => {
     setSelectedUser(user);
     setDrawerOpen(true);
@@ -96,7 +80,7 @@ export default function AdminUsersPage() {
       currentUserRoles,
       currentUserId,
       targetUserId: user.id,
-      targetUserRoles: user.roles,
+      targetUserRoles: getUserRolesArray(user),
     });
 
     if (!permission.allowed) {
@@ -127,7 +111,7 @@ export default function AdminUsersPage() {
       currentUserRoles,
       currentUserId,
       targetUserId: user.id,
-      targetUserRoles: user.roles,
+      targetUserRoles: getUserRolesArray(user),
     });
 
     if (!permission.allowed) {
@@ -169,7 +153,7 @@ export default function AdminUsersPage() {
       currentUserRoles,
       currentUserId,
       targetUserId: user.id,
-      targetUserRoles: user.roles,
+      targetUserRoles: getUserRolesArray(user),
     });
 
     return [
@@ -206,17 +190,19 @@ export default function AdminUsersPage() {
     { title: VI.admin.users.columns.email, dataIndex: 'email', key: 'email', width: 220 },
     {
       title: VI.admin.users.columns.roles,
-      dataIndex: 'roles',
       key: 'roles',
       width: 240,
-      render: (roles: string[]) => (
-        <Space size={4} wrap>
-          {(roles || []).map((role) => {
-            const { color, label } = getRoleTagProps(role);
-            return <Tag key={role} color={color}>{label}</Tag>;
-          })}
-        </Space>
-      ),
+      render: (_, record) => {
+        const rolesArray = getUserRolesArray(record);
+        return (
+          <Space size={4} wrap>
+            {rolesArray.map((role) => {
+              const { color, label } = getRoleTagProps(role);
+              return <Tag key={role} color={color}>{label}</Tag>;
+            })}
+          </Space>
+        );
+      },
     },
     {
       title: VI.admin.users.columns.status,
@@ -250,40 +236,10 @@ export default function AdminUsersPage() {
         }
       `}</style>
 
-      {/* Render Layout Động */}
-      <DashboardLayout
-        title={VI.admin.users.pageTitle}
-        sidebarItems={sidebarItems}
-        brandName={VI.common.appNameAdmin}
-      >
+      <div className="w-full h-full">
         {/* Toolbar */}
-        <div style={{ marginBottom: 16 }}>
+        <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px' }}>
           <Space wrap>
-            <Button icon={<FileExcelOutlined />} onClick={handleDownloadTemplate}>
-              Tải File Mẫu
-            </Button>
-
-            <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
-              Xuất Excel
-            </Button>
-
-            <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
-              Nhập Excel
-            </Button>
-
-            <input 
-              type="file" 
-              ref={fileInputRef}
-              accept=".xlsx, .xls, .csv" 
-              style={{ display: 'none' }} 
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  handleImport(file);
-                  e.target.value = '';
-                }
-              }}
-            />
             <Input
               placeholder={VI.admin.users.toolbar.search}
               prefix={<SearchOutlined />}
@@ -313,6 +269,28 @@ export default function AdminUsersPage() {
               {VI.admin.users.toolbar.refresh}
             </Button>
           </Space>
+
+          <Space wrap>
+            <input 
+              type="file" 
+              ref={fileInputRef}
+              accept=".xlsx, .xls, .csv" 
+              style={{ display: 'none' }} 
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  handleImport(file);
+                  e.target.value = '';
+                }
+              }}
+            />
+            <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
+              Xuất Excel
+            </Button>
+            <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
+              Nhập Excel
+            </Button>
+          </Space>
         </div>
 
         {/* Table */}
@@ -321,6 +299,8 @@ export default function AdminUsersPage() {
           dataSource={users}
           rowKey="id"
           loading={isLoading}
+          scroll={{ y: 'calc(100vh - 300px)' }} 
+          
           pagination={{
             current: page,
             pageSize: pageSize,
@@ -346,7 +326,7 @@ export default function AdminUsersPage() {
           selectedUserId={selectedUserId ?? null}
           profile={profile}
           profileLoading={profileLoading}
-          rolesFromList={selectedUser?.roles}
+          rolesFromList={selectedUser ? getUserRolesArray(selectedUser) : undefined} // ĐÃ SỬA
           onClose={handleCloseDetail}
           onBanToggle={(userId) => {
             const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
@@ -363,7 +343,7 @@ export default function AdminUsersPage() {
                   currentUserRoles,
                   currentUserId,
                   targetUserId: selectedUser.id,
-                  targetUserRoles: selectedUser.roles,
+                  targetUserRoles: getUserRolesArray(selectedUser), // ĐÃ SỬA
                 }).allowed
               : true
           }
@@ -373,12 +353,12 @@ export default function AdminUsersPage() {
                   currentUserRoles,
                   currentUserId,
                   targetUserId: selectedUser.id,
-                  targetUserRoles: selectedUser.roles,
+                  targetUserRoles: getUserRolesArray(selectedUser), // ĐÃ SỬA
                 }).reason
               : undefined
           }
         />
-      </DashboardLayout>
+      </div>
     </>
   );
 }
