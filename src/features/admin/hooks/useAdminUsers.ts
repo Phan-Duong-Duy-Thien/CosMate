@@ -5,7 +5,7 @@
  * Handles data fetching, filtering, and user actions
  */
 
-import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { message } from 'antd';
 import * as adminUsersService from '../services/adminUsers.service';
 import type { AdminUser, AdminUserProfile, UserActionType } from '../types';

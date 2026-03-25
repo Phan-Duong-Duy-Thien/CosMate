@@ -172,7 +172,7 @@ export default function AdminUsersPage() {
         password: values.password,
         fullName: values.fullName,
         phone: values.phone,
-        role: values.role as ROLE,
+        role: values.role as any,
       };
       await register(payload);
       message.success('Tạo người dùng thành công');
@@ -511,9 +511,12 @@ export default function AdminUsersPage() {
               rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
             >
               <Select placeholder="Chọn vai trò">
-                <Select.Option value={ROLE.COSPLAYER}>Cosplayer</Select.Option>
-                <Select.Option value={ROLE.PROVIDER}>Provider</Select.Option>
-                <Select.Option value={ROLE.PHOTOGRAPHER}>Photographer</Select.Option>
+                <Select.Option value="COSPLAYER">Cosplayer</Select.Option>
+                <Select.Option value="PROVIDER_RENTAL">Provider (Thuê trang phục)</Select.Option>
+                <Select.Option value="PROVIDER_PHOTOGRAPH">Photographer (Thợ ảnh)</Select.Option>
+                <Select.Option value="PROVIDER_EVENT_STAFF">Event Staff (Nhân sự sự kiện)</Select.Option>
+                <Select.Option value="STAFF">Staff (Nhân viên hệ thống)</Select.Option>
+                <Select.Option value="ADMIN">Admin (Quản trị viên)</Select.Option>
               </Select>
             </Form.Item>
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
