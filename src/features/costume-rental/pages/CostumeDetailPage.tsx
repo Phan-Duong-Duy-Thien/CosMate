@@ -105,9 +105,9 @@ export default function CostumeDetailPage() {
 
   // Convert date string to YYYY-MM-DD for storage
   // The backend appends T00:00:00 at submission time (order.service.ts)
-  // Uses local date parts to avoid UTC timezone shift (-1 day in Vietnam)
   const formatRentDate = (dateString: string): string => {
     if (!dateString) return ''
+    // Parse using local time to avoid UTC timezone shift
     const [year, month, day] = dateString.split('-').map(Number)
     const localDate = new Date(year, month - 1, day)
     const y = localDate.getFullYear()
@@ -144,7 +144,7 @@ export default function CostumeDetailPage() {
       return
     }
 
-    // Convert startDate to YYYY-MM-DD for storage
+    // Convert startDate to ISO format for backend
     const rentStartFormatted = formatRentDate(startDate)
 
     // Save rental draft to sessionStorage
