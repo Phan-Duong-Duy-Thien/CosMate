@@ -17,6 +17,7 @@ import {
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin } from "antd"
 
+import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { Button } from "@shared/components/Button"
 import { DropdownMenu } from "@shared/components/DropdownMenu"
 import { Input } from "@shared/components/Input"
@@ -62,7 +63,7 @@ export default function CosplayerSiteLayout() {
 
   const searchValue = searchParams.get("q") ?? ""
 
-  const { setItems } = useBreadcrumb()
+  const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
@@ -390,6 +391,28 @@ export default function CosplayerSiteLayout() {
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
             </button>
+
+            <Popover
+              content={notifPopoverContent}
+              trigger="click"
+              open={notifOpen}
+              onOpenChange={setNotifOpen}
+              placement="bottomRight"
+              arrow={false}
+            >
+              <button
+                type="button"
+                aria-label="Thông báo"
+                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              >
+                <Bell className="h-5 w-5" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </Popover>
 
             {loggedIn ? (
               <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]}>
