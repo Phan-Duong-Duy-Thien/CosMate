@@ -1,7 +1,14 @@
 /**
  * Payment Result Page
- * Displays payment result after redirect from payment gateway
+ * Displays payment result after redirect from payment gateway.
+ *
+ * Anti-replay guard: Once a payment result (identified by orderId) has been
+ * shown on this page, it is marked in sessionStorage. Re-mounting or
+ * re-navigating to the same result will not re-trigger any logic.
+ * This prevents duplicate processing in StrictMode, back-button scenarios,
+ * and any future on-mount effects that read from query params.
  */
+import * as React from 'react';
 import { useSearchParams, Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
@@ -10,6 +17,8 @@ import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import type { UserRole } from '@/types/auth';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
+
+const PROCESSED_KEY_PREFIX = 'cosmate:payment:processed:';
 
 export default function PaymentResultPage() {
   const [searchParams] = useSearchParams();
@@ -20,6 +29,21 @@ export default function PaymentResultPage() {
   const message = searchParams.get('message') || null;
 
   const isSuccess = status === 'success';
+
+  // Anti-replay guard: only process each orderId once per session.
+  // Once this page has been shown for a given orderId, mark it as
+  // processed so re-mounts / repeated navigations won't re-trigger anything.
+  // This also protects against React StrictMode double-invocation in dev.
+  React.useEffect(() => {
+    if (orderId) {
+      const key = `${PROCESSED_KEY_PREFIX}${orderId}`;
+      if (sessionStorage.getItem(key) === '1') {
+        // Already shown this result — do nothing on re-mount.
+        return;
+      }
+      sessionStorage.setItem(key, '1');
+    }
+  }, [orderId]);
 
   const getTitle = () => {
     switch (status) {

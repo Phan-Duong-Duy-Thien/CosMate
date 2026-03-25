@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom'; // Thêm Outlet ở đây
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User, ChevronRight } from 'lucide-react';
@@ -73,7 +73,7 @@ export function DashboardLayout({
         { label: 'Trang chủ' }
       ]);
     } 
-    // 2. TRANG QUẢN LÝ MENU (Bạn bị thiếu nhánh này nên nó không hiện)
+    // 2. TRANG QUẢN LÝ MENU
     else if (path === '/admin/menus') {
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
@@ -132,7 +132,6 @@ export function DashboardLayout({
     window.location.reload();
   };
 
-  // User dropdown menu items (Giữ logic redirect thông minh của bạn ông)
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
@@ -201,9 +200,18 @@ export function DashboardLayout({
           </Dropdown>
         </Header>
 
-        <Content style={{ margin: 24, padding: 24, background: '#fff', borderRadius: 8, minHeight: 280 }}>
+        {/* Content Area */}
+        <Content
+          style={{
+            margin: 16,
+            padding: 20,
+            background: '#fff',
+            borderRadius: 8,
+            minHeight: 280,
+          }}
+        >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? <a href={item.to} onClick={(e) => { e.preventDefault(); navigate(item.to!); }} style={{ color: '#64748b', textDecoration: 'none', fontSize: 14 }}>{item.label}</a> : <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>{item.label}</span>}

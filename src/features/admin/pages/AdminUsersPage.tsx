@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Table, Input, Select, Button, Space, Tag, Modal, message, Tooltip } from 'antd';
+import { Table, Input, Select, Button, Space, Tag, Modal, message, Tooltip, Dropdown, Form } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -11,8 +11,12 @@ import {
   StopOutlined,
   CheckCircleOutlined,
   UploadOutlined, 
-  DownloadOutlined, 
+  DownloadOutlined,
+  PlusOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
+import { register } from '@/features/auth/api/auth.api';
+import type { RegisterRequest } from '@/features/auth/types';
 import { useAdminUsers } from '../hooks/useAdminUsers';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
 import type { AdminUser } from '../types';
@@ -21,6 +25,7 @@ import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
 import { getRoleTagProps } from '../utils/userRole';
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
+import { ROLE } from '@/types/auth';
 
 const getUserRolesArray = (user: any): string[] => {
   if (user?.role) return [user.role];
@@ -61,6 +66,11 @@ export default function AdminUsersPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
+
+  // Modal Tạo Người dùng state
+  const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
+  const [createUserForm] = Form.useForm();
+  const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null); 
 
@@ -145,44 +155,36 @@ export default function AdminUsersPage() {
     closeProfile();
   };
 
-  const buildActionMenu = (user: AdminUser): MenuProps['items'] => {
-    const statusNorm = normalizeStatus(user.status);
-    const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
-    const userIsBanned = statusNorm === 'BANNED' || statusNorm.includes('BAN');
-
-    const permission = canManageUser({
-      currentUserRoles,
-      currentUserId,
-      targetUserId: user.id,
-      targetUserRoles: getUserRolesArray(user),
-    });
-
-    return [
-      {
-        key: 'view',
-        label: VI.admin.users.actions.viewDetail,
-        icon: <EyeOutlined />,
-        onClick: () => handleViewDetail(user),
-      },
-      { type: 'divider' },
-      {
-        key: 'lock',
-        label: userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock,
-        icon: userIsLocked ? <UnlockOutlined /> : <LockOutlined />,
-        onClick: () => handleLockToggle(user),
-        disabled: !permission.allowed || actionLoadingId === user.id,
-        title: !permission.allowed ? permission.reason : undefined,
-      },
-      {
-        key: 'ban',
-        label: userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban,
-        icon: userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />,
-        onClick: () => handleBanToggle(user),
-        disabled: !permission.allowed || actionLoadingId === user.id,
-        danger: !userIsBanned,
-        title: !permission.allowed ? permission.reason : undefined,
-      },
-    ];
+  // Xử lý tạo người dùng mới
+  const handleCreateUser = async (values: {
+    username: string;
+    email: string;
+    password: string;
+    fullName: string;
+    phone: string;
+    role: string;
+  }) => {
+    setCreateUserSubmitting(true);
+    try {
+      const payload: RegisterRequest = {
+        username: values.username,
+        email: values.email,
+        password: values.password,
+        fullName: values.fullName,
+        phone: values.phone,
+        role: values.role as ROLE,
+      };
+      await register(payload);
+      message.success('Tạo người dùng thành công');
+      setCreateUserModalOpen(false);
+      createUserForm.resetFields();
+      refetch();
+    } catch (error: unknown) {
+      const err = error as { response?: { data?: { message?: string } } };
+      message.error(err.response?.data?.message || 'Tạo người dùng thất bại');
+    } finally {
+      setCreateUserSubmitting(false);
+    }
   };
 
   const columns: TableProps<AdminUser>['columns'] = [
@@ -191,10 +193,9 @@ export default function AdminUsersPage() {
       dataIndex: 'id', 
       key: 'id', 
       width: 70,
-      align: 'center' // Căn giữa ID
+      align: 'center'
     },
     { 
-      // Gộp Username và Email thành khối "Người dùng"
       title: 'Người dùng', 
       key: 'userInfo', 
       width: 250,
@@ -239,7 +240,7 @@ export default function AdminUsersPage() {
       dataIndex: 'status',
       key: 'status',
       width: 130,
-      align: 'center', // Căn giữa Trạng thái nhìn cho gọn
+      align: 'center',
       render: (status: string) => {
         const { color, label } = getStatusTagProps(status);
         return <Tag color={color} style={{ margin: 0 }}>{label}</Tag>;
@@ -249,7 +250,7 @@ export default function AdminUsersPage() {
       title: VI.admin.users.columns.actions,
       key: 'actions',
       width: 140,
-      align: 'center', // Căn giữa cột Hành động
+      align: 'center',
       render: (_, user) => {
         const statusNorm = normalizeStatus(user.status);
         const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
@@ -344,6 +345,10 @@ export default function AdminUsersPage() {
               <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
                 Nhập Excel
               </Button>
+
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateUserModalOpen(true)}>
+                {VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
+              </Button>
             </Space>
           </div>
 
@@ -403,7 +408,7 @@ export default function AdminUsersPage() {
           selectedUserId={selectedUserId ?? null}
           profile={profile}
           profileLoading={profileLoading}
-          rolesFromList={selectedUser ? getUserRolesArray(selectedUser) : undefined} // ĐÃ SỬA
+          rolesFromList={selectedUser ? getUserRolesArray(selectedUser) : undefined} 
           onClose={handleCloseDetail}
           onBanToggle={(userId) => {
             const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
@@ -420,7 +425,7 @@ export default function AdminUsersPage() {
                   currentUserRoles,
                   currentUserId,
                   targetUserId: selectedUser.id,
-                  targetUserRoles: getUserRolesArray(selectedUser), // ĐÃ SỬA
+                  targetUserRoles: getUserRolesArray(selectedUser), 
                 }).allowed
               : true
           }
@@ -430,11 +435,102 @@ export default function AdminUsersPage() {
                   currentUserRoles,
                   currentUserId,
                   targetUserId: selectedUser.id,
-                  targetUserRoles: getUserRolesArray(selectedUser), // ĐÃ SỬA
+                  targetUserRoles: getUserRolesArray(selectedUser), 
                 }).reason
               : undefined
           }
         />
+
+        {/* Create User Modal */}
+        <Modal
+          title={VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
+          open={createUserModalOpen}
+          onCancel={() => {
+            setCreateUserModalOpen(false);
+            createUserForm.resetFields();
+          }}
+          footer={null}
+          destroyOnClose
+        >
+          <Form
+            form={createUserForm}
+            layout="vertical"
+            onFinish={handleCreateUser}
+            style={{ marginTop: 16 }}
+          >
+            <Form.Item
+              label={VI.auth.register.username || 'Tên đăng nhập'}
+              name="username"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên đăng nhập' },
+                { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự' },
+              ]}
+            >
+              <Input prefix={<UserOutlined />} placeholder={VI.auth.register.usernamePlaceholder || 'Nhập tên đăng nhập...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.fullName || 'Họ và tên'}
+              name="fullName"
+              rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+            >
+              <Input placeholder={VI.auth.register.fullNamePlaceholder || 'Nhập họ và tên...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.email || 'Email'}
+              name="email"
+              rules={[
+                { required: true, message: 'Vui lòng nhập email' },
+                { type: 'email', message: 'Email không hợp lệ' },
+              ]}
+            >
+              <Input prefix={<UserOutlined />} placeholder={VI.auth.register.emailPlaceholder || 'Nhập email...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.phone || 'Số điện thoại'}
+              name="phone"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số điện thoại' },
+                { pattern: /^0\d{9}$/, message: 'Số điện thoại phải có 10 số, bắt đầu bằng 0' },
+              ]}
+            >
+              <Input placeholder={VI.auth.register.phonePlaceholder || 'Nhập số điện thoại...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.password || 'Mật khẩu'}
+              name="password"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mật khẩu' },
+                { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+              ]}
+            >
+              <Input.Password placeholder={VI.auth.register.passwordPlaceholder || 'Nhập mật khẩu...'} />
+            </Form.Item>
+            <Form.Item
+              label="Vai trò"
+              name="role"
+              rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+            >
+              <Select placeholder="Chọn vai trò">
+                <Select.Option value={ROLE.COSPLAYER}>Cosplayer</Select.Option>
+                <Select.Option value={ROLE.PROVIDER}>Provider</Select.Option>
+                <Select.Option value={ROLE.PHOTOGRAPHER}>Photographer</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+              <Space>
+                <Button onClick={() => {
+                  setCreateUserModalOpen(false);
+                  createUserForm.resetFields();
+                }}>
+                  {VI.common.actions.cancel || 'Hủy'}
+                </Button>
+                <Button type="primary" htmlType="submit" loading={createUserSubmitting}>
+                  {VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     </>
   );

@@ -131,14 +131,14 @@ export default function CostumeListPage() {
           100% { opacity: 0.6; transform: translateY(0px); }
         }
       `}</style>
-      <div className="mx-auto w-full pt-10">
+      <div className="mx-auto w-full pt-6">
         <div
           className={
-            "rounded-3xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-6 py-8 text-center shadow-[0_12px_28px_rgba(236,72,153,0.16)] backdrop-blur transition-all duration-300 ease-out " +
+            "rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-5 py-5 text-center shadow-[0_8px_20px_rgba(236,72,153,0.12)] backdrop-blur transition-all duration-300 ease-out " +
             (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
           }
         >
-          <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 text-5xl font-extrabold text-pink-700 md:mt-3 md:text-6xl">
+          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-4xl font-bold text-pink-700 md:mt-2 md:text-5xl">
             <span
               aria-hidden="true"
               className="text-[20px] tracking-[0.5px] text-pink-700 motion-reduce:animate-none md:text-[40px]"
@@ -148,7 +148,7 @@ export default function CostumeListPage() {
           </h1>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:gap-7">
+        <div className="mt-5 grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-6">
           <FilterSidebar
             filters={filters}
             regions={regionOptions}
@@ -159,7 +159,7 @@ export default function CostumeListPage() {
             onReset={handleReset}
           />
 
-          <div className="space-y-5">
+          <div className="space-y-4">
             <SortBar
               sortKey={sortKey}
               currentPage={displayPage}

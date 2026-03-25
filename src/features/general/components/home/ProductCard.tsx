@@ -1,8 +1,9 @@
-import { Heart } from "lucide-react"
+import { Heart, Image as ImageIcon } from "lucide-react"
 
 import type { Product } from "../../pages/home.types"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
+import { Badge } from "@/shared/components/Badge"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 
@@ -19,14 +20,28 @@ export const ProductCard = ({
   onToggleWishlist,
   onViewDetail,
 }: ProductCardProps) => (
-  <Card className="group overflow-hidden border-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
+  <Card
+    role="button"
+    tabIndex={0}
+    onClick={() => onViewDetail(product.id)}
+    onKeyDown={(event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault()
+        onViewDetail(product.id)
+      }
+    }}
+    className="group cursor-pointer overflow-hidden border-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+  >
     <div className="relative">
       <img
-        src={product.imageUrls[0] || "https://placehold.co/800x1000?text=No+Image"}
+        src={product.imageUrls[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
         alt={product.name}
         loading="lazy"
-        className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
+      {product.status === "RENTED" && (
+        <Badge className="absolute left-3 top-3 bg-slate-700 text-white">Đã thuê</Badge>
+      )}
       <button
         type="button"
         aria-label={VI.general.home.featured.wishlist}
@@ -34,29 +49,39 @@ export const ProductCard = ({
           "absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
           isWishlisted && "text-pink-500"
         )}
-        onClick={() => onToggleWishlist(String(product.id))}
+        onClick={(event) => {
+          event.stopPropagation()
+          onToggleWishlist(String(product.id))
+        }}
       >
         <Heart className={cn("h-4 w-4", isWishlisted && "fill-pink-500")} />
       </button>
+      {product.imageUrls.length > 1 && (
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-xs text-slate-600">
+          <ImageIcon className="h-3 w-3" />
+          {product.imageUrls.length}
+        </div>
+      )}
     </div>
-    <div className="space-y-3 p-4">
-      <div className="text-xs uppercase tracking-wide text-slate-400">
+    <div className="space-y-2 p-3">
+      <div className="text-xs text-slate-400">
         {VI.costumeRental.status}: {product.status}
       </div>
-
-      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">
+      <h3 className="line-clamp-2 text-sm font-semibold text-slate-800">
         {product.name}
       </h3>
-      <p className="text-sm text-slate-500">Thương hiệu: {product.brand || "non-brand"}</p>
-      <p className="text-sm text-slate-500">{product.rentalsCount} lượt thuê</p>
-      <div className="text-lg font-semibold text-pink-600">
+      <div className="text-base font-semibold text-pink-600">
         {product.pricePerDay.toLocaleString("vi-VN")} VNĐ
+        <span className="text-xs font-normal text-slate-400">/ngày</span>
       </div>
       <Button
         variant="soft"
         size="sm"
         className="w-full"
-        onClick={() => onViewDetail(product.id)}
+        onClick={(event) => {
+          event.stopPropagation()
+          onViewDetail(product.id)
+        }}
       >
         {VI.costumeRental.viewDetail}
       </Button>

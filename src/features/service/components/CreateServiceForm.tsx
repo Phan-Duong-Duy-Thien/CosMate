@@ -22,7 +22,7 @@ import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
 import type { ServiceType } from '../types';
 import type { UserAddress } from '@/features/profile/types';
-import { useVietnamLocations } from '@/shared/hooks/useVietnamLocations';
+import { useAreaLocations } from '@/shared/hooks/useAreaLocations';
 import { useCreateService } from '../hooks/useCreateService';
 import type { ServiceArea } from '../types';
 import { VI } from '@/shared/i18n/vi';
@@ -51,16 +51,16 @@ export function CreateServiceForm({
 
   const {
     selectedProvinceId,
-    selectedCommuneId,
+    selectedDistrictId,
     provinces,
-    communes,
+    districts,
     isLoadingProvinces,
-    isLoadingCommunes,
+    isLoadingDistricts,
     setSelectedProvinceId,
-    setSelectedCommuneId,
+    setSelectedDistrictId,
     selectedProvince,
-    selectedCommune,
-  } = useVietnamLocations();
+    selectedDistrict,
+  } = useAreaLocations();
 
   // Prefill area from shop address on mount (only once)
   useEffect(() => {
@@ -81,11 +81,11 @@ export function CreateServiceForm({
   }, [shopAddress]);
 
   const handleAddArea = () => {
-    if (!selectedProvince || !selectedCommune) return;
+    if (!selectedProvince || !selectedDistrict) return;
 
     const newArea: ServiceArea = {
       city: selectedProvince.name,
-      district: selectedCommune.name,
+      district: selectedDistrict.name,
     };
 
     // Avoid duplicates
@@ -96,7 +96,7 @@ export function CreateServiceForm({
 
     setAreas((prev) => [...prev, newArea]);
     setSelectedProvinceId(null);
-    setSelectedCommuneId(null);
+    setSelectedDistrictId(null);
   };
 
   const handleRemoveArea = (index: number) => {
@@ -114,6 +114,9 @@ export function CreateServiceForm({
       const albumFiles: File[] = files
         .filter((f) => f.originFileObj)
         .map((f) => f.originFileObj as File);
+
+      console.log('[CreateServiceForm] areas state:', JSON.stringify(areas, null, 2));
+      console.log('[CreateServiceForm] form values:', JSON.stringify(values, null, 2));
 
       const ok = await submit({
         serviceType,
@@ -176,21 +179,21 @@ export function CreateServiceForm({
             />
             <Select
               placeholder={VI.profile.address.form.districtPlaceholder}
-              value={selectedCommuneId}
-              onChange={setSelectedCommuneId}
+              value={selectedDistrictId}
+              onChange={setSelectedDistrictId}
               disabled={selectedProvinceId === null}
-              loading={isLoadingCommunes}
+              loading={isLoadingDistricts}
               style={{ minWidth: 200 }}
-              options={communes.map((c) => ({
-                label: c.name,
-                value: c.code,
+              options={districts.map((d) => ({
+                label: d.name,
+                value: d.code,
               }))}
             />
             <Button
               type="dashed"
               icon={<PlusOutlined />}
               onClick={handleAddArea}
-              disabled={!selectedProvince || !selectedCommune}
+              disabled={!selectedProvince || !selectedDistrict}
             >
               {VI.service.create.form.addArea}
             </Button>

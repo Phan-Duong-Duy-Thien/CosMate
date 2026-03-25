@@ -33,28 +33,28 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
-  const today = new Date().toISOString().split('T')[0]
+  const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
   const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
 
   return (
-    <div className="space-y-5 rounded-3xl border border-white/80 bg-white/80 p-5 shadow-sm">
-      <div className="space-y-2">
-        <h1 className="text-2xl font-semibold text-slate-900">{costume.name}</h1>
-        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-600">
+    <div className="space-y-4 rounded-2xl border border-white/80 bg-white/80 p-4 shadow-sm">
+      <div className="space-y-1">
+        <h1 className="text-xl font-semibold text-slate-900">{costume.name}</h1>
+        <div className="flex flex-wrap items-center gap-3 text-sm text-slate-500">
           <span className="flex items-center gap-1">
             <Star className="h-4 w-4 text-yellow-400" />
             <span>—</span>
           </span>
           <span>Kích cỡ: {costume.size ?? "—"}</span>
+          <span className="font-medium text-pink-600">
+            {costume.pricePerDay.toLocaleString("vi-VN")} VNĐ/ngày
+          </span>
         </div>
-        <p className="text-sm text-slate-500">
-          {costume.pricePerDay.toLocaleString("vi-VN")}VNĐ / ngày
-        </p>
       </div>
 
-      <div className="space-y-4 text-sm text-slate-600">
+      <div className="space-y-3 text-sm text-slate-600">
         {hasRentalOptions ? (
           <div>
             <p className="font-semibold text-slate-700">{VI.costumeRental.rentalOptions.title}</p>
@@ -85,7 +85,7 @@ export const PurchasePanel = ({
 
         <div>
           <p className="font-semibold text-slate-700">Thời gian thuê</p>
-          <div className="mt-2 grid gap-2 sm:grid-cols-2">
+          <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
             <input
               type="date"
               value={startDate}
@@ -156,7 +156,7 @@ export const PurchasePanel = ({
 
       <PriceBreakdownCard quote={quote}days={days}/>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-col gap-2">
         <Button type="button" variant="default" size="lg" className="w-full rounded-full" onClick={onRentNow}>
           Thuê ngay
         </Button>

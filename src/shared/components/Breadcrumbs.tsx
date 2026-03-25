@@ -32,21 +32,21 @@ export function Breadcrumbs({ items, className }: BreadcrumbsProps) {
             {isClickable ? (
               <Link
                 to={item.to}
-                className="text-slate-500 decoration-1 underline-offset-2 transition-colors hover:text-pink-600 hover:underline"
+                className="text-slate-500 transition-colors hover:text-pink-500 hover:font-medium"
               >
                 {item.label}
               </Link>
             ) : (
               <span
                 className={cn(
-                  isLast ? 'font-medium text-slate-900' : 'text-slate-500'
+                  isLast ? 'font-semibold text-slate-800' : 'text-slate-500'
                 )}
               >
                 {item.label}
               </span>
             )}
             {!isLast && (
-              <ChevronRight className="h-4 w-4 text-slate-400" />
+              <ChevronRight className="h-3.5 w-3.5 text-slate-400" />
             )}
           </span>
         );
