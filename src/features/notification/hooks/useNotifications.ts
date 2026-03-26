@@ -19,10 +19,13 @@ export function useNotifications(): UseNotificationsResult {
   const fetch = useCallback(async () => {
     setLoading(true)
     try {
+      console.log("[useNotifications] Fetching notifications...")
       const data = await fetchNotifications()
+      console.log("[useNotifications] Response:", data)
+      console.log("[useNotifications] Notifications:", data.result)
       setNotifications(data.result ?? [])
     } catch (err) {
-      console.error("Failed to fetch notifications:", err)
+      console.error("[useNotifications] Fetch error:", err)
       setNotifications([])
     } finally {
       setLoading(false)
@@ -30,31 +33,31 @@ export function useNotifications(): UseNotificationsResult {
   }, [])
 
   const markNotificationRead = useCallback(async (id: number) => {
-    // Optimistic update
+    console.log("[useNotifications] Marking as read:", id)
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, isRead: true } : n))
     )
     try {
       await markRead(id)
+      console.log("[useNotifications] Marked as read success:", id)
     } catch (err) {
-      // Revert on failure
       setNotifications((prev) =>
         prev.map((n) => (n.id === id ? { ...n, isRead: false } : n))
       )
-      console.error("Failed to mark notification as read:", err)
+      console.error("[useNotifications] Mark as read failed:", err)
     }
   }, [])
 
   const markAllRead = useCallback(async () => {
-    // Optimistic update
+    console.log("[useNotifications] Marking all as read")
     const previous = notifications
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
     try {
-      await markAllRead()
+      await markAllNotificationsRead()
+      console.log("[useNotifications] Mark all as read success")
     } catch (err) {
-      // Revert on failure
       setNotifications(previous)
-      console.error("Failed to mark all as read:", err)
+      console.error("[useNotifications] Mark all as read failed:", err)
     }
   }, [notifications])
 
