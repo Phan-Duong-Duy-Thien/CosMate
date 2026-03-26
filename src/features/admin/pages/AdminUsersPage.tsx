@@ -1,13 +1,5 @@
-/**
- * AdminUsersPage
- * 
- * Main page for user management
- * Orchestrates: toolbar, table, drawer
- * No axios calls - uses hook for data/actions
- */
-
-import { useState } from 'react';
-import { Table, Input, Select, Button, Space, Tag, Dropdown, Modal, message, Form } from 'antd';
+import { useState, useRef } from 'react';
+import { Table, Input, Select, Button, Space, Tag, Modal, message, Tooltip, Dropdown, Form } from 'antd';
 import type { TableProps, MenuProps } from 'antd';
 import {
   SearchOutlined,
@@ -18,14 +10,13 @@ import {
   UnlockOutlined,
   StopOutlined,
   CheckCircleOutlined,
-  PlusOutlined,
+  UploadOutlined, 
   DownloadOutlined,
+  PlusOutlined,
   UserOutlined,
 } from '@ant-design/icons';
 import { register } from '@/features/auth/api/auth.api';
 import type { RegisterRequest } from '@/features/auth/types';
-import { DashboardLayout } from '@/app/layouts/DashboardLayout';
-import { adminSidebarItems } from '../constants/sidebar';
 import { useAdminUsers } from '../hooks/useAdminUsers';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
 import type { AdminUser } from '../types';
@@ -36,11 +27,21 @@ import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 
-// No local helpers needed - using centralized status utils
+const getUserRolesArray = (user: any): string[] => {
+  if (user?.role) return [user.role];
+  if (user?.roles && Array.isArray(user.roles)) return user.roles;
+  return [];
+};
 
 export default function AdminUsersPage() {
+
   const {
-    filteredUsers,
+    users,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    total,
     isLoading,
     searchText,
     setSearchText,
@@ -56,55 +57,41 @@ export default function AdminUsersPage() {
     profileLoading,
     openProfile,
     closeProfile,
+    handleExport,
+    handleImport,
+    isExporting,
+    isImporting,
+    handleDownloadTemplate,
   } = useAdminUsers();
 
-  // Detail modal state (selectedUser from list: roles + permission lookup)
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<AdminUser | null>(null);
 
-  // Create User modal state
+  // Modal Tạo Người dùng state
   const [createUserModalOpen, setCreateUserModalOpen] = useState(false);
   const [createUserForm] = Form.useForm();
   const [createUserSubmitting, setCreateUserSubmitting] = useState(false);
 
-  // Get current user info for permission checks
+  const fileInputRef = useRef<HTMLInputElement>(null); 
+
   const currentUserRoles = getRoles();
   const currentUserId = getUserId();
 
-  /**
-   * Extract unique roles from all users (for filter dropdown)
-   */
-  const allRoles = Array.from(
-    new Set(filteredUsers.flatMap((user) => user.roles))
-  ).sort();
+  const allRoles = Array.from(new Set(users.flatMap((user) => getUserRolesArray(user)))).sort();
+  const allStatuses = Array.from(new Set(users.map((user) => user.status))).sort();
 
-  /**
-   * Extract unique statuses from all users (for filter dropdown)
-   */
-  const allStatuses = Array.from(
-    new Set(filteredUsers.map((user) => user.status))
-  ).sort();
-
-  /**
-   * Handle view detail: open modal and fetch profile from GET /api/users/{id}/profile
-   */
   const handleViewDetail = (user: AdminUser) => {
     setSelectedUser(user);
     setDrawerOpen(true);
     openProfile(user.id);
   };
 
-  /**
-   * Handle lock/unlock action with confirmation
-   * Auto-close modal after success
-   */
   const handleLockToggle = async (user: AdminUser) => {
-    // Permission check
     const permission = canManageUser({
       currentUserRoles,
       currentUserId,
       targetUserId: user.id,
-      targetUserRoles: user.roles,
+      targetUserRoles: getUserRolesArray(user),
     });
 
     if (!permission.allowed) {
@@ -130,17 +117,12 @@ export default function AdminUsersPage() {
     });
   };
 
-  /**
-   * Handle ban/unban action with confirmation
-   * Auto-close modal after success
-   */
   const handleBanToggle = async (user: AdminUser) => {
-    // Permission check
     const permission = canManageUser({
       currentUserRoles,
       currentUserId,
       targetUserId: user.id,
-      targetUserRoles: user.roles,
+      targetUserRoles: getUserRolesArray(user),
     });
 
     if (!permission.allowed) {
@@ -173,9 +155,7 @@ export default function AdminUsersPage() {
     closeProfile();
   };
 
-  /**
-   * Handle creating a new user
-   */
+  // Xử lý tạo người dùng mới
   const handleCreateUser = async (values: {
     username: string;
     email: string;
@@ -192,7 +172,7 @@ export default function AdminUsersPage() {
         password: values.password,
         fullName: values.fullName,
         phone: values.phone,
-        role: values.role as ROLE,
+        role: values.role as any,
       };
       await register(payload);
       message.success('Tạo người dùng thành công');
@@ -207,147 +187,111 @@ export default function AdminUsersPage() {
     }
   };
 
-  /**
-   * Export user list to CSV file with timestamp in filename
-   */
-  const handleExportUsers = () => {
-    const now = new Date();
-    const timestamp = now.toISOString().split('T')[0];
-    const headers = ['ID', 'Username', 'Email', 'Roles', 'Status'];
-    const rows = filteredUsers.map((user) => [
-      user.id,
-      user.username,
-      user.email,
-      user.roles.join('; '),
-      user.status,
-    ]);
-    const csvContent = [headers, ...rows]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `users_export_${timestamp}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-    message.success('Đã xuất file thành công');
-  };
-
-  /**
-   * Build action menu items for each user row
-   */
-  const buildActionMenu = (user: AdminUser): MenuProps['items'] => {
-    const statusNorm = normalizeStatus(user.status);
-    const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
-    const userIsBanned = statusNorm === 'BANNED' || statusNorm.includes('BAN');
-
-    // Check permissions
-    const permission = canManageUser({
-      currentUserRoles,
-      currentUserId,
-      targetUserId: user.id,
-      targetUserRoles: user.roles,
-    });
-
-    return [
-      {
-        key: 'view',
-        label: VI.admin.users.actions.viewDetail,
-        icon: <EyeOutlined />,
-        onClick: () => handleViewDetail(user),
-      },
-      { type: 'divider' },
-      {
-        key: 'lock',
-        label: userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock,
-        icon: userIsLocked ? <UnlockOutlined /> : <LockOutlined />,
-        onClick: () => handleLockToggle(user),
-        disabled: !permission.allowed || actionLoadingId === user.id,
-        title: !permission.allowed ? permission.reason : undefined,
-      },
-      {
-        key: 'ban',
-        label: userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban,
-        icon: userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />,
-        onClick: () => handleBanToggle(user),
-        disabled: !permission.allowed || actionLoadingId === user.id,
-        danger: !userIsBanned,
-        title: !permission.allowed ? permission.reason : undefined,
-      },
-    ];
-  };
-
-  /**
-   * Table columns definition (compact: removed fullName, phone, createdAt)
-   */
   const columns: TableProps<AdminUser>['columns'] = [
-    {
-      title: VI.admin.users.columns.id,
-      dataIndex: 'id',
-      key: 'id',
-      width: 80,
+    { 
+      title: VI.admin.users.columns.id, 
+      dataIndex: 'id', 
+      key: 'id', 
+      width: 70,
+      align: 'center'
     },
-    {
-      title: VI.admin.users.columns.username,
-      dataIndex: 'username',
-      key: 'username',
-      width: 150,
+    { 
+      title: 'Người dùng', 
+      key: 'userInfo', 
+      width: 250,
+      render: (_, record) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14 }}>{record.username}</span>
+          <span style={{ color: '#6b7280', fontSize: 13 }}>{record.email}</span>
+        </div>
+      )
     },
-    {
-      title: VI.admin.users.columns.email,
-      dataIndex: 'email',
-      key: 'email',
-      width: 220,
+    { 
+      title: 'Số điện thoại', 
+      dataIndex: 'phone', 
+      key: 'phone', 
+      width: 140,
+      render: (phone: string | null) => {
+        if (!phone || phone.trim() === '') {
+          return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        }
+        return <span style={{ color: '#4b5563' }}>{phone}</span>; 
+      }
     },
     {
       title: VI.admin.users.columns.roles,
-      dataIndex: 'roles',
       key: 'roles',
-      width: 240,
-      render: (roles: string[]) => (
-        <Space size={4} wrap>
-          {roles.map((role) => {
-            const { color, label } = getRoleTagProps(role);
-            return (
-              <Tag key={role} color={color}>
-                {label}
-              </Tag>
-            );
-          })}
-        </Space>
-      ),
+      width: 200,
+      render: (_, record) => {
+        const rolesArray = getUserRolesArray(record);
+        if (rolesArray.length === 0) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        return (
+          <Space size={4} wrap>
+            {rolesArray.map((role) => {
+              const { color, label } = getRoleTagProps(role);
+              return <Tag key={role} color={color} style={{ margin: 0 }}>{label}</Tag>;
+            })}
+          </Space>
+        );
+      },
     },
     {
       title: VI.admin.users.columns.status,
       dataIndex: 'status',
       key: 'status',
-      width: 150,
+      width: 130,
+      align: 'center',
       render: (status: string) => {
         const { color, label } = getStatusTagProps(status);
-        return <Tag color={color}>{label}</Tag>;
+        return <Tag color={color} style={{ margin: 0 }}>{label}</Tag>;
       },
     },
     {
       title: VI.admin.users.columns.actions,
       key: 'actions',
-      width: 100,
-      render: (_, user) => (
-        <Dropdown
-          menu={{ items: buildActionMenu(user) }}
-          trigger={['click']}
-          onClick={(e) => e.stopPropagation()} // Prevent row click when clicking dropdown
-        >
-          <Button
-            type="text"
-            icon={<MoreOutlined />}
-            loading={actionLoadingId === user.id}
-            onClick={(e) => e.stopPropagation()} // Prevent row click when clicking button
-          />
-        </Dropdown>
-      ),
+      width: 140,
+      align: 'center',
+      render: (_, user) => {
+        const statusNorm = normalizeStatus(user.status);
+        const userIsLocked = statusNorm === 'INACTIVE' || statusNorm.includes('LOCK');
+        const userIsBanned = statusNorm === 'BANNED' || statusNorm.includes('BAN');
+
+        const permission = canManageUser({
+          currentUserRoles,
+          currentUserId,
+          targetUserId: user.id,
+          targetUserRoles: getUserRolesArray(user),
+        });
+
+        return (
+          <Space size={8} onClick={(e) => e.stopPropagation()}>
+            <Tooltip title={VI.admin.users.actions.viewDetail}>
+              <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(user)} />
+            </Tooltip>
+            
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
+              <Button 
+                type="text" 
+                icon={userIsLocked ? <UnlockOutlined /> : <LockOutlined />} 
+                onClick={() => handleLockToggle(user)} 
+                disabled={!permission.allowed || actionLoadingId === user.id}
+                style={{ color: userIsLocked ? '#52c41a' : '#faad14' }}
+              />
+            </Tooltip>
+
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
+              <Button 
+                type="text" 
+                danger={!userIsBanned}
+                icon={userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />} 
+                onClick={() => handleBanToggle(user)} 
+                disabled={!permission.allowed || actionLoadingId === user.id}
+                style={userIsBanned ? { color: '#52c41a' } : undefined}
+              />
+            </Tooltip>
+          </Space>
+        );
+      },
     },
   ];
 
@@ -358,218 +302,239 @@ export default function AdminUsersPage() {
           background-color: #f5f5f5 !important;
         }
       `}</style>
-      <DashboardLayout
-        title={VI.admin.users.pageTitle}
-        sidebarItems={adminSidebarItems.map((item) => ({
-          key: item.key,
-          label: item.label,
-          icon: <item.icon size={18} />,
-          path: item.path,
-        }))}
-        brandName={VI.common.appNameAdmin}
-      >
-      {/* Toolbar */}
-      <div style={{ marginBottom: 16 }}>
-        <Space wrap style={{ marginBottom: 8 }}>
-          <Input
-            placeholder={VI.admin.users.toolbar.search}
-            prefix={<SearchOutlined />}
-            value={searchText}
-            onChange={(e) => setSearchText(e.target.value)}
-            style={{ width: 300 }}
-            allowClear
-          />
-          <Select
-            mode="multiple"
-            placeholder={VI.admin.users.toolbar.filterRole}
-            value={roleFilter}
-            onChange={setRoleFilter}
-            style={{ minWidth: 200 }}
-            options={allRoles.map((role) => ({ label: role, value: role }))}
-            allowClear
-          />
-          <Select
-            placeholder={VI.admin.users.toolbar.filterStatus}
-            value={statusFilter}
-            onChange={setStatusFilter}
-            style={{ minWidth: 180 }}
-            options={allStatuses.map((status) => ({ label: status, value: status }))}
-            allowClear
-          />
-          <Button
-            icon={<ReloadOutlined />}
-            onClick={refetch}
-            loading={isLoading}
-          >
-            {VI.admin.users.toolbar.refresh}
-          </Button>
-        </Space>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-          <Button
-            icon={<DownloadOutlined />}
-            onClick={handleExportUsers}
-          >
-            {VI.admin.users.toolbar.exportExcel}
-          </Button>
-          <Button
-            type="primary"
-            icon={<PlusOutlined />}
-            onClick={() => setCreateUserModalOpen(true)}
-          >
-            {VI.admin.users.toolbar.createUser}
-          </Button>
-        </div>
-      </div>
 
-      {/* Table (clickable rows open detail drawer) */}
-      <Table<AdminUser>
-        columns={columns}
-        dataSource={filteredUsers}
-        rowKey="id"
-        loading={isLoading}
-        pagination={{
-          pageSize: 20,
-          showTotal: (total) => `Tổng ${total} người dùng`,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50', '100'],
-        }}
-        onRow={(user) => ({
-          onClick: () => handleViewDetail(user),
-          style: { cursor: 'pointer' },
-        })}
-        rowClassName="admin-user-row"
-      />
-
-      {/* Detail Modal: profile from GET /api/users/{id}/profile, roles from list */}
-      <UserDetailDrawer
-        open={drawerOpen}
-        selectedUserId={selectedUserId ?? null}
-        profile={profile}
-        profileLoading={profileLoading}
-        rolesFromList={selectedUser?.roles}
-        onClose={handleCloseDetail}
-        onBanToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
-          if (user) handleBanToggle(user);
-        }}
-        onLockToggle={(userId) => {
-          const user = selectedUser?.id === userId ? selectedUser : filteredUsers.find((u) => u.id === userId);
-          if (user) handleLockToggle(user);
-        }}
-        actionLoading={actionLoadingId !== null}
-        canManage={
-          selectedUser
-            ? canManageUser({
-                currentUserRoles,
-                currentUserId,
-                targetUserId: selectedUser.id,
-                targetUserRoles: selectedUser.roles,
-              }).allowed
-            : true
-        }
-        manageDisabledReason={
-          selectedUser
-            ? canManageUser({
-                currentUserRoles,
-                currentUserId,
-                targetUserId: selectedUser.id,
-                targetUserRoles: selectedUser.roles,
-              }).reason
-            : undefined
-        }
-      />
-
-      {/* Create User Modal */}
-      <Modal
-        title={VI.admin.users.toolbar.createUser}
-        open={createUserModalOpen}
-        onCancel={() => {
-          setCreateUserModalOpen(false);
-          createUserForm.resetFields();
-        }}
-        footer={null}
-        destroyOnClose
-      >
-        <Form
-          form={createUserForm}
-          layout="vertical"
-          onFinish={handleCreateUser}
-          style={{ marginTop: 16 }}
-        >
-          <Form.Item
-            label={VI.auth.register.username}
-            name="username"
-            rules={[
-              { required: true, message: 'Vui lòng nhập tên đăng nhập' },
-              { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự' },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder={VI.auth.register.usernamePlaceholder} />
-          </Form.Item>
-          <Form.Item
-            label={VI.auth.register.fullName}
-            name="fullName"
-            rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
-          >
-            <Input placeholder={VI.auth.register.fullNamePlaceholder} />
-          </Form.Item>
-          <Form.Item
-            label={VI.auth.register.email}
-            name="email"
-            rules={[
-              { required: true, message: 'Vui lòng nhập email' },
-              { type: 'email', message: 'Email không hợp lệ' },
-            ]}
-          >
-            <Input prefix={<UserOutlined />} placeholder={VI.auth.register.emailPlaceholder} />
-          </Form.Item>
-          <Form.Item
-            label={VI.auth.register.phone}
-            name="phone"
-            rules={[
-              { required: true, message: 'Vui lòng nhập số điện thoại' },
-              { pattern: /^0\d{9}$/, message: 'Số điện thoại phải có 10 số, bắt đầu bằng 0' },
-            ]}
-          >
-            <Input placeholder={VI.auth.register.phonePlaceholder} />
-          </Form.Item>
-          <Form.Item
-            label={VI.auth.register.password}
-            name="password"
-            rules={[
-              { required: true, message: 'Vui lòng nhập mật khẩu' },
-              { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
-            ]}
-          >
-            <Input.Password placeholder={VI.auth.register.passwordPlaceholder} />
-          </Form.Item>
-          <Form.Item
-            label="Vai trò"
-            name="role"
-            rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
-          >
-            <Select placeholder="Chọn vai trò">
-              <Select.Option value={ROLE.COSPLAYER}>Cosplayer</Select.Option>
-              <Select.Option value={ROLE.PROVIDER}>Provider</Select.Option>
-              <Select.Option value={ROLE.PHOTOGRAPHER}>Photographer</Select.Option>
-            </Select>
-          </Form.Item>
-          <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
-            <Space>
-              <Button onClick={() => {
-                setCreateUserModalOpen(false);
-                createUserForm.resetFields();
-              }}>
-                {VI.common.actions.cancel || 'Hủy'}
+      <div className="w-full h-full">
+        {/* Toolbar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+          
+          {/* TẦNG 1: TÌM KIẾM VÀ NÚT BẤM */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <Input
+              placeholder={VI.admin.users.toolbar.search}
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 320, maxWidth: '100%' }}
+              allowClear
+            />
+            
+            <Space wrap>
+              <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
+                {VI.admin.users.toolbar.refresh || 'Làm mới'}
               </Button>
-              <Button type="primary" htmlType="submit" loading={createUserSubmitting}>
-                {VI.admin.users.toolbar.createUser}
+              
+              <input 
+                type="file" 
+                ref={fileInputRef}
+                accept=".xlsx, .xls, .csv" 
+                style={{ display: 'none' }} 
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    handleImport(file);
+                    e.target.value = '';
+                  }
+                }}
+              />
+              <Button icon={<DownloadOutlined />} onClick={handleDownloadTemplate}>
+                Tải file mẫu
+              </Button>
+              <Button icon={<DownloadOutlined />} onClick={handleExport} loading={isExporting}>
+                Xuất Excel
+              </Button>
+              <Button icon={<UploadOutlined />} loading={isImporting} onClick={() => fileInputRef.current?.click()}>
+                Nhập Excel
+              </Button>
+
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateUserModalOpen(true)}>
+                {VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
               </Button>
             </Space>
-          </Form.Item>
-        </Form>
-      </Modal>
-      </DashboardLayout>
+          </div>
+
+          {/* TẦNG 2: CÁC BỘ LỌC */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <Select
+              mode="multiple"
+              placeholder={VI.admin.users.toolbar.filterRole}
+              value={roleFilter.length > 0 ? roleFilter : undefined}
+              onChange={setRoleFilter}
+              style={{ width: 260 }} 
+              maxTagCount="responsive"
+              options={allRoles.map((role) => ({ label: role, value: role }))}
+              allowClear
+            />
+            <Select
+              placeholder={VI.admin.users.toolbar.filterStatus || "Lọc theo trạng thái"}
+              value={statusFilter || undefined}
+              onChange={setStatusFilter}
+              style={{ width: 160 }}
+              options={allStatuses.map((status) => ({ label: status, value: status }))}
+              allowClear
+            />
+          </div>
+        </div>
+
+        {/* Table */}
+        <Table<AdminUser>
+          columns={columns}
+          dataSource={users}
+          rowKey="id"
+          loading={isLoading}
+          scroll={{ y: 'calc(100vh - 300px)' }} 
+          
+          pagination={{
+            current: page,
+            pageSize: pageSize,
+            total: total,
+            showTotal: (t) => `Tổng ${t} người dùng`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (newPage, newPageSize) => {
+              setPage(newPage);
+              setPageSize(newPageSize);
+            }
+          }}
+          onRow={(user) => ({
+            onClick: () => handleViewDetail(user),
+            style: { cursor: 'pointer' },
+          })}
+          rowClassName="admin-user-row"
+        />
+
+        {/* Detail Modal */}
+        <UserDetailDrawer
+          open={drawerOpen}
+          selectedUserId={selectedUserId ?? null}
+          profile={profile}
+          profileLoading={profileLoading}
+          rolesFromList={selectedUser ? getUserRolesArray(selectedUser) : undefined} 
+          onClose={handleCloseDetail}
+          onBanToggle={(userId) => {
+            const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
+            if (user) handleBanToggle(user);
+          }}
+          onLockToggle={(userId) => {
+            const user = selectedUser?.id === userId ? selectedUser : users.find((u) => u.id === userId);
+            if (user) handleLockToggle(user);
+          }}
+          actionLoading={actionLoadingId !== null}
+          canManage={
+            selectedUser
+              ? canManageUser({
+                  currentUserRoles,
+                  currentUserId,
+                  targetUserId: selectedUser.id,
+                  targetUserRoles: getUserRolesArray(selectedUser), 
+                }).allowed
+              : true
+          }
+          manageDisabledReason={
+            selectedUser
+              ? canManageUser({
+                  currentUserRoles,
+                  currentUserId,
+                  targetUserId: selectedUser.id,
+                  targetUserRoles: getUserRolesArray(selectedUser), 
+                }).reason
+              : undefined
+          }
+        />
+
+        {/* Create User Modal */}
+        <Modal
+          title={VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
+          open={createUserModalOpen}
+          onCancel={() => {
+            setCreateUserModalOpen(false);
+            createUserForm.resetFields();
+          }}
+          footer={null}
+          destroyOnClose
+        >
+          <Form
+            form={createUserForm}
+            layout="vertical"
+            onFinish={handleCreateUser}
+            style={{ marginTop: 16 }}
+          >
+            <Form.Item
+              label={VI.auth.register.username || 'Tên đăng nhập'}
+              name="username"
+              rules={[
+                { required: true, message: 'Vui lòng nhập tên đăng nhập' },
+                { min: 3, message: 'Tên đăng nhập phải có ít nhất 3 ký tự' },
+              ]}
+            >
+              <Input prefix={<UserOutlined />} placeholder={VI.auth.register.usernamePlaceholder || 'Nhập tên đăng nhập...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.fullName || 'Họ và tên'}
+              name="fullName"
+              rules={[{ required: true, message: 'Vui lòng nhập họ tên' }]}
+            >
+              <Input placeholder={VI.auth.register.fullNamePlaceholder || 'Nhập họ và tên...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.email || 'Email'}
+              name="email"
+              rules={[
+                { required: true, message: 'Vui lòng nhập email' },
+                { type: 'email', message: 'Email không hợp lệ' },
+              ]}
+            >
+              <Input prefix={<UserOutlined />} placeholder={VI.auth.register.emailPlaceholder || 'Nhập email...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.phone || 'Số điện thoại'}
+              name="phone"
+              rules={[
+                { required: true, message: 'Vui lòng nhập số điện thoại' },
+                { pattern: /^0\d{9}$/, message: 'Số điện thoại phải có 10 số, bắt đầu bằng 0' },
+              ]}
+            >
+              <Input placeholder={VI.auth.register.phonePlaceholder || 'Nhập số điện thoại...'} />
+            </Form.Item>
+            <Form.Item
+              label={VI.auth.register.password || 'Mật khẩu'}
+              name="password"
+              rules={[
+                { required: true, message: 'Vui lòng nhập mật khẩu' },
+                { min: 6, message: 'Mật khẩu phải có ít nhất 6 ký tự' },
+              ]}
+            >
+              <Input.Password placeholder={VI.auth.register.passwordPlaceholder || 'Nhập mật khẩu...'} />
+            </Form.Item>
+            <Form.Item
+              label="Vai trò"
+              name="role"
+              rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
+            >
+              <Select placeholder="Chọn vai trò">
+                <Select.Option value="COSPLAYER">Cosplayer</Select.Option>
+                <Select.Option value="PROVIDER_RENTAL">Provider (Thuê trang phục)</Select.Option>
+                <Select.Option value="PROVIDER_PHOTOGRAPH">Photographer (Thợ ảnh)</Select.Option>
+                <Select.Option value="PROVIDER_EVENT_STAFF">Event Staff (Nhân sự sự kiện)</Select.Option>
+                <Select.Option value="STAFF">Staff (Nhân viên hệ thống)</Select.Option>
+                <Select.Option value="ADMIN">Admin (Quản trị viên)</Select.Option>
+              </Select>
+            </Form.Item>
+            <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>
+              <Space>
+                <Button onClick={() => {
+                  setCreateUserModalOpen(false);
+                  createUserForm.resetFields();
+                }}>
+                  {VI.common.actions.cancel || 'Hủy'}
+                </Button>
+                <Button type="primary" htmlType="submit" loading={createUserSubmitting}>
+                  {VI.admin.users.toolbar.createUser || 'Tạo người dùng'}
+                </Button>
+              </Space>
+            </Form.Item>
+          </Form>
+        </Modal>
+      </div>
     </>
   );
 }

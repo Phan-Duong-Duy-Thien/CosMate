@@ -30,7 +30,7 @@ export function useDynamicMenu() {
       // 1. Code cứng 2 nút quan trọng nhất
       const safeMenus: DashboardSidebarItem[] = [
         { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={18} /> },
-        { key: '/admin/menus', label: 'Quản lý Menu', path: '/admin/menus', icon: <MenuIcon size={18} /> },
+        { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={18} /> },
       ];
 
       // 2. MENU ĐỘNG TỪ DATABASE

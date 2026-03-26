@@ -1,5 +1,5 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { useNavigate, useLocation, Outlet } from 'react-router-dom'; // Thêm Outlet ở đây
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User, ChevronRight } from 'lucide-react';
@@ -62,14 +62,33 @@ export function DashboardLayout({
 
   const menuItems: MenuProps['items'] = mapToAntdMenuItems(sidebarItems);
 
-  // Set default breadcrumbs based on route (Giữ logic của bạn ông)
+  // Set default breadcrumbs based on route
   useEffect(() => {
     const path = location.pathname;
+    
+    // 1. TRANG CHỦ ADMIN
     if (path === '/admin') {
-      setItems([{ label: VI.common.breadcrumb.admin, to: '/admin' }]);
-    } else if (path === '/admin/users') {
-      setItems([{ label: VI.common.breadcrumb.admin, to: '/admin' }, { label: VI.common.breadcrumb.users }]);
-    } else if (path === '/provider-rental') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: 'Trang chủ' }
+      ]);
+    } 
+    // 2. TRANG QUẢN LÝ MENU
+    else if (path === '/admin/menus') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: 'Quản lý menu' }
+      ]);
+    } 
+    // 3. TRANG QUẢN LÝ NGƯỜI DÙNG
+    else if (path === '/admin/users') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: VI.common.breadcrumb.users || 'Quản lý người dùng' }
+      ]);
+    } 
+    // --- CÁC ROUTE CỦA PROVIDER GIỮ NGUYÊN BÊN DƯỚI ---
+    else if (path === '/provider-rental') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
       ]);
@@ -113,7 +132,6 @@ export function DashboardLayout({
     window.location.reload();
   };
 
-  // User dropdown menu items (Giữ logic redirect thông minh của bạn ông)
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
@@ -141,6 +159,10 @@ export function DashboardLayout({
     },
   ];
 
+  const displayTitle = breadcrumbItems.length > 0 
+    ? breadcrumbItems[breadcrumbItems.length - 1].label 
+    : title;
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Sidebar */}
@@ -167,24 +189,9 @@ export function DashboardLayout({
 
       {/* Main Layout */}
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
-        {/* Header */}
-        <Header
-          style={{
-            padding: '0 20px',
-            background: '#fff',
-            borderBottom: '1px solid #f0f0f0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1,
-          }}
-        >
-          {/* Left: Page Title */}
-          <h1 style={{ margin: 0, fontSize: 18, fontWeight: 600 }}>{title}</h1>
-
-          {/* Right: User Dropdown */}
+        <Header style={{ padding: '0 24px', background: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1 }}>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
+          
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
               <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>

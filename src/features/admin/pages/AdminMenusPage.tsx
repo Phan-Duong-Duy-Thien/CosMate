@@ -4,7 +4,7 @@
   import { useMenuManagement } from '../hooks/useMenuManagement';
 
   const routeOptions = [
-    { label: 'Khu vực Admin', options: [ { label: '/admin (Trang chủ Admin)', value: '/admin' }, { label: '/admin/users (Quản lý User)', value: '/admin/users' }, { label: '/admin/menus (Quản lý Menu)', value: '/admin/menus' } ]},
+    { label: 'Khu vực Admin', options: [ { label: '/admin (Trang chủ Admin)', value: '/admin' }, { label: '/admin/users (Quản lý User)', value: '/admin/users' }, { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' } ]},
     { label: 'Khu vực Provider Rental', options: [ { label: '/provider-rental (Trang chủ Provider)', value: '/provider-rental' }, { label: '/provider-rental/costumes (Quản lý Trang phục)', value: '/provider-rental/costumes' }, { label: '/provider-rental/orders (Quản lý Đơn thuê)', value: '/provider-rental/orders' } ]}
   ];
 
