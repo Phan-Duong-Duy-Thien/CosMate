@@ -16,6 +16,8 @@ import { providerSidebarItems } from '@/features/provider/constants/sidebar';
 import { useProviderOrders, ORDER_STATUS_TABS } from '../hooks/useProviderOrders';
 import { ShipOrderModal } from '../components/ShipOrderModal';
 import { OrderDetailDrawer } from '../components/OrderDetailDrawer';
+import { CreateDisputeModal } from '../components/CreateDisputeModal';
+import { useCreateDispute } from '../hooks/useCreateDispute';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderItem } from '../types';
 
@@ -39,6 +41,7 @@ export default function ProviderOrdersPage() {
     completeOrder,
     completingOrderId,
   } = useProviderOrders();
+  const { createDispute, disputingOrderId } = useCreateDispute();
 
   // Ship modal state
   const [shipModalOpen, setShipModalOpen] = useState(false);
@@ -47,6 +50,10 @@ export default function ProviderOrdersPage() {
   // Detail drawer state
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+
+  // Dispute modal state
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false);
+  const [disputeOrderId, setDisputeOrderId] = useState<number | null>(null);
 
   // Convert provider sidebar items to DashboardLayout format
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
@@ -133,6 +140,25 @@ export default function ProviderOrdersPage() {
   const handleShip = (orderId: number) => {
     setShipOrderId(orderId);
     setShipModalOpen(true);
+  };
+
+  // Handle dispute
+  const handleDispute = (orderId: number) => {
+    setDisputeOrderId(orderId);
+    setDisputeModalOpen(true);
+  };
+
+  const handleDisputeSubmit = async (reason: string) => {
+    if (!disputeOrderId) return;
+    const success = await createDispute(disputeOrderId, reason);
+    if (success) {
+      message.success('Đã gửi khiếu nại thành công');
+      setDisputeModalOpen(false);
+      setDisputeOrderId(null);
+      refetch();
+    } else {
+      message.error('Gửi khiếu nại thất bại');
+    }
   };
 
   // Handle ship submit
@@ -232,15 +258,26 @@ export default function ProviderOrdersPage() {
             </Button>
           )}
           {record.status === 'SHIPPING_BACK' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<FlagOutlined />}
-              loading={completingOrderId === record.id}
-              onClick={() => handleComplete(record.id)}
-            >
-              {VI.provider.orders.actions.complete}
-            </Button>
+            <>
+              <Button
+                type="primary"
+                size="small"
+                icon={<FlagOutlined />}
+                loading={completingOrderId === record.id}
+                onClick={() => handleComplete(record.id)}
+              >
+                {VI.provider.orders.actions.complete}
+              </Button>
+              <Button
+                danger
+                size="small"
+                icon={<FlagOutlined />}
+                loading={disputingOrderId === record.id}
+                onClick={() => handleDispute(record.id)}
+              >
+                Khiếu nại
+              </Button>
+            </>
           )}
         </Space>
       ),
@@ -314,6 +351,16 @@ export default function ProviderOrdersPage() {
           setDetailDrawerOpen(false);
           setSelectedOrderId(null);
         }}
+      />
+      <CreateDisputeModal
+        open={disputeModalOpen}
+        orderId={disputeOrderId || 0}
+        loading={!!disputingOrderId}
+        onCancel={() => {
+          setDisputeModalOpen(false);
+          setDisputeOrderId(null);
+        }}
+        onSubmit={handleDisputeSubmit}
       />
     </DashboardLayout>
   );

@@ -395,6 +395,7 @@ export default function CosplayerSiteLayout() {
               type="button"
               aria-label="Giỏ hàng"
               className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => navigate('/profile/purchase-history')}
             >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />

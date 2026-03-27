@@ -59,9 +59,12 @@ export type OrderStatus =
   | 'SHIPPING_OUT'
   | 'DELIVERING_OUT'
   | 'IN_USE'
+  | 'SHIPPING_BACK'
   | 'RETURNED'
   | 'COMPLETED'
-  | 'CANCELLED';
+  | 'CANCELLED'
+  | 'DISPUTE'
+  | 'EXTENDING';
 
 export interface OrderItem {
   id: number;

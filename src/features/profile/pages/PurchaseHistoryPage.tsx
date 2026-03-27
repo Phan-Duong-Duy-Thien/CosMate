@@ -8,8 +8,10 @@ import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliver
 import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
 import { ReviewModal } from "@/features/order/components/ReviewModal"
+import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
-import { PackageCheck, Clock, Truck, CheckCircle, XCircle, Star } from "lucide-react"
+import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
+import { PackageCheck, Clock, Truck, CheckCircle, XCircle, Star, Flag } from "lucide-react"
 
 // Format date safely
 const formatDate = (dateString: string | undefined | null): string => {
@@ -57,6 +59,7 @@ export default function PurchaseHistoryPage() {
   const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
 
   const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
+  const { createDispute, disputingOrderId } = useCreateDispute()
 
   // Confirm delivery modal state
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
@@ -69,6 +72,10 @@ export default function PurchaseHistoryPage() {
   // Detail drawer state
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
+
+  // Dispute modal state
+  const [disputeModalOpen, setDisputeModalOpen] = useState(false)
+  const [disputeOrderId, setDisputeOrderId] = useState<number | null>(null)
 
   const currentFilterLabel = useMemo(() => {
     return TAB_LABELS[tab]
@@ -110,6 +117,25 @@ export default function PurchaseHistoryPage() {
       setReturnOrderId(null)
     } else {
       message.error(VI.profile.orders.toastReturnFailed)
+    }
+  }
+
+  // Handle create dispute
+  const handleCreateDispute = (orderId: number) => {
+    setDisputeOrderId(orderId)
+    setDisputeModalOpen(true)
+  }
+
+  const handleDisputeSubmit = async (reason: string) => {
+    if (!disputeOrderId) return
+    const success = await createDispute(disputeOrderId, reason)
+    if (success) {
+      message.success('Đã gửi khiếu nại thành công')
+      setDisputeModalOpen(false)
+      setDisputeOrderId(null)
+      refetch()
+    } else {
+      message.error('Gửi khiếu nại thất bại')
     }
   }
 
@@ -156,6 +182,7 @@ export default function PurchaseHistoryPage() {
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
+    const canCreateDispute = order.status === 'DELIVERING_OUT'
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     return (
@@ -223,6 +250,17 @@ export default function PurchaseHistoryPage() {
                 className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
               >
                 {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
+              </button>
+            )}
+            {canCreateDispute && (
+              <button
+                type="button"
+                onClick={() => handleCreateDispute(order.id)}
+                disabled={disputingOrderId === order.id}
+                className="flex items-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+              >
+                <Flag className="h-4 w-4" />
+                {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : 'Khiếu nại'}
               </button>
             )}
             {isCompleted && (
@@ -360,6 +398,18 @@ export default function PurchaseHistoryPage() {
           setReviewCosplayerId(null)
         }}
         onSubmit={handleReviewSubmit}
+      />
+
+      {/* Create Dispute Modal */}
+      <CreateDisputeModal
+        open={disputeModalOpen}
+        orderId={disputeOrderId || 0}
+        loading={!!disputingOrderId}
+        onCancel={() => {
+          setDisputeModalOpen(false)
+          setDisputeOrderId(null)
+        }}
+        onSubmit={handleDisputeSubmit}
       />
     </section>
   )

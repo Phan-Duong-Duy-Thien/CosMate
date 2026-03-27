@@ -227,3 +227,12 @@ export async function returnCosplayerOrder(
 ) {
   return orderApi.returnOrder(orderId, trackingCode, notes, images);
 }
+
+/**
+ * Create a dispute for an order
+ * @param orderId - The order ID
+ * @param reason - The dispute reason
+ */
+export async function createDisputeService(orderId: number, reason: string) {
+  await orderApi.createDispute(orderId, reason);
+}
