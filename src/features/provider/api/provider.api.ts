@@ -68,3 +68,16 @@ export async function updateProviderProfile(
 ): Promise<void> {
   await axiosInstance.put(`/api/providers/${providerId}`, payload);
 }
+
+/**
+ * PUT /api/providers/{id}/cover-image
+ * Upload provider cover image.
+ */
+export async function uploadProviderCoverImage(providerId: number, file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('coverImage', file);
+  await axiosInstance.put(`/api/providers/${providerId}/cover-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+}
+

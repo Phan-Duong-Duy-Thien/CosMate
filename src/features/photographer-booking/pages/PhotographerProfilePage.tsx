@@ -1,73 +1,94 @@
 import { Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
+import { Spin } from 'antd';
 import { ProfileSidebar } from '../components/ProfileSidebar';
 import { ProfileMainContent } from '../components/ProfileMainContent';
 import { motion } from 'motion/react';
+import { useProviderProfile } from '@/features/provider/hooks/useProviderProfile';
 
 export default function PhotographerProfilePage() {
+  const { photographerId } = useParams();
+  const providerId = photographerId ? Number(photographerId) : undefined;
+  const { provider, loading, error } = useProviderProfile(providerId!);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+        <Spin size="large" />
+      </div>
+    );
+  }
+
+  if (error || !provider) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] text-red-500">
+        {error ?? 'Không tìm thấy nhiếp ảnh gia'}
+      </div>
+    );
+  }
+
   const photographerData = {
-    name: "Đỗ Kỳ Dũng",
-    title: "Nhiếp ảnh gia Cosplay & Chân dung",
-    avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?auto=format&fit=crop&q=80&w=300",
-    // Bio viết lại văn phong thân thiện, chuyên nghiệp
-    bio: "Chào bạn, mình là Dũng! Một nhiếp ảnh gia chuyên chụp Cosplay tại Việt Nam. Mình đam mê việc tái hiện vẻ đẹp kỳ ảo của các nhân vật thông qua ánh sáng sáng tạo và những góc máy đậm chất điện ảnh.",
-    jobs: 100,
+    name: provider.shopName ?? 'Nhiếp ảnh gia Cosplay',
+    title: 'Nhiếp ảnh gia Cosplay',
+    avatar: provider.avatarUrl ?? '',
+    bio: provider.bio ?? '',
+    jobs: 0,
     rating: 5.0,
-    reviewsCount: 52,
-    responseRate: "98%",
-    location: "TP. Hồ Chí Minh",
-    // Việt hóa các kỹ năng
-    skills: ["Chụp đêm", "Studio", "Kỹ xảo VFX", "Chụp đường phố", "Điện ảnh"]
+    reviewsCount: 0,
+    responseRate: '95%',
+    location: 'TP. Hồ Chí Minh',
+    skills: [],
   };
 
   const portfolioItems = [
     {
-      id: "p1",
-      url: "https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=800",
-      title: "Genshin Impact - Raiden Shogun",
-      category: "Fantasy Ngoại cảnh",
-      likes: "1.2k",
-      views: "15k"
+      id: 'p1',
+      url: 'https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=800',
+      title: 'Genshin Impact - Raiden Shogun',
+      category: 'Fantasy Ngoại cảnh',
+      likes: '1.2k',
+      views: '15k',
     },
     {
-      id: "p2",
-      url: "https://images.unsplash.com/photo-1560932763-0ad9298a995f?auto=format&fit=crop&q=80&w=800",
-      title: "Chân dung Cyberpunk Neon",
-      category: "Chụp đêm",
-      likes: "856",
-      views: "12k"
+      id: 'p2',
+      url: 'https://images.unsplash.com/photo-1560932763-0ad9298a995f?auto=format&fit=crop&q=80&w=800',
+      title: 'Chân dung Cyberpunk Neon',
+      category: 'Chụp đêm',
+      likes: '856',
+      views: '12k',
     },
     {
-      id: "p3",
-      url: "https://images.unsplash.com/photo-1621446173275-27427183ef28?auto=format&fit=crop&q=80&w=800",
-      title: "Tinh linh Rừng cổ",
-      category: "Kỹ xảo / Fantasy",
-      likes: "2.1k",
-      views: "25k"
+      id: 'p3',
+      url: 'https://images.unsplash.com/photo-1621446173275-27427183ef28?auto=format&fit=crop&q=80&w=800',
+      title: 'Tinh linh Rừng cổ',
+      category: 'Kỹ xảo / Fantasy',
+      likes: '2.1k',
+      views: '25k',
     },
     {
-      id: "p4",
-      url: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?auto=format&fit=crop&q=80&w=800",
-      title: "Cosplay Tech-wear hiện đại",
-      category: "Phong cách đường phố",
-      likes: "945",
-      views: "8k"
+      id: 'p4',
+      url: 'https://images.unsplash.com/photo-1578632292335-df3abbb0d586?auto=format&fit=crop&q=80&w=800',
+      title: 'Cosplay Tech-wear hiện đại',
+      category: 'Phong cách đường phố',
+      likes: '945',
+      views: '8k',
     },
     {
-      id: "p5",
-      url: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?auto=format&fit=crop&q=80&w=800",
-      title: "Bộ ảnh Thánh đường Gothic",
-      category: "Điện ảnh (Cinematic)",
-      likes: "1.5k",
-      views: "18k"
+      id: 'p5',
+      url: 'https://images.unsplash.com/photo-1618336753974-aae8e04506aa?auto=format&fit=crop&q=80&w=800',
+      title: 'Bộ ảnh Thánh đường Gothic',
+      category: 'Điện ảnh (Cinematic)',
+      likes: '1.5k',
+      views: '18k',
     },
     {
-      id: "p6",
-      url: "https://images.unsplash.com/photo-1627137504228-a2990a274515?auto=format&fit=crop&q=80&w=800",
-      title: "Quyết đấu Samurai trong tuyết",
-      category: "Studio / Hiệu ứng",
-      likes: "3.2k",
-      views: "42k"
-    }
+      id: 'p6',
+      url: 'https://images.unsplash.com/photo-1627137504228-a2990a274515?auto=format&fit=crop&q=80&w=800',
+      title: 'Quyết đấu Samurai trong tuyết',
+      category: 'Studio / Hiệu ứng',
+      likes: '3.2k',
+      views: '42k',
+    },
   ];
 
   return (

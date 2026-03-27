@@ -83,7 +83,7 @@ export default function PhotographHomePage() {
       )}
 
       {!profileLoading && verified === true && profileComplete === false && (
-        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-photograph/settings')} />
+        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-photograph/settings/completion')} />
       )}
 
       {!profileLoading && verified === true && profileComplete === true && (

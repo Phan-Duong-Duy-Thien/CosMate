@@ -92,7 +92,7 @@ export default function ProviderHomePage() {
       {/* Profile completion gate — shown when verified but profile incomplete */}
       {!profileLoading && verified === true && profileComplete === false && (
         <ProviderProfileCompletionGate
-          onComplete={() => navigate('/provider/settings')}
+          onComplete={() => navigate('/provider/settings/completion')}
         />
       )}
 

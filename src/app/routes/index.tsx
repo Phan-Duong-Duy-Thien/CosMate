@@ -48,6 +48,8 @@ import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
 import ProviderCreateServicePage from "@/features/service/pages/ProviderCreateServicePage"
 import ProviderServiceListPage from "@/features/service/pages/ProviderServiceListPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
+import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
+import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
 
 export default function AppRoutes() {
   return (
@@ -96,7 +98,9 @@ export default function AppRoutes() {
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
-        <Route path="/provider/settings" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider/settings" element={<ProviderProfileViewPage />} />
+        <Route path="/provider/settings/edit" element={<ProviderProfileEditPage />} />
+        <Route path="/provider/settings/completion" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Provider Photograph Routes (Protected) */}
@@ -104,7 +108,9 @@ export default function AppRoutes() {
         <Route path="/provider-photograph" element={<PhotographHomePage />} />
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
-        <Route path="/provider-photograph/settings" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
+        <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
+        <Route path="/provider-photograph/settings/completion" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Provider Event Staff Routes (Protected) */}
@@ -112,7 +118,9 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
-        <Route path="/provider-event-staff/settings" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
+        <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />
+        <Route path="/provider-event-staff/settings/completion" element={<ProviderProfileCompletionPage />} />
       </Route>
 
       {/* Global Error Pages */}

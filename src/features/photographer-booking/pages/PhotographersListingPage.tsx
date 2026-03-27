@@ -3,11 +3,10 @@ import { PhotographerCard } from '@/features/photographer-booking/components/Pho
 import { ListingFilterBar } from '@/features/photographer-booking/components/ListingFilterBar';
 import { Button } from '@/features/photographer-booking/components/ui/button';
 import { motion } from 'motion/react';
-import { usePublicServices } from '@/features/service/hooks/usePublicServices';
-import { SERVICE_TYPE } from '@/features/service/types';
+import { useProvidersByRole, PROVIDER_ROLE } from '@/features/photographer-booking/hooks/useProvidersByRole';
 
 export default function PhotographersListingPage() {
-  const { filteredServices, loading, error } = usePublicServices(SERVICE_TYPE.PHOTOGRAPHER);
+  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER);
 
   return (
     <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
@@ -40,7 +39,7 @@ export default function PhotographersListingPage() {
               </motion.p>
             </div>
             <div className="text-sm font-medium text-gray-400">
-              Hiển thị <span className="text-[#4A3B6B] font-bold">{filteredServices.length}</span> nhiếp ảnh gia
+              Hiển thị <span className="text-[#4A3B6B] font-bold">{providers.length}</span> nhiếp ảnh gia
             </div>
           </div>
 
@@ -49,13 +48,13 @@ export default function PhotographersListingPage() {
 
         {/* Grid Area */}
         <section className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {loading && filteredServices.length === 0 ? (
+          {loading && providers.length === 0 ? (
             <div className="col-span-full text-center py-12 text-gray-400">Đang tải dữ liệu...</div>
           ) : error ? (
             <div className="col-span-full text-center py-12 text-red-400">{error}</div>
           ) : (
-            filteredServices.map((service) => (
-              <PhotographerCard key={service.id} {...service} />
+            providers.map((provider) => (
+              <PhotographerCard key={provider.id} {...provider} />
             ))
           )}
         </section>
