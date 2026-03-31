@@ -1,48 +1,46 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
+import { Spin } from 'antd';
 import { PortfolioGrid } from '../mocks/PortfolioGrid';
-import { Star, Clock, CheckCircle2, ChevronRight, Camera, ShieldCheck } from 'lucide-react';
+import { Star, Clock, CheckCircle2, ChevronRight, Camera, ShieldCheck, MapPin, ImageIcon } from 'lucide-react';
 import type { PortfolioImage } from '../types';
+import { usePublicProviderServices } from '@/features/service/hooks/usePublicProviderServices';
+import type { ServiceItem } from '@/features/service/types';
 
 interface ProfileMainContentProps {
   portfolioItems: PortfolioImage[];
+  providerId: number | undefined;
 }
 
-export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfolioItems }) => {
+export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfolioItems, providerId }) => {
+  const navigate = useNavigate();
+  const { services: apiServices, loading: servicesLoading, error: servicesError } = usePublicProviderServices(providerId);
   // Mặc định chọn tab đầu tiên
   const [activeTab, setActiveTab] = useState('Portfolio');
 
   const tabs = ['Portfolio', 'Gói dịch vụ', 'Đánh giá', 'Điều khoản'];
 
-  const services = [
-    {
-      id: 1,
-      title: 'Đi Fes Cơ Bản',
-      price: '500.000đ',
-      duration: '2 Giờ',
-      deposit: '30%',
-      features: ['10 ảnh chỉnh sửa cao cấp', 'Hỗ trợ đạo cụ cơ bản', 'Trả ảnh demo trong ngày'],
-      color: '#E0D7FF',
-    },
-    {
-      id: 2,
-      title: 'Chân dung Cinematic',
-      price: '1.200.000đ',
-      duration: '4 Giờ',
-      deposit: '40%',
-      features: ['25 ảnh retouch kỹ', 'Hỗ trợ ánh sáng (Light)', 'Giao toàn bộ file gốc', 'Chỉnh sửa hiệu ứng VFX'],
-      color: '#FFD7E5',
-    },
-    {
-      id: 3,
-      title: 'Studio Fantasy',
-      price: '2.500.000đ',
-      duration: 'Cả ngày',
-      deposit: '50%',
-      features: ['Chỉnh sửa không giới hạn', 'Bao gồm phí thuê Studio', 'Quay video hậu trường (BTS)', 'Trả ảnh siêu tốc'],
-      color: '#D7FFE0',
+  const formatPrice = (item: ServiceItem): string => {
+    if (item.minPrice != null && item.maxPrice != null && item.minPrice > 0 && item.maxPrice > 0) {
+      return `${item.minPrice.toLocaleString('vi-VN')} - ${item.maxPrice.toLocaleString('vi-VN')}đ`;
     }
-  ];
+    if (item.pricePerSlot > 0) {
+      return `${item.pricePerSlot.toLocaleString('vi-VN')}đ`;
+    }
+    return 'Liên hệ';
+  };
+
+  const formatDuration = (hours: number): string => {
+    if (hours >= 8) return 'Cả ngày';
+    return `${hours} Giờ`;
+  };
+
+  const handleViewDetail = (serviceId: number) => {
+    navigate(`/service/${serviceId}`, {
+      state: { providerType: 'staff', providerId },
+    });
+  };
 
   const reviews = [
     {
@@ -113,46 +111,85 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
 
           {/* TAB 2: GÓI DỊCH VỤ */}
           {activeTab === 'Gói dịch vụ' && (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {services.map((service) => (
-                <div 
-                  key={service.id}
-                  className="bg-white border border-[#F0E6FF] rounded-3xl p-6 hover:shadow-xl hover:shadow-[#F0E6FF]/50 transition-all group flex flex-col"
-                >
-                  <div className="mb-4">
-                    <h3 className="text-lg font-bold text-[#4A3B6B] mb-1">{service.title}</h3>
-                    <div className="text-2xl font-black text-[#B59DFF]">{service.price}</div>
-                  </div>
-                  
-                  <div className="space-y-3 mb-6 flex-1">
-                    <div className="flex items-center gap-2 text-sm text-[#6B5A94]">
-                      <Clock className="w-4 h-4 text-[#A090C5]" />
-                      <span>Thời lượng: <span className="font-bold">{service.duration}</span></span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm text-[#6B5A94]">
-                      <CheckCircle2 className="w-4 h-4 text-green-500" />
-                      <span>Đặt cọc: <span className="font-bold">{service.deposit}</span></span>
-                    </div>
-                    <ul className="pt-4 space-y-2">
-                      {service.features.map((feature, idx) => (
-                        <li key={idx} className="flex items-center gap-2 text-xs text-[#8E7AB5]">
-                          <div className="w-1 h-1 rounded-full bg-[#B59DFF]" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="w-full py-3 bg-[#F5F1FF] text-[#8E7AB5] font-bold rounded-xl flex items-center justify-center gap-2 group-hover:bg-[#B59DFF] group-hover:text-white transition-all shadow-sm"
-                  >
-                    Chọn gói này
-                    <ChevronRight className="w-4 h-4" />
-                  </motion.button>
+            <div>
+              {servicesLoading && (
+                <div className="flex justify-center py-16">
+                  <Spin size="large" />
                 </div>
-              ))}
+              )}
+              {!servicesLoading && servicesError && (
+                <div className="text-center py-16 text-[#A090C5]">
+                  {servicesError}
+                </div>
+              )}
+              {!servicesLoading && !servicesError && apiServices.length === 0 && (
+                <div className="text-center py-16 space-y-2">
+                  <ImageIcon className="w-12 h-12 mx-auto text-[#D7D0E5]" />
+                  <p className="text-[#A090C5] font-medium">Nhà cung cấp này chưa có dịch vụ nào.</p>
+                </div>
+              )}
+              {!servicesLoading && !servicesError && apiServices.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {apiServices.map((service) => (
+                    <div
+                      key={service.id}
+                      className="bg-white border border-[#F0E6FF] rounded-3xl overflow-hidden hover:shadow-xl hover:shadow-[#F0E6FF]/50 transition-all group flex flex-col"
+                    >
+                      {service.imageUrls && service.imageUrls.length > 0 ? (
+                        <div className="w-full h-40 overflow-hidden bg-[#F5F1FF]">
+                          <img
+                            src={service.imageUrls[0]}
+                            alt={service.serviceType}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-full h-40 bg-[#F5F1FF] flex items-center justify-center">
+                          <ImageIcon className="w-12 h-12 text-[#D7D0E5]" />
+                        </div>
+                      )}
+                      <div className="p-5 flex flex-col flex-1">
+                        <div className="mb-3">
+                          <h3 className="text-base font-bold text-[#4A3B6B] mb-1">{service.serviceType}</h3>
+                          <div className="text-xl font-black text-[#B59DFF]">{formatPrice(service)}</div>
+                        </div>
+
+                        <div className="space-y-2 mb-4 flex-1">
+                          {service.description && (
+                            <p className="text-xs text-[#8E7AB5] line-clamp-2">{service.description}</p>
+                          )}
+                          <div className="flex items-center gap-2 text-xs text-[#6B5A94]">
+                            <Clock className="w-3.5 h-3.5 text-[#A090C5]" />
+                            <span>Thời lượng: <span className="font-bold">{formatDuration(service.slotDurationHours)}</span></span>
+                          </div>
+                          {service.depositAmount != null && service.depositAmount > 0 && (
+                            <div className="flex items-center gap-2 text-xs text-[#6B5A94]">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                              <span>Đặt cọc: <span className="font-bold">{service.depositAmount.toLocaleString('vi-VN')}đ</span></span>
+                            </div>
+                          )}
+                          {service.areas && service.areas.length > 0 && (
+                            <div className="flex items-center gap-2 text-xs text-[#6B5A94]">
+                              <MapPin className="w-3.5 h-3.5 text-[#A090C5]" />
+                              <span className="line-clamp-1">{service.areas[0]}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          onClick={() => handleViewDetail(service.id)}
+                          className="w-full py-2.5 bg-[#F5F1FF] text-[#8E7AB5] font-bold rounded-xl flex items-center justify-center gap-2 group-hover:bg-[#B59DFF] group-hover:text-white transition-all shadow-sm text-sm"
+                        >
+                          Xem chi tiết dịch vụ
+                          <ChevronRight className="w-4 h-4" />
+                        </motion.button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 

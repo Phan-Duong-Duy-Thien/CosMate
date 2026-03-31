@@ -47,6 +47,7 @@ import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
 import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
 import ProviderCreateServicePage from "@/features/service/pages/ProviderCreateServicePage"
 import ProviderServiceListPage from "@/features/service/pages/ProviderServiceListPage"
+import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
@@ -71,6 +72,7 @@ export default function AppRoutes() {
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
+        <Route path="service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
         <Route path="staff/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />

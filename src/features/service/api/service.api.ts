@@ -91,3 +91,16 @@ export async function getPublicServices(): Promise<PublicServiceItem[]> {
   );
   return response.data.result;
 }
+
+/**
+ * GET /api/services/:id
+ * Fetches a single service by ID for public detail view.
+ */
+export async function getServiceById(
+  serviceId: number
+): Promise<ServiceItem> {
+  const response = await axiosInstance.get<ApiResponse<ServiceItem>>(
+    `/api/services/${serviceId}`
+  );
+  return response.data.result;
+}

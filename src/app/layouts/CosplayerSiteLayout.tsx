@@ -149,11 +149,46 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.photographers },
       ])
+    } else if (path.startsWith("/photographer/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+        { label: VI.common.breadcrumb.photographerProfile },
+      ])
     } else if (path === "/staffs") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
+    } else if (path.startsWith("/staff/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+        { label: VI.common.breadcrumb.staffProfile },
+      ])
+    } else if (path.startsWith("/service/")) {
+      const state = location.state as { providerType?: string; providerId?: number } | null
+      if (state?.providerType === 'staff' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+          { label: VI.common.breadcrumb.staffProfile, to: `/staff/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else if (state?.providerType === 'photographer' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.photographerProfile, to: `/photographer/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.serviceDetail },
+        ])
+      }
     } else if (path === "/notifications") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -473,11 +508,12 @@ export default function CosplayerSiteLayout() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-3">
-        <Breadcrumbs items={items} />
-      </div>
-
       <main className="flex-1 pt-[56px]">
+        {!isHomePage && items.length > 0 && (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+            <Breadcrumbs items={items} />
+          </div>
+        )}
         {isHomePage ? (
           <div className="relative">
             <div
