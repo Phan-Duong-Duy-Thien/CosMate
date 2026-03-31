@@ -53,7 +53,7 @@ export function useNotifications(): UseNotificationsResult {
     const previous = notifications
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
     try {
-      await markAllNotificationsRead()
+      await markAllRead()
       console.log("[useNotifications] Mark all as read success")
     } catch (err) {
       setNotifications(previous)

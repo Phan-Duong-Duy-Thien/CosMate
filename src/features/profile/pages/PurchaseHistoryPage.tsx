@@ -185,12 +185,15 @@ export default function PurchaseHistoryPage() {
     const canCreateDispute = order.status === 'DELIVERING_OUT'
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
+    const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
+
     return (
       <div
         key={order.id}
         className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
       >
-        <div className="h-20 w-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100">
+        {/* Left: Thumbnail */}
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
           {order.costumeImage ? (
             <img
               src={order.costumeImage}
@@ -198,37 +201,50 @@ export default function PurchaseHistoryPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-slate-400">
-              <PackageCheck className="h-8 w-8" />
+            <div className="flex h-full w-full items-center justify-center text-slate-300">
+              <PackageCheck className="h-10 w-10" />
             </div>
           )}
         </div>
+
+        {/* Middle: Info */}
         <div className="flex flex-1 flex-col justify-between">
-          <div>
-            <h3 className="font-semibold text-slate-900">{order.costumeName}</h3>
-            <p className="mt-1 text-sm text-slate-600">
-              {VI.profile.orders.orderId}: #{order.id}
-            </p>
-            <span className="mt-1 inline-block rounded-full bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-700">
+          {/* Top row: order code + status badge */}
+          <div className="flex items-start justify-between">
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate font-semibold text-slate-900">
+                {order.costumeName || 'Trang phục'}
+              </h3>
+              <p className="mt-0.5 text-sm font-medium text-slate-500">
+                {VI.profile.orders.orderTitle} {orderCode}
+              </p>
+            </div>
+            <span className="ml-2 shrink-0 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
               {statusLabel}
             </span>
           </div>
-          <div className="mt-2 flex items-center justify-between">
-            <span className="text-sm font-medium text-slate-500">
-              {formatDate(order.rentStart)} - {formatDate(order.rentEnd)}
+
+          {/* Middle row: rental period + item count */}
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+            <span>
+              {VI.profile.orders.cardRentPeriod}: {formatDate(order.rentStart) || '-'} - {formatDate(order.rentEnd) || '-'}
             </span>
-            <span className="font-semibold text-purple-600">
-              {order.totalAmount.toLocaleString("vi-VN")} ₫
-            </span>
+            {order.rentDay > 0 && (
+              <span>
+                {order.rentDay} {VI.profile.orders.cardDayCount}
+              </span>
+            )}
           </div>
-          <div className="mt-2 flex items-center justify-end gap-2">
+
+          {/* Bottom row: CTA buttons */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => {
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
-              className="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -237,7 +253,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleConfirmDelivery(order.id)}
                 disabled={confirmingDeliveryId === order.id}
-                className="rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
               >
                 {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
               </button>
@@ -247,7 +263,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleReturnOrder(order.id)}
                 disabled={returningOrderId === order.id}
-                className="rounded-lg bg-orange-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
               >
                 {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
               </button>
@@ -257,9 +273,9 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleCreateDispute(order.id)}
                 disabled={disputingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg bg-red-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
               >
-                <Flag className="h-4 w-4" />
+                <Flag className="h-3.5 w-3.5" />
                 {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : 'Khiếu nại'}
               </button>
             )}
@@ -268,13 +284,20 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
                 disabled={reviewingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg bg-amber-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
               >
-                <Star className="h-4 w-4" />
+                <Star className="h-3.5 w-3.5" />
                 {reviewingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
               </button>
             )}
           </div>
+        </div>
+
+        {/* Right: Total amount */}
+        <div className="flex flex-col items-end justify-between text-right">
+          <span className="text-base font-bold text-purple-600">
+            {order.totalAmount.toLocaleString('vi-VN')} ₫
+          </span>
         </div>
       </div>
     )

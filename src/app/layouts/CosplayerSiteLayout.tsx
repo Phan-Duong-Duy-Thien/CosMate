@@ -197,11 +197,19 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div style={{ width: 320, background: "#fff", borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
-      <div style={{ maxHeight: 384, overflowY: "auto" }}>
-        <div style={{ borderBottom: "1px solid #f1f5f9", padding: "12px 16px", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
-        </div>
+    <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
+      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
+        {unreadCount > 0 && (
+          <button
+            onClick={() => markAllRead()}
+            style={{ fontSize: 12, color: "#ec4899", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 500 }}
+          >
+            Đánh dấu đã đọc
+          </button>
+        )}
+      </div>
+      <div style={{ maxHeight: 360, overflowY: "auto" }}>
         {notifLoading ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
             <Spin size="small" />
@@ -220,7 +228,7 @@ export default function CosplayerSiteLayout() {
                   if (n.link) navigate(n.link)
                   setNotifOpen(false)
                 }}
-                style={{ padding: "12px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
+                style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
@@ -237,7 +245,7 @@ export default function CosplayerSiteLayout() {
       </div>
       {notifications.length > 0 && (
         <div
-          style={{ padding: "12px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9", background: "#fff", borderRadius: "0 0 16px 16px" }}
+          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9" }}
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)

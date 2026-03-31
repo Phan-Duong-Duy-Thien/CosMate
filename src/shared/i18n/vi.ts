@@ -783,6 +783,12 @@ export const VI = {
       statusShippingOut: "Đang giao",
       statusDeliveringOut: "Chờ nhận",
       statusShippingBack: "Đang trả hàng",
+      // Card display
+      orderTitle: "Đơn hàng",
+      orderCodePrefix: "CM",
+      cardRentPeriod: "Thuê",
+      cardDayCount: "ngày",
+      cardTotal: "Tổng cộng",
       // Actions
       actionViewDetail: "Xem chi tiết đơn",
       actionConfirmDelivery: "Xác nhận nhận hàng",
