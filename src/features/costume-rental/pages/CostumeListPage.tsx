@@ -8,6 +8,8 @@ import { SortBar }from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
+import AISearchBar from "@/features/search/components/AISearchBar"
+import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
 const PAGE_SIZE = 16
 
@@ -47,6 +49,7 @@ export default function CostumeListPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [heroVisible, setHeroVisible] = React.useState(false)
+  const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
   const navigate = useNavigate()
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
@@ -117,10 +120,17 @@ export default function CostumeListPage() {
   type UIState = "loading" | "error" | "empty" | "success"
   const uiState: UIState = isLoading ? "loading" : error ? "error" : sortedItems.length === 0 ? "empty" : "success"
 
-  const handleReset = () => setFilters(initialFilters)
+  const handleReset = () => {
+    setFilters(initialFilters)
+    setAiResults(null)
+  }
   const handleToggleWishlist = (costumeId: string) => {
     setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
   }
+
+  const handleAISearchCompleted = React.useCallback((results: AISearchResultItem[]) => {
+    setAiResults(results)
+  }, [])
 
   return (
     <section className="min-h-screen bg-transparent pb-20">
@@ -160,6 +170,8 @@ export default function CostumeListPage() {
           />
 
           <div className="space-y-4">
+            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
+
             <SortBar
               sortKey={sortKey}
               currentPage={displayPage}
@@ -168,6 +180,44 @@ export default function CostumeListPage() {
               onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
             />
+
+            {aiResults && (
+              <div className="rounded-2xl border border-pink-100 bg-pink-50/60 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-pink-700">
+                    Kết quả gợi ý từ AI ({aiResults.length})
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-full"
+                    onClick={() => setAiResults(null)}
+                  >
+                    Ẩn kết quả AI
+                  </Button>
+                </div>
+                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                  {aiResults.map((item) => (
+                    <button
+                      key={`${item.costumeId}-${item.imageUrl}`}
+                      type="button"
+                      onClick={() => navigate(`/costumes/${item.costumeId}`)}
+                      className="flex items-center gap-3 rounded-xl border border-pink-100 bg-white p-3 text-left transition hover:border-pink-300 hover:shadow-sm"
+                    >
+                      <img
+                        src={item.imageUrl}
+                        alt={item.costumeName}
+                        className="h-16 w-16 rounded-lg object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-slate-800">{item.costumeName}</p>
+                        <p className="text-xs text-slate-500">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {uiState === "loading" && (
               <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">

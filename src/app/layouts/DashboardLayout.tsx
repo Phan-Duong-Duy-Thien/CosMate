@@ -124,7 +124,22 @@ export function DashboardLayout({
 
   const userName = 'Admin';
   const currentPath = location.pathname;
-  const activeKey = sidebarItems.find((item) => item.path === currentPath)?.key || sidebarItems[0]?.key || '';
+
+  // Hàm đệ quy tìm key đang active và key của thư mục cha
+  const getMenuKeys = (items: DashboardSidebarItem[], path: string): { selected: string; open: string } => {
+    for (const item of items) {
+      if (item.path === path) return { selected: item.key, open: '' };
+      if (item.children) {
+        const childFound = getMenuKeys(item.children, path);
+        if (childFound.selected) return { selected: childFound.selected, open: item.key };
+      }
+    }
+    return { selected: '', open: '' };
+  };
+
+  const { selected: foundSelectedKey, open: foundOpenKey } = getMenuKeys(sidebarItems, currentPath);
+  const activeKey = foundSelectedKey || sidebarItems[0]?.key || '';
+  const defaultOpenKeys = foundOpenKey ? [foundOpenKey] : [];
 
   const handleLogout = () => {
     clearAuth();
@@ -182,6 +197,7 @@ export function DashboardLayout({
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}
+          defaultOpenKeys={defaultOpenKeys}
           items={menuItems}
           style={{ borderRight: 0, marginTop: 16 }}
         />
