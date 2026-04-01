@@ -29,7 +29,7 @@ const HomePage = () => {
         pricePerDay: costume.pricePerDay,
         status: costume.status,
         imageUrls: costume.imageUrls ?? [],
-        brand: costume.brand ?? "",
+        brand: "",
         rentalsCount: costume.rentalsCount ?? 0,
       }))
   }, [items])
