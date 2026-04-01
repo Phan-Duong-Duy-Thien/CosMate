@@ -62,8 +62,9 @@ export default function CostumeDetailPage() {
 
   // Handlers for shop actions
   const handleChat = () => {
-    console.log("Chat clicked - to be implemented with chat system")
-    // Future: navigate to chat or open chat modal
+    if (provider?.id) {
+      navigate(`/chat?partnerId=${provider.id}`)
+    }
   }
 
   const handleViewShop = () => {

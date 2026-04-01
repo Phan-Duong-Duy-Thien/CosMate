@@ -30,8 +30,9 @@ export default function ShopProfilePage() {
   const { reviews, stats } = useShopReviews(providerIdNum)
 
   const handleChat = () => {
-    console.log('Chat clicked - to be implemented with chat system')
-    // Future: navigate to chat or open chat modal
+    if (providerIdNum) {
+      navigate(`/chat?partnerId=${providerIdNum}`)
+    }
   }
 
   const handleProductClick = (productId: string) => {

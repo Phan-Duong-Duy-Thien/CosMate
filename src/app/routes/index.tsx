@@ -51,6 +51,7 @@ import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
+import ChatPage from "@/features/chat/pages/ChatPage"
 
 export default function AppRoutes() {
   return (
@@ -76,6 +77,8 @@ export default function AppRoutes() {
         <Route path="staffs" element={<StaffsListingPage />} />
         <Route path="staff/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
+        <Route path="chat/:roomId" element={<ChatPage />} />
+        <Route path="chat" element={<ChatPage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
         <Route path="register/cosplayer" element={<CosplayerRegPage />} />

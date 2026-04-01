@@ -6,7 +6,7 @@
  */
 import { useParams, useNavigate } from 'react-router-dom';
 import { Spin } from 'antd';
-import { ArrowLeft, Clock, MapPin, CheckCircle2, ImageIcon } from 'lucide-react';
+import { ArrowLeft, Clock, MapPin, CheckCircle2, ImageIcon, MessageCircle } from 'lucide-react';
 import { useServiceDetail } from '../hooks/useServiceDetail';
 
 export default function ServiceDetailPage() {
@@ -97,6 +97,13 @@ export default function ServiceDetailPage() {
                 }`}>
                   {service.status === 'ACTIVE' ? 'Hoạt động' : service.status}
                 </span>
+                <button
+                  onClick={() => navigate(`/chat?partnerId=${service.providerId}`)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-400 hover:bg-pink-500 text-white text-xs font-bold rounded-full transition-colors"
+                >
+                  <MessageCircle className="w-3.5 h-3.5" />
+                  Chat
+                </button>
               </div>
             </div>
 
