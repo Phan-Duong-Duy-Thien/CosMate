@@ -58,6 +58,9 @@ export default function ProviderProfileCompletionPage() {
     districts,
     locationLoading,
     loadDistricts,
+    providerId,
+    uploadAvatar,
+    uploadCoverImage,
   } = useProviderProfileCompletion();
 
   // Address creation form state
@@ -127,6 +130,7 @@ export default function ProviderProfileCompletionPage() {
   };
 
   const canProceedToPhase2 = selectedAddressId !== null;
+  const canProceedToPhase2Check = formData.shopName && formData.bio && formData.bankAccountNumber && formData.bankName;
 
   return (
     <DashboardLayout
@@ -324,6 +328,7 @@ export default function ProviderProfileCompletionPage() {
           </div>
         )}
 
+
         {/* Phase 2: Provider info */}
         {currentPhase === 1 && (
           <div>
@@ -391,6 +396,177 @@ export default function ProviderProfileCompletionPage() {
               </Row>
             </Form>
 
+            {/* Avatar & Cover Image Upload */}
+            {providerId && (
+              <div style={{ marginTop: 24 }}>
+                <Title level={5} style={{ marginBottom: 12 }}>
+                  Ảnh đại diện & Ảnh bìa
+                </Title>
+                <Row gutter={[16, 16]}>
+                  {/* Avatar */}
+                  <Col xs={24} md={12}>
+                    <Card
+                      style={{
+                        border: '1px solid #f1f5f9',
+                        borderRadius: 8,
+                        background: '#f8fafc',
+                      }}
+                      bodyStyle={{ padding: 16 }}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        {profile?.avatarUrl ? (
+                          <img
+                            src={profile.avatarUrl}
+                            alt="Avatar"
+                            style={{
+                              width: 80,
+                              height: 80,
+                              borderRadius: '50%',
+                              objectFit: 'cover',
+                              border: '3px solid #e2e8f0',
+                              marginBottom: 12,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: 80,
+                              height: 80,
+                              borderRadius: '50%',
+                              background: '#ddd6fe',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 28,
+                              fontWeight: 700,
+                              color: '#7c3aed',
+                              margin: '0 auto 12px',
+                            }}
+                          >
+                            {formData.shopName?.charAt(0)?.toUpperCase() ?? 'S'}
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            await uploadAvatar(file);
+                            await refetch();
+                            e.target.value = '';
+                          }}
+                          style={{ display: 'none' }}
+                          id="completion-avatar-upload"
+                        />
+                        <label
+                          htmlFor="completion-avatar-upload"
+                          style={{
+                            display: 'inline-block',
+                            borderRadius: 9999,
+                            background: '#fce7f3',
+                            color: '#be185d',
+                            padding: '6px 14px',
+                            fontSize: 12,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Đổi ảnh
+                        </label>
+                        <Text
+                          type="secondary"
+                          style={{ display: 'block', marginTop: 6, fontSize: 11 }}
+                        >
+                          Tối thiểu 200x200px
+                        </Text>
+                      </div>
+                    </Card>
+                  </Col>
+
+                  {/* Cover Image */}
+                  <Col xs={24} md={12}>
+                    <Card
+                      style={{
+                        border: '1px solid #f1f5f9',
+                        borderRadius: 8,
+                        background: '#f8fafc',
+                      }}
+                      bodyStyle={{ padding: 16 }}
+                    >
+                      <div style={{ textAlign: 'center' }}>
+                        {profile?.coverImageUrl ? (
+                          <img
+                            src={profile.coverImageUrl}
+                            alt="Cover"
+                            style={{
+                              width: '100%',
+                              height: 72,
+                              objectFit: 'cover',
+                              borderRadius: 6,
+                              border: '2px solid #e2e8f0',
+                              marginBottom: 12,
+                            }}
+                          />
+                        ) : (
+                          <div
+                            style={{
+                              width: '100%',
+                              height: 72,
+                              borderRadius: 6,
+                              background: '#ede9fe',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: 12,
+                              color: '#7c3aed',
+                              marginBottom: 12,
+                            }}
+                          >
+                            Chưa có ảnh bìa
+                          </div>
+                        )}
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={async (e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            await uploadCoverImage(file);
+                            await refetch();
+                            e.target.value = '';
+                          }}
+                          style={{ display: 'none' }}
+                          id="completion-cover-upload"
+                        />
+                        <label
+                          htmlFor="completion-cover-upload"
+                          style={{
+                            display: 'inline-block',
+                            borderRadius: 9999,
+                            background: '#ede9fe',
+                            color: '#7c3aed',
+                            padding: '6px 14px',
+                            fontSize: 12,
+                            fontWeight: 500,
+                            cursor: 'pointer',
+                          }}
+                        >
+                          Đổi ảnh bìa
+                        </label>
+                        <Text
+                          type="secondary"
+                          style={{ display: 'block', marginTop: 6, fontSize: 11 }}
+                        >
+                          Tỷ lệ 16:6, tối thiểu 1200x450px
+                        </Text>
+                      </div>
+                    </Card>
+                  </Col>
+                </Row>
+              </div>
+            )}
+
             {saveError && (
               <Alert type="error" description={saveError} style={{ marginBottom: 16 }} showIcon />
             )}
@@ -402,10 +578,16 @@ export default function ProviderProfileCompletionPage() {
               <Button
                 type="primary"
                 loading={saving}
-                onClick={handleSubmit}
-                disabled={!formData.shopName || !formData.bio || !formData.bankAccountNumber || !formData.bankName}
+                onClick={async () => {
+                  const ok = await submit(selectedAddressId!);
+                  if (ok) {
+                    await refetch();
+                    navigate(homePath);
+                  }
+                }}
+                disabled={!canProceedToPhase2Check}
               >
-                {VI.provider.profileCompletion.submitBtn}
+                Tiếp tục
               </Button>
             </div>
           </div>

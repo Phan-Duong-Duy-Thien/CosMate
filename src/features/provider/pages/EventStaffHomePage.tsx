@@ -84,7 +84,7 @@ export default function EventStaffHomePage() {
       )}
 
       {!profileLoading && verified === true && profileComplete === false && (
-        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-event-staff/settings')} />
+        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-event-staff/settings/completion')} />
       )}
 
       {!profileLoading && verified === true && profileComplete === true && (

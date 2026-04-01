@@ -4,7 +4,7 @@
  * Orchestration layer — builds FormData and calls the API.
  * Called by hooks only; never by components or pages.
  */
-import { createService, getProviderServices, getPublicServices } from '../api/service.api';
+import { createService, getProviderServices, getPublicServices, getServiceById } from '../api/service.api';
 import type {
   CreateServiceFormData,
   CreateServicePayload,
@@ -58,4 +58,11 @@ export async function fetchProviderServices(
  */
 export async function fetchPublicServices(): Promise<PublicServiceItem[]> {
   return getPublicServices();
+}
+
+/**
+ * Fetches a single service by its ID.
+ */
+export async function fetchServiceById(serviceId: number): Promise<ServiceItem> {
+  return getServiceById(serviceId);
 }

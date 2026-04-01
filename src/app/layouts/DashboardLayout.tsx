@@ -6,6 +6,10 @@ import { LogOut, User, ChevronRight } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
+import { useUserProfile } from '@/app/providers/UserProfileProvider';
+import { getUserId } from '@/features/auth/services/tokenStorage';
+import { getUserProfile } from '@/features/admin/services/adminUsers.service';
+import type { AdminUserProfile } from '@/features/admin/types';
 
 const { Header, Sider, Content } = Layout;
 
@@ -36,6 +40,7 @@ export function DashboardLayout({
   const navigate = useNavigate();
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
+  const { userProfile, setUserProfile } = useUserProfile();
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
@@ -122,7 +127,32 @@ export function DashboardLayout({
     }
   }, [location.pathname, setItems]);
 
-  const userName = 'Admin';
+  // Fetch user profile for header avatar
+  useEffect(() => {
+    if (userProfile.avatarUrl || userProfile.fullName) return
+
+    const userId = getUserId()
+    if (!userId) return
+
+    const fetchProfile = async () => {
+      try {
+        const response = await getUserProfile(userId)
+        const profile = response.result as AdminUserProfile
+        if (profile?.avatarUrl || profile?.fullName) {
+          setUserProfile({
+            avatarUrl: profile.avatarUrl ?? null,
+            fullName: profile.fullName ?? null,
+          })
+        }
+      } catch {
+        // Silently fail
+      }
+    }
+
+    fetchProfile()
+  }, [userProfile.avatarUrl, userProfile.fullName, setUserProfile])
+
+  const userName = userProfile.fullName || 'Admin'
   const currentPath = location.pathname;
 
   // Hàm đệ quy tìm key đang active và key của thư mục cha
@@ -210,7 +240,11 @@ export function DashboardLayout({
           
           <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
-              <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+              {userProfile.avatarUrl ? (
+                <Avatar src={userProfile.avatarUrl} />
+              ) : (
+                <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+              )}
               <span style={{ fontWeight: 500 }}>{userName}</span>
             </div>
           </Dropdown>

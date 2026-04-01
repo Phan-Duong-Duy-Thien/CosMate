@@ -5,9 +5,11 @@
 import {
   getReviewsByProvider,
   updateProviderProfile,
+  uploadProviderCoverImage,
   type ProviderReview,
   type UpdateProviderPayload,
 } from '../api/provider.api';
+import { uploadAvatar } from '@/features/profile/services/userProfile.service';
 import {
   getUserAddresses,
   getAddressById,
@@ -92,4 +94,18 @@ export async function createUserAddressForShop(
   districtName: string
 ): Promise<UserAddress> {
   return createUserAddressSvc(userId, formData, provinceName, districtName);
+}
+
+/**
+ * Upload provider avatar — reuses cosplayer avatar API via userId
+ */
+export async function uploadProviderAvatar(userId: number, file: File): Promise<void> {
+  await uploadAvatar(userId, file);
+}
+
+/**
+ * Upload provider cover image
+ */
+export async function uploadProviderCoverImageSvc(providerId: number, file: File): Promise<void> {
+  await uploadProviderCoverImage(providerId, file);
 }

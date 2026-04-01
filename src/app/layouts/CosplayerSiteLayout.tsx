@@ -71,7 +71,7 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead } = useNotifications()
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -88,24 +88,29 @@ export default function CosplayerSiteLayout() {
 
   React.useEffect(() => {
     const fetchProfile = async () => {
-      if (loggedIn && !userProfile.avatarUrl && !userProfile.fullName) {
-        const userId = getUserId()
-        if (userId) {
-          try {
-            const profile = await getUserProfile(userId)
-            setUserProfile({
-              avatarUrl: profile.avatarUrl,
-              fullName: profile.fullName,
-            })
-          } catch (error) {
-            console.error("Failed to fetch profile:", error)
-          }
+      if (!loggedIn) return
+
+      const userId = getUserId()
+      if (!userId) return
+
+      // Skip if already loaded
+      if (userProfile.avatarUrl || userProfile.fullName) return
+
+      try {
+        const profile = await getUserProfile(userId)
+        if (profile.avatarUrl || profile.fullName) {
+          setUserProfile({
+            avatarUrl: profile.avatarUrl ?? null,
+            fullName: profile.fullName ?? null,
+          })
         }
+      } catch {
+        // Silently fail on 403 or other errors - don't crash the layout
       }
     }
 
     fetchProfile()
-  }, [loggedIn, userProfile, setUserProfile])
+  }, [loggedIn, userProfile.avatarUrl, userProfile.fullName, setUserProfile])
 
   React.useEffect(() => {
     const path = location.pathname
@@ -144,11 +149,46 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.photographers },
       ])
+    } else if (path.startsWith("/photographer/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+        { label: VI.common.breadcrumb.photographerProfile },
+      ])
     } else if (path === "/staffs") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
+    } else if (path.startsWith("/staff/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+        { label: VI.common.breadcrumb.staffProfile },
+      ])
+    } else if (path.startsWith("/service/")) {
+      const state = location.state as { providerType?: string; providerId?: number } | null
+      if (state?.providerType === 'staff' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+          { label: VI.common.breadcrumb.staffProfile, to: `/staff/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else if (state?.providerType === 'photographer' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.photographerProfile, to: `/photographer/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.serviceDetail },
+        ])
+      }
     } else if (path === "/notifications") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -192,11 +232,19 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div style={{ width: 320, background: "#fff", borderRadius: 16, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
-      <div style={{ maxHeight: 384, overflowY: "auto" }}>
-        <div style={{ borderBottom: "1px solid #f1f5f9", padding: "12px 16px", position: "sticky", top: 0, background: "#fff", zIndex: 1 }}>
-          <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
-        </div>
+    <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
+      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
+        {unreadCount > 0 && (
+          <button
+            onClick={() => markAllRead()}
+            style={{ fontSize: 12, color: "#ec4899", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 500 }}
+          >
+            Đánh dấu đã đọc
+          </button>
+        )}
+      </div>
+      <div style={{ maxHeight: 360, overflowY: "auto" }}>
         {notifLoading ? (
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
             <Spin size="small" />
@@ -208,11 +256,14 @@ export default function CosplayerSiteLayout() {
             {notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
-                onClick={() => {
+                onClick={async () => {
+                  if (!n.isRead) {
+                    await markNotificationRead(n.id)
+                  }
                   if (n.link) navigate(n.link)
                   setNotifOpen(false)
                 }}
-                style={{ padding: "12px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
+                style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
@@ -229,7 +280,7 @@ export default function CosplayerSiteLayout() {
       </div>
       {notifications.length > 0 && (
         <div
-          style={{ padding: "12px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9", background: "#fff", borderRadius: "0 0 16px 16px" }}
+          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9" }}
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)
@@ -387,6 +438,7 @@ export default function CosplayerSiteLayout() {
               type="button"
               aria-label="Giỏ hàng"
               className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => navigate('/profile/purchase-history')}
             >
               <ShoppingCart className="h-5 w-5" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
@@ -456,11 +508,12 @@ export default function CosplayerSiteLayout() {
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-3">
-        <Breadcrumbs items={items} />
-      </div>
-
       <main className="flex-1 pt-[56px]">
+        {!isHomePage && items.length > 0 && (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+            <Breadcrumbs items={items} />
+          </div>
+        )}
         {isHomePage ? (
           <div className="relative">
             <div

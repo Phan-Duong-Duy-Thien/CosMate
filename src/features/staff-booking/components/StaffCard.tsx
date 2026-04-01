@@ -1,41 +1,32 @@
-import { Heart, Star } from 'lucide-react';
+import { Heart, Star, BadgeCheck } from 'lucide-react';
 import { motion } from 'motion/react';
 import { ImageWithFallback } from '@/features/staff-booking/mocks/ImageWithFallback';
 import { Badge } from './ui/badge';
 import { Link } from 'react-router';
-import type { PublicServiceItem } from '@/features/service/types';
+import type { ProviderProfile } from '@/features/provider/types';
 
-interface StaffCardProps extends PublicServiceItem {
-  displayName?: string;
-}
-
-function formatPrice(price: number | null): string {
-  if (price === null || price === undefined) return 'Liên hệ';
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0,
-  }).format(price);
+interface StaffCardProps {
+  id: number;
+  shopName: string | null;
+  bio: string | null;
+  avatarUrl?: string | null;
+  coverImageUrl?: string | null;
+  verified?: boolean;
+  description?: string | null;
 }
 
 export function StaffCard({
   id,
-  serviceType,
+  shopName,
+  bio,
+  avatarUrl,
+  coverImageUrl,
+  verified,
   description,
-  imageUrls,
-  areas,
-  minPrice,
-  maxPrice,
-  pricePerSlot,
-  displayName,
 }: StaffCardProps) {
-  const coverImage = imageUrls?.[0] ?? '';
-  const avatar = imageUrls?.[1] ?? imageUrls?.[0] ?? '';
-  const name = displayName ?? (description ? description.slice(0, 40) : `Staff #${id}`);
-  const location = areas?.[0]
-    ? `${areas[0].district}, ${areas[0].city}`
-    : 'Toàn quốc';
-  const startingPrice = formatPrice(minPrice ?? pricePerSlot ?? null);
+  const coverImage = coverImageUrl ?? '';
+  const avatar = avatarUrl ?? '';
+  const name = shopName ?? 'Nhân sự sự kiện';
 
   return (
     <motion.div
@@ -64,9 +55,12 @@ export function StaffCard({
           </button>
 
           <div className="absolute bottom-4 left-4">
-            <Badge className="bg-white/90 backdrop-blur-sm text-[#4A3B6B] border-none font-medium px-3 py-1 shadow-sm">
-              From {startingPrice}
-            </Badge>
+            {verified && (
+              <Badge className="bg-white/90 backdrop-blur-sm text-[#4A3B6B] border-none font-medium px-3 py-1 shadow-sm flex items-center gap-1">
+                <BadgeCheck className="w-3 h-3 fill-blue-500 text-white" />
+                Đã xác minh
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -84,7 +78,7 @@ export function StaffCard({
               <h3 className="font-bold text-[#4A3B6B] truncate group-hover:text-[#B59DFF] transition-colors">
                 {name}
               </h3>
-              <p className="text-xs text-gray-500 truncate">{location}</p>
+              <p className="text-xs text-gray-500 truncate">{bio ?? 'Nhân sự sự kiện Cosplay'}</p>
             </div>
             <div className="flex items-center gap-1 bg-yellow-50 px-2 py-1 rounded-lg">
               <Star className="w-3.5 h-3.5 fill-yellow-400 text-yellow-400" />
@@ -95,7 +89,7 @@ export function StaffCard({
 
           <div className="flex flex-wrap gap-2">
             <span className="text-[10px] font-bold text-[#A090C5] bg-[#F8F7FF] px-2.5 py-1 rounded-full border border-[#ECE9FF] uppercase tracking-wider">
-              #{description ? description.slice(0, 20) : serviceType}
+              #{description ? description.slice(0, 20) : 'Staff'}
             </span>
           </div>
         </div>

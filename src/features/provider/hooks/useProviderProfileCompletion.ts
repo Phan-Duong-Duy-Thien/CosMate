@@ -8,7 +8,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { message } from 'antd';
 import { getUserId } from '@/features/auth/services/tokenStorage';
-import { saveProviderProfile, fetchUserAddresses, createUserAddressForShop } from '../services/provider.service';
+import { saveProviderProfile, fetchUserAddresses, createUserAddressForShop, uploadProviderAvatar, uploadProviderCoverImageSvc } from '../services/provider.service';
+import { getProviderByUserId } from '../api/provider.api';
 import type { UserAddress } from '@/features/profile/api/userAddress.api';
 import type { UpdateProviderProfilePayload } from '../types';
 import type { Province, District } from '@/features/profile/types';
@@ -33,6 +34,10 @@ export interface UseProviderProfileCompletionResult {
   districts: District[];
   locationLoading: boolean;
   loadDistricts: (provinceCode: number) => Promise<void>;
+  // Image uploads
+  providerId: number | null;
+  uploadAvatar: (file: File) => Promise<void>;
+  uploadCoverImage: (file: File) => Promise<void>;
 }
 
 export interface ProviderFormData {
@@ -94,6 +99,24 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
   const [provinces, setProvinces] = useState<Province[]>([]);
   const [districts, setDistricts] = useState<District[]>([]);
   const [locationLoading, setLocationLoading] = useState(false);
+
+  // Provider profile (for image uploads)
+  const [providerId, setProviderId] = useState<number | null>(null);
+
+  // Load provider ID on mount
+  const loadProviderId = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const profile = await getProviderByUserId(userId);
+      setProviderId(profile.id);
+    } catch (err) {
+      console.error('[useProviderProfileCompletion] load provider id error:', err);
+    }
+  }, [userId]);
+
+  useEffect(() => {
+    loadProviderId();
+  }, [loadProviderId]);
 
   // Load addresses on mount
   const loadAddresses = useCallback(async () => {
@@ -181,6 +204,40 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
     }
   }, [userId, formData]);
 
+  const uploadAvatar = useCallback(async (file: File): Promise<void> => {
+    if (!providerId) {
+      message.error('Không tìm thấy thông tin nhà cung cấp');
+      return;
+    }
+    try {
+      await uploadProviderAvatar(userId, file);
+      message.success('Avatar đã được cập nhật');
+      // refetch provider to update profile data
+      const updated = await getProviderByUserId(userId);
+      setProviderId(updated.id);
+    } catch (err) {
+      console.error('[useProviderProfileCompletion] upload avatar error:', err);
+      message.error('Tải avatar thất bại');
+    }
+  }, [userId, providerId]);
+
+  const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
+    if (!providerId) {
+      message.error('Không tìm thấy thông tin nhà cung cấp');
+      return;
+    }
+    try {
+      await uploadProviderCoverImageSvc(providerId, file);
+      message.success('Ảnh bìa đã được cập nhật');
+      // refetch provider to update profile data
+      const updated = await getProviderByUserId(userId);
+      setProviderId(updated.id);
+    } catch (err) {
+      console.error('[useProviderProfileCompletion] upload cover image error:', err);
+      message.error('Tải ảnh bìa thất bại');
+    }
+  }, [userId, providerId]);
+
   return {
     addresses,
     addressesLoading,
@@ -197,5 +254,8 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
     districts,
     locationLoading,
     loadDistricts: loadDistrictsFn,
+    providerId,
+    uploadAvatar,
+    uploadCoverImage,
   };
 }
