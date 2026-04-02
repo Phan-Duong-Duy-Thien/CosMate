@@ -31,6 +31,7 @@ export interface AccessoryOption {
 }
 
 export interface CostumeItem {
+  aiSimilarityScore?: number
   id: string
   name: string
   characterName: string

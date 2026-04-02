@@ -368,6 +368,20 @@ export default function CosplayerSiteLayout() {
               size="sm"
               className={cn(
                 "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
+                location.pathname === "/pose-battle"
+                  ? "bg-pink-50 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
+              onClick={() => navigate("/pose-battle")}
+            >
+              Pose Battle
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
                 location.pathname === "/guidelines-rules"
                   ? "bg-pink-50 font-semibold text-pink-600"
                   : "text-slate-700"

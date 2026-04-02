@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { FilterState, RegionKey, SortKey, TagKey } from "../types"
+import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
@@ -132,6 +132,44 @@ export default function CostumeListPage() {
     setAiResults(results)
   }, [])
 
+  const aiGridItems = React.useMemo<CostumeItem[]>(() => {
+    if (!aiResults?.length) return []
+
+    return aiResults.map((item) => ({
+      id: String(item.costumeId),
+      name: item.costumeName,
+      characterName: "AI match",
+      seriesName: "AI search",
+      seriesType: "anime",
+      tags: ["anime"],
+      rating: 5,
+      reviewCount: 0,
+      rentalsCount: 0,
+      priceMin: Number(item.price ?? 0),
+      priceMax: Number(item.price ?? 0),
+      isAdult18: false,
+      isAvailable: true,
+      bestSeller: false,
+      brand: "",
+      brandType: "freestyle",
+      region: "hcm",
+      shopId: "ai-shop",
+      shopName: "CosMate AI",
+      images: [item.imageUrl],
+      hasAccessories: false,
+      accessoryOptions: [],
+      sizeOptions: ["m"],
+      createdAt: new Date().toISOString(),
+      description: "",
+      details: [],
+      rentalPurposes: ["test"],
+      basePriceByPurpose: { test: Number(item.price ?? 0), fes_shoot: Number(item.price ?? 0), event: Number(item.price ?? 0) },
+      deposit: 0,
+      laundryFee: 0,
+      aiSimilarityScore: item.similarityScore * 100,
+    }))
+  }, [aiResults])
+
   return (
     <section className="min-h-screen bg-transparent pb-20">
       <style>{`
@@ -196,26 +234,12 @@ export default function CostumeListPage() {
                     Ẩn kết quả AI
                   </Button>
                 </div>
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-                  {aiResults.map((item) => (
-                    <button
-                      key={`${item.costumeId}-${item.imageUrl}`}
-                      type="button"
-                      onClick={() => navigate(`/costumes/${item.costumeId}`)}
-                      className="flex items-center gap-3 rounded-xl border border-pink-100 bg-white p-3 text-left transition hover:border-pink-300 hover:shadow-sm"
-                    >
-                      <img
-                        src={item.imageUrl}
-                        alt={item.costumeName}
-                        className="h-16 w-16 rounded-lg object-cover"
-                      />
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-medium text-slate-800">{item.costumeName}</p>
-                        <p className="text-xs text-slate-500">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
-                      </div>
-                    </button>
-                  ))}
-                </div>
+                <CostumeGrid
+                  costumes={aiGridItems}
+                  wishlistIds={wishlistIds}
+                  onToggleWishlist={handleToggleWishlist}
+                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
+                />
               </div>
             )}
 
