@@ -102,7 +102,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
 
     setSaving(true);
     try {
-      await updateProviderProfile(profile.id, {
+      await updateProviderProfile(profile.userId, {
         shopName: formData.shopName,
         shopAddressId: formData.shopAddressId ?? 0,
         bio: formData.bio,
@@ -136,7 +136,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
     if (!profile) return;
     try {
-      await uploadProviderCoverImage(profile.id, file);
+      await uploadProviderCoverImage(profile.userId, file);
       message.success('Ảnh bìa đã được cập nhật');
       await loadData();
     } catch (err) {
