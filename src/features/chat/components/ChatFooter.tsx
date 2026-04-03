@@ -30,7 +30,7 @@ export function ChatFooter({ onSend, disabled }: ChatFooterProps) {
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={handleKeyDown}
-        placeholder="Nhập tin nhắn..."
+        placeholder="Type a message..."
         disabled={disabled}
         className="flex-1 rounded-full"
       />
@@ -40,7 +40,7 @@ export function ChatFooter({ onSend, disabled }: ChatFooterProps) {
         onClick={handleSend}
         disabled={!value.trim() || disabled}
         className="rounded-full px-4 aspect-square !p-0"
-        aria-label="Gửi tin nhắn"
+        aria-label="Send message"
       >
         <Send className="h-4 w-4" />
       </Button>

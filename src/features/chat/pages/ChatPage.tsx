@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useSearchParams, useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, WifiOff } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatRoom } from "../hooks/useChatRoom"
 import { useChatPartner } from "../hooks/useChatPartner"
@@ -10,6 +10,7 @@ import { useChatByRoomId } from "../hooks/useChatByRoomId"
 import { ChatHeader } from "../components/ChatHeader"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
+import { cn } from "@/lib/utils"
 
 type ChatMode = "partner" | "room"
 
@@ -43,6 +44,8 @@ export default function ChatPage() {
 
   const { messages: historyMessages } = useChatMessages(activeRoomId)
 
+  const isRoomLoading = mode === "partner" && !room?.id
+
   const { isConnected, messages: realtimeMessages, sendMessage } = useChatSocket(
     activeRoomId,
     currentUserIdNum
@@ -70,59 +73,92 @@ export default function ChatPage() {
     (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
   )
 
+  const isInChat = mode === "room" || partnerIdNum !== null
+
   // Guard: no valid entry point
   if (mode === "partner" && !partnerId) {
     return (
-      <div className="flex h-screen flex-col items-center justify-center bg-white">
-        <p className="text-slate-500">Không tìm thấy người dùng để chat.</p>
-        <button
-          onClick={() => navigate(-1)}
-          className="mt-4 text-pink-500 hover:underline"
-        >
-          Quay lại
-        </button>
+      <div className="flex h-[calc(100vh-56px)] flex-col items-center justify-center bg-slate-50">
+        <MessageCircle className="mb-4 h-16 w-16 text-slate-300" />
+        <p className="text-lg font-medium text-slate-400">No conversation selected</p>
+        <p className="mt-1 text-sm text-slate-400">Choose a conversation from the sidebar</p>
       </div>
     )
   }
 
   return (
-    <div className="flex h-screen flex-col bg-slate-50">
-      {/* Header */}
-      <div className="flex items-center gap-3 border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
-        <button
-          type="button"
-          onClick={() => navigate(-1)}
-          className="rounded-full p-1.5 text-slate-600 hover:bg-slate-100"
-          aria-label="Quay lại"
-        >
-          <ArrowLeft className="h-5 w-5" />
-        </button>
-        <ChatHeader partner={resolvedPartner} loading={resolvedLoading} />
-        {!isConnected && (
-          <div className="flex items-center gap-1 text-xs text-orange-500">
-            <WifiOff className="h-3 w-3" />
-            <span>Offline</span>
-          </div>
-        )}
+    <div className="flex h-[calc(100vh-56px)] bg-slate-100">
+      {/* Left Sidebar - Conversation List */}
+      <div className="hidden md:flex md:w-75 md:shrink-0 md:flex-col md:overflow-hidden md:border-r md:border-slate-200 md:bg-white">
+        {/* Sidebar Header */}
+        <div className="border-b border-slate-100 px-4 py-4">
+          <h1 className="text-lg font-bold text-slate-800">Messages</h1>
+        </div>
+
+        {/* Conversation List */}
+        <div className="flex flex-1 items-center justify-center">
+          <p className="text-sm text-slate-400">No conversations yet</p>
+        </div>
       </div>
 
-      {/* Error */}
-      {roomError && (
-        <div className="bg-red-50 px-4 py-2 text-sm text-red-600">
-          {roomError}
+      {/* Right - Chat Container */}
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+          <div className="flex items-center gap-3">
+            {/* Back button - mobile only */}
+            <button
+              type="button"
+              onClick={() => navigate(-1)}
+              className="rounded-full p-1.5 text-slate-600 hover:bg-slate-100 md:hidden"
+            >
+              ←
+            </button>
+            <ChatHeader partner={resolvedPartner} loading={resolvedLoading} isConnected={isConnected} />
+          </div>
+
+          {/* Mobile: show sidebar toggle */}
+          <button
+            type="button"
+            onClick={() => navigate("/chat")}
+            className="rounded-full p-1.5 text-slate-600 hover:bg-slate-100 md:hidden"
+          >
+            <MessageCircle className="h-5 w-5" />
+          </button>
         </div>
-      )}
 
-      {/* Message List */}
-      <ChatMessageList messages={allMessages} currentUserId={currentUserIdNum} />
+        {/* Error */}
+        {roomError && (
+          <div className="bg-red-50 px-4 py-2 text-sm text-red-600">
+            {roomError}
+          </div>
+        )}
 
-      {/* Footer */}
-      <ChatFooterInput
-        value={inputValue}
-        onChange={setInputValue}
-        onSend={sendMessage}
-        disabled={!isConnected || !activeRoomId}
-      />
+        {/* Message List */}
+        {isInChat ? (
+          <div className="flex flex-1 flex-col overflow-hidden">
+            <ChatMessageList messages={allMessages} currentUserId={currentUserIdNum} />
+          </div>
+        ) : (
+          <div className="flex flex-1 items-center justify-center bg-slate-50">
+            <div className="text-center">
+              <MessageCircle className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+              <p className="text-lg font-medium text-slate-400">Start a conversation</p>
+              <p className="mt-1 text-sm text-slate-400">Say hello to get things going!</p>
+            </div>
+          </div>
+        )}
+
+        {/* Footer */}
+        {isInChat && (
+          <ChatFooterInput
+            value={inputValue}
+            onChange={setInputValue}
+            onSend={sendMessage}
+            disabled={!isConnected || isRoomLoading}
+          />
+        )}
+      </div>
     </div>
   )
 }

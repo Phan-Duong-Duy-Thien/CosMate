@@ -4,11 +4,13 @@ import { ProfileSidebar } from '../components/ProfileSidebar';
 import { ProfileMainContent } from '../components/ProfileMainContent';
 import { motion } from 'motion/react';
 import { useProviderProfile } from '@/features/provider/hooks/useProviderProfile';
+import { useStartChat } from '@/features/chat/hooks/useStartChat';
 
 export default function PhotographerProfilePage() {
   const { photographerId } = useParams();
   const providerId = photographerId ? Number(photographerId) : undefined;
   const { provider, loading, error } = useProviderProfile(providerId!);
+  const { startChat, loading: chatLoading } = useStartChat()
 
   if (loading) {
     return (
@@ -24,6 +26,10 @@ export default function PhotographerProfilePage() {
         {error ?? 'Không tìm thấy nhiếp ảnh gia'}
       </div>
     );
+  }
+
+  const handleChat = () => {
+    if (providerId) startChat(providerId, provider.shopName ?? undefined)
   }
 
   const photographerData = {
@@ -116,7 +122,7 @@ export default function PhotographerProfilePage() {
         <div className="relative z-10">
           {/* 2-Column Layout */}
           <div className="flex flex-col lg:flex-row gap-10">
-            <ProfileSidebar {...photographerData} />
+            <ProfileSidebar {...photographerData} onChat={handleChat} />
             <ProfileMainContent portfolioItems={portfolioItems} providerId={providerId} />
           </div>
         </div>

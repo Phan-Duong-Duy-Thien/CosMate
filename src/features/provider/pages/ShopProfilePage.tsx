@@ -9,6 +9,7 @@ import { ShopReviewsSection } from '../components/shop-profile/ShopReviewsSectio
 import { ShopProductToolbar } from '../components/shop-profile/ShopProductToolbar'
 import { ShopProductGrid } from '../components/shop-profile/ShopProductGrid'
 import { RecommendedProductsSection } from '../components/shop-profile/RecommendedProductsSection'
+import { useStartChat } from '@/features/chat/hooks/useStartChat'
 import { VI } from '@/shared/i18n/vi'
 
 export default function ShopProfilePage() {
@@ -28,10 +29,11 @@ export default function ShopProfilePage() {
     resetFilters,
   } = useShopProducts(providerIdNum)
   const { reviews, stats } = useShopReviews(providerIdNum)
+  const { startChat, loading: chatLoading } = useStartChat()
 
   const handleChat = () => {
     if (providerIdNum) {
-      navigate(`/chat?partnerId=${providerIdNum}`)
+      startChat(providerIdNum, shop?.shopName)
     }
   }
 
@@ -72,7 +74,7 @@ export default function ShopProfilePage() {
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-8">
         {/* Shop Hero */}
-        <ShopProfileHero shop={shop} onChat={handleChat} />
+        <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
 
         {/* Contact Section */}
         <ShopContactsSection shop={shop} />

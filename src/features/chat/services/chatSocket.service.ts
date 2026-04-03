@@ -8,28 +8,42 @@ const WS_ENDPOINT = `${WS_BASE_URL}/ws`
 const SEND_DESTINATION = "/app/chat.sendMessage"
 
 let stompClient: Client | null = null
+let connectionCallbacks: Array<() => void> = []
 const messageListeners: Set<(message: ChatMessage) => void> = new Set()
+let reconnectAttempts = 0
+const MAX_RECONNECT_ATTEMPTS = 3
 
 export function connectChatSocket(onConnected?: () => void): void {
+  if (onConnected) {
+    connectionCallbacks.push(onConnected)
+  }
+
   if (stompClient?.connected) {
-    onConnected?.()
+    connectionCallbacks.forEach((cb) => cb())
+    connectionCallbacks = []
     return
   }
 
   const token = getAuth()?.token
   if (!token) {
     console.warn("[chatSocket] No token found, cannot connect")
+    connectionCallbacks = []
     return
   }
 
+  // Pass token as query param (SockJS handshake ignores Authorization headers)
+  const socketUrl = `${WS_ENDPOINT}?token=${encodeURIComponent(token)}`
+
   stompClient = new Client({
-    webSocketFactory: () => new SockJS(WS_ENDPOINT),
+    webSocketFactory: () => new SockJS(socketUrl),
     connectHeaders: {
       Authorization: `Bearer ${token}`,
     },
     onConnect: () => {
       console.log("[chatSocket] Connected")
-      onConnected?.()
+      reconnectAttempts = 0
+      connectionCallbacks.forEach((cb) => cb())
+      connectionCallbacks = []
     },
     onDisconnect: () => {
       console.log("[chatSocket] Disconnected")
@@ -39,7 +53,13 @@ export function connectChatSocket(onConnected?: () => void): void {
     },
     onWebSocketError: (event) => {
       console.error("[chatSocket] WebSocket error:", event)
+      reconnectAttempts++
+      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
+        console.warn(`[chatSocket] Max reconnect attempts (${MAX_RECONNECT_ATTEMPTS}) reached, stopping`)
+        disconnectChatSocket()
+      }
     },
+    reconnectDelay: 5000,
   })
 
   stompClient.activate()
@@ -49,6 +69,7 @@ export function disconnectChatSocket(): void {
   if (stompClient) {
     stompClient.deactivate()
     stompClient = null
+    connectionCallbacks = []
     messageListeners.clear()
   }
 }
@@ -58,7 +79,7 @@ export function subscribeChatRoom(
   onMessage: (message: ChatMessage) => void
 ): () => void {
   if (!stompClient?.connected) {
-    console.warn("[chatSocket] Not connected, cannot subscribe")
+    console.warn("[chatSocket] Not connected, cannot subscribe to room", roomId)
     return () => {}
   }
 
@@ -89,6 +110,7 @@ export function sendChatMessage(payload: SendMessagePayload): void {
     return
   }
 
+  console.log("[chatSocket] Sending message:", payload)
   stompClient.publish({
     destination: SEND_DESTINATION,
     body: JSON.stringify(payload),

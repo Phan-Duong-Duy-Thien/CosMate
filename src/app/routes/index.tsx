@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom"
 
-import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
 import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
+import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
@@ -59,7 +59,7 @@ export default function AppRoutes() {
       <UserProfileProvider>
         <Routes>
       {/* Public + Cosplayer Site Routes */}
-      <Route path="/" element={<CosplayerSiteLayout />}>
+      <Route path="/" element={<ChatPopupRoot />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
