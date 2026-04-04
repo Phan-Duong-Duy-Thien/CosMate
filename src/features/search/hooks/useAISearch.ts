@@ -5,7 +5,7 @@ import axios from "axios"
 import axiosInstance from "@/services/axiosInstance"
 
 export interface AISearchRequest {
-  file: File
+  files: File[]
   text: string
 }
 
@@ -43,7 +43,7 @@ export function useAISearch(): UseAISearchResult {
 
     try {
       const formData = new FormData()
-      formData.append("file", payload.file)
+      payload.files.forEach((file) => formData.append("files", file))
       formData.append("text", payload.text)
 
       const response = await axiosInstance.post<ApiResponse<AISearchResultItem[]>>(

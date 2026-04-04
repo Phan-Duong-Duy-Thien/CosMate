@@ -57,7 +57,7 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
     setIsModalOpen(false)
 
     const result = await executeSearch({
-      file: selectedFile,
+      files: [selectedFile],
       text: keyword.trim(),
     })
 

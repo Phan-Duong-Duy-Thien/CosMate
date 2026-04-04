@@ -1,10 +1,11 @@
 import { useMemo, useRef, useState } from "react"
 import Webcam from "react-webcam"
-import { Button, Input, Tabs, Upload } from "antd"
+import { Button, Input, Tabs, Upload} from "antd"
+import type { UploadProps } from 'antd'
 import { CameraOutlined, UploadOutlined } from "@ant-design/icons"
 
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
-import { POSE_REFERENCE_LIST, POSE_SCORE_ASSETS } from "../constants/poseBattle.constants"
+import { POSE_REFERENCE_LIST } from "../constants/poseBattle.constants"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 
@@ -43,16 +44,25 @@ export default function PoseBattlePage() {
       })
   }
 
+  const uploadProps: UploadProps = {
+    accept: "image/*",
+    showUploadList: false,
+    beforeUpload: (file) => {
+      setUserImageFile(file)
+      return false
+    },
+  }
+
   return (
     <section className="mx-auto max-w-7xl space-y-6 py-8">
-      <div className="rounded-3xl border border-violet-100 bg-white p-6 shadow-sm">
-        <h1 className="text-3xl font-bold text-violet-700">AI Pose Battle</h1>
-        <p className="mt-2 text-sm text-slate-600">So tài dáng pose của bạn với nhân vật yêu thích ngay nào.</p>
+      <div className="rounded-3xl border border-violet-100 bg-gradient-to-br from-pink-100 via-fuchsia-50 to-violet-100 p-6 shadow-sm">
+        <h1 className="text-3xl font-bold text-violet-700">Pose Battle Arena</h1>
+        <p className="mt-2 text-sm text-slate-700">Split-view đối chiến: Reference bên trái, Pose của bạn bên phải.</p>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
-        <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-800">Pose mẫu (Reference)</h2>
+        <div className="rounded-3xl border border-violet-200 bg-white p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-violet-700">Ảnh gốc (Reference)</h2>
           <div className="mt-3 grid gap-3 sm:grid-cols-3">
             {POSE_REFERENCE_LIST.map((item) => (
               <button
@@ -74,7 +84,7 @@ export default function PoseBattlePage() {
             <Input
               value={characterName}
               onChange={(event) => setCharacterName(event.target.value)}
-              placeholder="Tên nhân vật"
+              placeholder="Tên nhân vật (VD: Naruto)"
             />
 
             <Upload
@@ -90,17 +100,17 @@ export default function PoseBattlePage() {
             </Upload>
           </div>
 
-          <div className="mt-4 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-dashed border-violet-300 bg-violet-50">
             {referenceImage ? (
-              <img src={referenceImage} alt="Reference pose" className="h-72 w-full object-cover" />
+              <img src={referenceImage} alt="Reference pose" className="h-80 w-full object-cover" />
             ) : (
-              <div className="flex h-72 items-center justify-center text-sm text-slate-500">Chọn một pose mẫu để bắt đầu</div>
+              <div className="flex h-80 items-center justify-center text-sm text-slate-500">Chọn một pose mẫu để bắt đầu</div>
             )}
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-200 bg-white p-4 shadow-sm">
-          <h2 className="text-lg font-semibold text-slate-800">Ảnh của bạn</h2>
+        <div className="rounded-3xl border border-pink-200 bg-white p-4 shadow-sm">
+          <h2 className="text-lg font-semibold text-pink-700">Ảnh người dùng upload</h2>
 
           <Tabs
             className="mt-3"
@@ -112,15 +122,15 @@ export default function PoseBattlePage() {
                 label: "Chụp ảnh",
                 children: (
                   <div className="space-y-3">
-                    <div className="overflow-hidden rounded-2xl border border-slate-200">
+                    <div className="overflow-hidden rounded-2xl border border-pink-200">
                       <Webcam
                         ref={webcamRef}
                         mirrored
                         screenshotFormat="image/jpeg"
-                        className="h-72 w-full object-cover"
+                        className="h-80 w-full object-cover"
                       />
                     </div>
-                    <Button type="primary" icon={<CameraOutlined />} onClick={handleCapture}>
+                    <Button type="primary" icon={<CameraOutlined />} onClick={handleCapture} className="bg-pink-600">
                       Chụp ảnh
                     </Button>
                   </div>
@@ -130,38 +140,32 @@ export default function PoseBattlePage() {
                 key: "upload",
                 label: "Tải ảnh từ máy",
                 children: (
-                  <Upload
-                    accept="image/*"
-                    showUploadList={false}
-                    beforeUpload={(file) => {
-                      setUserImageFile(file)
-                      return false
-                    }}
-                  >
-                    <Button icon={<UploadOutlined />}>Chọn ảnh từ máy</Button>
-                  </Upload>
+                  <Upload.Dragger {...uploadProps} className="!border-pink-300 !bg-pink-50/60 !p-8">
+                    <p className="text-pink-600"><UploadOutlined /></p>
+                    <p className="mt-2 text-sm font-semibold text-pink-700">Kéo thả hoặc click để upload ảnh pose của bạn</p>
+                  </Upload.Dragger>
                 ),
               },
             ]}
           />
 
-          <div className="mt-4 overflow-hidden rounded-2xl border border-dashed border-slate-300 bg-slate-50">
+          <div className="mt-4 overflow-hidden rounded-2xl border border-dashed border-pink-300 bg-pink-50">
             {previewUrl ? (
-              <img src={previewUrl} alt="User pose preview" className="h-72 w-full object-cover" />
+              <img src={previewUrl} alt="User pose preview" className="h-80 w-full object-cover" />
             ) : (
-              <div className="flex h-72 items-center justify-center text-sm text-slate-500">Chưa có ảnh để chấm điểm</div>
+              <div className="flex h-80 items-center justify-center text-sm text-slate-500">Chưa có ảnh để chấm điểm</div>
             )}
           </div>
 
-          <Button type="primary" className="mt-4 w-full" size="large" onClick={submit}>
-            Chấm điểm
+          <Button type="primary" className="mt-4 w-full bg-pink-600" size="large" onClick={submit}>
+            Bắt đầu Battle chấm điểm
           </Button>
         </div>
       </div>
 
       {loading && (
         <div className="rounded-3xl border border-violet-100 bg-white p-6 text-center shadow-sm">
-          <AILoadingMascot imageSrc={POSE_SCORE_ASSETS.loading} text={randomTip} />
+          <AILoadingMascot text={randomTip} />
         </div>
       )}
 

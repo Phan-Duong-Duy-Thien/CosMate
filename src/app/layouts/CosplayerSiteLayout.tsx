@@ -189,6 +189,16 @@ export default function CosplayerSiteLayout() {
           { label: VI.common.breadcrumb.serviceDetail },
         ])
       }
+    } else if (path === "/style-quiz") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Quiz" },
+      ])
+    } else if (path === "/pose-battle") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Pose Battle" },
+      ])
     } else if (path === "/notifications") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },

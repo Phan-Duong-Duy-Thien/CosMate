@@ -1,44 +1,50 @@
-import { Button } from "antd"
-import type { RecommendResponseItem } from "../types"
+import type { SearchResponseItem } from "../types"
 
 interface ResultCostumeGridProps {
-  items: RecommendResponseItem[]
+  items: SearchResponseItem[]
   onView: (id: number) => void
 }
+
+const FALLBACK_IMAGE = "https://placehold.co/600x800/e5e7eb/9ca3af?text=No+Image"
 
 export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridProps) {
   if (items.length === 0) return null
 
   return (
-    <section className="rounded-3xl border border-purple-100 bg-white/90 p-5 shadow-sm md:p-8">
-      <div className="mb-4 flex items-center justify-between">
-        <h3 className="text-lg font-semibold text-slate-800">Trang phục gợi ý từ AI</h3>
-        <span className="text-xs text-slate-500">{items.length} gợi ý</span>
-      </div>
-
-      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {items.map((item) => (
-          <button
-            key={`${item.costumeId}-${item.imageUrl}`}
-            type="button"
-            onClick={() => onView(item.costumeId)}
-            className="group flex items-center gap-3 rounded-2xl border border-purple-100 bg-white p-3 text-left transition hover:-translate-y-0.5 hover:border-purple-400 hover:shadow-md"
-          >
+    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-2">
+      {items.map((item) => (
+        <div
+          key={`${item.costumeId}-${item.imageUrl}`}
+          role="button"
+          tabIndex={0}
+          onClick={() => onView(item.costumeId)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault()
+              onView(item.costumeId)
+            }
+          }}
+          className="group cursor-pointer rounded-2xl border border-pink-100 bg-pink-50/40 p-3 transition hover:-translate-y-0.5 hover:border-pink-400 hover:shadow-md"
+        >
+          <div className="overflow-hidden rounded-xl">
             <img
-              src={item.imageUrl}
+              src={item.imageUrl || FALLBACK_IMAGE}
               alt={item.costumeName}
-              className="h-16 w-16 rounded-xl object-cover"
+              className="h-56 w-full object-cover transition duration-300 group-hover:scale-105"
+              onError={(event) => {
+                const target = event.currentTarget
+                target.onerror = null
+                target.src = FALLBACK_IMAGE
+              }}
             />
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-800">{item.costumeName}</p>
-              <p className="text-xs text-slate-500">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
-            </div>
-            <Button size="small" type="link" className="ml-auto">
-              Xem
-            </Button>
-          </button>
-        ))}
-      </div>
-    </section>
+          </div>
+          <div className="mt-3 space-y-1">
+            <p className="line-clamp-1 text-base font-semibold text-slate-800">{item.costumeName}</p>
+            <p className="text-sm text-pink-600">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
+            <p className="text-sm text-slate-500">Giá tham khảo: {Number(item.price).toLocaleString("vi-VN")}đ</p>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
