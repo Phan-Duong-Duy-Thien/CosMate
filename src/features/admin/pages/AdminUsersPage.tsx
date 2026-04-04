@@ -324,6 +324,8 @@ export default function AdminUsersPage() {
               </Button>
               
               <input 
+                title="Tải file Excel"
+                placeholder="Tải file Excel"
                 type="file" 
                 ref={fileInputRef}
                 accept=".xlsx, .xls, .csv" 

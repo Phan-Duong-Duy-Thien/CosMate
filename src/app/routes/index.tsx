@@ -20,6 +20,8 @@ import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
 import NotificationsPage from "@/features/general/pages/NotificationsPage"
 import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
+import StyleQuizPage from "@/features/style-quiz/pages/StyleQuizPage"
+import PoseBattlePage from "@/features/pose-battle/pages/PoseBattlePage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -64,6 +66,8 @@ export default function AppRoutes() {
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
         <Route path="guidelines-rules" element={<GuidelinesRulesPage />} />
+        <Route path="style-quiz" element={<StyleQuizPage />} />
+        <Route path="pose-battle" element={<PoseBattlePage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />

@@ -18,6 +18,19 @@ const requiredAsteriskStyle = `
     margin-left: 4px !important;
     font-weight: 400 !important;
   }
+
+  .ant-message,
+  .ant-notification {
+    z-index: 12000 !important;
+  }
+
+  .ant-message {
+    top: 76px !important;
+  }
+
+  .ant-notification-notice-wrapper {
+    margin-top: 72px !important;
+  }
 `
 
 function RequiredAsteriskFix() {

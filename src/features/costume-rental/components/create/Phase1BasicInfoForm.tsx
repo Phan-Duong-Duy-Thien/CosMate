@@ -5,8 +5,8 @@
  * Calls onSubmit with validated values – never calls API directly.
  */
 
-import { Button, Form, Input, InputNumber, Select, Upload, Alert } from 'antd'
-import { InboxOutlined }from '@ant-design/icons'
+import { Button, Form, Input, InputNumber, Select, Upload, Alert, Tooltip } from 'antd'
+import { InboxOutlined, RobotOutlined }from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 
@@ -73,7 +73,25 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         <Input placeholder="Nhập tên trang phục" />
       </Form.Item>
 
-      <Form.Item label="Mô tả" name="description">
+      <Form.Item
+        label={(
+          <div className="flex items-center gap-2">
+            <span>Mô tả</span>
+            <Tooltip title="Chức năng AI tự động tạo mô tả từ tên + ảnh trang phục bạn đang nhập.">
+              <Button
+                type="link"
+                size="small"
+                className="h-auto p-0 text-xs"
+                icon={<RobotOutlined />}
+                onClick={() => {}}
+              >
+                Tự động tạo mô tả
+              </Button>
+            </Tooltip>
+          </div>
+        )}
+        name="description"
+      >
         <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" />
       </Form.Item>
 

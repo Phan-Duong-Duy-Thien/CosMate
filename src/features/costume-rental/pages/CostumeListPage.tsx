@@ -1,13 +1,15 @@
 import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { FilterState, RegionKey, SortKey, TagKey } from "../types"
+import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
+import AISearchBar from "@/features/search/components/AISearchBar"
+import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
 const PAGE_SIZE = 16
 
@@ -47,6 +49,7 @@ export default function CostumeListPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [heroVisible, setHeroVisible] = React.useState(false)
+  const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
   const navigate = useNavigate()
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
@@ -117,10 +120,55 @@ export default function CostumeListPage() {
   type UIState = "loading" | "error" | "empty" | "success"
   const uiState: UIState = isLoading ? "loading" : error ? "error" : sortedItems.length === 0 ? "empty" : "success"
 
-  const handleReset = () => setFilters(initialFilters)
+  const handleReset = () => {
+    setFilters(initialFilters)
+    setAiResults(null)
+  }
   const handleToggleWishlist = (costumeId: string) => {
     setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
   }
+
+  const handleAISearchCompleted = React.useCallback((results: AISearchResultItem[]) => {
+    setAiResults(results)
+  }, [])
+
+  const aiGridItems = React.useMemo<CostumeItem[]>(() => {
+    if (!aiResults?.length) return []
+
+    return aiResults.map((item) => ({
+      id: String(item.costumeId),
+      name: item.costumeName,
+      characterName: "AI match",
+      seriesName: "AI search",
+      seriesType: "anime",
+      tags: ["anime"],
+      rating: 5,
+      reviewCount: 0,
+      rentalsCount: 0,
+      priceMin: Number(item.price ?? 0),
+      priceMax: Number(item.price ?? 0),
+      isAdult18: false,
+      isAvailable: true,
+      bestSeller: false,
+      brand: "",
+      brandType: "freestyle",
+      region: "hcm",
+      shopId: "ai-shop",
+      shopName: "CosMate AI",
+      images: [item.imageUrl],
+      hasAccessories: false,
+      accessoryOptions: [],
+      sizeOptions: ["m"],
+      createdAt: new Date().toISOString(),
+      description: "",
+      details: [],
+      rentalPurposes: ["test"],
+      basePriceByPurpose: { test: Number(item.price ?? 0), fes_shoot: Number(item.price ?? 0), event: Number(item.price ?? 0) },
+      deposit: 0,
+      laundryFee: 0,
+      aiSimilarityScore: item.similarityScore * 100,
+    }))
+  }, [aiResults])
 
   return (
     <section className="min-h-screen bg-transparent pb-20">
@@ -160,6 +208,8 @@ export default function CostumeListPage() {
           />
 
           <div className="space-y-4">
+            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
+
             <SortBar
               sortKey={sortKey}
               currentPage={displayPage}
@@ -168,6 +218,30 @@ export default function CostumeListPage() {
               onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
             />
+
+            {aiResults && (
+              <div className="rounded-2xl border border-pink-100 bg-pink-50/60 p-4">
+                <div className="mb-3 flex items-center justify-between">
+                  <p className="text-sm font-semibold text-pink-700">
+                    Kết quả gợi ý từ AI ({aiResults.length})
+                  </p>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-full"
+                    onClick={() => setAiResults(null)}
+                  >
+                    Ẩn kết quả AI
+                  </Button>
+                </div>
+                <CostumeGrid
+                  costumes={aiGridItems}
+                  wishlistIds={wishlistIds}
+                  onToggleWishlist={handleToggleWishlist}
+                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
+                />
+              </div>
+            )}
 
             {uiState === "loading" && (
               <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">

@@ -189,6 +189,16 @@ export default function CosplayerSiteLayout() {
           { label: VI.common.breadcrumb.serviceDetail },
         ])
       }
+    } else if (path === "/style-quiz") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Quiz" },
+      ])
+    } else if (path === "/pose-battle") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Pose Battle" },
+      ])
     } else if (path === "/notifications") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -356,10 +366,25 @@ export default function CosplayerSiteLayout() {
               size="sm"
               className={cn(
                 "hover:bg-pink-50 hover:text-pink-600",
-                location.pathname === "/quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
+                location.pathname === "/style-quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
               )}
+              onClick={() => navigate("/style-quiz")}
             >
               Quiz
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className={cn(
+                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
+                location.pathname === "/pose-battle"
+                  ? "bg-pink-50 font-semibold text-pink-600"
+                  : "text-slate-700"
+              )}
+              onClick={() => navigate("/pose-battle")}
+            >
+              Pose Battle
             </Button>
 
             <Button
@@ -538,6 +563,7 @@ export default function CosplayerSiteLayout() {
                         </p>
                         <button
                           type="button"
+                          onClick={() => navigate("/style-quiz")}
                           className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
                           Làm quiz ngay
@@ -561,13 +587,14 @@ export default function CosplayerSiteLayout() {
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                         <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Bạn là nhân vật nào?
+                          Tìm trang phục qua ảnh
                         </p>
                         <button
                           type="button"
+                          onClick={() => navigate("/costumes")}
                           className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
-                          Làm quiz ngay
+                          Tìm bằng hình ảnh
                         </button>
                       </div>
                     </div>
