@@ -14,6 +14,7 @@ interface ProfileSidebarProps {
   bio: string;
   skills: string[];
   location: string;
+  onChat?: () => void;
 }
 
 export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
@@ -26,6 +27,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   responseRate,
   bio,
   skills,
+  onChat,
 }) => {
   return (
     <div className="w-full lg:w-[360px] flex-shrink-0">
@@ -81,6 +83,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
+            onClick={onChat}
             className="w-full py-4 bg-white border-2 border-[#F0E6FF] text-[#8E7AB5] font-bold rounded-2xl flex items-center justify-center gap-2"
           >
             <MessageCircle className="w-5 h-5" />

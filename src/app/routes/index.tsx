@@ -1,10 +1,10 @@
 import { Route, Routes } from "react-router-dom"
 
-import CosplayerSiteLayout from "@/app/layouts/CosplayerSiteLayout"
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
 import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
+import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
@@ -53,6 +53,7 @@ import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
+import ChatPage from "@/features/chat/pages/ChatPage"
 
 export default function AppRoutes() {
   return (
@@ -60,7 +61,7 @@ export default function AppRoutes() {
       <UserProfileProvider>
         <Routes>
       {/* Public + Cosplayer Site Routes */}
-      <Route path="/" element={<CosplayerSiteLayout />}>
+      <Route path="/" element={<ChatPopupRoot />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
@@ -80,6 +81,8 @@ export default function AppRoutes() {
         <Route path="staffs" element={<StaffsListingPage />} />
         <Route path="staff/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
+        <Route path="chat/:roomId" element={<ChatPage />} />
+        <Route path="chat" element={<ChatPage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
         <Route path="register/cosplayer" element={<CosplayerRegPage />} />

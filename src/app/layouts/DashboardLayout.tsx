@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight } from 'lucide-react';
+import { LogOut, User, ChevronRight, MessageCircle } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -10,6 +10,7 @@ import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import type { AdminUserProfile } from '@/features/admin/types';
+import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 
 const { Header, Sider, Content } = Layout;
 
@@ -41,6 +42,7 @@ export function DashboardLayout({
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
   const { userProfile, setUserProfile } = useUserProfile();
+  const { isOpen, openChat } = useChatPopup();
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
@@ -238,16 +240,41 @@ export function DashboardLayout({
         <Header style={{ padding: '0 24px', background: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1 }}>
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
           
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
-              {userProfile.avatarUrl ? (
-                <Avatar src={userProfile.avatarUrl} />
-              ) : (
-                <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
-              )}
-              <span style={{ fontWeight: 500 }}>{userName}</span>
-            </div>
-          </Dropdown>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button
+              type="button"
+              onClick={() => openChat(0, 0)}
+              disabled={isOpen}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                padding: '6px 12px',
+                borderRadius: 8,
+                border: '1px solid #e5e7eb',
+                background: isOpen ? '#f3f4f6' : '#fff',
+                cursor: isOpen ? 'default' : 'pointer',
+                fontSize: 14,
+                fontWeight: 500,
+                color: isOpen ? '#9ca3af' : '#7C3AED',
+              }}
+              title="Open chat"
+            >
+              <MessageCircle size={18} />
+              Chat
+            </button>
+
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
+                {userProfile.avatarUrl ? (
+                  <Avatar src={userProfile.avatarUrl} />
+                ) : (
+                  <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+                )}
+                <span style={{ fontWeight: 500 }}>{userName}</span>
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
         {/* Content Area */}

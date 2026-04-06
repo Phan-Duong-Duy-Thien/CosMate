@@ -455,6 +455,7 @@ export default function CosplayerSiteLayout() {
               type="button"
               aria-label="Tin nhắn"
               className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => navigate("/chat")}
             >
               <MessageCircle className="h-5 w-5" />
             </button>
