@@ -366,6 +366,7 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
+              title="Quiz phong cách: trả lời câu hỏi để tìm style cosplay phù hợp với bạn"
               className={cn(
                 "hover:bg-pink-50 hover:text-pink-600",
                 location.pathname === "/style-quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
@@ -378,6 +379,7 @@ export default function CosplayerSiteLayout() {
             <Button
               variant="ghost"
               size="sm"
+              title="Pose Battle: so sánh ảnh pose của bạn với ảnh mẫu để chấm điểm độ giống"
               className={cn(
                 "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
                 location.pathname === "/pose-battle"

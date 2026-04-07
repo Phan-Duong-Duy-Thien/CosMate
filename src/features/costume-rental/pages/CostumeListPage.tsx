@@ -210,6 +210,12 @@ export default function CostumeListPage() {
           <div className="space-y-4">
             <AISearchBar onSearchCompleted={handleAISearchCompleted} />
 
+            {!aiResults && (
+              <div className="rounded-2xl border border-pink-100 bg-white/80 px-4 py-3 text-sm text-pink-700">
+                Gợi ý: Tải ảnh nhân vật bạn muốn cosplay + mô tả để AI đề xuất mẫu gần nhất.
+              </div>
+            )}
+
             <SortBar
               sortKey={sortKey}
               currentPage={displayPage}
@@ -220,11 +226,15 @@ export default function CostumeListPage() {
             />
 
             {aiResults && (
-              <div className="rounded-2xl border border-pink-100 bg-pink-50/60 p-4">
-                <div className="mb-3 flex items-center justify-between">
-                  <p className="text-sm font-semibold text-pink-700">
-                    Kết quả gợi ý từ AI ({aiResults.length})
-                  </p>
+              <div className="overflow-hidden rounded-3xl border border-pink-200 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-4 shadow-[0_10px_28px_rgba(236,72,153,0.12)] md:p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">AI MATCHES</p>
+                    <p className="text-base font-bold text-pink-700 md:text-lg">
+                      Kết quả gợi ý từ AI ({aiResults.length})
+                    </p>
+                  </div>
+
                   <Button
                     size="sm"
                     variant="ghost"
@@ -234,6 +244,7 @@ export default function CostumeListPage() {
                     Ẩn kết quả AI
                   </Button>
                 </div>
+
                 <CostumeGrid
                   costumes={aiGridItems}
                   wishlistIds={wishlistIds}
