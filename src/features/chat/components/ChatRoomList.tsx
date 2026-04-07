@@ -51,10 +51,11 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
             type="button"
             onClick={() => onSelectRoom(room)}
             className={cn(
-              "flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors",
+              "flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors overflow-hidden",
               isActive ? "bg-pink-50" : "hover:bg-slate-50"
             )}
           >
+            {/* Avatar */}
             <div className="relative shrink-0">
               {room.partnerAvatar ? (
                 <img
@@ -68,17 +69,21 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
                 </div>
               )}
             </div>
-            <div className="flex min-w-0 flex-1 flex-col">
-              <p className={cn(
-                "truncate text-sm",
-                isActive ? "font-semibold text-pink-600" : "font-medium text-slate-700"
-              )}>
+
+            {/* Text — w-0 min-w-0 forces flex item to shrink, enabling truncate */}
+            <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">
+              <span
+                className={cn(
+                  "block truncate text-sm",
+                  isActive ? "font-semibold text-pink-600" : "font-medium text-slate-700"
+                )}
+              >
                 {room.partnerName || "Unknown"}
-              </p>
+              </span>
               {room.lastMessageAt && (
-                <p className="text-[10px] text-slate-400">
+                <span className="block truncate text-[10px] leading-tight text-slate-400">
                   {formatTime(room.lastMessageAt)}
-                </p>
+                </span>
               )}
             </div>
           </button>

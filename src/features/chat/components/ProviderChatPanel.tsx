@@ -217,7 +217,7 @@ export function ProviderChatPanel() {
         </div>
 
         {/* Footer */}
-        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-4 py-2">
+        <div className="flex shrink-0 items-start gap-2 border-t border-slate-200 bg-white px-4 py-2">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -233,7 +233,7 @@ export function ProviderChatPanel() {
             onClick={handleSend}
             disabled={!inputValue.trim() || !activeRoom || !isConnected}
             className={cn(
-              "flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
               inputValue.trim() && activeRoom && isConnected
                 ? "bg-pink-400 text-white hover:bg-pink-500"
                 : "bg-slate-100 text-slate-300"
