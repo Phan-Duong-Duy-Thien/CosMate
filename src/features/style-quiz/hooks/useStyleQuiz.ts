@@ -120,8 +120,18 @@ export function useStyleQuiz() {
   useEffect(() => {
     const foundDraft = safeGetDraft()
     if (foundDraft) {
-      setPendingDraft(foundDraft)
-      setShowResumeModal(true)
+      const isFreshStartDraft =
+        foundDraft.phase === "stage1" &&
+        foundDraft.currentIndex === 0 &&
+        Object.keys(foundDraft.stage1Answers).length === 0 &&
+        Object.keys(foundDraft.stage2Answers).length === 0
+
+      if (!isFreshStartDraft) {
+        setPendingDraft(foundDraft)
+        setShowResumeModal(true)
+      } else {
+        clearDraft()
+      }
     }
     setDraftCheckDone(true)
   }, [])

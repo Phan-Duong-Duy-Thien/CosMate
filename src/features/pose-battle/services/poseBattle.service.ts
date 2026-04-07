@@ -10,7 +10,10 @@ export async function scorePose(payload: { image: File; characterName: string })
 
   const response = await axiosInstance.post<PoseBattleApiResponse<PoseScoringResult>>(
     "/api/search/pose-score",
-    formData
+    formData,
+    {
+      timeout: 120000,
+    }
   )
 
   return response.data.result

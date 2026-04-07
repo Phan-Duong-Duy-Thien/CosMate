@@ -26,7 +26,7 @@ export function usePoseBattle() {
       const response = await getPoseHistory()
       setHistory(response)
     } catch (error) {
-      notification.error({ message: mapPoseError(error) })
+      notification.error({ title: mapPoseError(error) })
     } finally {
       setHistoryLoading(false)
     }
@@ -38,12 +38,12 @@ export function usePoseBattle() {
 
   const submit = async () => {
     if (!userImageFile) {
-      notification.warning({ message: "Vui lòng tải ảnh pose của bạn trước khi chấm điểm." })
+      notification.warning({ title: "Vui lòng tải ảnh pose của bạn trước khi chấm điểm." })
       return
     }
 
     if (!characterName.trim()) {
-      notification.warning({ message: "Vui lòng nhập tên nhân vật để AI chấm đúng ngữ cảnh." })
+      notification.warning({ title: "Vui lòng nhập tên nhân vật để AI chấm đúng ngữ cảnh." })
       return
     }
 
@@ -53,11 +53,20 @@ export function usePoseBattle() {
         image: userImageFile,
         characterName,
       })
+
       setResult(response)
-      notification.success({ message: "Đã chấm điểm xong và lưu vào lịch sử." })
+      setReferenceImage(null)
+      setUserImageFile(null)
+      setCharacterName("")
+
       await loadHistory()
+
+      notification.success({
+        title: "Đã chấm điểm xong",
+        description: "Kết quả đã lưu vào lịch sử Pose Battle của bạn.",
+      })
     } catch (error) {
-      notification.error({ message: mapPoseError(error) })
+      notification.error({ title: mapPoseError(error) })
     } finally {
       setLoading(false)
     }
