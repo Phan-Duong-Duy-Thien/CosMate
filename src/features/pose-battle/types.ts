@@ -3,6 +3,15 @@ export interface PoseScoringResult {
   comment: string
 }
 
+export interface PoseHistoryItem {
+  id: number
+  cosplayerId: number | null
+  imageUrl: string
+  score: number
+  createdAt: string
+  comment: string
+}
+
 export interface PoseReferenceItem {
   id: string
   characterName: string

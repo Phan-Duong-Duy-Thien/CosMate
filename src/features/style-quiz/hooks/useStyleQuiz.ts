@@ -1,98 +1,93 @@
 import { useEffect, useMemo, useState } from "react"
 import { notification } from "antd"
 
-import {
-  getStage1Survey,
-  getStage2Survey,
-  getSurveyEnd,
-  mapQuizError,
-  recommendByStyle,
-} from "../services/styleQuiz.service"
+import { ARCHETYPE_PROFILES } from "../constants/archetypes"
+import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
+import { getBaseArchetypeAtCheckpoint, getFinalClassification } from "../quizAlgorithm"
+import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle } from "../services/styleQuiz.service"
 import type { SearchResponseItem, Stage1Question, Stage2Question } from "../types"
 
-type ExploreMode = "quick" | "deep"
-type QuizPhase = "stage1" | "stage2" | "surveyEnd"
-type QuizScreen = "welcome" | "quiz" | "loading" | "result"
+type QuizScreen = "quiz" | "checkpoint" | "loading" | "result"
+type QuizPhase = "stage1" | "stage2"
 
-interface ArchetypeDetail {
-  name: string
-  coreDesire: string
-  famousCharacters: string[]
+const QUIZ_DRAFT_KEY = "cosmate_quiz_draft"
+
+interface QuizDraft {
+  phase: QuizPhase
+  screen: Exclude<QuizScreen, "loading" | "result">
+  currentIndex: number
+  globalQuestionIndex: number
+  E: number
+  A: number
+  O: number
+  archetypeId: string
+  stage1Answers: Record<string, number>
+  stage2Answers: Record<string, number>
 }
 
-const ARCHETYPE_DETAILS: Record<string, ArchetypeDetail> = {
-  ARCH_01: { name: "The Hero (Người Hùng)", coreDesire: "Chứng minh giá trị thông qua hành động dũng cảm.", famousCharacters: ["Tanjiro", "Midoriya", "Eren", "Goku"] },
-  ARCH_02: { name: "The Rebel (Kẻ Nổi Loạn)", coreDesire: "Phá vỡ các quy tắc và phá hủy những thứ không hiệu quả.", famousCharacters: ["Sasuke", "Lelouch", "Sukuna"] },
-  ARCH_03: { name: "The Sage (Nhà Thông Thái)", coreDesire: "Tìm kiếm chân lý và thấu hiểu thế giới.", famousCharacters: ["Jiraiya", "Gojo", "Aizen"] },
-  ARCH_04: { name: "The Innocent (Người Ngây Thơ)", coreDesire: "Trải nghiệm thiên đường, mong muốn hạnh phúc bình dị.", famousCharacters: ["Anya Forger", "Nahida"] },
-  ARCH_05: { name: "The Jester (Kẻ Pha Trò)", coreDesire: "Sống trọn vẹn từng khoảnh khắc, tận hưởng niềm vui.", famousCharacters: ["Gintoki", "Hisoka", "Buggy"] },
-  ARCH_06: { name: "The Caregiver (Người Chăm Sóc)", coreDesire: "Bảo vệ và quan tâm đến những người xung quanh.", famousCharacters: ["Bucciarati", "Itachi"] },
-  ARCH_07: { name: "The Explorer (Người Khám Phá)", coreDesire: "Tự do tìm hiểu thế giới và trải nghiệm cuộc sống.", famousCharacters: ["Luffy", "Gon", "Kenshin"] },
-  ARCH_08: { name: "The Lover (Người Tình)", coreDesire: "Đạt được sự gắn kết, thân mật và tình yêu.", famousCharacters: ["Sanji", "Mikasa", "Yuno Gasai"] },
-  ARCH_09: { name: "The Creator (Người Sáng Tạo)", coreDesire: "Tạo ra những thứ có giá trị trường tồn.", famousCharacters: ["Senku", "Bulma", "Deidara"] },
-  ARCH_10: { name: "The Ruler (Người Trị Vì)", coreDesire: "Kiểm soát và tạo ra trật tự cho thế giới.", famousCharacters: ["Rimuru", "Gilgamesh", "Frieza"] },
-  ARCH_11: { name: "The Magician (Nhà Phép Thuật)", coreDesire: "Hiểu biết quy luật vận hành của vũ trụ để biến đổi nó.", famousCharacters: ["Edward Elric", "Geto Suguru"] },
-  ARCH_12: { name: "The Everyman (Người Thường)", coreDesire: "Thuộc về một nơi nào đó, hòa nhập với mọi người.", famousCharacters: ["Rock Lee", "Shinpachi"] },
-}
-
-function buildStyleCardText(archetypeName: string, budgetMetadata: string): string {
-  return `Linh hồn của bạn đồng điệu với ${archetypeName}. Budget mode: ${budgetMetadata}. Aura cosplay này sinh ra để bạn tỏa sáng giữa đám đông!`
-}
-
-function countArchetypeFrequency(
-  questions: Stage1Question[],
-  selectedOptionByQuestion: Record<string, number>
-): Map<string, number> {
-  const frequency = new Map<string, number>()
-
-  questions.forEach((question) => {
-    const selectedIndex = selectedOptionByQuestion[question.question_id]
-    const option = question.options[selectedIndex]
-    if (!option?.points_to?.length) return
-
-    option.points_to.forEach((arch) => {
-      frequency.set(arch, (frequency.get(arch) ?? 0) + 1)
-    })
-  })
-
-  return frequency
-}
-
-function pickWinningArchetype(frequency: Map<string, number>): string {
-  let winner = ""
-  let max = -1
-
-  frequency.forEach((value, key) => {
-    if (value > max) {
-      max = value
-      winner = key
-    }
-  })
-
-  return winner
-}
-
-function deriveBudgetMetadata(optionText: string): string {
-  const normalized = optionText.toLowerCase()
-  if (normalized.includes("dưới") || normalized.includes("150")) return "low_budget"
-  if (normalized.includes("trên") || normalized.includes("300")) return "high_budget"
+function resolveBudgetMetadata(metadata?: string): string {
+  if (metadata === "high_budget") return "high_budget"
+  if (metadata === "low_budget") return "low_budget"
   return "mid_budget"
 }
 
+function safeGetDraft(): QuizDraft | null {
+  try {
+    const raw = localStorage.getItem(QUIZ_DRAFT_KEY)
+    if (!raw) return null
+
+    const parsed = JSON.parse(raw) as Partial<QuizDraft>
+    if (!parsed || typeof parsed !== "object") return null
+    if (typeof parsed.currentIndex !== "number") return null
+    if (typeof parsed.E !== "number" || typeof parsed.A !== "number" || typeof parsed.O !== "number") return null
+
+    return {
+      phase: parsed.phase === "stage2" ? "stage2" : "stage1",
+      screen: parsed.screen === "checkpoint" ? "checkpoint" : "quiz",
+      currentIndex: Math.max(0, parsed.currentIndex),
+      globalQuestionIndex: typeof parsed.globalQuestionIndex === "number" ? parsed.globalQuestionIndex : 1,
+      E: parsed.E,
+      A: parsed.A,
+      O: parsed.O,
+      archetypeId: typeof parsed.archetypeId === "string" ? parsed.archetypeId : "",
+      stage1Answers: parsed.stage1Answers && typeof parsed.stage1Answers === "object" ? parsed.stage1Answers : {},
+      stage2Answers: parsed.stage2Answers && typeof parsed.stage2Answers === "object" ? parsed.stage2Answers : {},
+    }
+  } catch {
+    return null
+  }
+}
+
+function safeSetDraft(draft: QuizDraft) {
+  try {
+    localStorage.setItem(QUIZ_DRAFT_KEY, JSON.stringify(draft))
+  } catch {
+    // ignore storage error
+  }
+}
+
+function clearDraft() {
+  try {
+    localStorage.removeItem(QUIZ_DRAFT_KEY)
+  } catch {
+    // ignore storage error
+  }
+}
+
 export function useStyleQuiz() {
-  const [screen, setScreen] = useState<QuizScreen>("welcome")
-  const [mode, setMode] = useState<ExploreMode | null>(null)
+  const [screen, setScreen] = useState<QuizScreen>("quiz")
   const [phase, setPhase] = useState<QuizPhase>("stage1")
 
   const [stage1Questions, setStage1Questions] = useState<Stage1Question[]>([])
   const [stage2Questions, setStage2Questions] = useState<Stage2Question[]>([])
-  const [surveyEndQuestions, setSurveyEndQuestions] = useState<Stage1Question[]>([])
 
   const [stage1Answers, setStage1Answers] = useState<Record<string, number>>({})
-  const [stage2Answers, setStage2Answers] = useState<Record<number, number>>({})
-  const [surveyEndAnswers, setSurveyEndAnswers] = useState<Record<string, number>>({})
+  const [stage2Answers, setStage2Answers] = useState<Record<string, number>>({})
 
   const [currentIndex, setCurrentIndex] = useState(0)
+  const [E, setE] = useState(0)
+  const [A, setA] = useState(0)
+  const [O, setO] = useState(0)
 
   const [archetypeId, setArchetypeId] = useState("")
   const [subTypeId, setSubTypeId] = useState("")
@@ -100,246 +95,288 @@ export function useStyleQuiz() {
   const [loading, setLoading] = useState(false)
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [results, setResults] = useState<SearchResponseItem[]>([])
-  const [styleCardText, setStyleCardText] = useState("")
   const [error, setError] = useState<string | null>(null)
 
+  const [pendingDraft, setPendingDraft] = useState<QuizDraft | null>(null)
+  const [showResumeModal, setShowResumeModal] = useState(false)
+  const [draftCheckDone, setDraftCheckDone] = useState(false)
+
+  const restart = () => {
+    setScreen("quiz")
+    setPhase("stage1")
+    setCurrentIndex(0)
+    setStage1Answers({})
+    setStage2Answers({})
+    setStage2Questions([])
+    setResults([])
+    setError(null)
+    setE(0)
+    setA(0)
+    setO(0)
+    setArchetypeId("")
+    setSubTypeId("")
+  }
+
   useEffect(() => {
-    const loadSurveyData = async () => {
+    const foundDraft = safeGetDraft()
+    if (foundDraft) {
+      setPendingDraft(foundDraft)
+      setShowResumeModal(true)
+    }
+    setDraftCheckDone(true)
+  }, [])
+
+  useEffect(() => {
+    const loadData = async () => {
       setSurveyLoading(true)
       setError(null)
       try {
-        const [stage1Data, surveyEndData] = await Promise.all([getStage1Survey(), getSurveyEnd()])
-        setStage1Questions(stage1Data)
-        setSurveyEndQuestions(surveyEndData)
+        const stage1Data = await getStage1Survey()
+        setStage1Questions(stage1Data.length ? stage1Data : FALLBACK_STAGE1_QUESTIONS)
       } catch (err) {
+        setStage1Questions(FALLBACK_STAGE1_QUESTIONS)
         setError(mapQuizError(err))
       } finally {
         setSurveyLoading(false)
       }
     }
 
-    loadSurveyData()
+    loadData()
   }, [])
 
-  const currentQuestions = useMemo(() => {
-    if (phase === "stage2") return stage2Questions
-    if (phase === "surveyEnd") return surveyEndQuestions
-    return stage1Questions
-  }, [phase, stage1Questions, stage2Questions, surveyEndQuestions])
-
-  const totalQuestions = useMemo(() => {
-    if (!mode) return 0
-    const stage1Count = stage1Questions.length
-    const surveyEndCount = surveyEndQuestions.length
-    if (mode === "quick") return stage1Count + surveyEndCount
-    return stage1Count + 1 + surveyEndCount
-  }, [mode, stage1Questions.length, surveyEndQuestions.length])
-
+  const currentQuestions = phase === "stage1" ? stage1Questions : stage2Questions
   const currentQuestion = currentQuestions[currentIndex]
 
+  const totalQuestions = useMemo(() => {
+    const stage1Total = Math.min(stage1Questions.length, 8)
+    const stage2Total = stage2Questions.length
+    return phase === "stage1" ? stage1Total : stage1Total + stage2Total
+  }, [phase, stage1Questions.length, stage2Questions.length])
+
   const globalQuestionIndex = useMemo(() => {
-    if (screen !== "quiz") return 0
-
     if (phase === "stage1") return currentIndex + 1
+    return 8 + currentIndex + 1
+  }, [phase, currentIndex])
 
-    if (phase === "stage2") return stage1Questions.length + currentIndex + 1
+  useEffect(() => {
+    if (!draftCheckDone || surveyLoading || screen === "loading" || screen === "result" || showResumeModal) return
 
-    const stage2Offset = mode === "deep" ? 1 : 0
-    return stage1Questions.length + stage2Offset + currentIndex + 1
-  }, [screen, phase, mode, currentIndex, stage1Questions.length])
+    safeSetDraft({
+      phase,
+      screen: screen === "checkpoint" ? "checkpoint" : "quiz",
+      currentIndex,
+      globalQuestionIndex,
+      E,
+      A,
+      O,
+      archetypeId,
+      stage1Answers,
+      stage2Answers,
+    })
+  }, [draftCheckDone, surveyLoading, screen, showResumeModal, phase, currentIndex, globalQuestionIndex, E, A, O, archetypeId, stage1Answers, stage2Answers])
 
   const selectedOptionIndex = useMemo(() => {
     if (phase === "stage1") {
       const question = stage1Questions[currentIndex]
-      if (!question) return undefined
-      return stage1Answers[question.question_id]
+      return question ? stage1Answers[question.question_id] : undefined
     }
 
-    if (phase === "stage2") return stage2Answers[currentIndex]
-
-    const question = surveyEndQuestions[currentIndex]
-    if (!question) return undefined
-    return surveyEndAnswers[question.question_id]
-  }, [phase, stage1Questions, stage1Answers, stage2Answers, surveyEndQuestions, surveyEndAnswers, currentIndex])
+    const question = stage2Questions[currentIndex]
+    const qid = question?.question_id ?? `stage2-${currentIndex}`
+    return question ? stage2Answers[qid] : undefined
+  }, [phase, stage1Questions, currentIndex, stage1Answers, stage2Questions, stage2Answers])
 
   const progressPercent = useMemo(() => {
-    if (!totalQuestions || !globalQuestionIndex) return 0
+    if (!totalQuestions) return 0
     return Math.round((globalQuestionIndex / totalQuestions) * 100)
   }, [globalQuestionIndex, totalQuestions])
 
-  const archetypeDetail = useMemo(() => {
-    return ARCHETYPE_DETAILS[archetypeId] ?? {
-      name: archetypeId || "Unknown Archetype",
-      coreDesire: "",
-      famousCharacters: [],
-    }
+  const archetypeProfile = useMemo(() => {
+    return (
+      ARCHETYPE_PROFILES[archetypeId] ?? {
+        id: archetypeId,
+        name: archetypeId || "Archetype",
+        coreDesire: "",
+        clothing_style: "",
+        color_palette: ["#FBCFE8", "#F9A8D4", "#F472B6"],
+        famousCharacters: [],
+      }
+    )
   }, [archetypeId])
 
-  const quickModeTotal = stage1Questions.length + surveyEndQuestions.length
-  const deepModeTotal = stage1Questions.length + 2 + surveyEndQuestions.length
+  const checkpointMessage = useMemo(() => {
+    if (!archetypeProfile.name) return ""
+    return `Hệ thống đã quét được 70% bản ngã của bạn và xếp bạn vào nhóm ${archetypeProfile.name}. Bạn muốn xem kết quả ngay hay test thêm 7 câu để phân tích chi tiết 100%?`
+  }, [archetypeProfile.name])
 
   const selectAnswer = (optionIndex: number) => {
-    if (phase === "stage1") {
-      const question = stage1Questions[currentIndex]
-      if (!question) return
-      setStage1Answers((prev) => ({ ...prev, [question.question_id]: optionIndex }))
-      return
-    }
-
-    if (phase === "stage2") {
-      setStage2Answers((prev) => ({ ...prev, [currentIndex]: optionIndex }))
-      return
-    }
-
-    const question = surveyEndQuestions[currentIndex]
+    const question = currentQuestions[currentIndex]
     if (!question) return
-    setSurveyEndAnswers((prev) => ({ ...prev, [question.question_id]: optionIndex }))
+
+    if (phase === "stage1") {
+      setStage1Answers((prev) => ({ ...prev, [question.question_id as string]: optionIndex }))
+      return
+    }
+
+    const questionId = question.question_id ?? `stage2-${currentIndex}`
+    setStage2Answers((prev) => ({ ...prev, [questionId]: optionIndex }))
   }
 
-  const runRecommend = async (finalSubTypeId: string, finalBudgetMetadata: string) => {
+  const applyCurrentAnswerToScore = (): { E: number; A: number; O: number; budgetMetadata?: string } | null => {
+    const question = currentQuestions[currentIndex]
+    if (!question) return null
+
+    const selectedIdx = selectedOptionIndex
+    if (selectedIdx === undefined) return null
+
+    const selectedOption = question.options[selectedIdx]
+    if (!selectedOption) return null
+
+    return {
+      E: selectedOption.scores?.E ?? 0,
+      A: selectedOption.scores?.A ?? 0,
+      O: selectedOption.scores?.O ?? 0,
+      budgetMetadata: selectedOption.metadata,
+    }
+  }
+
+  const runRecommend = async (finalArchetypeId: string, finalSubtypeId: string, budgetMetadata: string) => {
     setScreen("loading")
     setLoading(true)
     setError(null)
 
     try {
       const recommendItems = await recommendByStyle({
-        archetypeId,
-        subTypeId: finalSubTypeId,
-        budgetMetadata: finalBudgetMetadata,
+        archetypeId: finalArchetypeId,
+        subTypeId: finalSubtypeId,
+        budgetMetadata,
       })
 
-      setSubTypeId(finalSubTypeId)
+      setArchetypeId(finalArchetypeId)
+      setSubTypeId(finalSubtypeId)
       setResults(recommendItems)
-      setStyleCardText(buildStyleCardText(archetypeDetail.name, finalBudgetMetadata))
+      clearDraft()
       setScreen("result")
       notification.success({ description: "AI đã hoàn thành phân tích và trả kết quả!" })
     } catch (err) {
       const msg = mapQuizError(err)
       setError(msg)
       notification.error({ description: msg })
-      setScreen("quiz")
-      setPhase("surveyEnd")
-      setCurrentIndex(0)
-      setResults([])
+      setScreen("checkpoint")
     } finally {
       setLoading(false)
     }
   }
 
   const next = async () => {
-    if (selectedOptionIndex === undefined) return
+    const scoreDelta = applyCurrentAnswerToScore()
+    if (!scoreDelta) return
 
-    if (currentIndex < currentQuestions.length - 1) {
+    const nextE = E + scoreDelta.E
+    const nextA = A + scoreDelta.A
+    const nextO = O + scoreDelta.O
+
+    setE(nextE)
+    setA(nextA)
+    setO(nextO)
+
+    if (phase === "stage1") {
+      const stage1Total = Math.min(stage1Questions.length, 8)
+
+      if (currentIndex < stage1Total - 1) {
+        setCurrentIndex((prev) => prev + 1)
+        return
+      }
+
+      const baseArchetypeId = getBaseArchetypeAtCheckpoint({ E: nextE, A: nextA, O: nextO })
+      setArchetypeId(baseArchetypeId)
+      setScreen("checkpoint")
+      return
+    }
+
+    if (currentIndex < stage2Questions.length - 1) {
       setCurrentIndex((prev) => prev + 1)
       return
     }
 
-    if (phase === "stage1") {
-      const frequency = countArchetypeFrequency(stage1Questions, stage1Answers)
-      const winnerArchetypeId = pickWinningArchetype(frequency)
+    const finalClassification = getFinalClassification({ E: nextE, A: nextA, O: nextO })
+    const budgetMetadata = resolveBudgetMetadata(scoreDelta.budgetMetadata)
 
-      if (!winnerArchetypeId) {
-        setError("Không xác định được tính cách từ câu trả lời. Vui lòng thử lại.")
-        return
-      }
+    await runRecommend(finalClassification.archetypeId, finalClassification.subTypeId, budgetMetadata)
+  }
 
-      setArchetypeId(winnerArchetypeId)
+  const viewResultNow = async () => {
+    const finalClassification = getFinalClassification({ E, A, O })
+    await runRecommend(finalClassification.archetypeId, finalClassification.subTypeId, "mid_budget")
+  }
 
-      if (mode === "deep") {
-        setSurveyLoading(true)
-        setError(null)
-        try {
-          const data = await getStage2Survey(winnerArchetypeId)
-          setStage2Questions(data)
-          setPhase("stage2")
-          setCurrentIndex(0)
-        } catch (err) {
-          const msg = mapQuizError(err)
-          setError(msg)
-          notification.error({ description: msg })
-        } finally {
-          setSurveyLoading(false)
-        }
-        return
-      }
+  const continueDeepAnalysis = async () => {
+    if (!archetypeId) return
 
-      setPhase("surveyEnd")
+    setSurveyLoading(true)
+    setError(null)
+
+    try {
+      const stage2Data = await getStage2Survey(archetypeId)
+      const source = stage2Data.length ? stage2Data : FALLBACK_STAGE2_QUESTIONS
+      setStage2Questions(source.slice(0, 7))
+      setPhase("stage2")
       setCurrentIndex(0)
+      setScreen("quiz")
+    } catch {
+      setStage2Questions(FALLBACK_STAGE2_QUESTIONS)
+      setPhase("stage2")
+      setCurrentIndex(0)
+      setScreen("quiz")
+      setError(null)
+    } finally {
+      setSurveyLoading(false)
+    }
+  }
+
+  const restoreDraft = async () => {
+    if (!pendingDraft) {
+      setShowResumeModal(false)
       return
     }
 
-    if (phase === "stage2") {
-      const firstQuestion = stage2Questions[0]
-      const selected = firstQuestion?.options[stage2Answers[0]]
-      const finalSubTypeId = selected?.points_to_subtype ?? ""
+    setStage1Answers(pendingDraft.stage1Answers)
+    setStage2Answers(pendingDraft.stage2Answers)
+    setPhase(pendingDraft.phase)
+    setScreen(pendingDraft.screen)
+    setCurrentIndex(pendingDraft.currentIndex)
+    setE(pendingDraft.E)
+    setA(pendingDraft.A)
+    setO(pendingDraft.O)
+    setArchetypeId(pendingDraft.archetypeId)
 
-      if (!finalSubTypeId) {
-        setError("Không xác định được phong cách chi tiết từ câu trả lời.")
-        return
-      }
-
-      setSubTypeId(finalSubTypeId)
-      setPhase("surveyEnd")
-      setCurrentIndex(0)
-      return
-    }
-
-    const budgetQuestion = surveyEndQuestions[currentIndex]
-    const budgetOption = budgetQuestion?.options[surveyEndAnswers[budgetQuestion.question_id]]
-    const finalBudgetMetadata = budgetOption?.metadata ?? deriveBudgetMetadata(budgetOption?.text ?? "")
-
-    let finalSubTypeId = subTypeId
-
-    if (!finalSubTypeId) {
+    if (pendingDraft.phase === "stage2" && pendingDraft.archetypeId) {
+      setSurveyLoading(true)
       try {
-        const data = await getStage2Survey(archetypeId)
-        finalSubTypeId = data[0]?.options[0]?.points_to_subtype ?? ""
+        const stage2Data = await getStage2Survey(pendingDraft.archetypeId)
+        const source = stage2Data.length ? stage2Data : FALLBACK_STAGE2_QUESTIONS
+        setStage2Questions(source.slice(0, 7))
       } catch {
-        finalSubTypeId = ""
+        setStage2Questions(FALLBACK_STAGE2_QUESTIONS)
+      } finally {
+        setSurveyLoading(false)
       }
     }
 
-    if (!finalSubTypeId) {
-      setError("Không lấy được subtype để trả kết quả. Vui lòng thử lại.")
-      return
-    }
-
-    await runRecommend(finalSubTypeId, finalBudgetMetadata)
+    setShowResumeModal(false)
+    setPendingDraft(null)
   }
 
-  const start = (nextMode: ExploreMode) => {
-    setMode(nextMode)
-    setScreen("quiz")
-    setPhase("stage1")
-    setCurrentIndex(0)
-    setStage1Answers({})
-    setStage2Answers({})
-    setSurveyEndAnswers({})
-    setResults([])
-    setError(null)
-    setArchetypeId("")
-    setSubTypeId("")
-  }
-
-  const restart = () => {
-    setMode(null)
-    setScreen("welcome")
-    setPhase("stage1")
-    setCurrentIndex(0)
-    setStage1Answers({})
-    setStage2Answers({})
-    setSurveyEndAnswers({})
-    setArchetypeId("")
-    setSubTypeId("")
-    setResults([])
-    setStyleCardText("")
-    setError(null)
+  const discardDraftAndStartNew = () => {
+    clearDraft()
+    setShowResumeModal(false)
+    setPendingDraft(null)
+    restart()
   }
 
   return {
     screen,
     phase,
-    mode,
     currentIndex,
     totalQuestions,
     globalQuestionIndex,
@@ -350,15 +387,17 @@ export function useStyleQuiz() {
     loading,
     error,
     results,
-    styleCardText,
     archetypeId,
-    archetypeDetail,
     subTypeId,
-    quickModeTotal,
-    deepModeTotal,
-    start,
+    archetypeProfile,
+    checkpointMessage,
+    showResumeModal,
     selectAnswer,
     next,
+    viewResultNow,
+    continueDeepAnalysis,
+    restoreDraft,
+    discardDraftAndStartNew,
     restart,
   }
 }

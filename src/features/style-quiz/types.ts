@@ -18,30 +18,33 @@ export interface RecommendationRequestPayload {
   budgetMetadata: string
 }
 
-export interface Stage1Option {
+export interface Option {
   text: string
-  points_to?: string[]
+  scores: {
+    E: number
+    A: number
+    O: number
+  }
   metadata?: string
 }
 
 export interface Stage1Question {
   question_id: string
   question: string
-  options: Stage1Option[]
-}
-
-export interface Stage2Option {
-  text: string
-  points_to_subtype: string
+  options: Option[]
 }
 
 export interface Stage2Question {
+  question_id?: string
   question: string
-  options: Stage2Option[]
+  options: Option[]
 }
 
-export interface StageAnswers {
-  archetypeId: string
-  subTypeId: string
-  budgetMetadata: string
+export interface ArchetypeProfile {
+  id: string
+  name: string
+  coreDesire: string
+  clothing_style: string
+  color_palette: string[]
+  famousCharacters: string[]
 }
