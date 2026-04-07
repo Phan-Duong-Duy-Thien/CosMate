@@ -1,8 +1,14 @@
-import { useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import { notification } from "antd"
 
 import { POSE_TIPS } from "../constants/poseBattle.constants"
-import { getPoseHistory, mapPoseError, scorePose } from "../services/poseBattle.service"
+import {
+  deletePoseHistory,
+  getPoseHistory,
+  mapPoseError,
+  scorePose,
+  updatePoseHistoryName,
+} from "../services/poseBattle.service"
 import type { PoseHistoryItem, PoseScoringResult } from "../types"
 
 export function usePoseBattle() {
@@ -14,36 +20,37 @@ export function usePoseBattle() {
 
   const [historyLoading, setHistoryLoading] = useState(false)
   const [history, setHistory] = useState<PoseHistoryItem[]>([])
+  const [searchKeyword, setSearchKeyword] = useState("")
 
   const randomTip = useMemo(() => {
     const idx = Math.floor(Math.random() * POSE_TIPS.length)
     return POSE_TIPS[idx]
   }, [loading])
 
-  const loadHistory = async () => {
+  const loadHistory = useCallback(async (keyword?: string) => {
     setHistoryLoading(true)
     try {
-      const response = await getPoseHistory()
+      const response = await getPoseHistory(keyword)
       setHistory(response)
     } catch (error) {
-      notification.error({ title: mapPoseError(error) })
+      notification.error({ description: mapPoseError(error) })
     } finally {
       setHistoryLoading(false)
     }
-  }
+  }, [])
 
   useEffect(() => {
-    void loadHistory()
-  }, [])
+    void loadHistory(searchKeyword)
+  }, [loadHistory, searchKeyword])
 
   const submit = async () => {
     if (!userImageFile) {
-      notification.warning({ title: "Vui lòng tải ảnh pose của bạn trước khi chấm điểm." })
+      notification.warning({ description: "Vui lòng tải ảnh pose của bạn trước khi chấm điểm." })
       return
     }
 
     if (!characterName.trim()) {
-      notification.warning({ title: "Vui lòng nhập tên nhân vật để AI chấm đúng ngữ cảnh." })
+      notification.warning({ description: "Vui lòng nhập tên nhân vật để AI chấm đúng ngữ cảnh." })
       return
     }
 
@@ -59,16 +66,35 @@ export function usePoseBattle() {
       setUserImageFile(null)
       setCharacterName("")
 
-      await loadHistory()
+      await loadHistory(searchKeyword)
 
-      notification.success({
-        title: "Đã chấm điểm xong",
-        description: "Kết quả đã lưu vào lịch sử Pose Battle của bạn.",
-      })
+      notification.success({ description: "Đã chấm điểm xong. Kết quả đã lưu vào lịch sử Pose Battle." })
     } catch (error) {
-      notification.error({ title: mapPoseError(error) })
+      notification.error({ description: mapPoseError(error) })
     } finally {
       setLoading(false)
+    }
+  }
+
+  const renameHistoryItem = async (id: number, newName: string) => {
+    try {
+      await updatePoseHistoryName(id, newName)
+      notification.success({ description: "Đã cập nhật tên nhân vật thành công." })
+      await loadHistory(searchKeyword)
+    } catch (error) {
+      notification.error({ description: mapPoseError(error) })
+      throw error
+    }
+  }
+
+  const removeHistoryItem = async (id: number) => {
+    try {
+      await deletePoseHistory(id)
+      notification.success({ description: "Đã xóa lịch sử chấm điểm thành công." })
+      await loadHistory(searchKeyword)
+    } catch (error) {
+      notification.error({ description: mapPoseError(error) })
+      throw error
     }
   }
 
@@ -86,9 +112,13 @@ export function usePoseBattle() {
     randomTip,
     history,
     historyLoading,
+    searchKeyword,
+    setSearchKeyword,
     submit,
     closeResult,
-    reloadHistory: loadHistory,
+    reloadHistory: () => loadHistory(searchKeyword),
+    renameHistoryItem,
+    removeHistoryItem,
     setResult,
   }
 }

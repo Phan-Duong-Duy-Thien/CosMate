@@ -1,12 +1,16 @@
-import { useMemo, useState } from "react"
-import { Button, Empty, Input, Modal, Spin, Tag, Upload } from "antd"
+import { useEffect, useMemo, useState } from "react"
+import { Empty, Input, Modal, Pagination, Popconfirm, Spin, Tag, Upload } from "antd"
 import type { UploadProps } from "antd"
-import { ClockCircleOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons"
 
 import poseLoadingVideo from "@/assets/video-mascot-pose.mp4"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 import type { PoseHistoryItem } from "../types"
+
+const { Search } = Input
 
 function formatDateTime(value: string) {
   const date = new Date(value)
@@ -42,12 +46,34 @@ export default function PoseBattlePage() {
     result,
     history,
     historyLoading,
+    searchKeyword,
+    setSearchKeyword,
     submit,
     closeResult,
     setResult,
+    renameHistoryItem,
+    removeHistoryItem,
   } = usePoseBattle()
 
   const [selectedHistory, setSelectedHistory] = useState<PoseHistoryItem | null>(null)
+  const [historyPage, setHistoryPage] = useState(1)
+  const historyPageSize = 6
+
+  const paginatedHistory = useMemo(() => {
+    const startIndex = (historyPage - 1) * historyPageSize
+    return history.slice(startIndex, startIndex + historyPageSize)
+  }, [history, historyPage])
+
+  useEffect(() => {
+    setHistoryPage(1)
+  }, [searchKeyword])
+
+  useEffect(() => {
+    const maxPage = Math.max(1, Math.ceil(history.length / historyPageSize))
+    if (historyPage > maxPage) {
+      setHistoryPage(maxPage)
+    }
+  }, [history.length, historyPage])
 
   const previewUrl = useMemo(() => {
     if (!userImageFile) return null
@@ -66,15 +92,15 @@ export default function PoseBattlePage() {
   return (
     <section className="mx-auto max-w-7xl space-y-4 py-3">
       <div className="sticky top-[72px] z-20 grid gap-3 bg-white/70 pb-2 backdrop-blur-sm lg:grid-cols-2">
-        <div className="rounded-3xl border border-violet-200 bg-white p-3.5 shadow-sm">
-          <h2 className="mb-2 text-base font-semibold text-violet-700">Ảnh gốc (Reference)</h2>
+        <Card className="rounded-3xl border-pink-200 p-3.5">
+          <h2 className="mb-2 text-base font-semibold text-pink-700">Ảnh gốc (Reference)</h2>
 
           <div className="flex items-center justify-between gap-2">
             <Input
               value={characterName}
               onChange={(event) => setCharacterName(event.target.value)}
               placeholder="Tên nhân vật (VD: Naruto)"
-              className="flex-1"
+              className="flex-1 !border-pink-200 hover:!border-pink-300 focus:!border-pink-400"
             />
 
             <Upload
@@ -86,10 +112,8 @@ export default function PoseBattlePage() {
                 return false
               }}
             >
-              <Button
-                className="border-pink-200 text-pink-600 hover:!border-pink-300 hover:!text-pink-700"
-                icon={<UploadOutlined />}
-              >
+              <Button variant="outline" size="md" className="border-pink-200 text-pink-700" type="button">
+                <UploadOutlined />
                 Upload ảnh mẫu riêng
               </Button>
             </Upload>
@@ -104,9 +128,9 @@ export default function PoseBattlePage() {
               </div>
             )}
           </div>
-        </div>
+        </Card>
 
-        <div className="rounded-3xl border border-pink-200 bg-white p-3.5 shadow-sm">
+        <Card className="rounded-3xl border-pink-200 p-3.5">
           <div className="mb-2 flex items-center justify-between gap-3">
             <h2 className="text-base font-semibold text-pink-700">Ảnh người dùng upload</h2>
             <button
@@ -114,23 +138,20 @@ export default function PoseBattlePage() {
               onClick={submit}
               className="group relative rounded-2xl border border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 px-4 py-2 text-sm font-medium text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100 hover:shadow-[0_12px_24px_rgba(236,72,153,0.14)]"
             >
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute right-2 top-1 text-xs text-pink-500/80 transition-all duration-300 group-hover:scale-110 group-hover:text-pink-600"
-              >
-                ✦
-              </span>
               Chấm điểm
             </button>
           </div>
 
           <div className="flex items-center justify-between gap-2">
-            <Input value={userImageFile?.name ?? ""} readOnly placeholder="Chưa chọn ảnh pose" className="flex-1" />
+            <Input
+              value={userImageFile?.name ?? ""}
+              readOnly
+              placeholder="Chưa chọn ảnh pose"
+              className="flex-1 !border-pink-200 hover:!border-pink-300 focus:!border-pink-400"
+            />
             <Upload {...uploadPoseProps}>
-              <Button
-                className="border-pink-200 text-pink-600 hover:!border-pink-300 hover:!text-pink-700"
-                icon={<UploadOutlined />}
-              >
+              <Button variant="outline" size="md" className="border-pink-200 text-pink-700" type="button">
+                <UploadOutlined />
                 Upload ảnh pose
               </Button>
             </Upload>
@@ -143,13 +164,24 @@ export default function PoseBattlePage() {
               <div className="flex h-60 items-center justify-center text-sm text-slate-500">Chưa có ảnh để chấm điểm</div>
             )}
           </div>
-        </div>
+        </Card>
       </div>
 
-      <div className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm">
-        <div className="mb-4 flex items-center justify-between gap-3">
+      <Card className="rounded-3xl border-pink-100 p-5">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h3 className="text-lg font-semibold text-slate-800">Lịch sử chấm điểm Pose Battle</h3>
           <Tag color="magenta">{history.length} lượt chấm</Tag>
+        </div>
+
+        <div className="mb-4">
+          <Search
+            allowClear
+            value={searchKeyword}
+            onChange={(event) => setSearchKeyword(event.target.value)}
+            onSearch={(value) => setSearchKeyword(value)}
+            placeholder="Tìm kiếm theo tên nhân vật..."
+            className="[&_.ant-input]:!border-pink-200 [&_.ant-input]:hover:!border-pink-300 [&_.ant-input]:focus:!border-pink-400 [&_.ant-input-group-addon_.ant-btn]:!border-pink-200"
+          />
         </div>
 
         {historyLoading ? (
@@ -159,32 +191,102 @@ export default function PoseBattlePage() {
         ) : history.length === 0 ? (
           <Empty description="Bạn chưa có lần chấm điểm nào" />
         ) : (
-          <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
-            {history.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => setSelectedHistory(item)}
-                className="overflow-hidden rounded-2xl border border-slate-200 bg-white text-left transition hover:-translate-y-0.5 hover:border-pink-300 hover:shadow-md"
-              >
-                <img src={item.imageUrl} alt={`Pose score ${item.id}`} className="h-36 w-full bg-slate-50 object-contain" />
-                <div className="space-y-2 p-3">
-                  <div className="flex items-center justify-between gap-2">
-                    <p className="text-sm font-semibold text-slate-800">Lần chấm #{item.id}</p>
-                    <span className="rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
-                      Điểm: {item.score}
-                    </span>
-                  </div>
-                  <p className="line-clamp-2 text-xs text-slate-700">{cleanAiComment(item.comment)}</p>
-                  <p className="flex items-center gap-1 text-xs text-slate-500">
-                    <ClockCircleOutlined /> {formatDateTime(item.createdAt)}
-                  </p>
-                </div>
-              </button>
-            ))}
+          <div className="space-y-3">
+            <div className="max-h-[620px] overflow-y-auto pr-1 overscroll-contain">
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                {paginatedHistory.map((item) => (
+                  <Card
+                    key={item.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => setSelectedHistory(item)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        setSelectedHistory(item)
+                      }
+                    }}
+                    className="overflow-hidden border-pink-100 text-left transition hover:-translate-y-0.5 hover:border-pink-300 hover:shadow-md"
+                  >
+                    <div className="overflow-hidden rounded-t-2xl">
+                      <img
+                        src={item.imageUrl}
+                        alt={`Pose score ${item.id}`}
+                        className="block h-36 w-full bg-slate-50 object-contain"
+                      />
+                    </div>
+
+                    <div className="space-y-2 p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-base font-bold text-pink-700">
+                            {item.characterName?.trim() ? item.characterName : "Nhân vật ẩn danh"}
+                          </p>
+                        </div>
+
+                        <span className="rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
+                          Điểm: {item.score}
+                        </span>
+                      </div>
+
+                      <p className="line-clamp-2 text-xs text-slate-700">{cleanAiComment(item.comment)}</p>
+
+                      <p className="flex items-center gap-1 text-xs text-slate-500">
+                        <ClockCircleOutlined /> {formatDateTime(item.createdAt)}
+                      </p>
+
+                      <div className="flex items-center justify-end gap-2 pt-1">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={async (event) => {
+                            event.stopPropagation()
+                            const nextName = window.prompt("Nhập tên nhân vật mới", item.characterName ?? "")
+                            if (nextName === null) return
+                            await renameHistoryItem(item.id, nextName.trim())
+                          }}
+                        >
+                          <EditOutlined />
+                          Sửa
+                        </Button>
+
+                        <Popconfirm
+                          title="Bạn có chắc chắn muốn xóa lịch sử này không? Không thể hoàn tác."
+                          okText="Xóa"
+                          cancelText="Hủy"
+                          onConfirm={async (event) => {
+                            event?.stopPropagation()
+                            await removeHistoryItem(item.id)
+                          }}
+                        >
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border-rose-200 text-rose-600 hover:bg-rose-50"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <DeleteOutlined />
+                            Xóa
+                          </Button>
+                        </Popconfirm>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Pagination
+                current={historyPage}
+                pageSize={historyPageSize}
+                total={history.length}
+                onChange={(page) => setHistoryPage(page)}
+                showSizeChanger={false}
+              />
+            </div>
           </div>
         )}
-      </div>
+      </Card>
 
       {loading && (
         <div className="fixed inset-0 z-[21000] flex items-center justify-center bg-black/65 p-4">
@@ -249,21 +351,24 @@ export default function PoseBattlePage() {
               </div>
 
               <div className="mt-2.5 flex justify-end gap-2">
-                <Button
-                  className="border-pink-200 text-pink-700 hover:!border-pink-300 hover:!text-pink-800 focus:!border-pink-400 focus:!text-pink-700"
-                  onClick={() => setSelectedHistory(null)}
-                >
+                <Button variant="outline" size="sm" onClick={() => setSelectedHistory(null)}>
                   Đóng
                 </Button>
                 <Button
-                  type="primary"
-                  icon={<EyeOutlined />}
-                  className="!border-pink-600 !bg-pink-600 hover:!border-pink-500 hover:!bg-pink-500"
+                  variant="default"
+                  size="sm"
                   onClick={() => {
-                    setResult({ score: selectedHistory.score, comment: cleanAiComment(selectedHistory.comment) })
+                    setResult({
+                      id: selectedHistory.id,
+                      score: selectedHistory.score,
+                      comment: cleanAiComment(selectedHistory.comment),
+                      characterName: selectedHistory.characterName,
+                      imageUrl: selectedHistory.imageUrl,
+                    })
                     setSelectedHistory(null)
                   }}
                 >
+                  <EyeOutlined />
                   Xem popup kết quả
                 </Button>
               </div>
