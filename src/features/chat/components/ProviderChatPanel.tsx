@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Send, MessageCircle } from "lucide-react"
-import { useChatPopup } from "./ChatPopupContext"
+import { MessageCircle, Send } from "lucide-react"
 import { useChatRooms } from "../hooks/useChatRooms"
 import { getChatMessagesService } from "../services/chat.service"
 import { ChatRoomList } from "./ChatRoomList"
@@ -13,47 +12,23 @@ import {
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { cn } from "@/lib/utils"
-import type { ChatMessage, ChatRoomListItem } from "../types"
+import type { ChatRoomListItem, ChatMessage } from "../types"
 
-interface ActiveRoom {
-  roomId: number
-  partnerId: number
-  partnerName: string | null
-  partnerAvatar: string | null
-}
-
-function computeInitials(fullName: string): string {
+function computeInitials(fullName: string | null | undefined): string {
+  if (!fullName) return "?"
   const parts = fullName.trim().split(/\s+/).filter(Boolean)
-  if (parts.length === 0) return "U"
+  if (parts.length === 0) return "?"
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-function formatMessageTime(isoString: string): string {
-  if (!isoString) return ""
-  const date = new Date(isoString)
-  if (isNaN(date.getTime())) return ""
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-}
-
-export function ChatPopup() {
-  const { isOpen, roomId: initialRoomId, partnerId: initialPartnerId, partnerName: initialPartnerName, closeChat } = useChatPopup()
+export function ProviderChatPanel() {
   const { rooms, loading: roomsLoading } = useChatRooms()
+  const [activeRoom, setActiveRoom] = useState<ChatRoomListItem | null>(null)
+  const [inputValue, setInputValue] = useState("")
+  const bottomRef = useRef<HTMLDivElement>(null)
 
-  // ── Active room state ──────────────────────────────────────────────────
-  const [activeRoom, setActiveRoom] = useState<ActiveRoom | null>(null)
-
-  // Seed activeRoom from context (e.g. when chat opened from profile page)
-  useEffect(() => {
-    if (initialRoomId !== null && initialPartnerId !== null) {
-      setActiveRoom({
-        roomId: initialRoomId,
-        partnerId: initialPartnerId,
-        partnerName: initialPartnerName,
-        partnerAvatar: null,
-      })
-    }
-  }, [initialRoomId, initialPartnerId, initialPartnerName])
+  const currentUserId = getUserId()
 
   // ── Message store (single source of truth) ────────────────────────────
   const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
@@ -63,7 +38,7 @@ export function ChatPopup() {
 
   // Load history from REST API when room changes
   useEffect(() => {
-    if (activeRoom === null) return
+    if (activeRoom?.roomId == null) return
     setIsLoadingHistory(true)
     clearMessages()
     getChatMessagesService(activeRoom.roomId)
@@ -86,32 +61,32 @@ export function ChatPopup() {
 
   // Subscribe to room channel
   useEffect(() => {
-    if (!isConnected || activeRoom === null) return
-    if (unsubscribeRef.current) {
-      unsubscribeRef.current()
-      unsubscribeRef.current = null
-    }
+    if (!isConnected || activeRoom?.roomId == null) return
+    if (unsubscribeRef.current) unsubscribeRef.current()
+
     unsubscribeRef.current = subscribeChatRoom(activeRoom.roomId, (msg: ChatMessage) => {
-      console.log("[ChatPopup] Server message:", msg)
       mergeServerMessage(msg)
     })
   }, [isConnected, activeRoom?.roomId, mergeServerMessage])
 
-  // ── Send message ──────────────────────────────────────────────────────
-  const [inputValue, setInputValue] = useState("")
-  const bottomRef = useRef<HTMLDivElement>(null)
-
+  // Scroll to bottom
   useEffect(() => {
     if (activeRoom !== null) setInputValue("")
-  }, [activeRoom?.roomId])
+  }, [activeRoom])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
   }, [messages.length])
 
+  // ── Select room ────────────────────────────────────────────────────────
+  const handleSelectRoom = (room: ChatRoomListItem) => {
+    setActiveRoom(room)
+  }
+
+  // ── Send message ──────────────────────────────────────────────────────
   const handleSend = () => {
-    if (!inputValue.trim() || activeRoom === null) return
-    const senderId = getUserId()
+    if (!inputValue.trim() || activeRoom?.roomId == null) return
+    const senderId = currentUserId
     if (senderId === null) return
 
     sendChatMessage({ roomId: activeRoom.roomId, senderId, content: inputValue.trim() })
@@ -125,33 +100,20 @@ export function ChatPopup() {
     }
   }
 
-  // ── Select room from sidebar ───────────────────────────────────────────
-  const handleSelectRoom = (room: ChatRoomListItem) => {
-    setActiveRoom({
-      roomId: room.roomId,
-      partnerId: room.partnerId,
-      partnerName: room.partnerName,
-      partnerAvatar: room.partnerAvatar,
-    })
-  }
-
-  if (!isOpen) return null
-
-  const currentUserId = getUserId()
   const displayName = activeRoom?.partnerName ?? "Chat"
-  const avatar = activeRoom?.partnerAvatar
+  const avatar = activeRoom?.partnerAvatar ?? null
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[360px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <div className="flex h-[500px] overflow-hidden rounded-xl border border-slate-200 bg-white">
       {/* LEFT: Room List Sidebar */}
-      <div className="flex w-30 shrink-0 flex-col border-r border-slate-100">
-        <div className="flex h-12 shrink-0 items-center justify-center border-b border-slate-100 px-2">
-          <p className="text-xs font-semibold text-slate-500">Messages</p>
+      <div className="flex w-48 shrink-0 flex-col border-r border-slate-100">
+        <div className="flex h-11 shrink-0 items-center justify-center border-b border-slate-100">
+          <p className="text-sm font-semibold text-slate-500">Messages</p>
         </div>
         <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
           {roomsLoading ? (
             <div className="flex flex-col gap-2 p-2">
-              {Array.from({ length: 5 }).map((_, i) => (
+              {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
                   <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 animate-pulse" />
                   <div className="flex-1 space-y-1">
@@ -162,11 +124,7 @@ export function ChatPopup() {
               ))}
             </div>
           ) : (
-            <ChatRoomList
-              rooms={rooms}
-              activeRoomId={activeRoom?.roomId ?? null}
-              onSelectRoom={handleSelectRoom}
-            />
+            <ChatRoomList rooms={rooms} activeRoomId={activeRoom?.roomId ?? null} onSelectRoom={handleSelectRoom} />
           )}
         </div>
       </div>
@@ -174,7 +132,7 @@ export function ChatPopup() {
       {/* RIGHT: Chat Area */}
       <div className="flex flex-1 min-h-0 flex-col">
         {/* Header */}
-        <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4">
+        <div className="flex h-14 shrink-0 items-center border-b border-slate-100 bg-white px-4">
           <div className="flex items-center gap-3">
             <div className="relative shrink-0">
               {avatar ? (
@@ -198,58 +156,53 @@ export function ChatPopup() {
               <p className="text-xs text-slate-400">{isConnected ? "Online" : "Offline"}</p>
             </div>
           </div>
-          <button
-            type="button"
-            onClick={closeChat}
-            className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-            aria-label="Close chat"
-          >
-            <X className="h-4 w-4" />
-          </button>
         </div>
 
-        {/* Message List */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        {/* Message Area */}
+        <div className="flex flex-1 min-h-0 overflow-hidden">
           {!activeRoom ? (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
               <MessageCircle className="h-10 w-10 text-slate-300" />
               <p className="text-sm font-medium">Select a conversation</p>
               <p className="text-xs">Choose a chat from the left</p>
             </div>
-          ) : isLoadingHistory || messages.length === 0 ? (
-            <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
-              {isLoadingHistory ? (
-                <>
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
-                  <p className="text-sm font-medium">Loading...</p>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className="h-10 w-10 text-slate-300" />
-                  <p className="text-sm font-medium">No messages yet</p>
-                  <p className="text-xs">Say hi to start the conversation!</p>
-                </>
-              )}
+          ) : isLoadingHistory ? (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
+              <p className="text-sm font-medium">Loading...</p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
+              <MessageCircle className="h-10 w-10 text-slate-300" />
+              <p className="text-sm font-medium">No messages yet</p>
+              <p className="text-xs">Say hi to start the conversation!</p>
             </div>
           ) : (
-            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-3 py-2">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto px-4 py-3">
               <div className="flex flex-col gap-2">
                 {messages
                   .filter((msg) => msg.createdAt && msg.createdAt.trim() !== "")
                   .map((msg) => {
                   const isMine = currentUserId !== null ? msg.senderId === currentUserId : false
-                  const time = formatMessageTime(msg.createdAt)
+                  const time = !msg.createdAt
+                    ? ""
+                    : (() => {
+                        const msgDate = new Date(msg.createdAt)
+                        return isNaN(msgDate.getTime())
+                          ? ""
+                          : msgDate.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+                      })()
                   return (
                     <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
                       <div
                         className={cn(
-                          "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
+                          "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
                           isMine
                             ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
                             : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
                         )}
                       >
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                        <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
                         <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
                           {time}
                         </p>
@@ -264,7 +217,7 @@ export function ChatPopup() {
         </div>
 
         {/* Footer */}
-        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-3 py-2">
+        <div className="flex shrink-0 items-center gap-2 border-t border-slate-200 bg-white px-4 py-2">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}

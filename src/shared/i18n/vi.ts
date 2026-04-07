@@ -453,6 +453,7 @@ export const VI = {
       schedule: "Lịch trình / Khả dụng",
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
+      messages: "Messages",
       // Event Staff
       eventStaffDashboard: "Bảng điều khiển Staff",
       eventStaffSchedule: "Lịch làm việc",

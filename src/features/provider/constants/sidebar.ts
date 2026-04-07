@@ -9,6 +9,7 @@ import {
   Camera,
   Briefcase,
   PlusCircle,
+  MessageCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -76,6 +77,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     icon: Settings,
     path: '/provider/settings',
   },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider/messages',
+  },
 ];
 
 /**
@@ -124,6 +131,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     icon: Settings,
     path: '/provider-photograph/settings',
   },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-photograph/messages',
+  },
 ];
 
 /**
@@ -171,5 +184,11 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.eventStaffSettings,
     icon: Settings,
     path: '/provider-event-staff/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-event-staff/messages',
   },
 ];

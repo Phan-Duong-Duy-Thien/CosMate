@@ -6,6 +6,14 @@ export interface ChatRoom {
   lastMessageAt: string;
 }
 
+export interface ChatRoomListItem {
+  roomId: number;
+  partnerId: number;
+  partnerName: string | null;
+  partnerAvatar: string | null;
+  lastMessageAt: string;
+}
+
 export interface ChatPartner {
   partnerId: number;
   fullName: string;

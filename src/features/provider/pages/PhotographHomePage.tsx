@@ -6,6 +6,7 @@
 import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
 import { Camera, Calendar, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { ProviderChatPanel } from '@/features/chat/components/ProviderChatPanel';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems } from '../constants/sidebar';
@@ -153,6 +154,20 @@ export default function PhotographHomePage() {
                 <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
                   {VI.provider.dashboard.sections.performancePlaceholder}
                 </p>
+              </Card>
+            </Col>
+          </Row>
+
+          {/* Messages Section */}
+          <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+            <Col span={24}>
+              <Card
+                title="Messages"
+                bordered={false}
+                style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+                styles={{ body: { padding: 0 } }}
+              >
+                <ProviderChatPanel />
               </Card>
             </Col>
           </Row>

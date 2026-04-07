@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Send } from "lucide-react"
 import { Button } from "@/shared/components/Button"
 import { cn } from "@/lib/utils"
@@ -12,14 +12,30 @@ interface ChatFooterInputProps {
 
 export function ChatFooterInput({ value, onChange, onSend, disabled }: ChatFooterInputProps) {
   const [focused, setFocused] = useState(false)
+  const textareaRef = useRef<HTMLTextAreaElement>(null)
+
+  const autoResize = () => {
+    const ta = textareaRef.current
+    if (!ta) return
+    ta.style.height = "auto"
+    ta.style.height = `${Math.min(ta.scrollHeight, 120)}px`
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    onChange(e.target.value)
+    autoResize()
+  }
 
   const handleSend = () => {
     if (!value.trim() || disabled) return
     onSend(value.trim())
     onChange("")
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto"
+    }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -35,20 +51,22 @@ export function ChatFooterInput({ value, onChange, onSend, disabled }: ChatFoote
     )}>
       <div className="mx-auto flex max-w-2xl items-center gap-2">
         <div className={cn(
-          "flex flex-1 items-center gap-2 rounded-full border bg-white px-4 py-2 transition-all",
+          "flex flex-1 items-center gap-2 rounded-2xl border bg-white px-4 py-2 transition-all",
           focused ? "border-pink-300 bg-pink-50/30 shadow-sm" : "border-slate-200",
           disabled && "bg-slate-50 opacity-60"
         )}>
-          <input
-            type="text"
+          <textarea
+            ref={textareaRef}
             value={value}
-            onChange={(e) => onChange(e.target.value)}
+            onChange={handleChange}
             onKeyDown={handleKeyDown}
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Type a message..."
             disabled={disabled}
-            className="flex-1 bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400"
+            rows={1}
+            className="flex-1 resize-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 whitespace-pre-wrap wrap-break-word overflow-y-auto"
+            style={{ maxHeight: "120px" }}
           />
         </div>
 

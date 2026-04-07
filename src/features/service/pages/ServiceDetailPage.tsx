@@ -100,7 +100,7 @@ export default function ServiceDetailPage() {
                   {service.status === 'ACTIVE' ? 'Hoạt động' : service.status}
                 </span>
                 <button
-                  onClick={() => startChat(service.providerId, service.serviceType)}
+                  onClick={() => service.userId ? startChat(service.userId, service.serviceType) : null}
                   disabled={chatLoading}
                   className="flex items-center gap-1.5 px-3 py-1.5 bg-pink-400 hover:bg-pink-500 text-white text-xs font-bold rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >

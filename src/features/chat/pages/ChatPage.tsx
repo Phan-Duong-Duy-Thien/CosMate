@@ -1,18 +1,24 @@
-import { useState } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useSearchParams, useParams, useNavigate } from "react-router-dom"
 import { MessageCircle } from "lucide-react"
 import { getUserId } from "@/features/auth/services/tokenStorage"
+import { useChatRooms } from "../hooks/useChatRooms"
 import { useChatRoom } from "../hooks/useChatRoom"
-import { useChatPartner } from "../hooks/useChatPartner"
-import { useChatMessages } from "../hooks/useChatMessages"
-import { useChatSocket } from "../hooks/useChatSocket"
-import { useChatByRoomId } from "../hooks/useChatByRoomId"
+import { ChatRoomList } from "../components/ChatRoomList"
 import { ChatHeader } from "../components/ChatHeader"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
-import { cn } from "@/lib/utils"
+import { useChatMessageStore } from "../hooks/useChatMessageStore"
+import {
+  connectChatSocket,
+  subscribeChatRoom,
+  sendChatMessage,
+  disconnectChatSocket,
+} from "../services/chatSocket.service"
+import { getChatMessagesService } from "../services/chat.service"
+import type { ChatPartner, ChatMessage } from "../types"
 
-type ChatMode = "partner" | "room"
+type ChatMode = "partner" | "room" | "list"
 
 export default function ChatPage() {
   const [searchParams] = useSearchParams()
@@ -22,82 +28,136 @@ export default function ChatPage() {
   const currentUserId = getUserId()
   const currentUserIdNum = currentUserId ?? null
   const [inputValue, setInputValue] = useState("")
+  const [activeRoomId, setActiveRoomId] = useState<number | null>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
 
   const roomIdNum = roomId ? Number(roomId) : null
-  const mode: ChatMode = roomIdNum !== null ? "room" : "partner"
+  const mode: ChatMode = roomIdNum !== null ? "room" : (searchParams.get("partnerId") ? "partner" : "list")
 
-  // partnerId mode
-  const partnerId = searchParams.get("partnerId")
-  const partnerIdNum = partnerId ? Number(partnerId) : null
+  const { rooms } = useChatRooms()
+  const [partnerId, setPartnerId] = useState<number | null>(searchParams.get("partnerId") ? Number(searchParams.get("partnerId")) : null)
 
   const { room, loading: roomLoading, error: roomError } = useChatRoom(
-    mode === "partner" ? currentUserIdNum : null,
-    mode === "partner" ? partnerIdNum : null
+    mode === "partner" && !activeRoomId ? currentUserIdNum : null,
+    mode === "partner" && !activeRoomId ? partnerId : null
   )
 
-  const activeRoomId = mode === "room" ? roomIdNum : room?.id ?? null
+  const resolvedRoomId = mode === "room" ? roomIdNum : (activeRoomId ?? room?.id ?? null)
 
-  const { partner, loading: partnerLoading } = useChatPartner(
-    activeRoomId,
-    currentUserIdNum
-  )
+  // Derive partner info from rooms array (single source of truth)
+  const roomFromList = rooms.find((r) => r.roomId === activeRoomId)
+  const partnerFromList = roomFromList
+    ? { partnerId: roomFromList.partnerId, fullName: roomFromList.partnerName ?? "Unknown", avatarUrl: roomFromList.partnerAvatar ?? "" }
+    : null
 
-  const { messages: historyMessages } = useChatMessages(activeRoomId)
+  // Fallback: use partnerId from URL (for new conversations)
+  const partnerFromUrl = searchParams.get("partnerId")
+    ? { partnerId: Number(searchParams.get("partnerId")), fullName: "Chat", avatarUrl: "" }
+    : null
 
-  const isRoomLoading = mode === "partner" && !room?.id
+  const partner: ChatPartner | null = partnerFromList ?? partnerFromUrl
+  const partnerLoading = false
 
-  const { isConnected, messages: realtimeMessages, sendMessage } = useChatSocket(
-    activeRoomId,
-    currentUserIdNum
-  )
+  // ── Message store (single source of truth) ──────────────────────────────
+  const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const [isConnected, setIsConnected] = useState(false)
+  const unsubscribeRef = useRef<(() => void) | null>(null)
 
-  // roomId mode: also fetch partner via dedicated hook
-  const { partner: roomPartner, messages: roomHistory } = useChatByRoomId(
-    mode === "room" ? roomIdNum : null,
-    currentUserIdNum
-  )
+  // Load history from REST API
+  useEffect(() => {
+    if (resolvedRoomId === null) return
+    setIsLoadingHistory(true)
+    clearMessages()
+    getChatMessagesService(resolvedRoomId)
+      .then((data) => setMessages(data ?? []))
+      .catch(() => setMessages([]))
+      .finally(() => setIsLoadingHistory(false))
+  }, [resolvedRoomId, setMessages, clearMessages])
 
-  // Merge: prefer partner from useChatPartner (uses same partner API), fallback to roomPartner
-  const resolvedPartner = partner ?? roomPartner
-  const resolvedLoading = partnerLoading || (mode === "room" && roomHistory.length === 0 && !roomError)
+  // Connect socket
+  useEffect(() => {
+    connectChatSocket(() => setIsConnected(true))
+    return () => {
+      if (unsubscribeRef.current) {
+        unsubscribeRef.current()
+        unsubscribeRef.current = null
+      }
+      disconnectChatSocket()
+    }
+  }, [])
 
-  // History: for room mode use dedicated hook results
-  const resolvedHistory = mode === "room" ? roomHistory : historyMessages
+  // Subscribe to room channel
+  useEffect(() => {
+    if (!isConnected || resolvedRoomId === null) return
+    if (unsubscribeRef.current) {
+      unsubscribeRef.current()
+      unsubscribeRef.current = null
+    }
+    unsubscribeRef.current = subscribeChatRoom(resolvedRoomId, (msg: ChatMessage) => {
+      console.log("[ChatPage] Server message:", msg)
+      mergeServerMessage(msg)
+    })
+  }, [isConnected, resolvedRoomId, mergeServerMessage])
 
-  const allMessages = [
-    ...resolvedHistory,
-    ...realtimeMessages.filter(
-      (rm) => !resolvedHistory.some((hm) => hm.id === rm.id)
-    ),
-  ].sort(
-    (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-  )
+  // Reset on room change
+  useEffect(() => {
+    setInputValue("")
+  }, [resolvedRoomId])
 
-  const isInChat = mode === "room" || partnerIdNum !== null
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" })
+  }, [messages.length])
 
-  // Guard: no valid entry point
-  if (mode === "partner" && !partnerId) {
+  const handleSelectRoom = (roomItem: { roomId: number }) => {
+    setActiveRoomId(roomItem.roomId)
+    setInputValue("")
+  }
+
+  const handleSend = (content: string) => {
+    if (!content.trim() || resolvedRoomId === null || currentUserIdNum === null) return
+    sendChatMessage({ roomId: resolvedRoomId, senderId: currentUserIdNum, content: content.trim() })
+  }
+
+  const isInChat = resolvedRoomId !== null
+
+  // List mode: no room selected
+  if (mode === "list") {
     return (
-      <div className="flex h-[calc(100vh-56px)] flex-col items-center justify-center bg-slate-50">
-        <MessageCircle className="mb-4 h-16 w-16 text-slate-300" />
-        <p className="text-lg font-medium text-slate-400">No conversation selected</p>
-        <p className="mt-1 text-sm text-slate-400">Choose a conversation from the sidebar</p>
+      <div className="flex h-[calc(100vh-56px)] bg-slate-100">
+        {/* Left Sidebar */}
+        <div className="hidden md:flex md:w-75 md:shrink-0 md:flex-col md:overflow-hidden md:border-r md:border-slate-200 md:bg-white">
+          <div className="border-b border-slate-100 px-4 py-4">
+            <h1 className="text-lg font-bold text-slate-800">Messages</h1>
+          </div>
+          <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
+            <ChatRoomList rooms={rooms} activeRoomId={null} onSelectRoom={handleSelectRoom} />
+          </div>
+        </div>
+
+        {/* Right - Empty state */}
+        <div className="flex flex-1 flex-col overflow-hidden">
+          <div className="flex flex-1 items-center justify-center bg-slate-50">
+            <div className="text-center">
+              <MessageCircle className="mx-auto mb-4 h-16 w-16 text-slate-300" />
+              <p className="text-lg font-medium text-slate-400">Start a conversation</p>
+              <p className="mt-1 text-sm text-slate-400">Select a conversation from the sidebar</p>
+            </div>
+          </div>
+        </div>
       </div>
     )
   }
 
   return (
     <div className="flex h-[calc(100vh-56px)] bg-slate-100">
-      {/* Left Sidebar - Conversation List */}
+      {/* Left Sidebar */}
       <div className="hidden md:flex md:w-75 md:shrink-0 md:flex-col md:overflow-hidden md:border-r md:border-slate-200 md:bg-white">
-        {/* Sidebar Header */}
         <div className="border-b border-slate-100 px-4 py-4">
           <h1 className="text-lg font-bold text-slate-800">Messages</h1>
         </div>
-
-        {/* Conversation List */}
-        <div className="flex flex-1 items-center justify-center">
-          <p className="text-sm text-slate-400">No conversations yet</p>
+        <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
+          <ChatRoomList rooms={rooms} activeRoomId={resolvedRoomId} onSelectRoom={handleSelectRoom} />
         </div>
       </div>
 
@@ -106,18 +166,16 @@ export default function ChatPage() {
         {/* Header */}
         <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
           <div className="flex items-center gap-3">
-            {/* Back button - mobile only */}
             <button
               type="button"
-              onClick={() => navigate(-1)}
+              onClick={() => navigate(mode === "room" ? "/chat" : -1)}
               className="rounded-full p-1.5 text-slate-600 hover:bg-slate-100 md:hidden"
             >
               ←
             </button>
-            <ChatHeader partner={resolvedPartner} loading={resolvedLoading} isConnected={isConnected} />
+            <ChatHeader partner={partner} loading={partnerLoading} isConnected={isConnected} />
           </div>
 
-          {/* Mobile: show sidebar toggle */}
           <button
             type="button"
             onClick={() => navigate("/chat")}
@@ -136,8 +194,15 @@ export default function ChatPage() {
 
         {/* Message List */}
         {isInChat ? (
-          <div className="flex flex-1 flex-col overflow-hidden">
-            <ChatMessageList messages={allMessages} currentUserId={currentUserIdNum} />
+          <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
+            {isLoadingHistory ? (
+              <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
+                <p className="text-sm font-medium">Loading...</p>
+              </div>
+            ) : (
+              <ChatMessageList messages={messages} currentUserId={currentUserIdNum} />
+            )}
           </div>
         ) : (
           <div className="flex flex-1 items-center justify-center bg-slate-50">
@@ -154,8 +219,8 @@ export default function ChatPage() {
           <ChatFooterInput
             value={inputValue}
             onChange={setInputValue}
-            onSend={sendMessage}
-            disabled={!isConnected || isRoomLoading}
+            onSend={handleSend}
+            disabled={!isConnected || roomLoading}
           />
         )}
       </div>

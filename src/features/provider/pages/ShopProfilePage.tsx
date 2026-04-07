@@ -32,8 +32,9 @@ export default function ShopProfilePage() {
   const { startChat, loading: chatLoading } = useStartChat()
 
   const handleChat = () => {
-    if (providerIdNum) {
-      startChat(providerIdNum, shop?.shopName)
+    if (shop?.userId) {
+      console.log("[ShopProfilePage] Starting chat with userId (not providerId):", shop.userId)
+      startChat(shop.userId, shop.shopName)
     }
   }
 

@@ -9,20 +9,27 @@ const SEND_DESTINATION = "/app/chat.sendMessage"
 
 let stompClient: Client | null = null
 let connectionCallbacks: Array<() => void> = []
-const messageListeners: Set<(message: ChatMessage) => void> = new Set()
+let connectionListeners: Set<(connected: boolean) => void> = new Set()
 let reconnectAttempts = 0
 const MAX_RECONNECT_ATTEMPTS = 3
+// Module-level flag to prevent multiple concurrent connect attempts
+let isConnecting = false
 
 export function connectChatSocket(onConnected?: () => void): void {
   if (onConnected) {
     connectionCallbacks.push(onConnected)
   }
 
+  // Already fully connected — fire callbacks immediately
   if (stompClient?.connected) {
     connectionCallbacks.forEach((cb) => cb())
     connectionCallbacks = []
+    connectionListeners.forEach((cb) => cb(true))
     return
   }
+
+  // A connection attempt is already in-flight — let it resolve
+  if (isConnecting) return
 
   const token = getAuth()?.token
   if (!token) {
@@ -31,9 +38,9 @@ export function connectChatSocket(onConnected?: () => void): void {
     return
   }
 
-  // Pass token as query param (SockJS handshake ignores Authorization headers)
-  const socketUrl = `${WS_ENDPOINT}?token=${encodeURIComponent(token)}`
+  const socketUrl = WS_ENDPOINT
 
+  isConnecting = true
   stompClient = new Client({
     webSocketFactory: () => new SockJS(socketUrl),
     connectHeaders: {
@@ -41,25 +48,27 @@ export function connectChatSocket(onConnected?: () => void): void {
     },
     onConnect: () => {
       console.log("[chatSocket] Connected")
+      isConnecting = false
       reconnectAttempts = 0
       connectionCallbacks.forEach((cb) => cb())
       connectionCallbacks = []
+      connectionListeners.forEach((cb) => cb(true))
     },
     onDisconnect: () => {
       console.log("[chatSocket] Disconnected")
+      connectionListeners.forEach((cb) => cb(false))
     },
     onStompError: (frame) => {
       console.error("[chatSocket] STOMP error:", frame)
     },
     onWebSocketError: (event) => {
       console.error("[chatSocket] WebSocket error:", event)
-      reconnectAttempts++
-      if (reconnectAttempts >= MAX_RECONNECT_ATTEMPTS) {
-        console.warn(`[chatSocket] Max reconnect attempts (${MAX_RECONNECT_ATTEMPTS}) reached, stopping`)
-        disconnectChatSocket()
-      }
+    },
+    onStompFrame: (frame) => {
+      console.log("[chatSocket] STOMP frame:", frame.command)
     },
     reconnectDelay: 5000,
+    maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
   })
 
   stompClient.activate()
@@ -69,8 +78,9 @@ export function disconnectChatSocket(): void {
   if (stompClient) {
     stompClient.deactivate()
     stompClient = null
+    isConnecting = false
     connectionCallbacks = []
-    messageListeners.clear()
+    connectionListeners.forEach((cb) => cb(false))
   }
 }
 
@@ -83,15 +93,13 @@ export function subscribeChatRoom(
     return () => {}
   }
 
-  messageListeners.add(onMessage)
-
   const subscription = stompClient.subscribe(
     `/topic/room/${roomId}`,
     (frame: IMessage) => {
       try {
         const message: ChatMessage = JSON.parse(frame.body)
-        console.log("[chatSocket] Received message:", message)
-        messageListeners.forEach((listener) => listener(message))
+        console.log("[chatSocket] Received message for room", roomId, ":", message)
+        onMessage(message)
       } catch (err) {
         console.error("[chatSocket] Failed to parse message:", err)
       }
@@ -100,7 +108,6 @@ export function subscribeChatRoom(
 
   return () => {
     subscription.unsubscribe()
-    messageListeners.delete(onMessage)
   }
 }
 

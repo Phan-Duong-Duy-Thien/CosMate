@@ -11,7 +11,7 @@ import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatPopup } from "../components/ChatPopupContext"
 
 interface UseStartChatResult {
-  startChat: (providerId: number, providerName?: string) => Promise<void>
+  startChat: (userId: number, providerName?: string) => Promise<void>
   loading: boolean
   error: string | null
 }
@@ -22,7 +22,7 @@ export function useStartChat(): UseStartChatResult {
   const { openChat } = useChatPopup()
 
   const startChat = useCallback(
-    async (providerId: number, providerName?: string) => {
+    async (userId: number, providerName?: string) => {
       const currentUserId = getUserId()
 
       if (!currentUserId) {
@@ -34,8 +34,9 @@ export function useStartChat(): UseStartChatResult {
       setError(null)
 
       try {
-        const room = await getOrCreateChatRoomService(currentUserId, providerId)
-        openChat(room.id, providerId, providerName)
+        const room = await getOrCreateChatRoomService(currentUserId, userId)
+        console.log("[useStartChat] Creating room with userId (receiver):", userId)
+        openChat(room.id, userId, providerName)
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to open chat"
         setError(msg)

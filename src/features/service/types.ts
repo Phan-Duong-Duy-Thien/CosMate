@@ -79,6 +79,7 @@ export interface ServiceItem {
   equipmentDepreciationCost: number;
   status: string;
   providerId: number;
+  userId: number;
   areas: ServiceArea[];
   imageUrls: string[];
   minPrice: number | null;
@@ -98,6 +99,7 @@ export interface PublicServiceItem {
   equipmentDepreciationCost: number;
   status: string;
   providerId: number;
+  userId: number;
   areas: ServiceArea[];
   imageUrls: string[];
   minPrice: number | null;

@@ -53,7 +53,7 @@ import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
-import ChatPage from "@/features/chat/pages/ChatPage"
+import ProviderMessagesPage from "@/features/chat/pages/ProviderMessagesPage"
 
 export default function AppRoutes() {
   return (
@@ -81,8 +81,6 @@ export default function AppRoutes() {
         <Route path="staffs" element={<StaffsListingPage />} />
         <Route path="staff/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
-        <Route path="chat/:roomId" element={<ChatPage />} />
-        <Route path="chat" element={<ChatPage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
         <Route path="register/cosplayer" element={<CosplayerRegPage />} />
@@ -110,6 +108,7 @@ export default function AppRoutes() {
         <Route path="/provider/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider/settings/completion" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider/messages" element={<ProviderMessagesPage />} />
       </Route>
 
       {/* Provider Photograph Routes (Protected) */}
@@ -120,6 +119,7 @@ export default function AppRoutes() {
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-photograph/settings/completion" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider-photograph/messages" element={<ProviderMessagesPage />} />
       </Route>
 
       {/* Provider Event Staff Routes (Protected) */}
@@ -130,6 +130,7 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-event-staff/settings/completion" element={<ProviderProfileCompletionPage />} />
+        <Route path="/provider-event-staff/messages" element={<ProviderMessagesPage />} />
       </Route>
 
       {/* Global Error Pages */}

@@ -7,22 +7,26 @@ interface ChatMessageBubbleProps {
 }
 
 export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
-  const time = new Date(message.createdAt).toLocaleTimeString("vi-VN", {
-    hour: "2-digit",
-    minute: "2-digit",
-  })
+  const time = !message.createdAt
+    ? ""
+    : (() => {
+        const date = new Date(message.createdAt)
+        return isNaN(date.getTime())
+          ? ""
+          : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+      })()
 
   return (
     <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "group relative max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all",
+          "group relative max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all overflow-hidden",
           isMine
             ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
             : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
         )}
       >
-        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">{message.content}</p>
+        <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
         <p
           className={cn(
             "mt-1 flex items-center gap-1 text-[10px]",

@@ -1,5 +1,5 @@
 import axiosInstance from "@/services/axiosInstance"
-import type { ChatRoom, ChatPartner, ChatMessage } from "../types"
+import type { ChatRoom, ChatPartner, ChatMessage, ChatRoomListItem } from "../types"
 
 interface ApiWrapper<T> {
   code: number;
@@ -24,5 +24,10 @@ export async function getChatPartner(roomId: number, currentUserId: number): Pro
 
 export async function getChatMessages(roomId: number): Promise<ChatMessage[]> {
   const response = await axiosInstance.get<ApiWrapper<ChatMessage[]>>(`/api/chat/messages/${roomId}`)
+  return response.data.result
+}
+
+export async function getUserChatRooms(userId: number): Promise<ChatRoomListItem[]> {
+  const response = await axiosInstance.get<ApiWrapper<ChatRoomListItem[]>>(`/api/chat/rooms/user/${userId}`)
   return response.data.result
 }

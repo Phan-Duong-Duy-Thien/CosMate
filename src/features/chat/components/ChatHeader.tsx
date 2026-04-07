@@ -32,7 +32,7 @@ export function ChatHeader({ partner, loading, isConnected = true }: ChatHeaderP
           <div className="relative shrink-0">
             {partner.avatarUrl ? (
               <img
-                src={partner.avatarUrl}
+                src={partner.avatarUrl || undefined}
                 alt={partner.fullName}
                 className="h-10 w-10 rounded-full object-cover ring-2 ring-white shadow-sm"
               />

@@ -27,6 +27,7 @@ import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
+import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
@@ -65,6 +66,7 @@ export default function CosplayerSiteLayout() {
 
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
+  const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
   const isWideContentPage =
@@ -455,7 +457,7 @@ export default function CosplayerSiteLayout() {
               type="button"
               aria-label="Tin nhắn"
               className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => navigate("/chat")}
+              onClick={() => openChat(0, 0)}
             >
               <MessageCircle className="h-5 w-5" />
             </button>

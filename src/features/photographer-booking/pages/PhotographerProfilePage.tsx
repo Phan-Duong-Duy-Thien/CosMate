@@ -29,7 +29,7 @@ export default function PhotographerProfilePage() {
   }
 
   const handleChat = () => {
-    if (providerId) startChat(providerId, provider.shopName ?? undefined)
+    if (provider.userId) startChat(provider.userId, provider.shopName ?? undefined)
   }
 
   const photographerData = {
