@@ -1,26 +1,27 @@
 import * as React from "react"
-import { Link, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom"
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom"
 import {
   Bell,
+  BookOpen,
   Camera,
-  ChevronDown,
   Facebook,
+  Home,
   Instagram,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
-  Search,
+  Shirt,
   ShoppingCart,
-  Youtube,
   Smartphone,
+  Sparkles,
+  FileText,
+  UserRound,
+  Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar, Popover, Spin } from "antd"
+import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip } from "antd"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
-import { Button } from "@shared/components/Button"
-import { DropdownMenu } from "@shared/components/DropdownMenu"
-import { Input } from "@shared/components/Input"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
@@ -37,6 +38,7 @@ import sideBannerImage2 from "@/assets/quiz1.jpg"
 import sideBannerImage3 from "@/assets/quiz2.jpg"
 import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
+import siteLogo from "@/assets/cosmate.png"
 
 function computeInitials(fullName: string | null): string {
   if (!fullName) return "U"
@@ -49,7 +51,6 @@ function computeInitials(fullName: string | null): string {
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [bannerIndex, setBannerIndex] = React.useState(0)
 
@@ -61,8 +62,6 @@ export default function CosplayerSiteLayout() {
     }, 2000)
     return () => clearInterval(interval)
   }, [bannerImages.length])
-
-  const searchValue = searchParams.get("q") ?? ""
 
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
@@ -224,18 +223,6 @@ export default function CosplayerSiteLayout() {
     window.location.reload()
   }
 
-  const handleSearchChange = (value: string) => {
-    const next = new URLSearchParams(searchParams)
-
-    if (value.trim()) {
-      next.set("q", value)
-    } else {
-      next.delete("q")
-    }
-
-    setSearchParams(next, { replace: true })
-  }
-
   const userMenuItems: MenuProps["items"] = [
     { key: "profile", label: "Trang cá nhân", onClick: () => navigate("/profile") },
     { key: "logout", label: "Đăng xuất", danger: true, onClick: handleLogout },
@@ -323,137 +310,116 @@ export default function CosplayerSiteLayout() {
           isScrolled && "border-pink-300/80 shadow-md"
         )}
       >
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4">
+        <div className="flex h-16 w-full items-center gap-3 pl-0 pr-4">
           <Link
             to="/"
-            className="shrink-0 whitespace-nowrap text-lg font-bold text-pink-500 hover:text-pink-600"
+            aria-label="Về trang chủ"
+            className="ml-4 inline-flex shrink-0 items-center rounded-lg p-0 transition hover:bg-pink-50"
           >
-            CosMate
+            <img src={siteLogo} alt="CosMate" className="h-15 w-auto object-contain" />
           </Link>
 
-          <nav className="hidden flex-1 items-center justify-center gap-1.5 whitespace-nowrap text-sm md:flex lg:gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                isHomePage ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
-              )}
-              onClick={() => navigate("/")}
-            >
-              Trang chủ
-            </Button>
+          <nav className="hidden flex-1 items-center justify-center gap-2 whitespace-nowrap md:flex lg:gap-3">
+            <Tooltip title="Trang chủ">
+              <button
+                type="button"
+                aria-label="Trang chủ"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  isHomePage ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/")}
+              >
+                <Home className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <DropdownMenu
-              triggerLabel={
-                <span className="inline-flex items-center gap-1 font-medium">
-                  Thuê đồ Cosplay
-                  <ChevronDown className="h-4 w-4" />
-                </span>
-              }
-              triggerClassName={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                location.pathname.startsWith("/costumes")
-                  ? "rounded-lg bg-pink-50 px-2 py-1 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              items={[
-                { label: "Anime", onSelect: () => navigate("/costumes?category=anime") },
-                { label: "Game", onSelect: () => navigate("/costumes?category=game") },
-              ]}
-            />
+            <Tooltip title="Thuê đồ Cosplay">
+              <button
+                type="button"
+                aria-label="Thuê đồ Cosplay"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname.startsWith("/costumes") ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/costumes")}
+              >
+                <Shirt className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              title="Quiz phong cách: trả lời câu hỏi để tìm style cosplay phù hợp với bạn"
-              className={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                location.pathname === "/style-quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
-              )}
-              onClick={() => navigate("/style-quiz")}
-            >
-              Quiz
-            </Button>
+            <Tooltip title="Quiz">
+              <button
+                type="button"
+                aria-label="Quiz"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/style-quiz" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/style-quiz")}
+              >
+                <FileText className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              title="Pose Battle: so sánh ảnh pose của bạn với ảnh mẫu để chấm điểm độ giống"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
-                location.pathname === "/pose-battle"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/pose-battle")}
-            >
-              Pose Battle
-            </Button>
+            <Tooltip title="Pose Battle">
+              <button
+                type="button"
+                aria-label="Pose Battle"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/pose-battle" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/pose-battle")}
+              >
+                <Sparkles className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
-                location.pathname === "/guidelines-rules"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/guidelines-rules")}
-            >
-              Hướng dẫn &amp; Quy định
-            </Button>
+            <Tooltip title="Hướng dẫn & Quy định">
+              <button
+                type="button"
+                aria-label="Hướng dẫn và Quy định"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/guidelines-rules" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/guidelines-rules")}
+              >
+                <BookOpen className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 xl:inline-flex",
-                location.pathname === "/photographers"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/photographers")}
-            >
-              Thuê Photographer
-            </Button>
+            <Tooltip title="Thuê Photographer">
+              <button
+                type="button"
+                aria-label="Thuê Photographer"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/photographers" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/photographers")}
+              >
+                <Camera className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 2xl:inline-flex",
-                location.pathname === "/staffs"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/staffs")}
-            >
-              Thuê Staff
-            </Button>
+            <Tooltip title="Thuê Staff">
+              <button
+                type="button"
+                aria-label="Thuê Staff"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/staffs" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/staffs")}
+              >
+                <UserRound className="h-6 w-6" />
+              </button>
+            </Tooltip>
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <div className="relative hidden w-44 lg:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                aria-label="Tìm kiếm"
-                placeholder="Tìm kiếm"
-                className="pl-9 pr-10 text-sm"
-                value={searchValue}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleSearchChange(e.target.value)
-                }
-              />
-              <button
-                type="button"
-                aria-label="Tìm kiếm bằng hình ảnh"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-pink-500"
-              >
-                <Camera className="h-4 w-4 opacity-60" />
-              </button>
-            </div>
 
             <button
               type="button"
@@ -461,7 +427,7 @@ export default function CosplayerSiteLayout() {
               className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               onClick={() => openChat(0, 0)}
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-6 w-6" />
             </button>
 
             <button
@@ -470,7 +436,7 @@ export default function CosplayerSiteLayout() {
               className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               onClick={() => navigate('/profile/purchase-history')}
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-6 w-6" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
             </button>
 
@@ -487,7 +453,7 @@ export default function CosplayerSiteLayout() {
                 aria-label="Thông báo"
                 className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -516,24 +482,7 @@ export default function CosplayerSiteLayout() {
                 </AntButton>
               </>
             )}
-          </div>
-        </div>
 
-        <div className="mx-auto w-full max-w-7xl px-4 pb-3 md:hidden">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              aria-label="Tìm kiếm"
-              placeholder="Tìm kiếm"
-              className="pl-9 pr-10"
-              value={searchValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleSearchChange(e.target.value)
-              }
-            />
-            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-              <Camera className="h-4 w-4 opacity-60" />
-            </button>
           </div>
         </div>
       </header>

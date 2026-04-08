@@ -96,7 +96,7 @@ export default function StyleQuizPage() {
 
       {!quiz.surveyLoading && quiz.screen === "quiz" && quiz.currentQuestion && (
         <div className="space-y-5 rounded-3xl border border-pink-200 bg-white p-6 shadow-sm md:p-8">
-          <div className="flex items-center justify-between text-sm font-semibold text-pink-600">
+          <div className="flex items-center justify-between text-lg font-semibold text-pink-600">
             <span>Câu {quiz.globalQuestionIndex}</span>
             <span>
               {quiz.globalQuestionIndex} / {quiz.totalQuestions}
@@ -107,7 +107,7 @@ export default function StyleQuizPage() {
             <div className="flex-1">
               <Progress percent={quiz.progressPercent} showInfo={false} strokeColor="#ec4899" railColor="#fce7f3" />
             </div>
-            <span className="w-12 text-right text-sm font-semibold text-pink-600">{quiz.progressPercent}%</span>
+            <span className="w-12 text-right text-base font-semibold text-pink-600">{quiz.progressPercent}%</span>
           </div>
 
           <h2 className="text-xl font-semibold text-slate-800">{quiz.currentQuestion.question}</h2>
