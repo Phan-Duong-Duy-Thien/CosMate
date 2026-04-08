@@ -62,6 +62,21 @@ export function CreateServiceForm({
     selectedDistrict,
   } = useAreaLocations();
 
+  // Helper: format number to VND display (comma thousands separator)
+  const formatVnd = (value: number | undefined | null): string => {
+    if (value == null || isNaN(value as number)) return '';
+    return Math.round(value as number)
+      .toString()
+      .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  };
+
+  // Helper: parse VND display string back to number
+  const parseVnd = (value: string | undefined): number => {
+    if (!value) return 0;
+    const n = Number(String(value).replace(/,/g, ''));
+    return isNaN(n) ? 0 : n;
+  };
+
   // Prefill area from shop address on mount (only once)
   useEffect(() => {
     if (prefilledRef.current) return;
@@ -257,18 +272,14 @@ export function CreateServiceForm({
               rules={[{ required: true, min: 0 }]}
               initialValue={0}
             >
-              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                  addonAfter="VND"
+                  formatter={(value) => formatVnd(value as number)}
+                  parser={(value) => parseVnd(value)}
                 />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
             </Form.Item>
 
             <Form.Item
@@ -277,18 +288,14 @@ export function CreateServiceForm({
               rules={[{ required: false }]}
               initialValue={0}
             >
-              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                  addonAfter="VND"
+                  formatter={(value) => formatVnd(value as number)}
+                  parser={(value) => parseVnd(value)}
                 />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
             </Form.Item>
 
             <Form.Item
@@ -297,18 +304,14 @@ export function CreateServiceForm({
               rules={[{ required: true }]}
               initialValue={0}
             >
-              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                  addonAfter="VND"
+                  formatter={(value) => formatVnd(value as number)}
+                  parser={(value) => parseVnd(value)}
                 />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
             </Form.Item>
 
             <Form.Item
@@ -317,18 +320,14 @@ export function CreateServiceForm({
               rules={[{ required: true }]}
               initialValue={0}
             >
-              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                  addonAfter="VND"
+                  formatter={(value) => formatVnd(value as number)}
+                  parser={(value) => parseVnd(value)}
                 />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
             </Form.Item>
 
             <Form.Item
@@ -337,18 +336,14 @@ export function CreateServiceForm({
               rules={[{ required: false }]}
               initialValue={0}
             >
-              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  formatter={(value) =>
-                    `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-                  }
-                  parser={(value) => value!.replace(/,/g, '') as unknown as 0}
+                  addonAfter="VND"
+                  formatter={(value) => formatVnd(value as number)}
+                  parser={(value) => parseVnd(value)}
                 />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
             </Form.Item>
           </div>
         </Form>
