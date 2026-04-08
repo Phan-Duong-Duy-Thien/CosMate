@@ -311,6 +311,7 @@ export default function ProviderOrdersPage() {
     <DashboardLayout
       title={VI.provider.orders.title}
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
       {error && (

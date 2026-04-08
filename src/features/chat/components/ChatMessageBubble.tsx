@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { formatChatTime } from "@/lib/datetime"
 import type { ChatMessage } from "../types"
 
 interface ChatMessageBubbleProps {
@@ -7,14 +8,7 @@ interface ChatMessageBubbleProps {
 }
 
 export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
-  const time = !message.createdAt
-    ? ""
-    : (() => {
-        const date = new Date(message.createdAt)
-        return isNaN(date.getTime())
-          ? ""
-          : date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-      })()
+  const time = formatChatTime(message.createdAt ?? "")
 
   return (
     <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
@@ -26,7 +20,7 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
             : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
         )}
       >
-        <p className="whitespace-pre-wrap break-words leading-relaxed">{message.content}</p>
+        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">{message.content}</p>
         <p
           className={cn(
             "mt-1 flex items-center gap-1 text-[10px]",

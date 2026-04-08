@@ -136,6 +136,7 @@ export default function ProviderProfileCompletionPage() {
     <DashboardLayout
       title={VI.provider.profileCompletion.pageTitle}
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       <Card style={{ borderRadius: 12 }}>

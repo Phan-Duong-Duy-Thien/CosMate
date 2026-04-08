@@ -1,6 +1,5 @@
 import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
 import { Package, ShoppingBag, Calendar, Star } from 'lucide-react';
-import { ProviderChatPanel } from '@/features/chat/components/ProviderChatPanel';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -65,7 +64,7 @@ export default function ProviderHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider">
+    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       {/* Profile loading state */}
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
@@ -194,20 +193,6 @@ export default function ProviderHomePage() {
             <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px 0' }}>
               {VI.provider.dashboard.sections.performancePlaceholder}
             </p>
-          </Card>
-        </Col>
-      </Row>
-
-      {/* Messages Section */}
-      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
-        <Col span={24}>
-          <Card
-            title="Messages"
-            bordered={false}
-            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
-            styles={{ body: { padding: 0 } }}
-          >
-            <ProviderChatPanel />
           </Card>
         </Col>
       </Row>

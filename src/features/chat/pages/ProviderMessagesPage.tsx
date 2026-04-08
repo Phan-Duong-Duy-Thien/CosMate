@@ -154,7 +154,7 @@ export default function ProviderMessagesPage() {
   const canBooking = activeRoom != null && provider != null
 
   return (
-    <DashboardLayout title="Messages" sidebarItems={sidebarItems} brandName="CosMate Provider">
+    <DashboardLayout title="Messages" sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
 
         {/* LEFT: Conversation List */}

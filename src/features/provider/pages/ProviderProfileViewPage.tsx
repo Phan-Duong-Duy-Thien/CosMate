@@ -53,6 +53,7 @@ export default function ProviderProfileViewPage() {
     <DashboardLayout
       title="Hồ sơ cửa hàng"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       {loading ? (

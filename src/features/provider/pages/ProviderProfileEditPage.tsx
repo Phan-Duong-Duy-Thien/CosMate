@@ -55,6 +55,7 @@ export default function ProviderProfileEditPage() {
     <DashboardLayout
       title="Chỉnh sửa hồ sơ"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       <Button

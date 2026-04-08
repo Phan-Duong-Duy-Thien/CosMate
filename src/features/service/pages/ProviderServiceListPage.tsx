@@ -143,7 +143,7 @@ export default function ProviderServiceListPage() {
   ];
 
   return (
-    <DashboardLayout title={VI.service.list.pageTitle} sidebarItems={sidebarItems} brandName={brandName}>
+    <DashboardLayout title={VI.service.list.pageTitle} sidebarItems={sidebarItems} brandName={brandName} showChatButton={false}>
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />

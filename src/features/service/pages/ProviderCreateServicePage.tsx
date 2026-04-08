@@ -102,6 +102,7 @@ export default function ProviderCreateServicePage() {
     <DashboardLayout
       title={VI.service.create.pageTitle}
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       {profileLoading && (

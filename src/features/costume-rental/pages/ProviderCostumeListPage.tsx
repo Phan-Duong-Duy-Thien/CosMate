@@ -307,6 +307,7 @@ export default function ProviderCostumeListPage() {
     <DashboardLayout
       title="Danh sách trang phục"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
         {/* Verification gate */}

@@ -1,5 +1,6 @@
 import { MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { formatRoomTime } from "@/lib/datetime"
 import type { ChatRoomListItem } from "../types"
 
 interface ChatRoomListProps {
@@ -14,21 +15,6 @@ function computeInitials(fullName: string | null | undefined): string {
   if (parts.length === 0) return "?"
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
-}
-
-function formatTime(isoString: string): string {
-  const date = new Date(isoString)
-  if (isNaN(date.getTime())) return ""
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const oneDay = 24 * 60 * 60 * 1000
-  if (diff < oneDay) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
-  if (diff < 7 * oneDay) {
-    return date.toLocaleDateString([], { weekday: "short" })
-  }
-  return date.toLocaleDateString([], { month: "short", day: "numeric" })
 }
 
 export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomListProps) {
@@ -82,7 +68,7 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
               </span>
               {room.lastMessageAt && (
                 <span className="block truncate text-[10px] leading-tight text-slate-400">
-                  {formatTime(room.lastMessageAt)}
+                  {formatRoomTime(room.lastMessageAt)}
                 </span>
               )}
             </div>
