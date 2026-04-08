@@ -7,7 +7,10 @@
  * API base: https://provinces.open-api.vn/api/v2
  * Endpoints:
  *   GET /p/                  -> list all provinces
- *   GET /p/{code}?depth=2  -> province with its wards
+ *   GET /p/{code}?depth=2  -> province with its wards (Phường/Xã)
+ *
+ * Note: After the 07/2025 administrative reform, the district level (Quận/Huyện)
+ * is removed. The API only has Tỉnh/Thành phố -> Phường/Xã.
  */
 import axios from 'axios';
 import type { Province, District } from '@/features/profile/types';
@@ -40,14 +43,6 @@ interface WardApiItem {
   province_code: number;
 }
 
-interface DistrictApiItem {
-  code: number;
-  name: string;
-  division_type: string;
-  codename: string;
-  province_code: number;
-}
-
 // ============================================================================
 // API client
 // ============================================================================
@@ -70,25 +65,16 @@ export async function fetchProvinces(): Promise<Province[]> {
 }
 
 /**
- * Fetch wards (Phường / Xã / Quận / Huyện) for a given province code.
- * Province Open API V2 provides ward data via depth=2 on the province endpoint.
- * Maps ward data to the District interface for backward compatibility.
+ * Fetch wards (Phường / Xã) for a given province code.
+ * Province Open API V2: GET /p/{code}?depth=2
+ * Returns the province with its wards nested inside.
  */
 export async function fetchWardsByProvince(
   provinceCode: number
 ): Promise<District[]> {
   const data = await apiGet<ProvinceApiItem>(`/p/${provinceCode}?depth=2`);
-  if (!data.wards) return [];
-  return data.wards.map((w) => ({ code: w.code, name: w.name }));
-}
-
-/**
- * Fetch districts (Quận / Huyện) for a given province code.
- * Province Open API V2: GET /d?depth=2&province={provinceCode}
- */
-export async function fetchDistrictsByProvince(
-  provinceCode: number
-): Promise<District[]> {
-  const data = await apiGet<DistrictApiItem[]>(`/d?depth=2&province=${provinceCode}`);
-  return data.map((d) => ({ code: d.code, name: d.name }));
+  return (data.wards ?? []).map((w) => ({
+    code: w.code,
+    name: w.name,
+  }));
 }
