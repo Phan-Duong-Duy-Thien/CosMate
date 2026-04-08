@@ -23,8 +23,9 @@ export function useCurrentProviderProfile(): UseCurrentProviderProfileResult {
 
   const refetch = useCallback(async () => {
     const userId = getUserId();
+    console.log("[useCurrentProviderProfile] userId from JWT:", userId);
     if (!userId) {
-      setError('Không tìm thấy thông tin người dùng');
+      setError('Khong tim thay thong tin nguoi dung');
       setLoading(false);
       return;
     }
@@ -32,11 +33,13 @@ export function useCurrentProviderProfile(): UseCurrentProviderProfileResult {
     setLoading(true);
     setError(null);
     try {
+      console.log("[useCurrentProviderProfile] calling getProviderByUserId with:", userId);
       const data = await getProviderByUserId(userId);
+      console.log("[useCurrentProviderProfile] provider data:", data);
       setProvider(data);
     } catch (err) {
       console.error('[useCurrentProviderProfile] fetch error:', err);
-      setError('Không thể tải thông tin hồ sơ');
+      setError('Khong the tai thong tin ho so');
     } finally {
       setLoading(false);
     }

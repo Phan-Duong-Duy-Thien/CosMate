@@ -3,7 +3,7 @@
  *
  * Fetches and manages the current provider's services list.
  */
-import { useState, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { fetchProviderServices } from '../services/service.service';
 import type { ServiceItem } from '../types';
@@ -25,13 +25,16 @@ export function useProviderServices(
 
   const refetch = useCallback(async () => {
     if (!providerId || providerId === 0) {
+      console.log("[useProviderServices] providerId is 0 or null, skipping fetch");
       setServices([]);
       return;
     }
     setLoading(true);
     setError(null);
     try {
+      console.log("[useProviderServices] fetching services for providerId:", providerId);
       const data = await fetchProviderServices(providerId);
+      console.log("[useProviderServices] received services:", data);
       setServices(data);
     } catch (err) {
       console.error('[useProviderServices] fetch error:', err);
@@ -41,6 +44,11 @@ export function useProviderServices(
       setLoading(false);
     }
   }, [providerId]);
+
+  // Fetch on mount and whenever providerId changes
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   return { services, loading, error, refetch };
 }
