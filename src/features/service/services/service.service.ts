@@ -50,6 +50,7 @@ export async function submitService(
 export async function fetchProviderServices(
   providerId: number
 ): Promise<ServiceItem[]> {
+  console.log("[service.service] fetchProviderServices called with providerId:", providerId);
   return getProviderServices(providerId);
 }
 

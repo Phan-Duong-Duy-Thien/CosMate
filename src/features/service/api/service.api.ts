@@ -75,9 +75,12 @@ export async function createService(
 export async function getProviderServices(
   providerId: number
 ): Promise<ServiceItem[]> {
+  console.log("[service.api] getProviderServices URL: /api/services/provider/" + providerId);
   const response = await axiosInstance.get<ApiResponse<ServiceItem[]>>(
     `/api/services/provider/${providerId}`
   );
+  console.log("[service.api] response.data:", response.data);
+  console.log("[service.api] services result:", response.data.result);
   return response.data.result;
 }
 
