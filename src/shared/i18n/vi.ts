@@ -1094,6 +1094,10 @@ export const VI = {
    * Booking (Photographer/Staff) text
    */
   booking: {
+    create: {
+      success: "Dat dich vu thanh cong!",
+      error: "Khong the tao don dat. Vui long thu lai.",
+    },
     photographer: {
       title: "Đặt nhiếp ảnh gia",
       searchPlaceholder: "Tìm nhiếp ảnh gia...",

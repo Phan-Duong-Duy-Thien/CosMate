@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { MessageCircle } from "lucide-react"
+import { MessageCircle, Plus } from "lucide-react"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
 import { getChatMessagesService } from "../services/chat.service"
@@ -16,6 +16,11 @@ import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } 
 import { useLocation } from "react-router-dom"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
+import { useCreateServiceBooking } from "@/features/service/hooks/useCreateServiceBooking"
+import { useProviderServices } from "@/features/service/hooks/useProviderServices"
+import { useCurrentProviderProfile } from "@/features/provider/hooks/useCurrentProviderProfile"
+import { Dialog, DialogContent } from "@/shared/components/Dialog"
+import { Input } from "@/shared/components/Input"
 import { cn } from "@/lib/utils"
 import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
@@ -33,11 +38,29 @@ export default function ProviderMessagesPage() {
   const location = useLocation()
   const [activeRoom, setActiveRoom] = useState<ChatRoomListItem | null>(null)
   const [inputValue, setInputValue] = useState("")
+  const [showBookingModal, setShowBookingModal] = useState(false)
+  const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null)
+  const [bookingDate, setBookingDate] = useState("")
+  const [timeSlot, setTimeSlot] = useState("09:00")
+  const [numberOfHuman, setNumberOfHuman] = useState("1")
+  const [rentSlotAmount, setRentSlotAmount] = useState("1")
 
   const currentUserId = getUserId()
   const { rooms, loading: roomsLoading } = useChatRooms()
 
-  // ── Message store (single source of truth) ────────────────────────────
+  // ── Provider profile (needed for providerId to fetch services) ────────
+  const { provider } = useCurrentProviderProfile()
+  console.log("[ProviderMessages] provider:", provider)
+
+  // ── Provider services (for booking modal) ──────────────────────────────
+  const { services } = useProviderServices(provider?.id ?? 0)
+  console.log("[ProviderMessages] providerId for services:", provider?.id ?? 0)
+  console.log("[ProviderMessages] services:", services)
+
+  // ── Booking hook ──────────────────────────────────────────────────────────
+  const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
+
+  // ── Message store (single source of truth) ────────────────────────────────
   const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
@@ -78,7 +101,7 @@ export default function ProviderMessagesPage() {
 
   // Clear input on room change
   useEffect(() => {
-    setInputValue("")
+    if (activeRoom !== null) setInputValue("")
   }, [activeRoom])
 
   const handleSelectRoom = (room: ChatRoomListItem) => {
@@ -87,9 +110,35 @@ export default function ProviderMessagesPage() {
 
   const handleSend = (content: string) => {
     if (!content.trim() || activeRoom === null || currentUserId === null) return
-
     sendChatMessage({ roomId: activeRoom.roomId, senderId: currentUserId, content: content.trim() })
     setInputValue("")
+  }
+
+  const handleOpenBookingModal = () => {
+    // Reset form
+    setSelectedServiceId(null)
+    setBookingDate("")
+    setTimeSlot("09:00")
+    setNumberOfHuman("1")
+    setRentSlotAmount("1")
+    setShowBookingModal(true)
+  }
+
+  const handleSubmitBooking = async () => {
+    if (!selectedServiceId || !bookingDate || !activeRoom) return
+
+    const result = await createBooking({
+      cosplayerId: activeRoom.partnerId,
+      serviceId: selectedServiceId,
+      bookingDate,
+      timeSlot,
+      numberOfHuman: parseInt(numberOfHuman, 10) || 1,
+      rentSlotAmount: parseInt(rentSlotAmount, 10) || 1,
+    })
+
+    if (result) {
+      setShowBookingModal(false)
+    }
   }
 
   // Determine sidebar based on current path
@@ -102,9 +151,12 @@ export default function ProviderMessagesPage() {
     sidebarItems = mapSidebar(providerSidebarItems)
   }
 
+  const canBooking = activeRoom != null && provider != null
+
   return (
     <DashboardLayout title="Messages" sidebarItems={sidebarItems} brandName="CosMate Provider">
       <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
+
         {/* LEFT: Conversation List */}
         <div className="flex w-72 shrink-0 flex-col border-r border-slate-100">
           <div className="flex h-14 shrink-0 items-center border-b border-slate-100 px-4">
@@ -136,7 +188,7 @@ export default function ProviderMessagesPage() {
         {/* RIGHT: Chat Window */}
         <div className="flex flex-1 min-h-0 flex-col">
           {/* Header */}
-          <div className="flex h-14 shrink-0 items-center border-b border-slate-100 bg-white px-4">
+          <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4">
             <div className="flex items-center gap-3">
               {activeRoom ? (
                 <>
@@ -176,6 +228,18 @@ export default function ProviderMessagesPage() {
                 </>
               )}
             </div>
+
+            {/* Create Order button — only shown when a room is active */}
+            {canBooking && (
+              <button
+                type="button"
+                onClick={handleOpenBookingModal}
+                className="inline-flex items-center gap-1.5 rounded-full bg-pink-400 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-pink-500 disabled:opacity-50"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Create Order
+              </button>
+            )}
           </div>
 
           {/* Message List */}
@@ -213,6 +277,101 @@ export default function ProviderMessagesPage() {
           )}
         </div>
       </div>
+
+      {/* Create Booking Modal */}
+      <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
+        <DialogContent
+          className="max-w-md"
+          onClose={() => setShowBookingModal(false)}
+        >
+          <h2 className="text-lg font-semibold text-slate-800">Create Booking</h2>
+          <p className="text-sm text-slate-500">
+            Customer: <strong>{activeRoom?.partnerName}</strong>
+          </p>
+
+          {/* Service selection */}
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-slate-700">Service</label>
+            <select
+              value={selectedServiceId ?? ""}
+              onChange={(e) => setSelectedServiceId(e.target.value ? Number(e.target.value) : null)}
+              className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+            >
+              <option value="">-- Select a service --</option>
+              {services.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.description ? s.description.slice(0, 60) : `Service #${s.id}`}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Booking date + time slot row */}
+          <div className="flex gap-3">
+            <div className="flex-1 space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Booking Date</label>
+              <Input
+                type="date"
+                value={bookingDate}
+                onChange={(e) => setBookingDate(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="w-28 space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Time</label>
+              <Input
+                type="time"
+                value={timeSlot}
+                onChange={(e) => setTimeSlot(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+
+          {/* Number of humans + rent slot row */}
+          <div className="flex gap-3">
+            <div className="flex-1 space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Number of People</label>
+              <Input
+                type="number"
+                min="1"
+                value={numberOfHuman}
+                onChange={(e) => setNumberOfHuman(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+            <div className="flex-1 space-y-1.5">
+              <label className="text-sm font-medium text-slate-700">Rent Slots</label>
+              <Input
+                type="number"
+                min="1"
+                value={rentSlotAmount}
+                onChange={(e) => setRentSlotAmount(e.target.value)}
+                className="rounded-xl"
+              />
+            </div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex justify-end gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => setShowBookingModal(false)}
+              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleSubmitBooking}
+              disabled={!selectedServiceId || !bookingDate || bookingLoading}
+              className="inline-flex items-center gap-2 rounded-full bg-pink-400 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-500 disabled:opacity-50"
+            >
+              {bookingLoading ? "Creating..." : "Create Order"}
+            </button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   )
 }
