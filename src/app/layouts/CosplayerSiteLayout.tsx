@@ -39,6 +39,7 @@ import sideBannerImage3 from "@/assets/quiz2.jpg"
 import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
 import siteLogo from "@/assets/cosmate.png"
+import type { MenuProps } from 'antd'
 
 function computeInitials(fullName: string | null): string {
   if (!fullName) return "U"
@@ -229,6 +230,11 @@ export default function CosplayerSiteLayout() {
   ]
 
   const [notifOpen, setNotifOpen] = React.useState(false)
+
+  const markAllRead = async () => {
+    await markAllRead()
+    console.log("Đã đánh dấu tất cả là đã đọc!");
+  };
 
   const notifPopoverContent = (
     <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
@@ -463,7 +469,7 @@ export default function CosplayerSiteLayout() {
             </Popover>
 
             {loggedIn ? (
-              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]}>
+              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]} overlayStyle={{ zIndex: 9999 }}>
                 <div className="cursor-pointer" style={{ display: "inline-flex" }}>
                   {userProfile.avatarUrl ? (
                     <Avatar size={36} src={userProfile.avatarUrl} />
