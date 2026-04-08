@@ -48,7 +48,22 @@
       "Bash(powershell.exe -Command \"Copy-Item ''C:\\\\Users\\\\Duy Thien\\\\AppData\\\\Local\\\\nvm\\\\v24.13.0\\\\node.exe'' ''C:\\\\Program Files\\\\nodejs\\\\node.exe'' -Force; Write-Output ''Copied''\")",
       "Bash(powershell.exe -Command \"Invoke-WebRequest -Uri ''https://nodejs.org/dist/v24.13.0/win-x64/node.exe'' -OutFile ''C:\\\\Users\\\\Duy Thien\\\\Downloads\\\\node-v24.13.0.exe''\")",
       "Bash(npx vite:*)",
-      "Bash(cd c:/Users/Duy Thien/Desktop/CosMate_FE)"
+      "Bash(cd c:/Users/Duy Thien/Desktop/CosMate_FE)",
+      "WebFetch(domain:provinces.open-api.vn)",
+      "WebSearch",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/p/1?depth=0\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/p/1?depth=1\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/p/1?depth=2\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/p/79?depth=1\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/d/?province_code=79\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/d/?province_code=79\" -H \"Accept: application/json\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/v2/d/\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/p/1\")",
+      "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
+      "Bash(curl -s \"https://provinces.open-api.vn/api/d/1\")",
+      "Bash(curl -sL \"https://provinces.open-api.vn/api/p/1\")",
+      "Bash(curl -sL \"https://provinces.open-api.vn/api/d/?province=1\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Duy Thien"

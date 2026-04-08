@@ -5,7 +5,7 @@
  * Uses shared Vietnam location hook for area selection.
  * All text via i18n.
  */
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import {
   Form,
   Input,
@@ -46,7 +46,6 @@ export function CreateServiceForm({
   const [form] = Form.useForm();
   const [files, setFiles] = useState<UploadFile[]>([]);
   const [areas, setAreas] = useState<ServiceArea[]>([]);
-  const prefilledRef = useRef(false);
   const { submit, submitting } = useCreateService();
 
   const {
@@ -62,12 +61,8 @@ export function CreateServiceForm({
     selectedDistrict,
   } = useAreaLocations();
 
-  // Prefill area from shop address on mount (only once)
+  // Set default numeric values once when component mounts (form ref is stable — runs only once)
   useEffect(() => {
-    if (prefilledRef.current) return;
-    prefilledRef.current = true;
-
-    // Set default numeric values for form fields
     form.setFieldsValue({
       pricePerSlot: 0,
       equipmentDepreciationCost: 0,
@@ -75,20 +70,24 @@ export function CreateServiceForm({
       minPrice: 0,
       maxPrice: 0,
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    if (shopAddress?.city && shopAddress?.district) {
-      const initialArea: ServiceArea = {
-        city: shopAddress.city,
-        district: shopAddress.district,
-      };
-      setAreas((prev) => {
-        const exists = prev.some(
-          (a) => a.city === initialArea.city && a.district === initialArea.district
-        );
-        return exists ? prev : [initialArea, ...prev];
-      });
-    }
-  }, [shopAddress, form]);
+  // Prefill service area from shop address whenever it becomes available
+  useEffect(() => {
+    if (!shopAddress?.city || !shopAddress?.district) return;
+
+    const initialArea: ServiceArea = {
+      city: shopAddress.city,
+      district: shopAddress.district,
+    };
+    setAreas((prev) => {
+      const exists = prev.some(
+        (a) => a.city === initialArea.city && a.district === initialArea.district
+      );
+      return exists ? prev : [initialArea, ...prev];
+    });
+  }, [shopAddress]);
 
   const handleAddArea = () => {
     if (!selectedProvince || !selectedDistrict) return;
