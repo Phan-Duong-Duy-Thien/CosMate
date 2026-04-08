@@ -62,26 +62,21 @@ export function CreateServiceForm({
     selectedDistrict,
   } = useAreaLocations();
 
-  // Helper: format number to VND display (comma thousands separator)
-  const formatVnd = (value: number | undefined | null): string => {
-    if (value == null || isNaN(value as number)) return '';
-    return Math.round(value as number)
-      .toString()
-      .replace(/\B(?=(\d{3})+(?!\d))/g, ',');
-  };
-
-  // Helper: parse VND display string back to number
-  const parseVnd = (value: string | undefined): number => {
-    if (!value) return 0;
-    const n = Number(String(value).replace(/,/g, ''));
-    return isNaN(n) ? 0 : n;
-  };
-
   // Prefill area from shop address on mount (only once)
   useEffect(() => {
     if (prefilledRef.current) return;
+    prefilledRef.current = true;
+
+    // Set default numeric values for form fields
+    form.setFieldsValue({
+      pricePerSlot: 0,
+      equipmentDepreciationCost: 0,
+      depositAmount: 0,
+      minPrice: 0,
+      maxPrice: 0,
+    });
+
     if (shopAddress?.city && shopAddress?.district) {
-      prefilledRef.current = true;
       const initialArea: ServiceArea = {
         city: shopAddress.city,
         district: shopAddress.district,
@@ -93,7 +88,7 @@ export function CreateServiceForm({
         return exists ? prev : [initialArea, ...prev];
       });
     }
-  }, [shopAddress]);
+  }, [shopAddress, form]);
 
   const handleAddArea = () => {
     if (!selectedProvince || !selectedDistrict) return;
@@ -132,6 +127,7 @@ export function CreateServiceForm({
 
       console.log('[CreateServiceForm] areas state:', JSON.stringify(areas, null, 2));
       console.log('[CreateServiceForm] form values:', JSON.stringify(values, null, 2));
+      console.log('[CreateServiceForm] pricePerSlot raw:', values.pricePerSlot, '| typeof:', typeof values.pricePerSlot);
 
       const ok = await submit({
         serviceType,
@@ -270,80 +266,59 @@ export function CreateServiceForm({
               name="pricePerSlot"
               label={VI.service.create.form.pricePerSlot}
               rules={[{ required: true, min: 0 }]}
-              initialValue={0}
             >
+              <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
                   min={0}
                   step={10000}
                   style={{ width: '100%' }}
-                  addonAfter="VND"
-                  formatter={(value) => formatVnd(value as number)}
-                  parser={(value) => parseVnd(value)}
                 />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
             </Form.Item>
 
             <Form.Item
               name="equipmentDepreciationCost"
               label={VI.service.create.form.equipmentDepreciationCost}
               rules={[{ required: false }]}
-              initialValue={0}
             >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  style={{ width: '100%' }}
-                  addonAfter="VND"
-                  formatter={(value) => formatVnd(value as number)}
-                  parser={(value) => parseVnd(value)}
-                />
+              <Space.Compact style={{ width: '100%' }}>
+                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
             </Form.Item>
 
             <Form.Item
               name="depositAmount"
               label={VI.service.create.form.depositAmount}
               rules={[{ required: true }]}
-              initialValue={0}
             >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  style={{ width: '100%' }}
-                  addonAfter="VND"
-                  formatter={(value) => formatVnd(value as number)}
-                  parser={(value) => parseVnd(value)}
-                />
+              <Space.Compact style={{ width: '100%' }}>
+                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
             </Form.Item>
 
             <Form.Item
               name="minPrice"
               label={VI.service.create.form.minPrice}
               rules={[{ required: true }]}
-              initialValue={0}
             >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  style={{ width: '100%' }}
-                  addonAfter="VND"
-                  formatter={(value) => formatVnd(value as number)}
-                  parser={(value) => parseVnd(value)}
-                />
+              <Space.Compact style={{ width: '100%' }}>
+                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
             </Form.Item>
 
             <Form.Item
               name="maxPrice"
               label={VI.service.create.form.maxPrice}
               rules={[{ required: false }]}
-              initialValue={0}
             >
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  style={{ width: '100%' }}
-                  addonAfter="VND"
-                  formatter={(value) => formatVnd(value as number)}
-                  parser={(value) => parseVnd(value)}
-                />
+              <Space.Compact style={{ width: '100%' }}>
+                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
+                <Input suffix="VND" style={{ width: 60 }} disabled />
+              </Space.Compact>
             </Form.Item>
           </div>
         </Form>

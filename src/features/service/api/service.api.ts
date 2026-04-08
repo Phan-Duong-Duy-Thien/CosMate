@@ -50,6 +50,7 @@ export async function createService(
   }
   console.log('[createService] FormData payload:', JSON.stringify(entries, null, 2));
   console.log('[createService] serviceType value:', payload.serviceType);
+  console.log('[createService] pricePerSlot:', payload.pricePerSlot, '| type:', typeof payload.pricePerSlot);
   console.log('[createService] areas JSON:', payload.areas);
 
   console.log('[createService] POST /api/services with fields:', Object.keys(entries).join(', '));

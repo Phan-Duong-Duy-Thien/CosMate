@@ -21,6 +21,7 @@ export async function submitService(
 ): Promise<CreatedService> {
   const areasJson = JSON.stringify(formData.areas);
   console.log('[submitService] areasJson:', areasJson);
+  console.log('[submitService] pricePerSlot:', formData.pricePerSlot, '| typeof:', typeof formData.pricePerSlot);
 
   // Ant Design InputNumber with formatter/parser: if user submits without blurring,
   // validateFields() returns formatted string (e.g. "150,000"). Normalize all numeric
