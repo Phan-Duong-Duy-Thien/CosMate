@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Costume Rental API
  *
  * HTTP layer only - no business logic.
@@ -92,4 +92,24 @@ export async function updateAccessory(id: number, payload: AccessoryInput): Prom
 export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
   const response = await axiosInstance.get<CostumeApiResponse<Costume[]>>('/api/costumes')
   return response.data
+}
+
+export async function generateCostumeDescriptionByAI(
+  name: string,
+  imageFiles: File[],
+): Promise<string> {
+  const form = new FormData()
+  if (name?.trim()) {
+    form.append('name', name.trim())
+  }
+  imageFiles.forEach((file) => form.append('files', file))
+
+  const response = await axiosInstance.post<ApiWrapper<string>>(
+    '/api/search/generate-description',
+    form,
+    { headers: { 'Content-Type': 'multipart/form-data' } },
+  )
+
+  const wrapped = response.data
+  return wrapped?.result ?? ''
 }
