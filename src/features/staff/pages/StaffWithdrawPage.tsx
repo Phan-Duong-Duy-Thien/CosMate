@@ -133,9 +133,10 @@ export default function StaffWithdrawPage() {
                               type="button"
                               onClick={() => openRejectModal(request.id)}
                               disabled={isRejecting}
-                              className="inline-flex items-center justify-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-40"
+                              className="inline-flex items-center justify-center rounded-lg bg-red-50 px-2.5 py-2 text-red-600 hover:bg-red-100 hover:text-red-700 disabled:opacity-40"
                             >
-                              <XCircle size={16} className={isRejecting ? 'animate-spin' : ''} />
+                              <XCircle size={18} className={isRejecting ? 'animate-spin' : ''} />
+                              <span className="ml-1.5 text-xs font-medium">Từ chối</span>
                             </button>
                           </Tooltip>
                         )}
