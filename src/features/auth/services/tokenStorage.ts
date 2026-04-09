@@ -8,20 +8,36 @@ const SESSION_TOKEN_TYPE_KEY = 'cosmate_session_token_type';
 const SESSION_ROLES_KEY = 'cosmate_session_roles';
 
 /**
+ * Sync sessionStorage from localStorage on app boot.
+ * Called once at module load to restore auth from localStorage (Remember Me case).
+ * Only syncs if sessionStorage is empty — to avoid overwriting a recently
+ * logged-in account (e.g., Staff tab) with a remembered account (e.g., Cosplayer).
+ */
+export function syncSessionFromLocal(): void {
+  // Only sync if sessionStorage doesn't already have a token
+  if (sessionStorage.getItem(TOKEN_KEY)) return;
+
+  const lsToken = localStorage.getItem(TOKEN_KEY);
+  if (lsToken) {
+    sessionStorage.setItem(TOKEN_KEY, lsToken);
+    sessionStorage.setItem(TOKEN_TYPE_KEY, localStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer');
+    const lsRoles = localStorage.getItem(ROLES_KEY);
+    if (lsRoles) sessionStorage.setItem(ROLES_KEY, lsRoles);
+  }
+}
+
+/**
  * Save authentication data to localStorage or sessionStorage
  * @param authData - The auth result from login
  * @param persistent - If true, use localStorage (remember me); otherwise sessionStorage
  */
 export function saveAuth(authData: LoginResult, persistent = false): void {
-  const storage = persistent ? localStorage : sessionStorage;
+  // Always save to sessionStorage (current tab session)
+  sessionStorage.setItem(TOKEN_KEY, authData.token);
+  sessionStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
 
-  storage.setItem(TOKEN_KEY, authData.token);
-  storage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
-
-  // Decode JWT and save roles
+  // Decode JWT and build roles
   const payload = decodeJwtPayload(authData.token);
-
-  // Support both "roles" (array) and "role" (string) from JWT
   let roles: string[] = [];
   if (payload?.roles && Array.isArray(payload.roles)) {
     roles = payload.roles;
@@ -29,41 +45,36 @@ export function saveAuth(authData: LoginResult, persistent = false): void {
     roles = [payload.role];
   }
 
-  console.log('💾 Decoded JWT roles:', roles);
-  storage.setItem(ROLES_KEY, JSON.stringify(roles));
+  sessionStorage.setItem(ROLES_KEY, JSON.stringify(roles));
 
-  // Dispatch event for UI to update without reload
+  // If "Remember Me" is enabled, also persist to localStorage for cross-session access
+  if (persistent) {
+    localStorage.setItem(TOKEN_KEY, authData.token);
+    localStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
+    localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
+  } else {
+    // Clear localStorage to avoid stale data when Remember Me is not checked
+    localStorage.removeItem(TOKEN_KEY);
+    localStorage.removeItem(TOKEN_TYPE_KEY);
+    localStorage.removeItem(ROLES_KEY);
+  }
+
+  console.log('💾 Auth saved (persistent=', persistent, ')');
   window.dispatchEvent(new Event('auth:changed'));
 }
 
 /**
- * Get authentication data from sessionStorage (preferred) or localStorage (fallback).
- * This allows "Remember Me" to persist across browser sessions.
+ * Get authentication data from sessionStorage (always populated on login or app boot).
  */
 export function getAuth(): { token: string; tokenType: string; roles: string[] } | null {
-  // Prefer sessionStorage (current tab session)
-  let token = sessionStorage.getItem(TOKEN_KEY);
-  let tokenType = sessionStorage.getItem(TOKEN_TYPE_KEY);
-  let rolesJson = sessionStorage.getItem(ROLES_KEY);
+  const token = sessionStorage.getItem(TOKEN_KEY);
+  if (!token) return null;
 
-  // Fallback to localStorage if not in sessionStorage (remember me case)
-  if (!token) {
-    token = localStorage.getItem(TOKEN_KEY);
-    tokenType = localStorage.getItem(TOKEN_TYPE_KEY);
-    rolesJson = localStorage.getItem(ROLES_KEY);
-  }
-
-  if (!token) {
-    return null;
-  }
-
+  const tokenType = sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer';
+  const rolesJson = sessionStorage.getItem(ROLES_KEY);
   const roles = rolesJson ? JSON.parse(rolesJson) : [];
 
-  return {
-    token,
-    tokenType: tokenType || 'Bearer',
-    roles,
-  };
+  return { token, tokenType, roles };
 }
 
 /**

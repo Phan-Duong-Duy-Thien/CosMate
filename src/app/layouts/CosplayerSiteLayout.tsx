@@ -206,6 +206,37 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.notification.title },
       ])
+    } else if (path === "/profile") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile },
+      ])
+    } else if (path === "/profile/purchase-history") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: VI.profile.orders.title },
+      ])
+    } else if (path === "/profile/addresses/new") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Địa chỉ", to: "/profile" },
+        { label: "Thêm địa chỉ" },
+      ])
+    } else if (path === "/profile/wallet") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi" },
+      ])
+    } else if (path === "/profile/wallet/topup") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi", to: "/profile/wallet" },
+        { label: "Nạp tiền" },
+      ])
     }
   }, [location.pathname, setItems])
 

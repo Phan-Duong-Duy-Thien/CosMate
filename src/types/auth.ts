@@ -4,12 +4,13 @@
  */
 
 // User role type (matches backend)
-export type UserRole = 
+export type UserRole =
   | 'ADMIN'
-  | 'COSPLAYER' 
+  | 'COSPLAYER'
   | 'PROVIDER_RENTAL'
   | 'PROVIDER_PHOTOGRAPH'
-  | 'PROVIDER_EVENT_STAFF';
+  | 'PROVIDER_EVENT_STAFF'
+  | 'STAFF';
 
 // Role constants (use these instead of string literals)
 export const ROLE = {
@@ -18,6 +19,7 @@ export const ROLE = {
   PROVIDER_RENTAL: 'PROVIDER_RENTAL',
   PROVIDER_PHOTOGRAPH: 'PROVIDER_PHOTOGRAPH',
   PROVIDER_EVENT_STAFF: 'PROVIDER_EVENT_STAFF',
+  STAFF: 'STAFF',
 } as const;
 
 // Provider roles array (for easy role checking)

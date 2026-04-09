@@ -52,14 +52,14 @@ export function DashboardLayout({
       if (item.children && item.children.length > 0) {
         return {
           key: item.key,
-          icon: item.icon,
+          icon: item.icon ? <item.icon size={16} /> : undefined,
           label: item.label,
           children: mapToAntdMenuItems(item.children),
         };
       }
       return {
         key: item.key,
-        icon: item.icon,
+        icon: item.icon ? <item.icon size={16} /> : undefined,
         label: item.label,
         onClick: () => {
           if (item.path) {
@@ -130,6 +130,17 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
       ]);
     }
+    // --- STAFF ROUTES ---
+    else if (path === '/staff') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+      ]);
+    } else if (path.startsWith('/staff/')) {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.withdraw.title },
+      ]);
+    }
   }, [location.pathname, setItems]);
 
   // Fetch user profile for header avatar
@@ -192,6 +203,8 @@ export function DashboardLayout({
           navigate('/provider-photograph/settings');
         } else if (location.pathname.startsWith('/provider-event-staff')) {
           navigate('/provider-event-staff/settings');
+        } else if (location.pathname.startsWith('/staff')) {
+          navigate('/staff/settings');
         } else {
           navigate('/provider/settings');
         }

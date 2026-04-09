@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
@@ -63,6 +63,7 @@ function getTransactionTypeLabel(type: string): string {
 
 export default function WalletPage() {
   const navigate = useNavigate()
+  const location = useLocation()
   const {
     walletInfo,
     transactions,
@@ -72,7 +73,19 @@ export default function WalletPage() {
     error,
     toggleTransactions,
     fetchTransactionsIfNeeded,
+    refetchWallet,
   } = useWallet()
+
+  // Redirect back to this page to clear stale MoMo/VNPay return URL in the address bar
+  // (BE returns {json} as path segment instead of query params, leaving junk in the URL)
+  const rawUrl = location.pathname + location.search
+  const isStalePaymentRedirect = rawUrl.includes('partnerCode') ||
+    rawUrl.includes('resultCode') || rawUrl.includes('MOMO')
+
+  if (isStalePaymentRedirect) {
+    navigate('/profile/wallet', { replace: true })
+    return null
+  }
 
   const handleToggleTransactions = () => {
     toggleTransactions()
@@ -122,7 +135,10 @@ export default function WalletPage() {
           )}
 
           {/* Top-up button */}
-          <div className="mt-4 flex justify-end">
+          <div className="mt-4 flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => navigate("/profile/wallet/withdraw")}>
+              {VI.profile.wallet.withdraw}
+            </Button>
             <Button type="button" onClick={() => navigate("/profile/wallet/topup")}>
               {VI.profile.wallet.topup}
             </Button>

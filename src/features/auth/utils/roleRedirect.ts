@@ -64,10 +64,8 @@ export function getRedirectPath(roles: any[]): string {
   }
 
   // Priority 6: Staff
-  if (normalizedRoles.includes('STAFF')) {
-    // Tạm thời tui đẩy STAFF về trang Admin nhé. 
-    // Nếu sau này ông có trang riêng (ví dụ '/staff') thì sửa lại chỗ này!
-    return '/admin'; 
+  if (normalizedRoles.includes(ROLE.STAFF) || normalizedRoles.includes('STAFF')) {
+    return '/staff';
   }
 
   // Fallback: No matching role
