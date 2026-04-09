@@ -1,95 +1,66 @@
 import { useState, useEffect, type ReactNode } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight } from 'lucide-react';
+import { LogOut, User, ChevronRight, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
+import { useUserProfile } from '@/app/providers/UserProfileProvider';
+import { getUserId } from '@/features/auth/services/tokenStorage';
+import { getUserProfile } from '@/features/admin/services/adminUsers.service';
+import type { AdminUserProfile } from '@/features/admin/types';
+import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 
 const { Header, Sider, Content } = Layout;
 
-/**
- * Dashboard sidebar item structure
- */
 export type DashboardSidebarItem = {
   key: string;
   label: string;
-  icon?: ReactNode;
+  /** LucideIcon reference (preferred) or ReactNode JSX element */
+  icon?: LucideIcon | ReactNode;
   path?: string;
   children?: DashboardSidebarItem[];
 };
 
 type DashboardLayoutProps = {
-  /**
-   * Page title displayed in header
-   */
   title?: string;
-
-  /**
-   * Sidebar menu items (role-specific, injected from feature)
-   */
   sidebarItems: DashboardSidebarItem[];
-
-  /**
-   * Brand name displayed in sidebar (default: "CosMate")
-   */
   brandName?: string;
-
-  /**
-   * Brand abbreviation when collapsed (default: "CM")
-   */
   brandShort?: string;
-
-  /**
-   * Page content
-   */
-  children: ReactNode;
+  children?: ReactNode;
+  /** Hide the chat button in the header (used for provider dashboards) */
+  showChatButton?: boolean;
 };
 
-/**
- * Reusable Dashboard Shell Layout
- * 
- * Used by: Admin, Provider, Photographer dashboards
- * 
- * RESPONSIBILITIES:
- * - Ant Design Layout structure (Sider, Header, Content)
- * - Collapsible sidebar
- * - Shared header with user dropdown
- * - Logout placeholder (TODO: implement)
- * 
- * DOES NOT:
- * - Know about roles or permissions
- * - Define sidebar items (injected via props)
- * - Handle domain-specific logic
- */
 export function DashboardLayout({
   title = 'Dashboard',
   sidebarItems,
   brandName = 'CosMate',
   brandShort = 'CM',
   children,
+  showChatButton = true,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
+  const { userProfile, setUserProfile } = useUserProfile();
+  useChatPopup(); // ensure popup context is initialized
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
-      // Nếu có menu con thì gọi đệ quy
       if (item.children && item.children.length > 0) {
         return {
           key: item.key,
-          icon: item.icon,
+          icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
           label: item.label,
-          children: mapToAntdMenuItems(item.children), // Đệ quy ở đây
+          children: mapToAntdMenuItems(item.children),
         };
       }
-      // Nếu là menu cấp cuối thì gắn sự kiện chuyển trang
       return {
         key: item.key,
-        icon: item.icon,
+        icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
         label: item.label,
         onClick: () => {
           if (item.path) {
@@ -105,16 +76,30 @@ export function DashboardLayout({
   // Set default breadcrumbs based on route
   useEffect(() => {
     const path = location.pathname;
+    
+    // 1. TRANG CHỦ ADMIN
     if (path === '/admin') {
       setItems([
-        { label: VI.common.breadcrumb.admin, to: '/admin' },
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: 'Trang chủ' }
       ]);
-    } else if (path === '/admin/users') {
+    } 
+    // 2. TRANG QUẢN LÝ MENU
+    else if (path === '/admin/menus') {
       setItems([
-        { label: VI.common.breadcrumb.admin, to: '/admin' },
-        { label: VI.common.breadcrumb.users },
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: 'Quản lý menu' }
       ]);
-    } else if (path === '/provider-rental') {
+    } 
+    // 3. TRANG QUẢN LÝ NGƯỜI DÙNG
+    else if (path === '/admin/users') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' }, 
+        { label: VI.common.breadcrumb.users || 'Quản lý người dùng' }
+      ]);
+    } 
+    // --- CÁC ROUTE CỦA PROVIDER GIỮ NGUYÊN BÊN DƯỚI ---
+    else if (path === '/provider-rental') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
       ]);
@@ -129,37 +114,102 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerCostumes, to: '/provider-rental/costumes' },
         { label: VI.common.breadcrumb.create },
       ]);
+    } else if (path === '/provider-photograph') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+      ]);
+    } else if (path.startsWith('/provider-photograph/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+      ]);
+    } else if (path === '/provider-event-staff') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+      ]);
+    } else if (path.startsWith('/provider-event-staff/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+      ]);
+    }
+    // --- STAFF ROUTES ---
+    else if (path === '/staff') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+      ]);
+    } else if (path.startsWith('/staff/')) {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.withdraw.title },
+      ]);
     }
   }, [location.pathname, setItems]);
 
-  // TODO: Read user info from auth context when implemented
-  const userName = 'User';
+  // Fetch user profile for header avatar
+  useEffect(() => {
+    if (userProfile.avatarUrl || userProfile.fullName) return
 
-  // Get current active menu key from pathname
+    const userId = getUserId()
+    if (!userId) return
+
+    const fetchProfile = async () => {
+      try {
+        const response = await getUserProfile(userId)
+        const profile = response.result as AdminUserProfile
+        if (profile?.avatarUrl || profile?.fullName) {
+          setUserProfile({
+            avatarUrl: profile.avatarUrl ?? null,
+            fullName: profile.fullName ?? null,
+          })
+        }
+      } catch {
+        // Silently fail
+      }
+    }
+
+    fetchProfile()
+  }, [userProfile.avatarUrl, userProfile.fullName, setUserProfile])
+
+  const userName = userProfile.fullName || 'Admin'
   const currentPath = location.pathname;
-  const activeKey =
-    sidebarItems.find((item) => item.path === currentPath)?.key ||
-    sidebarItems[0]?.key ||
-    '';
 
-  /**
-   * Handle user logout
-   * - Clears all auth data from localStorage
-   * - Redirects to login page
-   */
+  // Hàm đệ quy tìm key đang active và key của thư mục cha
+  const getMenuKeys = (items: DashboardSidebarItem[], path: string): { selected: string; open: string } => {
+    for (const item of items) {
+      if (item.path === path) return { selected: item.key, open: '' };
+      if (item.children) {
+        const childFound = getMenuKeys(item.children, path);
+        if (childFound.selected) return { selected: childFound.selected, open: item.key };
+      }
+    }
+    return { selected: '', open: '' };
+  };
+
+  const { selected: foundSelectedKey, open: foundOpenKey } = getMenuKeys(sidebarItems, currentPath);
+  const activeKey = foundSelectedKey || sidebarItems[0]?.key || '';
+  const defaultOpenKeys = foundOpenKey ? [foundOpenKey] : [];
+
   const handleLogout = () => {
     clearAuth();
     navigate('/login');
     window.location.reload();
   };
 
-  // User dropdown menu items
   const userMenuItems: MenuProps['items'] = [
     {
       key: 'profile',
       icon: <User size={16} />,
       label: VI.common.user.profile,
-      onClick: () => console.log('TODO: Navigate to profile'),
+      onClick: () => {
+        if (location.pathname.startsWith('/provider-photograph')) {
+          navigate('/provider-photograph/settings');
+        } else if (location.pathname.startsWith('/provider-event-staff')) {
+          navigate('/provider-event-staff/settings');
+        } else if (location.pathname.startsWith('/staff')) {
+          navigate('/staff/settings');
+        } else {
+          navigate('/provider/settings');
+        }
+      },
     },
     {
       type: 'divider',
@@ -173,6 +223,10 @@ export function DashboardLayout({
     },
   ];
 
+  const displayTitle = breadcrumbItems.length > 0 
+    ? breadcrumbItems[breadcrumbItems.length - 1].label 
+    : title;
+
   return (
     <Layout style={{ minHeight: '100vh' }}>
       {/* Sidebar */}
@@ -182,30 +236,9 @@ export function DashboardLayout({
         onCollapse={setCollapsed}
         theme="light"
         width={240}
-        style={{
-          overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          borderRight: '1px solid #f0f0f0',
-        }}
+        style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0, borderRight: '1px solid #f0f0f0' }}
       >
-        {/* Brand / Logo */}
-        <div
-          style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            paddingLeft: collapsed ? 0 : 24,
-            borderBottom: '1px solid #f0f0f0',
-            fontWeight: 700,
-            fontSize: 18,
-            color: '#7C3AED',
-          }}
-        >
+        <div style={{ height: 64, display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? 0 : 24, borderBottom: '1px solid #f0f0f0', fontWeight: 700, fontSize: 18, color: '#7C3AED' }}>
           {collapsed ? brandShort : brandName}
         </div>
 
@@ -213,6 +246,7 @@ export function DashboardLayout({
         <Menu
           mode="inline"
           selectedKeys={[activeKey]}
+          defaultOpenKeys={defaultOpenKeys}
           items={menuItems}
           style={{ borderRight: 0, marginTop: 16 }}
         />
@@ -220,86 +254,45 @@ export function DashboardLayout({
 
       {/* Main Layout */}
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
-        {/* Header */}
-        <Header
-          style={{
-            padding: '0 24px',
-            background: '#fff',
-            borderBottom: '1px solid #f0f0f0',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1,
-          }}
-        >
-          {/* Left: Page Title */}
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{title}</h1>
-
-          {/* Right: User Dropdown */}
-          <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-            <div
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 12,
-                cursor: 'pointer',
-                padding: '4px 8px',
-                borderRadius: 8,
-                transition: 'background-color 0.2s',
-              }}
-              onMouseEnter={(e) => (e.currentTarget.style.backgroundColor = '#f5f5f5')}
-              onMouseLeave={(e) => (e.currentTarget.style.backgroundColor = 'transparent')}
-            >
-              <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
-              <span style={{ fontWeight: 500 }}>{userName}</span>
-            </div>
-          </Dropdown>
+        <Header style={{ padding: '0 24px', background: '#fff', borderBottom: '1px solid #f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'sticky', top: 0, zIndex: 1 }}>
+          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
+          
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
+                {userProfile.avatarUrl ? (
+                  <Avatar src={userProfile.avatarUrl} />
+                ) : (
+                  <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+                )}
+                <span style={{ fontWeight: 500 }}>{userName}</span>
+              </div>
+            </Dropdown>
+          </div>
         </Header>
 
         {/* Content Area */}
         <Content
           style={{
-            margin: 24,
-            padding: 24,
+            margin: 16,
+            padding: 20,
             background: '#fff',
             borderRadius: 8,
             minHeight: 280,
           }}
         >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 12 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
-                  {item.to ? (
-                    <a
-                      href={item.to}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        navigate(item.to!);
-                      }}
-                      style={{
-                        color: '#64748b',
-                        textDecoration: 'none',
-                        fontSize: 14,
-                      }}
-                    >
-                      {item.label}
-                    </a>
-                  ) : (
-                    <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>
-                      {item.label}
-                    </span>
-                  )}
-                  {index < breadcrumbItems.length - 1 && (
-                    <ChevronRight size={14} style={{ margin: '0 8px', color: '#94a3b8' }} />
-                  )}
+                  {item.to ? <a href={item.to} onClick={(e) => { e.preventDefault(); navigate(item.to!); }} style={{ color: '#64748b', textDecoration: 'none', fontSize: 14 }}>{item.label}</a> : <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>{item.label}</span>}
+                  {index < breadcrumbItems.length - 1 && <ChevronRight size={14} style={{ margin: '0 8px', color: '#94a3b8' }} />}
                 </span>
               ))}
             </div>
           )}
-          {children}
+          {/* NẾU CÓ TRUYỀN CHILDREN VÀO THÌ HIỂN THỊ, KHÔNG THÌ LẤY OUTLET CHỨA ROUTER CON */}
+          {children || <Outlet />}
         </Content>
       </Layout>
     </Layout>

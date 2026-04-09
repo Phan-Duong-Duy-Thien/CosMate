@@ -53,6 +53,7 @@ export default function ProviderCreateCostumePage() {
     <DashboardLayout
       title="Đăng trang phục mới"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
       {gate.profileLoading && (

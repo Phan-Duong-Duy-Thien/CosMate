@@ -1,59 +1,41 @@
 /**
  * Vietnam Administrative Divisions API
- * Uses provinces.open-api.vn for standard Vietnam location data
  *
- * IMPORTANT: Uses v2 API for provinces (post-07/2025 merger dataset).
- * Districts/wards use v1 due to v2 endpoint limitations.
- * DO NOT remove v2 for provinces.
+ * Delegates to the shared Province Open API V2 source at @/shared/api/vnLocation.api.
+ * Single source of truth for all Vietnam location data in the frontend.
+ *
+ * Province Open API V2 reflects the post-07/2025 administrative structure.
+ * Lower-level units are wards (not districts); maps to District interface
+ * for backward compatibility with existing forms and backend payload.
  */
 import type { Province, District, Ward } from '../types';
-
-// v2 = post-merger dataset (after July 2025) - only for provinces
-const VN_LOCATION_API_V2 = 'https://provinces.open-api.vn/api/v2';
-// v1 = for districts/wards (v2 doesn't support /d/{code} endpoint)
-const VN_LOCATION_API_V1 = 'https://provinces.open-api.vn/api';
+import {
+  fetchProvinces as sharedFetchProvinces,
+  fetchWardsByProvince,
+} from '@/shared/api/vnLocation.api';
 
 /**
- * Fetch all provinces (cities) - uses v2 for post-merger data
+ * Fetch all provinces (cities) via Province Open API V2
  */
 export async function fetchProvinces(): Promise<Province[]> {
-  const response = await fetch(`${VN_LOCATION_API_V2}/?depth=1`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch provinces');
-  }
-  const data = await response.json();
-  return data.map((item: { code: number; name: string }) => ({
-    code: item.code,
-    name: item.name,
-  }));
+  return sharedFetchProvinces();
 }
 
 /**
- * Fetch districts by province code - uses v1 (v2 doesn't support this endpoint)
+ * Fetch districts (wards) by province code via Province Open API V2.
+ * Maps ward data to the District interface for backward compatibility.
  */
 export async function fetchDistricts(provinceCode: number): Promise<District[]> {
-  const response = await fetch(`${VN_LOCATION_API_V1}/p/${provinceCode}?depth=2`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch districts');
-  }
-  const data = await response.json();
-  return data.districts.map((item: { code: number; name: string }) => ({
-    code: item.code,
-    name: item.name,
-  }));
+  return fetchWardsByProvince(provinceCode);
 }
 
 /**
- * Fetch wards by district code - uses v1 (v2 doesn't support this endpoint)
+ * Fetch wards by district code.
+ *
+ * Province Open API V2 provides ward data under the province endpoint (depth=2).
+ * The district code is not used for ward lookup in this API version.
+ * Returns an empty array for backward compatibility.
  */
-export async function fetchWards(districtCode: number): Promise<Ward[]> {
-  const response = await fetch(`${VN_LOCATION_API_V1}/d/${districtCode}?depth=2`);
-  if (!response.ok) {
-    throw new Error('Failed to fetch wards');
-  }
-  const data = await response.json();
-  return data.wards.map((item: { code: number; name: string }) => ({
-    code: item.code,
-    name: item.name,
-  }));
+export async function fetchWards(_districtCode: number): Promise<Ward[]> {
+  return [];
 }

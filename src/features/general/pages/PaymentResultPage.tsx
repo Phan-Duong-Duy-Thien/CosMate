@@ -1,8 +1,15 @@
 /**
  * Payment Result Page
- * Displays payment result after redirect from payment gateway
+ * Displays payment result after redirect from payment gateway.
+ *
+ * Anti-replay guard: Once a payment result (identified by orderId) has been
+ * shown on this page, it is marked in sessionStorage. Re-mounting or
+ * re-navigating to the same result will not re-trigger anything.
+ * This prevents duplicate processing in StrictMode, back-button scenarios,
+ * and any future on-mount effects that read from query params.
  */
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import * as React from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
@@ -11,15 +18,62 @@ import type { UserRole } from '@/types/auth';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
 
+const PROCESSED_KEY_PREFIX = 'cosmate:payment:processed:';
+
+interface MomoReturn {
+  partnerCode?: string;
+  orderId?: string;
+  responseTime?: number;
+  message?: string;
+  resultCode?: number;
+  [key: string]: unknown;
+}
+
+function parsePaymentResultFromUrl(): {
+  status: PaymentStatus;
+  orderId: string | null;
+  message: string | null;
+} {
+  // Always parse from query params: ?partnerCode=...&resultCode=0&message=...
+  const params = new URLSearchParams(window.location.search);
+
+  const orderId = params.get('orderId') || null;
+  const message = params.get('message') || null;
+
+  // MoMo uses resultCode (number): 0 = success, 1006/1009 = cancelled, other = failed
+  const rawResultCode = params.get('resultCode');
+  if (rawResultCode !== null) {
+    const resultCode = parseInt(rawResultCode, 10);
+    if (resultCode === 0) return { status: 'success', orderId, message };
+    if (resultCode === 1006 || resultCode === 1009) return { status: 'cancelled', orderId, message };
+    return { status: 'failed', orderId, message };
+  }
+
+  // Generic status param (e.g., ?status=success&orderId=...)
+  const status = (params.get('status') as PaymentStatus) || 'unknown';
+  return { status, orderId, message };
+}
+
 export default function PaymentResultPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  const status = (searchParams.get('status') as PaymentStatus) || 'unknown';
-  const orderId = searchParams.get('orderId') || null;
-  const message = searchParams.get('message') || null;
-
+  const { status, orderId, message } = parsePaymentResultFromUrl();
   const isSuccess = status === 'success';
+
+  // Anti-replay guard: only process each orderId once per session.
+  // Once this page has been shown for a given orderId, mark it as
+  // processed so re-mounts / repeated navigations won't re-trigger anything.
+  // This also protects against React StrictMode double-invocation in dev.
+  React.useEffect(() => {
+    if (orderId) {
+      const key = `${PROCESSED_KEY_PREFIX}${orderId}`;
+      if (sessionStorage.getItem(key) === '1') {
+        // Already shown this result — do nothing on re-mount.
+        return;
+      }
+      sessionStorage.setItem(key, '1');
+    }
+  }, [orderId]);
 
   const getTitle = () => {
     switch (status) {
@@ -49,17 +103,13 @@ export default function PaymentResultPage() {
 
   const handlePrimaryAction = () => {
     if (isSuccess) {
-      // Get user roles and redirect to appropriate page
-      const roles = getRoles() as UserRole[];
-      const redirectPath = getRedirectPath(roles);
-      navigate(redirectPath);
+      // Always redirect to wallet page so the balance is refreshed via useWallet
+      navigate('/profile/wallet');
     } else {
-      // Payment failed - go to checkout to retry payment
-      navigate('/rent/checkout');
+      navigate('/profile/wallet');
     }
   };
 
-  // Get role-based redirect path for home button
   const getHomeRedirectPath = () => {
     const roles = getRoles() as UserRole[];
     return getRedirectPath(roles);

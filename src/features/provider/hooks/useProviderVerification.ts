@@ -5,11 +5,13 @@
 import { useCallback, useEffect, useState } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getProviderByUserId } from '../api/provider.api';
+import { isProviderProfileComplete } from '../services/provider.service';
 import type { ProviderProfile } from '../types';
 
 interface UseProviderVerificationResult {
   profile: ProviderProfile | null;
   verified: boolean | null; // null = not yet loaded
+  profileComplete: boolean | null; // null = loading, else true/false
   loading: boolean;
   error: string | null;
   refetch: () => void;
@@ -48,6 +50,7 @@ export function useProviderVerification(): UseProviderVerificationResult {
   return {
     profile,
     verified: profile ? profile.verified : null,
+    profileComplete: profile ? isProviderProfileComplete(profile) : null,
     loading,
     error,
     refetch: fetchProfile,

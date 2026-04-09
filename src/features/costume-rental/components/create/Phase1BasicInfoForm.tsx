@@ -5,10 +5,11 @@
  * Calls onSubmit with validated values – never calls API directly.
  */
 
-import { Button, Form, Input, InputNumber, Select, Upload, Alert } from 'antd'
-import { InboxOutlined }from '@ant-design/icons'
+import { Button, Form, Input, InputNumber, Select, Upload, Alert, Tooltip } from 'antd'
+import { InboxOutlined, RobotOutlined }from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
+import { VI } from '@/shared/i18n/vi'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -21,6 +22,7 @@ interface FormValues {
   size: CostumeSizeOption
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   imageFiles: { fileList: UploadFile[] }
 }
@@ -46,6 +48,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       size: values.size,
       numberOfItems: values.numberOfItems,
       pricePerDay: values.pricePerDay,
+      rentDiscount: values.rentDiscount,
       depositAmount: values.depositAmount,
       imageFiles: rawFiles,
     })
@@ -73,7 +76,25 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         <Input placeholder="Nhập tên trang phục" />
       </Form.Item>
 
-      <Form.Item label="Mô tả" name="description">
+      <Form.Item
+        label={(
+          <div className="flex items-center gap-2">
+            <span>Mô tả</span>
+            <Tooltip title="Chức năng AI tự động tạo mô tả từ tên + ảnh trang phục bạn đang nhập.">
+              <Button
+                type="link"
+                size="small"
+                className="h-auto p-0 text-xs"
+                icon={<RobotOutlined />}
+                onClick={() => {}}
+              >
+                Tự động tạo mô tả
+              </Button>
+            </Tooltip>
+          </div>
+        )}
+        name="description"
+      >
         <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" />
       </Form.Item>
 
@@ -111,6 +132,18 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         ]}
       >
         <InputNumber min={1} style={{ width: '100%' }}placeholder="Giá thuê mỗi ngày" />
+      </Form.Item>
+
+      <Form.Item
+        label={VI.costumeRental.rentDiscount}
+        name="rentDiscount"
+        rules={[
+          { required: true, message: 'Vui lòng nhập giảm giá thuê' },
+          { type: 'number', min: 0, message: 'Giảm giá thuê không được âm' },
+        ]}
+        extra="Số tiền giảm giá cho mỗi lần thuê"
+      >
+        <InputNumber min={0} style={{ width: '100%' }} placeholder="Số tiền giảm giá" />
       </Form.Item>
 
       <Form.Item

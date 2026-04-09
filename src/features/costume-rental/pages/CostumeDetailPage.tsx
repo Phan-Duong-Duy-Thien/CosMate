@@ -62,8 +62,9 @@ export default function CostumeDetailPage() {
 
   // Handlers for shop actions
   const handleChat = () => {
-    console.log("Chat clicked - to be implemented with chat system")
-    // Future: navigate to chat or open chat modal
+    if (provider?.id) {
+      navigate(`/chat?partnerId=${provider.id}`)
+    }
   }
 
   const handleViewShop = () => {
@@ -103,13 +104,17 @@ export default function CostumeDetailPage() {
     }
   }, [costume, setItems])
 
-  // Convert date string to ISO format for backend
-  const convertToIsoDateTime = (dateString: string): string => {
+  // Convert date string to YYYY-MM-DD for storage
+  // The backend appends T00:00:00 at submission time (order.service.ts)
+  const formatRentDate = (dateString: string): string => {
     if (!dateString) return ''
-    const date = new Date(dateString)
-    // Set to start of day in local time, then format as ISO without milliseconds
-    date.setHours(0, 0, 0, 0)
-    return date.toISOString().split('.')[0] // Remove milliseconds
+    // Parse using local time to avoid UTC timezone shift
+    const [year, month, day] = dateString.split('-').map(Number)
+    const localDate = new Date(year, month - 1, day)
+    const y = localDate.getFullYear()
+    const m = String(localDate.getMonth() + 1).padStart(2, '0')
+    const d = String(localDate.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
   }
 
   const handleRentNow = async () => {
@@ -141,13 +146,13 @@ export default function CostumeDetailPage() {
     }
 
     // Convert startDate to ISO format for backend
-    const rentStartIso = convertToIsoDateTime(startDate)
+    const rentStartFormatted = formatRentDate(startDate)
 
     // Save rental draft to sessionStorage
     saveDraft({
       costumeId: costume.id,
       rentDay: days,
-      rentStart: rentStartIso,
+      rentStart: rentStartFormatted,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
       selectedRentalOptionId,
     })
@@ -182,8 +187,8 @@ export default function CostumeDetailPage() {
   if (isLoading) {
     return (
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10">
-          <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
+          <div className="rounded-2xl border border-dashed border-pink-200 bg-white/70 p-8 text-center text-sm text-slate-500">
             Đang tải chi tiết trang phục...
           </div>
         </div>
@@ -193,11 +198,11 @@ export default function CostumeDetailPage() {
 
   if (error) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10">
-          <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
+      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
+          <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
             <p>{error}</p>
-            <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={refetch}>
+            <Button variant="soft" size="sm" className="mt-3 rounded-full" onClick={refetch}>
               Thử lại
             </Button>
           </div>
@@ -208,11 +213,11 @@ export default function CostumeDetailPage() {
 
   if (!costume) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10 text-center">
-          <div className="rounded-3xl border border-pink-100 bg-white/80 p-10 text-sm text-slate-600">
+      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
+        <div className="mx-auto w-full max-w-6xl px-4 pt-6 text-center">
+          <div className="rounded-2xl border border-pink-100 bg-white/80 p-6 text-sm text-slate-600">
             Không tìm thấy trang phục bạn yêu cầu.
-            <div className="mt-4">
+            <div className="mt-3">
               <Link to="/costumes" className="text-pink-600 underline">Quay lại danh sách</Link>
             </div>
           </div>
@@ -224,10 +229,10 @@ export default function CostumeDetailPage() {
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-8">
+    <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
+      <div className="mx-auto w-full max-w-6xl px-4 pt-5">
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-4 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <MediaGallery
             images={resolvedImages}
             isAdult18={false}
@@ -260,7 +265,7 @@ export default function CostumeDetailPage() {
 
         {/* Shop Info Card */}
         {provider && (
-          <div className="mt-8">
+          <div className="mt-5">
             <ProviderShopCard
               provider={provider}
               onChat={handleChat}
@@ -270,7 +275,7 @@ export default function CostumeDetailPage() {
         )}
 
         {/* Product Info Sections */}
-        <div className="mt-8 space-y-6">
+        <div className="mt-5 space-y-5">
           <ProductInfoSections
             details={[
               { label: VI.costumeRental.costumeName, value: costume.name },
@@ -286,14 +291,14 @@ export default function CostumeDetailPage() {
 
         {/* Reviews Section */}
         {costume.id && (
-          <div className="mt-8">
+          <div className="mt-5">
             <ProductReviewsSection costumeId={Number(costume.id)} />
           </div>
         )}
 
         {/* My Review Form */}
         {reviewPermission.canReview && currentUserId && (
-          <div className="mt-6">
+          <div className="mt-4">
             <MyReviewForm
               canReview={reviewPermission.canReview}
               orderId={reviewPermission.orderId}
@@ -306,7 +311,7 @@ export default function CostumeDetailPage() {
 
         {/* More from Shop */}
         {provider && (
-          <div className="mt-8">
+          <div className="mt-5">
             <MoreFromShop
               providerId={provider.id}
               onSelectCostume={(id) => navigate(`/costumes/${id}`)}

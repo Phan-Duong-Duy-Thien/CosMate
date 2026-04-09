@@ -26,7 +26,7 @@ export function useLogin() {
         password: values.password,
       })
 
-      console.log("✅ Login response:", response)
+      console.log("✅ Login response:", JSON.stringify(response))
 
       // Check response code (0 means success in this API)
       if (response.code !== 0) {
@@ -36,7 +36,15 @@ export function useLogin() {
       }
 
       // Save token and decode roles
-      saveAuth(response.result)
+      if (!response.result.token) {
+        console.error("❌ Login response missing token:", response.result)
+        setFormError("Đăng nhập thất bại - không nhận được token!")
+        return null
+      }
+      console.log("💾 About to save auth with rememberMe:", !!values.rememberMe)
+      saveAuth(response.result, !!values.rememberMe)
+      console.log("💾 After saveAuth - checking localStorage:")
+      console.log("   cosmate_access_token:", localStorage.getItem('cosmate_access_token') ? "EXISTS ✓" : "MISSING ✗")
       console.log("💾 Token saved successfully")
 
       // Get user roles for redirect

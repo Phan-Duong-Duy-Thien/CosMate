@@ -21,3 +21,14 @@ export async function getProviderById(providerId: number): Promise<ProviderProfi
   )
   return response.data.result
 }
+
+/**
+ * GET /api/providers/role/{roleName}
+ * Returns providers filtered by role.
+ */
+export async function getProvidersByRole(roleName: string): Promise<ProviderProfile[]> {
+  const response = await axiosInstance.get<ApiResponse<ProviderProfile[]>>(
+    `/api/providers/role/${roleName}`
+  )
+  return response.data.result
+}

@@ -19,21 +19,19 @@ export default function AddressCreatePage() {
     phone,
     provinceCode,
     districtCode,
-    ward,
     streetAddress,
+    addressName,
     provinces,
     districts,
-    wards,
     isLoadingProvinces,
     isLoadingDistricts,
-    isLoadingWards,
     isSubmitting,
     setName,
     setPhone,
     setProvinceCode,
     setDistrictCode,
-    setWard,
     setStreetAddress,
+    setAddressName,
     submit,
   } = useCreateAddress();
 
@@ -87,16 +85,16 @@ export default function AddressCreatePage() {
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Name */}
+            {/* Name (recipient) */}
             <div>
               <label className="mb-1 block text-sm font-medium text-slate-700">
-                {VI.profile.address.form.name}
+                {VI.profile.address.form.recipientName}
               </label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                placeholder={VI.profile.address.form.namePlaceholder}
+                placeholder={VI.profile.address.form.recipientNamePlaceholder}
                 className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               />
             </div>
@@ -111,6 +109,20 @@ export default function AddressCreatePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={VI.profile.address.form.phonePlaceholder}
+                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              />
+            </div>
+
+            {/* Address Name */}
+            <div>
+              <label className="mb-1 block text-sm font-medium text-slate-700">
+                {VI.profile.address.form.addressName}
+              </label>
+              <input
+                type="text"
+                value={addressName}
+                onChange={(e) => setAddressName(e.target.value)}
+                placeholder={VI.profile.address.form.addressNamePlaceholder}
                 className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               />
             </div>
@@ -160,36 +172,6 @@ export default function AddressCreatePage() {
                 {districts.map((district) => (
                   <option key={district.code} value={district.code}>
                     {district.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Ward */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
-                {VI.profile.address.form.ward}
-              </label>
-              <select
-                value={ward?.code ?? ''}
-                onChange={(e) => {
-                  const code = e.target.value ? Number(e.target.value) : null;
-                  const selected = wards.find((w) => w.code === code) || null;
-                  setWard(selected);
-                }}
-                disabled={!districtCode || isLoadingWards}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 disabled:opacity-50"
-              >
-                <option value="">
-                  {isLoadingWards
-                    ? VI.common.status.loading
-                    : districtCode
-                      ? VI.profile.address.form.wardPlaceholder
-                      : VI.profile.address.form.districtPlaceholder}
-                </option>
-                {wards.map((w) => (
-                  <option key={w.code} value={w.code}>
-                    {w.name}
                   </option>
                 ))}
               </select>

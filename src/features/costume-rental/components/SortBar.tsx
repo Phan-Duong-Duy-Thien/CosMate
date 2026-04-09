@@ -31,9 +31,9 @@ export const SortBar = ({
     sortKey === "priceAsc" || sortKey === "priceDesc" ? sortKey : ""
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 rounded-3xl border border-white/80 bg-white/80 px-4 py-3 shadow-sm backdrop-blur">
-      <div className="flex flex-wrap items-center gap-2">
-        <span className="text-sm font-semibold text-slate-600">Sắp xếp theo</span>
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/80 px-4 py-2.5 shadow-sm backdrop-blur">
+      <div className="flex flex-wrap items-center gap-1.5">
+        <span className="text-sm font-medium text-slate-600">Sắp xếp</span>
         {sortButtons.map((button) => (
           <Button
             key={button.key}

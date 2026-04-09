@@ -12,7 +12,7 @@
 import { useState, useEffect, useCallback, useRef }from 'react'
 import { message }from 'antd'
 import { getCostumesByProvider, getCostumeById } from '../api/costumeRental.api'
-import type { Costume } from '../types'
+import type { Costume, CostumeStatus } from '../types'
 
 /** Read providerId from JWT payload (same pattern as useCreateCostumeWizard) */
 function getProviderIdFromToken(): number | null {
@@ -30,11 +30,38 @@ function getProviderIdFromToken(): number | null {
   }
 }
 
+export type CostumeSortKey = 'name' | 'pricePerDay' | 'status' | 'createdAt'
+export type SortOrder = 'asc' | 'desc'
+
 export function useProviderCostumes() {
   // ── List state ────────────────────────────────────────────────────────────
   const [costumes, setCostumes] = useState<Costume[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // ── Sort / Filter state ────────────────────────────────────────────────────
+  const [sortKey, setSortKey] = useState<CostumeSortKey>('name')
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc')
+  const [searchText, setSearchText] = useState('')
+  const [statusFilter, setStatusFilter] = useState<CostumeStatus | 'ALL'>('ALL')
+
+  // ── Derived: filtered + sorted costumes ────────────────────────────────────
+  const filteredCostumes = [...costumes]
+    .filter((c) => {
+      if (statusFilter !== 'ALL' && c.status !== statusFilter) return false
+      if (searchText) {
+        const q = searchText.toLowerCase()
+        return c.name.toLowerCase().includes(q)
+      }
+      return true
+    })
+    .sort((a, b) => {
+      let cmp = 0
+      if (sortKey === 'name') cmp = a.name.localeCompare(b.name)
+      else if (sortKey === 'pricePerDay') cmp = a.pricePerDay - b.pricePerDay
+      else if (sortKey === 'status') cmp = a.status.localeCompare(b.status)
+      return sortOrder === 'asc' ? cmp : -cmp
+    })
 
   // ── Detail / modal state ──────────────────────────────────────────────────
   const [selectedCostume, setSelectedCostume] = useState<Costume | null>(null)
@@ -108,10 +135,21 @@ export function useProviderCostumes() {
   return {
     // List
     costumes,
+    filteredCostumes,
     isLoading,
     error,
     providerId,
     refetch: fetchCostumes,
+
+    // Sort/filter
+    sortKey,
+    setSortKey,
+    sortOrder,
+    setSortOrder,
+    searchText,
+    setSearchText,
+    statusFilter,
+    setStatusFilter,
 
     // Detail modal
     modalOpen,

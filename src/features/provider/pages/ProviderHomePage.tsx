@@ -7,6 +7,7 @@ import { providerSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
 import { useProviderGate } from '../hooks/useProviderGate';
 import { ProviderActivationGate } from '../components/ProviderActivationGate';
+import { ProviderProfileCompletionGate } from '../components/ProviderProfileCompletionGate';
 
 const { Text }= Typography;
 
@@ -15,7 +16,7 @@ export default function ProviderHomePage() {
 
   // Verification gating
   const {
-    verified, profileLoading,
+    verified, profileComplete, profileLoading,
     plans, plansLoading, plansError,
     selectedPlanId, setSelectedPlanId,
     selectedMethod, setSelectedMethod,
@@ -63,7 +64,7 @@ export default function ProviderHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider">
+    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       {/* Profile loading state */}
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
@@ -88,25 +89,32 @@ export default function ProviderHomePage() {
         />
       )}
 
-      {/* Dashboard content — shown only when verified */}
-      {!profileLoading && verified === true && (
+      {/* Profile completion gate — shown when verified but profile incomplete */}
+      {!profileLoading && verified === true && profileComplete === false && (
+        <ProviderProfileCompletionGate
+          onComplete={() => navigate('/provider/settings/completion')}
+        />
+      )}
+
+      {/* Dashboard content — shown only when verified and profile complete */}
+      {!profileLoading && verified === true && profileComplete === true && (
         <>
-      <div style={{ marginBottom: 24 }}>
-        <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboard.welcome}</h2>
-        <p style={{ color: '#6B7280', fontSize: 14 }}>
+      <div style={{ marginBottom: 16 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>{VI.provider.dashboard.welcome}</h2>
+        <p style={{ color: '#6B7280', fontSize: 13 }}>
           {VI.provider.dashboard.overview}
         </p>
       </div>
 
       {/* Stats Cards */}
-      <Row gutter={[16, 16]}>
+      <Row gutter={[12, 12]}>
         {stats.map((stat, index) => (
           <Col xs={24}sm={12} lg={6}key={index}>
             <Card
               bordered={false}
               style={{
-                borderRadius: 12,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
+                borderRadius: 10,
+                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -114,13 +122,13 @@ export default function ProviderHomePage() {
                   title={stat.title}
                   value={stat.value}
                   precision={stat.precision}
-                  valueStyle={{ color: stat.color, fontSize: 24, fontWeight: 700 }}
+                  valueStyle={{ color: stat.color, fontSize: 22, fontWeight: 700 }}
                 />
                 <div
                   style={{
-                    width: 48,
-                    height: 48,
-                    borderRadius: 12,
+                    width: 40,
+                    height: 40,
+                    borderRadius: 10,
                     backgroundColor: `${stat.color}15`,
                     display: 'flex',
                     alignItems: 'center',
@@ -137,14 +145,14 @@ export default function ProviderHomePage() {
       </Row>
 
       {/* Costume Management Section */}
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
         <Col span={24}>
           <Card
             title={VI.provider.costumeManagement.sectionTitle}
             bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
           >
-            <Text type="secondary" style={{ display: 'block', marginBottom: 16 }}>
+            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
               {VI.provider.costumeManagement.sectionDesc}
             </Text>
             <Space>
@@ -164,14 +172,14 @@ export default function ProviderHomePage() {
       </Row>
 
       {/* Quick Actions */}
-      <Row gutter={[16, 16]} style={{ marginTop: 24 }}>
+      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
         <Col xs={24}lg={12}>
           <Card
             title={VI.provider.dashboard.sections.recentBookings}
             bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
           >
-            <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px 0' }}>
               {VI.provider.dashboard.sections.recentBookingsPlaceholder}
             </p>
           </Card>
@@ -180,9 +188,9 @@ export default function ProviderHomePage() {
           <Card
             title={VI.provider.dashboard.sections.performanceOverview}
             bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
           >
-            <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
+            <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px 0' }}>
               {VI.provider.dashboard.sections.performancePlaceholder}
             </p>
           </Card>
@@ -190,7 +198,7 @@ export default function ProviderHomePage() {
       </Row>
 
       {/* Additional Information */}
-      <Row gutter={[16, 16]}style={{ marginTop: 24 }}>
+      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
         <Col span={24}>
           <Card
             title={VI.provider.dashboard.sections.quickTips}

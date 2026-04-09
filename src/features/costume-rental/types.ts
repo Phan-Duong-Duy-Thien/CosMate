@@ -31,6 +31,7 @@ export interface AccessoryOption {
 }
 
 export interface CostumeItem {
+  aiSimilarityScore?: number
   id: string
   name: string
   characterName: string
@@ -117,6 +118,7 @@ export interface CreateCostumeBasicPayload {
   size: CostumeSizeOption
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   providerId: number
   imageFiles: File[]
@@ -181,6 +183,7 @@ export interface Costume {
   rentPurpose: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   status: CostumeStatus
   imageUrls: string[]
@@ -210,6 +213,7 @@ export interface UpdateCostumeBasicInput {
   size: CostumeSizeOption
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   imageFiles?: File[]
 }

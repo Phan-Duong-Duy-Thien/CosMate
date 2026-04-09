@@ -72,11 +72,10 @@ export default function ProviderReviewsPage() {
   // Table columns
   const columns: TableProps<ProviderReview>['columns'] = [
     {
-      title: VI.provider.reviews.columns.reviewId,
-      dataIndex: 'id',
-      key: 'id',
-      width: 100,
-      render: (id: number) => `#${id}`,
+      title: 'STT',
+      key: 'index',
+      width: 70,
+      render: (_: unknown, __: unknown, index: number) => index + 1,
     },
     {
       title: VI.provider.reviews.columns.orderId,
@@ -122,6 +121,7 @@ export default function ProviderReviewsPage() {
     <DashboardLayout
       title={VI.provider.reviews.title}
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
       {error && (

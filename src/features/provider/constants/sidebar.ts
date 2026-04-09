@@ -6,6 +6,10 @@ import {
   Star,
   Settings,
   ClipboardList,
+  Camera,
+  Briefcase,
+  PlusCircle,
+  MessageCircle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -72,5 +76,119 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.settings,
     icon: Settings,
     path: '/provider/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider/messages',
+  },
+];
+
+/**
+ * Photograph Provider sidebar menu configuration
+ */
+export const photographSidebarItems: ProviderSidebarItem[] = [
+  {
+    key: 'dashboard',
+    label: VI.provider.sidebar.photographDashboard,
+    icon: LayoutDashboard,
+    path: '/provider-photograph',
+  },
+  {
+    key: 'serviceList',
+    label: VI.service.sidebar.serviceList,
+    icon: Package,
+    path: '/provider-photograph/services',
+  },
+  {
+    key: 'serviceCreate',
+    label: VI.service.sidebar.createService,
+    icon: PlusCircle,
+    path: '/provider-photograph/serviceCreate',
+  },
+  {
+    key: 'schedule',
+    label: VI.provider.sidebar.photographSchedule,
+    icon: Calendar,
+    path: '/provider-photograph/schedule',
+  },
+  {
+    key: 'bookings',
+    label: VI.provider.sidebar.photographBookings,
+    icon: Camera,
+    path: '/provider-photograph/bookings',
+  },
+  {
+    key: 'reviews',
+    label: VI.provider.sidebar.photographReviews,
+    icon: Star,
+    path: '/provider-photograph/reviews',
+  },
+  {
+    key: 'settings',
+    label: VI.provider.sidebar.photographSettings,
+    icon: Settings,
+    path: '/provider-photograph/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-photograph/messages',
+  },
+];
+
+/**
+ * Event Staff Provider sidebar menu configuration
+ */
+export const eventStaffSidebarItems: ProviderSidebarItem[] = [
+  {
+    key: 'dashboard',
+    label: VI.provider.sidebar.eventStaffDashboard,
+    icon: LayoutDashboard,
+    path: '/provider-event-staff',
+  },
+  {
+    key: 'serviceList',
+    label: VI.service.sidebar.serviceList,
+    icon: Package,
+    path: '/provider-event-staff/services',
+  },
+  {
+    key: 'serviceCreate',
+    label: VI.service.sidebar.createService,
+    icon: PlusCircle,
+    path: '/provider-event-staff/serviceCreate',
+  },
+  {
+    key: 'schedule',
+    label: VI.provider.sidebar.eventStaffSchedule,
+    icon: Calendar,
+    path: '/provider-event-staff/schedule',
+  },
+  {
+    key: 'bookings',
+    label: VI.provider.sidebar.eventStaffBookings,
+    icon: Briefcase,
+    path: '/provider-event-staff/bookings',
+  },
+  {
+    key: 'reviews',
+    label: VI.provider.sidebar.eventStaffReviews,
+    icon: Star,
+    path: '/provider-event-staff/reviews',
+  },
+  {
+    key: 'settings',
+    label: VI.provider.sidebar.eventStaffSettings,
+    icon: Settings,
+    path: '/provider-event-staff/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-event-staff/messages',
   },
 ];

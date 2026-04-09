@@ -28,11 +28,11 @@ export async function listUsers(): Promise<AdminUser[]> {
  */
 export async function getUserProfile(userId: number): Promise<AdminUserProfile> {
   const response = await api.getUserProfile(userId);
-  
+
   if (response.code !== 0) {
     throw new Error(response.message || 'Không thể tải thông tin người dùng');
   }
-  
+
   return response.result;
 }
 

@@ -7,9 +7,10 @@ import { VI } from '@/shared/i18n/vi'
 interface ShopProfileHeroProps {
   shop: ProviderShop
   onChat?: () => void
+  chatLoading?: boolean
 }
 
-export function ShopProfileHero({ shop, onChat }: ShopProfileHeroProps) {
+export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroProps) {
   const avatarUrl = shop.avatarUrl || 'https://via.placeholder.com/150'
   const coverUrl = shop.coverImageUrl || 'https://via.placeholder.com/1200x300'
 
@@ -68,6 +69,7 @@ export function ShopProfileHero({ shop, onChat }: ShopProfileHeroProps) {
           <div className="flex gap-2">
             <Button
               onClick={onChat}
+              loading={chatLoading}
               className="rounded-full bg-pink-500 hover:bg-pink-600"
             >
               <MessageCircle className="mr-2 h-4 w-4" />

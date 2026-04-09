@@ -3,7 +3,6 @@
  */
 import { useState, useEffect } from 'react'
 import { getProviderById } from '../api/providerShop.api'
-import { getMockShopProfile } from '../mocks/shopProfile.mock'
 import type { ProviderShop } from '../types'
 
 interface UseProviderShopProfileResult {
@@ -28,16 +27,10 @@ export function useProviderShopProfile(providerId: number | undefined): UseProvi
     setError(null)
 
     try {
-      // Try to fetch from API first
-      // For now, use mock data since API might not have all fields
-      // const data = await getProviderById(providerId)
-      const mockData = getMockShopProfile(providerId)
-      setShop(mockData)
+      const data = await getProviderById(providerId)
+      setShop(data)
     } catch (err) {
-      // Fallback to mock data on error
-      const mockData = getMockShopProfile(providerId)
-      setShop(mockData)
-      setError(null) // Don't show error since we're using mock
+      setError(err instanceof Error ? err.message : "Failed to load shop profile")
     } finally {
       setLoading(false)
     }

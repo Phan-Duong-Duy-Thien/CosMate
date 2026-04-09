@@ -28,6 +28,7 @@ export function useProviderGate() {
 
   return {
     verified: verification.verified,
+    profileComplete: verification.profileComplete,
     profileLoading: verification.loading,
     plans: plans.plans,
     plansLoading: plans.loading,

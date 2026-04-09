@@ -1,13 +1,15 @@
 import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { FilterState, RegionKey, SortKey, TagKey } from "../types"
+import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
+import AISearchBar from "@/features/search/components/AISearchBar"
+import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
 const PAGE_SIZE = 16
 
@@ -47,6 +49,7 @@ export default function CostumeListPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [heroVisible, setHeroVisible] = React.useState(false)
+  const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
   const navigate = useNavigate()
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
@@ -117,10 +120,55 @@ export default function CostumeListPage() {
   type UIState = "loading" | "error" | "empty" | "success"
   const uiState: UIState = isLoading ? "loading" : error ? "error" : sortedItems.length === 0 ? "empty" : "success"
 
-  const handleReset = () => setFilters(initialFilters)
+  const handleReset = () => {
+    setFilters(initialFilters)
+    setAiResults(null)
+  }
   const handleToggleWishlist = (costumeId: string) => {
     setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
   }
+
+  const handleAISearchCompleted = React.useCallback((results: AISearchResultItem[]) => {
+    setAiResults(results)
+  }, [])
+
+  const aiGridItems = React.useMemo<CostumeItem[]>(() => {
+    if (!aiResults?.length) return []
+
+    return aiResults.map((item) => ({
+      id: String(item.costumeId),
+      name: item.costumeName,
+      characterName: "AI match",
+      seriesName: "AI search",
+      seriesType: "anime",
+      tags: ["anime"],
+      rating: 5,
+      reviewCount: 0,
+      rentalsCount: 0,
+      priceMin: Number(item.price ?? 0),
+      priceMax: Number(item.price ?? 0),
+      isAdult18: false,
+      isAvailable: true,
+      bestSeller: false,
+      brand: "",
+      brandType: "freestyle",
+      region: "hcm",
+      shopId: "ai-shop",
+      shopName: "CosMate AI",
+      images: [item.imageUrl],
+      hasAccessories: false,
+      accessoryOptions: [],
+      sizeOptions: ["m"],
+      createdAt: new Date().toISOString(),
+      description: "",
+      details: [],
+      rentalPurposes: ["test"],
+      basePriceByPurpose: { test: Number(item.price ?? 0), fes_shoot: Number(item.price ?? 0), event: Number(item.price ?? 0) },
+      deposit: 0,
+      laundryFee: 0,
+      aiSimilarityScore: item.similarityScore * 100,
+    }))
+  }, [aiResults])
 
   return (
     <section className="min-h-screen bg-transparent pb-20">
@@ -131,14 +179,14 @@ export default function CostumeListPage() {
           100% { opacity: 0.6; transform: translateY(0px); }
         }
       `}</style>
-      <div className="mx-auto w-full pt-10">
+      <div className="mx-auto w-full pt-6">
         <div
           className={
-            "rounded-3xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-6 py-8 text-center shadow-[0_12px_28px_rgba(236,72,153,0.16)] backdrop-blur transition-all duration-300 ease-out " +
+            "rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-5 py-5 text-center shadow-[0_8px_20px_rgba(236,72,153,0.12)] backdrop-blur transition-all duration-300 ease-out " +
             (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
           }
         >
-          <h1 className="mt-2 flex flex-wrap items-center justify-center gap-2 text-5xl font-extrabold text-pink-700 md:mt-3 md:text-6xl">
+          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-4xl font-bold text-pink-700 md:mt-2 md:text-5xl">
             <span
               aria-hidden="true"
               className="text-[20px] tracking-[0.5px] text-pink-700 motion-reduce:animate-none md:text-[40px]"
@@ -148,7 +196,7 @@ export default function CostumeListPage() {
           </h1>
         </div>
 
-        <div className="mt-8 grid gap-6 lg:grid-cols-[320px_minmax(0,1fr)] xl:gap-7">
+        <div className="mt-5 grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-6">
           <FilterSidebar
             filters={filters}
             regions={regionOptions}
@@ -159,7 +207,15 @@ export default function CostumeListPage() {
             onReset={handleReset}
           />
 
-          <div className="space-y-5">
+          <div className="space-y-4">
+            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
+
+            {!aiResults && (
+              <div className="rounded-2xl border border-pink-100 bg-white/80 px-4 py-3 text-sm text-pink-700">
+                Gợi ý: Tải ảnh nhân vật bạn muốn cosplay + mô tả để AI đề xuất mẫu gần nhất.
+              </div>
+            )}
+
             <SortBar
               sortKey={sortKey}
               currentPage={displayPage}
@@ -168,6 +224,35 @@ export default function CostumeListPage() {
               onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
               onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
             />
+
+            {aiResults && (
+              <div className="overflow-hidden rounded-3xl border border-pink-200 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-4 shadow-[0_10px_28px_rgba(236,72,153,0.12)] md:p-5">
+                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">AI MATCHES</p>
+                    <p className="text-base font-bold text-pink-700 md:text-lg">
+                      Kết quả gợi ý từ AI ({aiResults.length})
+                    </p>
+                  </div>
+
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-full"
+                    onClick={() => setAiResults(null)}
+                  >
+                    Ẩn kết quả AI
+                  </Button>
+                </div>
+
+                <CostumeGrid
+                  costumes={aiGridItems}
+                  wishlistIds={wishlistIds}
+                  onToggleWishlist={handleToggleWishlist}
+                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
+                />
+              </div>
+            )}
 
             {uiState === "loading" && (
               <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">

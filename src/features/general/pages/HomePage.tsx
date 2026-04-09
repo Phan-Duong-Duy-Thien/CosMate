@@ -29,6 +29,8 @@ const HomePage = () => {
         pricePerDay: costume.pricePerDay,
         status: costume.status,
         imageUrls: costume.imageUrls ?? [],
+        brand: "",
+        rentalsCount: costume.rentalsCount ?? 0,
       }))
   }, [items])
 
@@ -87,7 +89,7 @@ const HomePage = () => {
             })
           }}
         />
-        <section className="relative left-1/2 right-1/2 mt-6 w-screen -translate-x-1/2 bg-transparent py-8 md:py-10">
+        <section className="relative left-1/2 right-1/2 mt-4 w-screen -translate-x-1/2 bg-transparent py-5 md:py-6">
           <div className="mx-auto w-full max-w-screen-2xl px-4 md:px-6 xl:px-8">
             <TagChips
               tags={tagList}
@@ -141,8 +143,8 @@ const StatusCard = ({
   actionLabel?: string
   onAction?: () => void
 }) => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-12" data-reveal="true">
-    <div className="rounded-2xl border border-pink-100 bg-white p-8 text-center shadow-sm">
+  <section className="mx-auto w-full max-w-screen-2xl pt-6" data-reveal="true">
+    <div className="rounded-2xl border border-pink-100 bg-white p-6 text-center shadow-sm">
       <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
       <p className="mt-2 text-sm text-slate-500">{description}</p>
       {actionLabel && onAction && (
@@ -155,14 +157,14 @@ const StatusCard = ({
 )
 
 const HomeSkeleton = () => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-12" data-reveal="true">
-    <div className="animate-pulse space-y-6">
-      <div className="h-8 w-64 rounded-full bg-pink-100" />
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+  <section className="mx-auto w-full max-w-screen-2xl pt-6" data-reveal="true">
+    <div className="animate-pulse space-y-4">
+      <div className="h-7 w-64 rounded-full bg-pink-100" />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
         {Array.from({ length: 10 }).map((_, index) => (
           <div
             key={`skeleton-${index}`}
-            className="h-80 rounded-2xl bg-slate-100"
+            className="h-72 rounded-2xl bg-slate-100"
           />
         ))}
       </div>

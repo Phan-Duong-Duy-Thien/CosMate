@@ -7,14 +7,14 @@
  * No direct API calls in this file.
  */
 
-import { Button, Table, Tag, Typography, Space, Modal, Image, Descriptions, List, Alert, Spin } from 'antd'
+import { Button, Table, Tag, Space, Modal, Image, Descriptions, List, Alert, Spin, Input, Select, Typography } from 'antd'
 import type { TableProps }from 'antd'
-import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined }from '@ant-design/icons'
+import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined }from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout'
 import { providerSidebarItems } from '@/features/provider/constants/sidebar'
-import { useProviderCostumes }from '../hooks/useProviderCostumes'
+import { useProviderCostumes, type CostumeSortKey }from '../hooks/useProviderCostumes'
 import { useEditCostumeModal }from '../hooks/useEditCostumeModal'
 import EditCostumeModal from '../components/edit/EditCostumeModal'
 import type { Costume, CostumeStatus }from '../types'
@@ -22,7 +22,7 @@ import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
 import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
 import { VI } from '@/shared/i18n/vi'
 
-const { Title, Text } = Typography
+const { Text } = Typography
 
 // ── Status tag helpers ────────────────────────────────────────────────────────
 
@@ -180,7 +180,7 @@ export default function ProviderCostumeListPage() {
   const gate = useProviderGate()
 
   const {
-    costumes,
+    filteredCostumes,
     isLoading,
     error,
     providerId,
@@ -190,6 +190,14 @@ export default function ProviderCostumeListPage() {
     detailLoading,
     openDetail,
     closeDetail,
+    sortKey,
+    setSortKey,
+    sortOrder,
+    setSortOrder,
+    searchText,
+    setSearchText,
+    statusFilter,
+    setStatusFilter,
   } = useProviderCostumes()
 
   const editModal = useEditCostumeModal({ onSuccess: refetch })
@@ -299,6 +307,7 @@ export default function ProviderCostumeListPage() {
     <DashboardLayout
       title="Danh sách trang phục"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
         {/* Verification gate */}
@@ -323,31 +332,61 @@ export default function ProviderCostumeListPage() {
           />
         )}
         {!gate.profileLoading && gate.verified === true && (<>
-        {/* Header row */}
-        <div
-          style={{
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-          }}
-        >
-          <Title level={3} style={{ margin: 0 }}>
-            Danh sách trang phục
-          </Title>
-        <Space>
+        {/* Sort/Filter Toolbar */}
+        <div style={{ marginBottom: 16 }}>
+          <Space wrap style={{ marginBottom: 8 }}>
+            <Input
+              placeholder="Tìm kiếm tên trang phục..."
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              style={{ width: 240 }}
+              allowClear
+            />
+            <Select
+              placeholder="Lọc theo trạng thái"
+              value={statusFilter}
+              onChange={setStatusFilter}
+              style={{ width: 160 }}
+            >
+              <Select.Option value="ALL">Tất cả trạng thái</Select.Option>
+              <Select.Option value="AVAILABLE">Có sẵn</Select.Option>
+              <Select.Option value="RENTED">Đang thuê</Select.Option>
+              <Select.Option value="MAINTENANCE">Bảo trì</Select.Option>
+            </Select>
+            <Select
+              value={sortKey}
+              onChange={(val) => setSortKey(val as CostumeSortKey)}
+              style={{ width: 160 }}
+            >
+              <Select.Option value="name">Tên</Select.Option>
+              <Select.Option value="pricePerDay">Giá / ngày</Select.Option>
+              <Select.Option value="status">Trạng thái</Select.Option>
+            </Select>
+            <Button
+              icon={
+                <span style={{ fontSize: 12, fontWeight: 'bold' }}>
+                  {sortOrder === 'asc' ? '↑' : '↓'}
+                </span>
+              }
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
+            >
+              {sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
+            </Button>
+          </Space>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
             <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
               Làm mới
             </Button>
-          <Button
-            type="primary"
+            <Button
+              type="primary"
               icon={<PlusOutlined />}
-            onClick={() => navigate('/provider-rental/costumes/create')}
-          >
+              onClick={() => navigate('/provider-rental/costumes/create')}
+            >
               Tạo trang phục mới
-          </Button>
-        </Space>
-      </div>
+            </Button>
+          </div>
+        </div>
 
         {providerId === null && (
           <Alert
@@ -363,7 +402,7 @@ export default function ProviderCostumeListPage() {
 
         <Table<Costume>
         columns={columns}
-          dataSource={costumes}
+          dataSource={filteredCostumes}
           rowKey="id"
           loading={isLoading}
           pagination={{

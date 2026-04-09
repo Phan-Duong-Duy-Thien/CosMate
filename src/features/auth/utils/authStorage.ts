@@ -4,7 +4,10 @@
  * Token read/clear is delegated to services/tokenStorage.
  */
 
-import { getAuth } from '../services/tokenStorage';
+import { getAuth, syncSessionFromLocal } from '../services/tokenStorage';
+
+// Sync sessionStorage from localStorage on app boot (restores auth from Remember Me)
+syncSessionFromLocal();
 
 export { clearAuth } from '../services/tokenStorage';
 

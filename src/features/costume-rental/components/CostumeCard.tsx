@@ -1,4 +1,5 @@
 import { Heart, Image as ImageIcon, Star } from "lucide-react"
+import { Tag } from "antd"
 
 import type { CostumeItem } from "../types"
 import { Badge } from "@/shared/components/Badge"
@@ -33,10 +34,10 @@ export const CostumeCard = ({
   >
     <div className="relative">
       <img
-        src={costume.images[0]}
+        src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
         alt={costume.name}
         loading="lazy"
-        className="h-56 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
       />
       <div className="absolute left-3 top-3 flex flex-wrap gap-2">
         {costume.isAdult18 && (
@@ -57,11 +58,19 @@ export const CostumeCard = ({
           </Badge>
         )}
       </div>
+      {typeof costume.aiSimilarityScore === "number" && (
+        <div className="absolute right-3 top-3">
+          <Tag color="#7c3aed" className="m-0 rounded-full border-0 px-3 py-1 font-semibold text-white shadow-sm">
+            ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
+          </Tag>
+        </div>
+      )}
       <button
         type="button"
         aria-label="Yêu thích"
         className={cn(
-          "absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
+          "absolute right-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
+          typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
           isWishlisted && "text-pink-500"
         )}
         onClick={(event) => {
@@ -76,21 +85,19 @@ export const CostumeCard = ({
         {costume.images.length} ảnh
       </div>
     </div>
-    <div className="space-y-3 p-4">
+    <div className="space-y-2 p-3">
       <div className="flex items-center gap-2 text-sm text-slate-600">
         <Star className="h-4 w-4 text-yellow-400" />
         {costume.rating.toFixed(1)}
       </div>
-      <h3 className="line-clamp-2 text-base font-semibold text-slate-900">
+      <h3 className="line-clamp-2 text-sm font-semibold text-slate-800">
         {costume.name}
       </h3>
-      <p className="text-sm text-slate-500">Nhân vật: {costume.characterName}</p>
-      <p className="text-sm text-slate-500">Shop: {costume.shopName}</p>
-      <div className="text-xs uppercase tracking-wide text-slate-400">
-        Giá thuê
-      </div>
-      <div className="text-lg font-semibold text-pink-600">
+      <p className="text-xs text-slate-500">Nhân vật: {costume.characterName}</p>
+      <p className="text-xs text-slate-500">Shop: {costume.shopName}</p>
+      <div className="text-base font-semibold text-pink-600">
         {costume.priceMin}k – {costume.priceMax}k
+        <span className="text-xs font-normal text-slate-400">/ngày</span>
       </div>
       <Button
         variant="soft"

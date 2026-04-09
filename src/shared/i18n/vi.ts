@@ -18,6 +18,15 @@
 
 export const VI = {
   /**
+   * Notification
+   */
+  notification: {
+    empty: "Không có thông báo nào",
+    viewAll: "Xem tất cả thông báo",
+    title: "Thông báo",
+  },
+
+  /**
    * Common shared text
    */
   common: {
@@ -34,13 +43,19 @@ export const VI = {
       addresses: "Địa chỉ",
       addAddress: "Thêm địa chỉ",
       photographers: "Thuê Photographer",
+      photographerProfile: "Hồ sơ Nhiếp ảnh gia",
       staffs: "Thuê Staff",
+      staffProfile: "Hồ sơ Hỗ trợ sự kiện",
+      serviceDetail: "Chi tiết dịch vụ",
+      serviceDetailFromProfile: "Chi tiết dịch vụ",
       admin: "Quản trị",
       users: "Quản lý người dùng",
       provider: "Provider",
       providerCostumes: "Quản lý trang phục",
       create: "Tạo mới",
       edit: "Chỉnh sửa",
+      providerPhotograph: "Provider Photographer",
+      providerEventStaff: "Provider Staff Sự kiện",
     },
 
     actions: {
@@ -57,6 +72,7 @@ export const VI = {
       search: "Tìm kiếm",
       filter: "Lọc",
       sort: "Sắp xếp",
+      refresh: "Làm mới",
       viewMore: "Xem thêm",
       viewDetails: "Xem chi tiết",
       close: "Đóng",
@@ -147,6 +163,8 @@ export const VI = {
         refresh: "Làm mới",
         allRoles: "Tất cả vai trò",
         allStatuses: "Tất cả trạng thái",
+        createUser: "Tạo người dùng",
+        exportExcel: "Xuất Excel",
       },
 
       actions: {
@@ -213,6 +231,7 @@ export const VI = {
       forgotPassword: "Quên mật khẩu?",
       noAccount: "Mới sử dụng?",
       signUp: "Đăng ký",
+      rememberMe: "Ghi nhớ đăng nhập",
 
       stats: {
         costumes: "Trang phục",
@@ -230,6 +249,51 @@ export const VI = {
         loginFailed: "Đăng nhập thất bại. Vui lòng thử lại.",
         loginSuccess: "Đăng nhập thành công! Chào mừng bạn trở lại CosMate 🎉",
         invalidCredentials: "Không thể đăng nhập. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
+      },
+    },
+
+    forgotPassword: {
+      title: "Quên mật khẩu",
+      subtitle: "Nhập email hoặc tên người dùng của bạn để nhận liên kết đặt lại mật khẩu.",
+      identifierLabel: "Email hoặc tên người dùng",
+      identifierPlaceholder: "Nhập email hoặc tên người dùng",
+      sendButton: "Gửi liên kết",
+      back: "Quay lại đăng nhập",
+      successTitle: "Kiểm tra email của bạn",
+      successMessage: "Chúng tôi đã gửi liên kết đặt lại mật khẩu đến email của bạn. Vui lòng kiểm tra hộp thư đến.",
+      backToLogin: "Quay lại đăng nhập",
+      validation: {
+        identifierRequired: "Email hoặc tên người dùng là bắt buộc.",
+      },
+      messages: {
+        sendError: "Không thể gửi email đặt lại mật khẩu. Vui lòng thử lại.",
+      },
+    },
+
+    resetPassword: {
+      title: "Đặt lại mật khẩu",
+      subtitle: "Nhập mật khẩu mới cho tài khoản của bạn.",
+      newPasswordLabel: "Mật khẩu mới",
+      newPasswordPlaceholder: "Nhập mật khẩu mới",
+      confirmPasswordLabel: "Xác nhận mật khẩu",
+      confirmPasswordPlaceholder: "Nhập lại mật khẩu mới",
+      submitButton: "Đặt lại mật khẩu",
+      back: "Quay lại đăng nhập",
+      successTitle: "Đặt lại mật khẩu thành công",
+      successMessage: "Mật khẩu của bạn đã được đặt lại. Hãy đăng nhập với mật khẩu mới.",
+      goToLogin: "Đăng nhập ngay",
+      invalidTokenTitle: "Liên kết không hợp lệ",
+      invalidTokenMessage: "Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn. Vui lòng yêu cầu gửi lại email đặt lại mật khẩu.",
+      backToLogin: "Quay lại đăng nhập",
+      validation: {
+        passwordRequired: "Mật khẩu là bắt buộc.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
+        confirmRequired: "Xác nhận mật khẩu là bắt buộc.",
+      },
+      messages: {
+        passwordMismatch: "Mật khẩu xác nhận không khớp.",
+        invalidToken: "Liên kết đặt lại mật khẩu không hợp lệ.",
+        resetError: "Không thể đặt lại mật khẩu. Vui lòng thử lại.",
       },
     },
 
@@ -390,6 +454,31 @@ export const VI = {
       schedule: "Lịch trình / Khả dụng",
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
+      messages: "Messages",
+      // Event Staff
+      eventStaffDashboard: "Bảng điều khiển Staff",
+      eventStaffSchedule: "Lịch làm việc",
+      eventStaffBookings: "Đơn đặt Staff",
+      eventStaffReviews: "Đánh giá",
+      eventStaffSettings: "Hồ sơ / Cài đặt",
+      // Photograph
+      photographDashboard: "Bảng điều khiển PTG",
+      photographSchedule: "Lịch chụp",
+      photographBookings: "Đơn đặt PTG",
+      photographReviews: "Đánh giá",
+      photographSettings: "Hồ sơ / Cài đặt",
+    },
+
+    dashboardPhotograph: {
+      title: "Bảng điều khiển PTG",
+      welcome: "Chào mừng trở lại, Photographer!",
+      overview: "Quản lý dịch vụ chụp ảnh, lịch hẹn và đơn đặt của bạn từ đây.",
+    },
+
+    dashboardEventStaff: {
+      title: "Bảng điều khiển Staff Sự kiện",
+      welcome: "Chào mừng trở lại, Staff!",
+      overview: "Quản lý công việc, lịch trình và đơn đặt của bạn từ đây.",
     },
 
     costumeManagement: {
@@ -417,6 +506,58 @@ export const VI = {
       planCustom: "tháng",
       selectPlanRequired: "Vui lòng chọn gói dịch vụ.",
       selectMethodRequired: "Vui lòng chọn phương thức thanh toán.",
+    },
+
+    profileCompletion: {
+      title: "Hoàn thiện hồ sơ Provider",
+      subtitle: "Bạn cần cung cấp thông tin cửa hàng và tài khoản ngân hàng để bắt đầu sử dụng các tính năng của Provider.",
+      step1Title: "Địa chỉ cửa hàng",
+      step1SubTitle: "Chọn địa chỉ",
+      step2Title: "Thông tin cửa hàng",
+      step2SubTitle: "Cập nhật thông tin",
+      requirementsLabel: "Thông tin cần cung cấp:",
+      reqShopName: "Tên cửa hàng",
+      reqAddress: "Địa chỉ cửa hàng",
+      reqBio: "Giới thiệu về cửa hàng",
+      reqBank: "Thông tin tài khoản ngân hàng",
+      cta: "Cập nhật hồ sơ ngay",
+      pageTitle: "Hoàn thiện hồ sơ",
+      phase1Title: "Bước 1: Chọn địa chỉ cửa hàng",
+      phase1Desc: "Chọn một địa chỉ có sẵn hoặc tạo địa chỉ mới để làm địa chỉ cửa hàng của bạn.",
+      phase2Title: "Bước 2: Thông tin cửa hàng",
+      phase2Desc: "Cung cấp thông tin cửa hàng và tài khoản ngân hàng để nhận thanh toán từ khách hàng.",
+      loadingAddresses: "Đang tải địa chỉ...",
+      existingAddresses: "Địa chỉ có sẵn",
+      createNewAddress: "Tạo địa chỉ mới",
+      addNewAddress: "+ Thêm địa chỉ mới",
+      createAddressBtn: "Tạo địa chỉ",
+      formName: "Tên người nhận",
+      formNamePlaceholder: "VD: Nguyễn Văn A",
+      formNameRequired: "Vui lòng nhập tên người nhận.",
+      formPhone: "Số điện thoại",
+      formPhonePlaceholder: "VD: 0901234567",
+      formPhoneRequired: "Vui lòng nhập số điện thoại.",
+      formCity: "Tỉnh/Thành phố",
+      formCityPlaceholder: "Chọn tỉnh/thành phố",
+      formCityRequired: "Vui lòng chọn tỉnh/thành phố.",
+      formDistrict: "Phường/Xã",
+      formDistrictPlaceholder: "Chọn phường/xã",
+      formDistrictRequired: "Vui lòng chọn phường/xã.",
+      formAddressName: "Tên địa chỉ",
+      formAddressNamePlaceholder: "Ví dụ: Nhà, Shop, Công ty",
+      formAddressNameRequired: "Vui lòng nhập tên địa chỉ.",
+      formStreet: "Địa chỉ chi tiết",
+      formStreetPlaceholder: "VD: 123 Nguyễn Trãi",
+      formStreetRequired: "Vui lòng nhập địa chỉ chi tiết.",
+      formShopName: "Tên cửa hàng",
+      formShopNamePlaceholder: "VD: CosMate Shop",
+      formBio: "Giới thiệu về cửa hàng",
+      formBioPlaceholder: "Mô tả ngắn về cửa hàng của bạn...",
+      formBankNumber: "Số tài khoản",
+      formBankNumberPlaceholder: "Nhập số tài khoản",
+      formBankName: "Tên ngân hàng",
+      formBankNamePlaceholder: "Chọn ngân hàng",
+      submitBtn: "Lưu và hoàn tất",
     },
 
     orders: {
@@ -571,16 +712,16 @@ export const VI = {
         subtitle: "Vui lòng nhập thông tin địa chỉ giao hàng của bạn",
       },
       form: {
-        name: "Tên địa chỉ",
-        namePlaceholder: "Ví dụ: Nhà, Công ty",
+        recipientName: "Tên người nhận",
+        recipientNamePlaceholder: "Ví dụ: Nguyễn Văn A",
         phone: "Số điện thoại",
         phonePlaceholder: "Nhập số điện thoại",
+        addressName: "Tên địa chỉ",
+        addressNamePlaceholder: "Ví dụ: Nhà, Công ty, Shop",
         city: "Tỉnh/Thành phố",
         cityPlaceholder: "Chọn Tỉnh/Thành phố",
-        district: "Quận/Huyện",
-        districtPlaceholder: "Chọn Quận/Huyện",
-        ward: "Phường/Xã",
-        wardPlaceholder: "Chọn Phường/Xã",
+        district: "Phường/Xã",
+        districtPlaceholder: "Chọn Phường/Xã",
         streetAddress: "Địa chỉ chi tiết",
         streetAddressPlaceholder: "Số nhà, tên đường",
       },
@@ -588,7 +729,7 @@ export const VI = {
         required: "Trường này là bắt buộc",
         invalidPhone: "Số điện thoại không hợp lệ",
         selectCity: "Vui lòng chọn Tỉnh/Thành phố",
-        selectDistrict: "Vui lòng chọn Quận/Huyện",
+        selectDistrict: "Vui lòng chọn Phường/Xã",
         selectWard: "Vui lòng chọn Phường/Xã",
       },
       button: {
@@ -648,6 +789,12 @@ export const VI = {
       statusShippingOut: "Đang giao",
       statusDeliveringOut: "Chờ nhận",
       statusShippingBack: "Đang trả hàng",
+      // Card display
+      orderTitle: "Đơn hàng",
+      orderCodePrefix: "CM",
+      cardRentPeriod: "Thuê",
+      cardDayCount: "ngày",
+      cardTotal: "Tổng cộng",
       // Actions
       actionViewDetail: "Xem chi tiết đơn",
       actionConfirmDelivery: "Xác nhận nhận hàng",
@@ -744,6 +891,24 @@ export const VI = {
       selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
       processing: "Đang xử lý...",
       error: "Có lỗi xảy ra. Vui lòng thử lại.",
+
+      // Withdraw form
+      withdraw: "Rút tiền",
+      withdrawTitle: "Rút tiền từ ví",
+      withdrawDescription: "Nhập số tiền và thông tin tài khoản ngân hàng để rút tiền",
+      withdrawAmountLabel: "Số tiền rút",
+      withdrawAmountPlaceholder: "Nhập số tiền muốn rút",
+      withdrawBankAccountLabel: "Số tài khoản",
+      withdrawBankAccountPlaceholder: "Nhập số tài khoản ngân hàng",
+      withdrawBankNameLabel: "Tên ngân hàng",
+      withdrawBankNamePlaceholder: "Nhập tên ngân hàng",
+      withdrawSubmit: "Rút tiền",
+      withdrawProcessing: "Đang xử lý...",
+      withdrawSuccess: "Yêu cầu rút tiền đã được gửi thành công",
+      withdrawError: "Không thể gửi yêu cầu rút tiền. Vui lòng thử lại.",
+      withdrawValidationInvalidAmount: "Số tiền rút phải lớn hơn 0",
+      withdrawValidationBankAccountRequired: "Vui lòng nhập số tài khoản",
+      withdrawValidationBankNameRequired: "Vui lòng nhập tên ngân hàng",
     },
   },
 
@@ -808,6 +973,7 @@ export const VI = {
     rentPurpose: "Mục đích thuê",
     numberOfItems: "Số lượng món",
     pricePerDay: "Giá theo ngày",
+    rentDiscount: "Giảm giá thuê",
     depositAmount: "Tiền cọc",
     status: "Trạng thái",
     providerId: "ID nhà cung cấp",
@@ -948,6 +1114,10 @@ export const VI = {
    * Booking (Photographer/Staff) text
    */
   booking: {
+    create: {
+      success: "Dat dich vu thanh cong!",
+      error: "Khong the tao don dat. Vui long thu lai.",
+    },
     photographer: {
       title: "Đặt nhiếp ảnh gia",
       searchPlaceholder: "Tìm nhiếp ảnh gia...",
@@ -960,6 +1130,76 @@ export const VI = {
       searchPlaceholder: "Tìm nhân viên...",
       viewProfile: "Xem hồ sơ",
       bookNow: "Đặt ngay",
+    },
+  },
+
+  /**
+   * Service creation text
+   */
+  service: {
+    sidebar: {
+      createService: "Tạo dịch vụ",
+      serviceList: "Danh sách dịch vụ",
+    },
+    create: {
+      pageTitle: "Tạo dịch vụ mới",
+      form: {
+        serviceType: "Loại dịch vụ",
+        providerId: "Mã nhà cung cấp",
+        areas: "Khu vực hoạt động",
+        addArea: "Thêm khu vực",
+        areasHint: "Nhấn thêm khu vực bạn có thể phục vụ",
+        basicInfo: "Thông tin cơ bản",
+        description: "Mô tả dịch vụ",
+        descriptionPlaceholder: "Mô tả chi tiết về dịch vụ của bạn...",
+        slotDurationHours: "Thời lượng mỗi slot (giờ)",
+        pricePerSlot: "Giá mỗi slot",
+        equipmentDepreciationCost: "Chi phí khấu hao thiết bị",
+        depositAmount: "Tiền cọc",
+        minPrice: "Giá tối thiểu",
+        maxPrice: "Giá tối đa",
+        albumFiles: "Hình ảnh portfolio",
+        uploadButton: "Tải lên",
+      },
+      validation: {
+        required: "Trường này là bắt buộc",
+        positiveNumber: "Giá trị phải lớn hơn 0",
+        nonNegativeNumber: "Giá trị không được âm",
+        minMaxRange: "Giá tối thiểu không được lớn hơn giá tối đa",
+        areaRequired: "Vui lòng thêm ít nhất một khu vực hoạt động",
+      },
+      messages: {
+        createSuccess: "Tạo dịch vụ thành công!",
+        createError: "Không thể tạo dịch vụ. Vui lòng thử lại.",
+        loadError: "Không thể tải thông tin nhà cung cấp.",
+      },
+      button: {
+        submit: "Tạo dịch vụ",
+      },
+    },
+
+    list: {
+      pageTitle: "Danh sách dịch vụ",
+      createButton: "Tạo dịch vụ mới",
+      empty: "Bạn chưa có dịch vụ nào.",
+      emptyHint: "Nhấn \"Tạo dịch vụ mới\" để bắt đầu.",
+      table: {
+        coverImage: "Ảnh",
+        serviceType: "Loại dịch vụ",
+        description: "Mô tả",
+        slotDuration: "Thời lượng slot",
+        pricePerSlot: "Giá mỗi slot",
+        status: "Trạng thái",
+        actions: "Hành động",
+      },
+      status: {
+        active: "Hoạt động",
+        inactive: "Không hoạt động",
+      },
+      messages: {
+        loadError: "Không thể tải danh sách dịch vụ.",
+        refresh: "Làm mới",
+      },
     },
   },
 
@@ -1125,6 +1365,22 @@ export const VI = {
           "cos-conceal-fraud": {
             title: "Che giấu hoặc gian lận",
             desc: "Hành vi che giấu hư hỏng, cung cấp bằng chứng sai lệch hoặc cố tình trì hoãn trả đồ có thể bị xem là vi phạm nghiêm trọng.",
+          },
+          "cos-pricing-principle": {
+            title: "Nguyên tắc định giá theo thời gian thuê",
+            desc: "Giá thuê tài sản phải tuân theo nguyên tắc ưu đãi theo thời gian, theo đó tổng chi phí thuê cho nhiều ngày không được tính tuyến tính bằng cách nhân đơn giá ngày với số ngày thuê. Khi thời gian thuê tăng lên, chi phí trung bình cho mỗi ngày thuê phải giảm hoặc không được cao hơn đơn giá của ngày đầu tiên.",
+          },
+          "cos-price-constraint": {
+            title: "Ràng buộc tính toán giá",
+            desc: "Đối với mọi tài sản, hệ thống không cho phép cấu hình hoặc tính toán giá thuê theo dạng: Giá ngày N = Giá ngày 1 × N. Thay vào đó, tổng giá thuê phải được thiết lập theo hướng: Giá ngày thứ 2 trở đi ≤ giá ngày đầu tiên; Tổng giá thuê cho nhiều ngày < (giá ngày 1 × số ngày thuê).",
+          },
+          "cos-price-example": {
+            title: "Ví dụ minh họa",
+            desc: "Nếu giá thuê 1 ngày là 150.000 VNĐ, thì: Giá thuê 2 ngày không được phép là 300.000 VNĐ. Giá hợp lệ phải nhỏ hơn 300.000 VNĐ (ví dụ: 270.000 VNĐ). Ví dụ này không mang tính ràng buộc.",
+          },
+          "cos-price-platform-control": {
+            title: "Quyền kiểm soát của nền tảng",
+            desc: "CosMate có quyền từ chối, điều chỉnh hoặc cảnh báo các cấu hình giá không tuân thủ nguyên tắc này nhằm đảm bảo tính hợp lý, minh bạch và trải nghiệm người dùng.",
           },
           "cos-valid-extension": {
             title: "Gia hạn hợp lệ",
@@ -1799,6 +2055,73 @@ export const VI = {
       orderSuccess: "Tạo đơn thuê thành công! Đang chuyển đến thanh toán...",
       orderError: "Không thể tạo đơn thuê. Vui lòng thử lại.",
       noDraft: "Không có thông tin đơn thuê. Vui lòng chọn trang phục trước.",
+    },
+  },
+
+  /**
+   * Staff dashboard text
+   */
+  staff: {
+    layout: {
+      title: "Bảng điều khiển Staff",
+      brandName: "CosMate Staff",
+      brandShort: "SM",
+    },
+    sidebar: {
+      dashboard: "Trang chủ",
+      bookings: "Đơn đặt",
+      customers: "Khách hàng",
+      reports: "Báo cáo",
+      messages: "Tin nhắn",
+      settings: "Cài đặt",
+      withdraw: "Yêu cầu rút tiền",
+    },
+    home: {
+      welcome: "Chào mừng trở lại, Staff!",
+      overview: "Quản lý công việc, lịch trình và đơn đặt của bạn từ đây.",
+      recentBookings: "Đơn đặt gần đây",
+      tableCustomer: "Khách hàng",
+      tableService: "Dịch vụ",
+      tableDate: "Ngày",
+      tableTime: "Thời gian",
+      tableStatus: "Trạng thái",
+    },
+    bookings: {
+      title: "Quản lý đơn đặt",
+      searchPlaceholder: "Tìm kiếm đơn đặt...",
+      statusAll: "Tất cả",
+      statusPending: "Chờ xác nhận",
+      statusConfirmed: "Đã xác nhận",
+      statusInProgress: "Đang thực hiện",
+      statusCompleted: "Hoàn thành",
+      statusCancelled: "Đã hủy",
+      empty: "Chưa có đơn đặt nào",
+      loadError: "Không thể tải danh sách đơn đặt",
+    },
+    withdraw: {
+      title: "Yêu cầu rút tiền",
+      description: "Danh sách yêu cầu rút tiền từ người dùng",
+      colId: "Mã yêu cầu",
+      colUser: "Người dùng",
+      colAmount: "Số tiền",
+      colBankAccount: "Số tài khoản",
+      colBankName: "Ngân hàng",
+      colStatus: "Trạng thái",
+      colRequestedAt: "Ngày yêu cầu",
+      colAction: "Hành động",
+      statusCompleted: "Hoàn thành",
+      statusFailed: "Thất bại",
+      statusPending: "Đang chờ",
+      empty: "Chưa có yêu cầu rút tiền nào",
+      loadError: "Không thể tải danh sách yêu cầu rút tiền",
+      reject: "Từ chối",
+      rejecting: "Đang xử lý...",
+      rejectSuccess: "Đã từ chối yêu cầu rút tiền",
+      rejectError: "Không thể từ chối yêu cầu. Vui lòng thử lại.",
+      rejectModalTitle: "Từ chối yêu cầu rút tiền",
+      rejectModalDesc: "Vui lòng nhập lý do từ chối:",
+      rejectModalOk: "Từ chối",
+      rejectReasonPlaceholder: "VD: Số tài khoản không hợp lệ",
     },
   },
 

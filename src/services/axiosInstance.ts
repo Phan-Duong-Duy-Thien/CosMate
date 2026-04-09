@@ -12,12 +12,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
   timeout: 15000,
-  // Don't set Content-Type here - let axios auto-detect for FormData
 });
-
-// TEMP DEBUG: Verify baseURL configuration
-console.log('🔧 [axiosInstance] baseURL =', axiosInstance.defaults.baseURL);
-console.log('🔧 [axiosInstance] env var =', import.meta.env.VITE_API_BASE_URL);
 
 /**
  * Request Interceptor
@@ -25,11 +20,17 @@ console.log('🔧 [axiosInstance] env var =', import.meta.env.VITE_API_BASE_URL)
  */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem('cosmate_access_token');
-    const tokenType = localStorage.getItem('cosmate_token_type') || 'Bearer';
+    // Prefer sessionStorage (current tab session), fallback to localStorage (remember me)
+    let token = sessionStorage.getItem('cosmate_access_token');
+    let tokenType = sessionStorage.getItem('cosmate_token_type');
+
+    if (!token) {
+      token = localStorage.getItem('cosmate_access_token');
+      tokenType = localStorage.getItem('cosmate_token_type');
+    }
 
     if (token && config.headers) {
-      config.headers.Authorization = `${tokenType} ${token}`;
+      config.headers.Authorization = `${tokenType || 'Bearer'} ${token}`;
     }
 
     // Handle Content-Type for FormData vs JSON
@@ -78,7 +79,7 @@ axiosInstance.interceptors.response.use(
 
         case 403:
           // Forbidden - user doesn't have permission
-          console.error('Access forbidden:', error.response.data);
+          // Don't log to console to avoid spamming - just reject silently
           break;
 
         case 404:

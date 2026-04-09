@@ -3,15 +3,22 @@
  * Orchestrates address operations and handles data mapping
  */
 import * as userAddressApi from '../api/userAddress.api';
-import type { UserAddress, UpsertUserAddressPayload, Ward } from '../types';
+import type { UserAddress, UpsertUserAddressPayload } from '../types';
+
+/**
+ * Get a single user address by ID
+ */
+export async function getAddressById(userId: number, addressId: number): Promise<UserAddress> {
+  return userAddressApi.getAddressById(userId, addressId);
+}
 
 export interface CreateAddressFormData {
   name: string;
   phone: string;
   provinceCode: number | null;
   districtCode: number | null;
-  ward: Ward | null;
   streetAddress: string;
+  addressName: string;
 }
 
 /**
@@ -38,17 +45,13 @@ export async function createUserAddress(
   provinceName: string,
   districtName: string
 ): Promise<UserAddress> {
-  // Build the address string: streetAddress + ward name
-  const addressString = formData.ward
-    ? `${formData.streetAddress}, ${formData.ward.name}`
-    : formData.streetAddress;
-
   const payload: UpsertUserAddressPayload = {
     name: formData.name,
     phone: formData.phone,
     city: provinceName,
     district: districtName,
-    address: addressString,
+    address: formData.streetAddress,
+    addressName: formData.addressName,
   };
 
   return userAddressApi.createUserAddress(userId, payload);
