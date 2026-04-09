@@ -38,3 +38,18 @@ export async function createWithdraw(payload: WithdrawPayload): Promise<Withdraw
   const response = await axiosInstance.post<WithdrawResponse>("/api/withdraws", payload)
   return response.data
 }
+
+export interface RejectWithdrawResponse {
+  code: number
+  message: string
+  result: WithdrawResult
+}
+
+export async function rejectWithdraw(id: number, reason: string): Promise<RejectWithdrawResponse> {
+  const response = await axiosInstance.post<RejectWithdrawResponse>(
+    `/api/withdraws/${id}/reject`,
+    null,
+    { params: { reason } }
+  )
+  return response.data
+}
