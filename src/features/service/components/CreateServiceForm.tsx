@@ -124,10 +124,6 @@ export function CreateServiceForm({
         .filter((f) => f.originFileObj)
         .map((f) => f.originFileObj as File);
 
-      console.log('[CreateServiceForm] areas state:', JSON.stringify(areas, null, 2));
-      console.log('[CreateServiceForm] form values:', JSON.stringify(values, null, 2));
-      console.log('[CreateServiceForm] pricePerSlot raw:', values.pricePerSlot, '| typeof:', typeof values.pricePerSlot);
-
       const ok = await submit({
         serviceType,
         providerId,
