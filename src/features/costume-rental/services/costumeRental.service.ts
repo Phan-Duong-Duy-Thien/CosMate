@@ -91,6 +91,7 @@ export function buildUpdateCostumeFormData(
   form.append('size', input.size)
   form.append('numberOfItems', String(input.numberOfItems))
   form.append('pricePerDay', String(input.pricePerDay))
+  form.append('rentDiscount', String(input.rentDiscount))
   form.append('depositAmount', String(input.depositAmount))
   form.append('providerId', String(providerId))
   if (input.imageFiles && input.imageFiles.length > 0) {

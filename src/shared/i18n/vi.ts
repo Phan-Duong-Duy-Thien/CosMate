@@ -973,6 +973,7 @@ export const VI = {
     rentPurpose: "Mục đích thuê",
     numberOfItems: "Số lượng món",
     pricePerDay: "Giá theo ngày",
+    rentDiscount: "Giảm giá thuê",
     depositAmount: "Tiền cọc",
     status: "Trạng thái",
     providerId: "ID nhà cung cấp",

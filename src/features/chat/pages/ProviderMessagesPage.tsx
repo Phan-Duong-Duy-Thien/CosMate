@@ -26,12 +26,15 @@ import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
 
 function mapSidebar(items: typeof providerSidebarItems): DashboardSidebarItem[] {
-  return items.map((item) => ({
-    key: item.key,
-    label: item.label,
-    icon: <item.icon size={18} />,
-    path: item.path,
-  }))
+  return items.map((item) => {
+    const Icon = item.icon;
+    return {
+      key: item.key,
+      label: item.label,
+      icon: <Icon size={18} />,
+      path: item.path,
+    };
+  });
 }
 
 export default function ProviderMessagesPage() {

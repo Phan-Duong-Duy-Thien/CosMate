@@ -2,17 +2,18 @@ import { useState, useEffect, useCallback } from 'react';
 import axiosInstance from '@/services/axiosInstance';
 import { LayoutDashboard, Users, ShoppingBag, Shirt, BarChart3, Settings, Folder, Menu as MenuIcon } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
+import type { LucideIcon } from 'lucide-react';
 
-const getIconComponent = (iconName?: string) => {
+const getIconComponent = (iconName?: string): LucideIcon => {
   switch (iconName?.toLowerCase()) {
-    case 'dashboard': return <LayoutDashboard size={18} />;
-    case 'users': return <Users size={18} />;
-    case 'bookings': return <ShoppingBag size={18} />;
-    case 'costumes': return <Shirt size={18} />;
-    case 'reports': return <BarChart3 size={18} />;
-    case 'settings': return <Settings size={18} />;
-    case 'menu': return <MenuIcon size={18} />;
-    default: return <Folder size={18} />;
+    case 'dashboard': return LayoutDashboard;
+    case 'users': return Users;
+    case 'bookings': return ShoppingBag;
+    case 'costumes': return Shirt;
+    case 'reports': return BarChart3;
+    case 'settings': return Settings;
+    case 'menu': return MenuIcon;
+    default: return Folder;
   }
 };
 
@@ -29,15 +30,15 @@ export function useDynamicMenu() {
 
       // 1. Code cứng 2 nút quan trọng nhất
       const safeMenus: DashboardSidebarItem[] = [
-        { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={18} /> },
-        { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={18} /> },
+        { key: '/admin', label: 'Trang chủ', path: '/admin', icon: LayoutDashboard },
+        { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: MenuIcon },
       ];
 
       // 2. MENU ĐỘNG TỪ DATABASE
       const dynamicMenus: DashboardSidebarItem[] = menus.map((menu: any) => ({
         key: `group-${menu.id}`,
         label: menu.name,
-        icon: <Folder size={18} />,
+        icon: Folder,
         children: (menu.menuItems || []).map((item: any) => ({
           key: item.url || item.id,
           label: item.title,

@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight } from 'lucide-react';
+import { LogOut, User, ChevronRight, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -17,7 +17,8 @@ const { Header, Sider, Content } = Layout;
 export type DashboardSidebarItem = {
   key: string;
   label: string;
-  icon?: ReactNode;
+  /** LucideIcon reference (preferred) or ReactNode JSX element */
+  icon?: LucideIcon | ReactNode;
   path?: string;
   children?: DashboardSidebarItem[];
 };
@@ -52,14 +53,14 @@ export function DashboardLayout({
       if (item.children && item.children.length > 0) {
         return {
           key: item.key,
-          icon: item.icon ? <item.icon size={16} /> : undefined,
+          icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
           label: item.label,
           children: mapToAntdMenuItems(item.children),
         };
       }
       return {
         key: item.key,
-        icon: item.icon ? <item.icon size={16} /> : undefined,
+        icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
         label: item.label,
         onClick: () => {
           if (item.path) {
