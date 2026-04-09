@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import type { WithdrawResult } from '@/features/profile/api/withdraw.api'
 import * as withdrawService from '../services/withdraw.service'
 
@@ -27,6 +27,11 @@ export function useWithdrawRequests(): UseWithdrawRequestsResult {
       setLoading(false)
     }
   }, [])
+
+  // Fetch on mount
+  useEffect(() => {
+    void refetch()
+  }, [refetch])
 
   return { withdrawRequests, loading, error, refetch }
 }

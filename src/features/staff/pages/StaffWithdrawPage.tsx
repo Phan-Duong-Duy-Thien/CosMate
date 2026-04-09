@@ -1,8 +1,10 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { Card } from '@/shared/components/Card';
-import { RotateCw } from 'lucide-react';
+import { RotateCw, XCircle } from 'lucide-react';
+import { Modal, Input, Tooltip } from 'antd';
 import { VI } from '@/shared/i18n/vi';
 import { useWithdrawRequests } from '../hooks/useWithdrawRequests';
+import { useRejectWithdraw } from '../hooks/useRejectWithdraw';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -20,14 +22,14 @@ function formatDate(dateString: string): string {
 }
 
 function getStatusBadge(status: string) {
-  const normalizedStatus = status?.toUpperCase();
-  if (normalizedStatus === 'COMPLETED' || normalizedStatus === 'APPROVED') {
+  const s = status?.toUpperCase();
+  if (s === 'COMPLETED' || s === 'APPROVED') {
     return <span className="inline-flex items-center rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-700">{VI.staff.withdraw.statusCompleted}</span>;
   }
-  if (normalizedStatus === 'FAILED' || normalizedStatus === 'REJECTED') {
+  if (s === 'FAILED' || s === 'REJECTED') {
     return <span className="inline-flex items-center rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-700">{VI.staff.withdraw.statusFailed}</span>;
   }
-  if (normalizedStatus === 'PENDING') {
+  if (s === 'PENDING') {
     return <span className="inline-flex items-center rounded-full bg-yellow-100 px-2.5 py-0.5 text-xs font-medium text-yellow-700">{VI.staff.withdraw.statusPending}</span>;
   }
   return <span className="inline-flex items-center rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-medium text-slate-700">{status}</span>;
@@ -35,10 +37,26 @@ function getStatusBadge(status: string) {
 
 export default function StaffWithdrawPage() {
   const { withdrawRequests, loading, error, refetch } = useWithdrawRequests();
+  const { rejectingId, rejectWithdraw } = useRejectWithdraw(refetch);
 
-  useEffect(() => {
-    void refetch();
-  }, [refetch]);
+  const [rejectModalId, setRejectModalId] = useState<number | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const openRejectModal = (id: number) => {
+    setRejectModalId(id);
+    setRejectReason('');
+  };
+
+  const closeRejectModal = () => {
+    setRejectModalId(null);
+    setRejectReason('');
+  };
+
+  const confirmReject = () => {
+    if (!rejectModalId || !rejectReason.trim()) return;
+    void rejectWithdraw(rejectModalId, rejectReason.trim());
+    closeRejectModal();
+  };
 
   return (
     <div className="space-y-6">
@@ -79,38 +97,78 @@ export default function StaffWithdrawPage() {
                 <th className="px-4 py-3 text-sm font-medium text-slate-500">{VI.staff.withdraw.colBankName}</th>
                 <th className="px-4 py-3 text-sm font-medium text-slate-500">{VI.staff.withdraw.colStatus}</th>
                 <th className="px-4 py-3 text-sm font-medium text-slate-500">{VI.staff.withdraw.colRequestedAt}</th>
+                <th className="px-4 py-3 text-sm font-medium text-slate-500">{VI.staff.withdraw.colAction}</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-50">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500">
                     {VI.common.status.loading}
                   </td>
                 </tr>
               ) : withdrawRequests.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-8 text-center text-sm text-slate-500">
+                  <td colSpan={8} className="px-4 py-8 text-center text-sm text-slate-500">
                     {VI.staff.withdraw.empty}
                   </td>
                 </tr>
               ) : (
-                withdrawRequests.map((request) => (
-                  <tr key={request.id} className="hover:bg-slate-50">
-                    <td className="px-4 py-3 text-sm font-medium text-slate-900">#{request.id}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{request.userId}</td>
-                    <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(request.amount)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{request.bankAccountNumber}</td>
-                    <td className="px-4 py-3 text-sm text-slate-700">{request.bankName}</td>
-                    <td className="px-4 py-3">{getStatusBadge(request.status)}</td>
-                    <td className="px-4 py-3 text-sm text-slate-500">{formatDate(request.requestedAt)}</td>
-                  </tr>
-                ))
+                withdrawRequests.map((request) => {
+                  const isPending = request.status?.toUpperCase() === 'PENDING';
+                  const isRejecting = rejectingId === request.id;
+                  return (
+                    <tr key={request.id} className="hover:bg-slate-50">
+                      <td className="px-4 py-3 text-sm font-medium text-slate-900">#{request.id}</td>
+                      <td className="px-4 py-3 text-sm text-slate-700">{request.userId}</td>
+                      <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(request.amount)}</td>
+                      <td className="px-4 py-3 text-sm text-slate-700">{request.bankAccountNumber}</td>
+                      <td className="px-4 py-3 text-sm text-slate-700">{request.bankName}</td>
+                      <td className="px-4 py-3">{getStatusBadge(request.status)}</td>
+                      <td className="px-4 py-3 text-sm text-slate-500">{formatDate(request.requestedAt)}</td>
+                      <td className="px-4 py-3">
+                        {isPending && (
+                          <Tooltip title={isRejecting ? VI.staff.withdraw.rejecting : VI.staff.withdraw.reject}>
+                            <button
+                              type="button"
+                              onClick={() => openRejectModal(request.id)}
+                              disabled={isRejecting}
+                              className="inline-flex items-center justify-center rounded-lg p-1.5 text-red-500 hover:bg-red-50 disabled:opacity-40"
+                            >
+                              <XCircle size={16} className={isRejecting ? 'animate-spin' : ''} />
+                            </button>
+                          </Tooltip>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
       </Card>
+
+      {/* Reject Modal */}
+      <Modal
+        open={rejectModalId !== null}
+        title={VI.staff.withdraw.rejectModalTitle}
+        onOk={confirmReject}
+        onCancel={closeRejectModal}
+        okText={VI.staff.withdraw.rejectModalOk}
+        cancelText={VI.common.actions.cancel}
+        okButtonProps={{ danger: true, disabled: !rejectReason.trim() }}
+      >
+        <div className="mt-4 space-y-3">
+          <p className="text-sm text-slate-600">{VI.staff.withdraw.rejectModalDesc}</p>
+          <Input.TextArea
+            rows={3}
+            placeholder={VI.staff.withdraw.rejectReasonPlaceholder}
+            value={rejectReason}
+            onChange={(e) => setRejectReason(e.target.value)}
+          />
+        </div>
+      </Modal>
     </div>
   );
 }

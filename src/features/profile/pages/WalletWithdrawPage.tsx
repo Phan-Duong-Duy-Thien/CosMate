@@ -1,8 +1,10 @@
 import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
+import { Select } from "antd"
 import { VI } from "@/shared/i18n/vi"
 import { useWithdraw } from "../hooks/useWithdraw"
+import { BANK_LIST } from "@/shared/constants/bankList"
 
 export default function WalletWithdrawPage() {
   const {
@@ -59,17 +61,22 @@ export default function WalletWithdrawPage() {
               />
             </div>
 
-            {/* Bank Name Input */}
+            {/* Bank Name Dropdown */}
             <div>
-              <label className="block text-sm font-medium text-slate-700">
+              <label className="mb-2 block text-sm font-medium text-slate-700">
                 {VI.profile.wallet.withdrawBankNameLabel}
               </label>
-              <Input
-                type="text"
+              <Select
+                showSearch
+                optionFilterProp="label"
                 placeholder={VI.profile.wallet.withdrawBankNamePlaceholder}
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-                className="mt-2"
+                value={bankName || undefined}
+                onChange={(value) => setBankName(value)}
+                className="w-full"
+                options={BANK_LIST.map((bank) => ({
+                  value: bank,
+                  label: bank,
+                }))}
               />
             </div>
 
@@ -79,7 +86,7 @@ export default function WalletWithdrawPage() {
                 <Button
                   type="button"
                   variant="outline"
-                  disabled={loading}
+                  disabled={isSubmitDisabled}
                   onClick={handleSubmit}
                   className="min-w-32"
                 >

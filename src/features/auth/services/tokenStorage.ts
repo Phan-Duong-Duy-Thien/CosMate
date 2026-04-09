@@ -3,9 +3,6 @@ import type { JwtPayload, LoginResult } from '../types';
 const TOKEN_KEY = 'cosmate_access_token';
 const TOKEN_TYPE_KEY = 'cosmate_token_type';
 const ROLES_KEY = 'cosmate_roles';
-const SESSION_TOKEN_KEY = 'cosmate_session_token';
-const SESSION_TOKEN_TYPE_KEY = 'cosmate_session_token_type';
-const SESSION_ROLES_KEY = 'cosmate_session_roles';
 
 /**
  * Sync sessionStorage from localStorage on app boot.
@@ -14,7 +11,6 @@ const SESSION_ROLES_KEY = 'cosmate_session_roles';
  * logged-in account (e.g., Staff tab) with a remembered account (e.g., Cosplayer).
  */
 export function syncSessionFromLocal(): void {
-  // Only sync if sessionStorage doesn't already have a token
   if (sessionStorage.getItem(TOKEN_KEY)) return;
 
   const lsToken = localStorage.getItem(TOKEN_KEY);
@@ -27,14 +23,16 @@ export function syncSessionFromLocal(): void {
 }
 
 /**
- * Save authentication data to localStorage or sessionStorage
+ * Save authentication data.
+ * Always saves to localStorage so auth persists across refreshes and new tabs.
  * @param authData - The auth result from login
- * @param persistent - If true, use localStorage (remember me); otherwise sessionStorage
+ * @param persistent - Unused; kept for backward compatibility.
+ *                     Auth always persists regardless of this flag.
  */
-export function saveAuth(authData: LoginResult, persistent = false): void {
-  // Always save to sessionStorage (current tab session)
-  sessionStorage.setItem(TOKEN_KEY, authData.token);
-  sessionStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
+export function saveAuth(authData: LoginResult, persistent?: boolean): void {
+  // Always save to localStorage (persists across refresh and new tabs)
+  localStorage.setItem(TOKEN_KEY, authData.token);
+  localStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
 
   // Decode JWT and build roles
   const payload = decodeJwtPayload(authData.token);
@@ -45,33 +43,27 @@ export function saveAuth(authData: LoginResult, persistent = false): void {
     roles = [payload.role];
   }
 
+  localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
+
+  // Also save to sessionStorage so getAuth() reads from there (avoids
+  // localStorage round-trip on every auth check)
+  sessionStorage.setItem(TOKEN_KEY, authData.token);
+  sessionStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
   sessionStorage.setItem(ROLES_KEY, JSON.stringify(roles));
 
-  // If "Remember Me" is enabled, also persist to localStorage for cross-session access
-  if (persistent) {
-    localStorage.setItem(TOKEN_KEY, authData.token);
-    localStorage.setItem(TOKEN_TYPE_KEY, authData.tokenType || 'Bearer');
-    localStorage.setItem(ROLES_KEY, JSON.stringify(roles));
-  } else {
-    // Clear localStorage to avoid stale data when Remember Me is not checked
-    localStorage.removeItem(TOKEN_KEY);
-    localStorage.removeItem(TOKEN_TYPE_KEY);
-    localStorage.removeItem(ROLES_KEY);
-  }
-
-  console.log('💾 Auth saved (persistent=', persistent, ')');
+  console.log('💾 Auth saved');
   window.dispatchEvent(new Event('auth:changed'));
 }
 
 /**
- * Get authentication data from sessionStorage (always populated on login or app boot).
+ * Get authentication data from localStorage (always persisted on login).
  */
 export function getAuth(): { token: string; tokenType: string; roles: string[] } | null {
-  const token = sessionStorage.getItem(TOKEN_KEY);
+  const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return null;
 
-  const tokenType = sessionStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer';
-  const rolesJson = sessionStorage.getItem(ROLES_KEY);
+  const tokenType = localStorage.getItem(TOKEN_TYPE_KEY) || 'Bearer';
+  const rolesJson = localStorage.getItem(ROLES_KEY);
   const roles = rolesJson ? JSON.parse(rolesJson) : [];
 
   return { token, tokenType, roles };
@@ -87,6 +79,7 @@ export function clearAuth(): void {
   sessionStorage.removeItem(TOKEN_KEY);
   sessionStorage.removeItem(TOKEN_TYPE_KEY);
   sessionStorage.removeItem(ROLES_KEY);
+  window.dispatchEvent(new Event('auth:changed'));
 }
 
 /**
@@ -119,25 +112,18 @@ export function decodeJwtPayload(token: string): JwtPayload | null {
 }
 
 /**
- * Get user roles from sessionStorage (preferred) or localStorage (fallback)
+ * Get user roles from localStorage (always persisted on login).
  */
 export function getRoles(): string[] {
-  let rolesJson = sessionStorage.getItem(ROLES_KEY);
-  if (!rolesJson) {
-    rolesJson = localStorage.getItem(ROLES_KEY);
-  }
+  const rolesJson = localStorage.getItem(ROLES_KEY);
   return rolesJson ? JSON.parse(rolesJson) : [];
 }
 
 /**
- * Get current user ID from JWT token.
- * Checks sessionStorage first, then localStorage.
+ * Get current user ID from JWT token stored in localStorage.
  */
 export function getUserId(): number | null {
-  let token = sessionStorage.getItem(TOKEN_KEY);
-  if (!token) {
-    token = localStorage.getItem(TOKEN_KEY);
-  }
+  const token = localStorage.getItem(TOKEN_KEY);
   if (!token) return null;
 
   const payload = decodeJwtPayload(token);
