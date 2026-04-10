@@ -132,7 +132,7 @@ export default function StaffWithdrawPage() {
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {/* Approve button */}
-                          <Tooltip title={isPending ? (isApproving ? VI.staff.withdraw.approving : VI.staff.withdraw.approve) : 'Chỉ yêu cầu đang chờ mới có thể duyệt'}>
+                          <Tooltip title={isPending ? (isApproving ? VI.staff.withdraw.approving : VI.staff.withdraw.approve) : VI.staff.withdraw.onlyPendingCanApprove}>
                             <button
                               type="button"
                               onClick={() => { if (isPending) void approveWithdraw(request.id); }}
@@ -140,12 +140,12 @@ export default function StaffWithdrawPage() {
                               className="inline-flex items-center rounded-lg bg-green-50 px-2.5 py-2 text-green-600 hover:bg-green-100 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-green-50 disabled:hover:text-green-600"
                             >
                               <CheckCircle size={18} className={isApproving ? 'animate-spin' : ''} />
-                              <span className="ml-1.5 text-xs font-medium">Duyệt</span>
+                              <span className="ml-1.5 text-xs font-medium">{VI.staff.withdraw.approve}</span>
                             </button>
                           </Tooltip>
 
                           {/* Reject button */}
-                          <Tooltip title={isPending ? (isRejecting ? VI.staff.withdraw.rejecting : VI.staff.withdraw.reject) : 'Chỉ yêu cầu đang chờ mới có thể từ chối'}>
+                          <Tooltip title={isPending ? (isRejecting ? VI.staff.withdraw.rejecting : VI.staff.withdraw.reject) : VI.staff.withdraw.onlyPendingCanReject}>
                             <button
                               type="button"
                               onClick={() => { if (isPending) openRejectModal(request.id); }}
@@ -153,7 +153,7 @@ export default function StaffWithdrawPage() {
                               className="inline-flex items-center rounded-lg bg-red-50 px-2.5 py-2 text-red-600 hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-50 disabled:hover:text-red-600"
                             >
                               <XCircle size={18} className={isRejecting ? 'animate-spin' : ''} />
-                              <span className="ml-1.5 text-xs font-medium">Từ chối</span>
+                              <span className="ml-1.5 text-xs font-medium">{VI.staff.withdraw.reject}</span>
                             </button>
                           </Tooltip>
                         </div>

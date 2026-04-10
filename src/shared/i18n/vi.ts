@@ -2158,6 +2158,8 @@ export const VI = {
       approving: "Đang duyệt...",
       approveSuccess: "Đã duyệt yêu cầu rút tiền",
       approveError: "Không thể duyệt yêu cầu. Vui lòng thử lại.",
+      onlyPendingCanApprove: "Chỉ yêu cầu đang chờ mới có thể duyệt",
+      onlyPendingCanReject: "Chỉ yêu cầu đang chờ mới có thể từ chối",
       rejectModalTitle: "Từ chối yêu cầu rút tiền",
       rejectModalDesc: "Vui lòng nhập lý do từ chối:",
       rejectModalOk: "Từ chối",

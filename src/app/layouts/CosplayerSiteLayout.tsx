@@ -230,12 +230,12 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: "Ví của tôi" },
       ])
-    } else if (path === "/profile/wallet/topup") {
+    } else if (path === "/profile/wallet/withdraw") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: "Ví của tôi", to: "/profile/wallet" },
-        { label: "Nạp tiền" },
+        { label: VI.profile.wallet.withdrawTitle },
       ])
     }
   }, [location.pathname, setItems])
