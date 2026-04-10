@@ -357,6 +357,42 @@ export const VI = {
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
       },
     },
+
+    onboarding: {
+      title: "Chọn vai trò của bạn",
+      subtitle: "Hoàn tất hồ sơ bằng cách chọn vai trò phù hợp với bạn",
+      selectRole: "Chọn vai trò",
+      selected: "Đã chọn",
+      continue: "Tiếp tục",
+      skip: "Bỏ qua",
+      loading: "Đang xử lý...",
+      successTitle: "Hoàn tất thiết lập!",
+      successMessage: "Vai trò của bạn đã được cập nhật thành công.",
+      roleSelect: {
+        cosplayer: {
+          title: "Cosplayer",
+          description: "Tạo hồ sơ cosplay, thuê trang phục và đặt dịch vụ.",
+        },
+        provider: {
+          title: "Nhà cung cấp",
+          description: "Cung cấp trang phục cho thuê hoặc dịch vụ chụp ảnh, hỗ trợ sự kiện.",
+        },
+        staff: {
+          title: "Nhân viên sự kiện",
+          description: "Hỗ trợ sự kiện cosplay với tư cách nhân viên.",
+        },
+        photographer: {
+          title: "Nhiếp ảnh gia",
+          description: "Cung cấp dịch vụ chụp ảnh cho cosplayer.",
+        },
+      },
+      validation: {
+        roleRequired: "Vui lòng chọn một vai trò để tiếp tục.",
+      },
+      messages: {
+        updateFailed: "Cập nhật vai trò thất bại. Vui lòng thử lại.",
+      },
+    },
   },
 
   /**
