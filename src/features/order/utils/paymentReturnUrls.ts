@@ -4,8 +4,8 @@
  */
 
 export const PAYMENT_RETURN_URLS = {
-  MOMO: 'http://localhost:5173/payment/result',
-  VNPAY: 'http://localhost:5173/payment/result',
+  MOMO: 'http://localhost:8080/payment/api/momo/return',
+  VNPAY: 'http://localhost:5173/payment/return',
   WALLET: '',
 } as const;
 

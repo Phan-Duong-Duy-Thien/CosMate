@@ -53,3 +53,14 @@ export async function rejectWithdraw(id: number, reason: string): Promise<Reject
   )
   return response.data
 }
+
+export interface ApproveWithdrawResponse {
+  code: number
+  message: string
+  result: WithdrawResult
+}
+
+export async function approveWithdraw(id: number): Promise<ApproveWithdrawResponse> {
+  const response = await axiosInstance.post<ApproveWithdrawResponse>(`/api/withdraws/${id}/approve`)
+  return response.data
+}

@@ -73,7 +73,7 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount, markNotificationRead } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -261,11 +261,6 @@ export default function CosplayerSiteLayout() {
   ]
 
   const [notifOpen, setNotifOpen] = React.useState(false)
-
-  const markAllRead = async () => {
-    await markAllRead()
-    console.log("Đã đánh dấu tất cả là đã đọc!");
-  };
 
   const notifPopoverContent = (
     <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>

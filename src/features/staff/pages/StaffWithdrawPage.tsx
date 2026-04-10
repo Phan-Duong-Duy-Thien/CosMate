@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { Card } from '@/shared/components/Card';
-import { RotateCw, XCircle } from 'lucide-react';
+import { RotateCw, XCircle, CheckCircle } from 'lucide-react';
 import { Modal, Input, Tooltip } from 'antd';
 import { VI } from '@/shared/i18n/vi';
 import { useWithdrawRequests } from '../hooks/useWithdrawRequests';
 import { useRejectWithdraw } from '../hooks/useRejectWithdraw';
+import { useApproveWithdraw } from '../hooks/useApproveWithdraw';
 
 function formatCurrency(amount: number): string {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
@@ -38,6 +39,7 @@ function getStatusBadge(status: string) {
 export default function StaffWithdrawPage() {
   const { withdrawRequests, loading, error, refetch } = useWithdrawRequests();
   const { rejectingId, rejectWithdraw } = useRejectWithdraw(refetch);
+  const { approvingId, approveWithdraw } = useApproveWithdraw(refetch);
 
   const [rejectModalId, setRejectModalId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState('');
@@ -117,6 +119,7 @@ export default function StaffWithdrawPage() {
                 withdrawRequests.map((request) => {
                   const isPending = request.status?.toUpperCase() === 'PENDING';
                   const isRejecting = rejectingId === request.id;
+                  const isApproving = approvingId === request.id;
                   return (
                     <tr key={request.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 text-sm font-medium text-slate-900">#{request.id}</td>
@@ -127,19 +130,33 @@ export default function StaffWithdrawPage() {
                       <td className="px-4 py-3">{getStatusBadge(request.status)}</td>
                       <td className="px-4 py-3 text-sm text-slate-500">{formatDate(request.requestedAt)}</td>
                       <td className="px-4 py-3">
-                        {isPending && (
-                          <Tooltip title={isRejecting ? VI.staff.withdraw.rejecting : VI.staff.withdraw.reject}>
+                        <div className="flex items-center gap-2">
+                          {/* Approve button */}
+                          <Tooltip title={isPending ? (isApproving ? VI.staff.withdraw.approving : VI.staff.withdraw.approve) : 'Chỉ yêu cầu đang chờ mới có thể duyệt'}>
                             <button
                               type="button"
-                              onClick={() => openRejectModal(request.id)}
-                              disabled={isRejecting}
-                              className="inline-flex items-center justify-center rounded-lg bg-red-50 px-2.5 py-2 text-red-600 hover:bg-red-100 hover:text-red-700 disabled:opacity-40"
+                              onClick={() => { if (isPending) void approveWithdraw(request.id); }}
+                              disabled={!isPending || isApproving}
+                              className="inline-flex items-center rounded-lg bg-green-50 px-2.5 py-2 text-green-600 hover:bg-green-100 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-green-50 disabled:hover:text-green-600"
+                            >
+                              <CheckCircle size={18} className={isApproving ? 'animate-spin' : ''} />
+                              <span className="ml-1.5 text-xs font-medium">Duyệt</span>
+                            </button>
+                          </Tooltip>
+
+                          {/* Reject button */}
+                          <Tooltip title={isPending ? (isRejecting ? VI.staff.withdraw.rejecting : VI.staff.withdraw.reject) : 'Chỉ yêu cầu đang chờ mới có thể từ chối'}>
+                            <button
+                              type="button"
+                              onClick={() => { if (isPending) openRejectModal(request.id); }}
+                              disabled={!isPending || isRejecting}
+                              className="inline-flex items-center rounded-lg bg-red-50 px-2.5 py-2 text-red-600 hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-50 disabled:hover:text-red-600"
                             >
                               <XCircle size={18} className={isRejecting ? 'animate-spin' : ''} />
                               <span className="ml-1.5 text-xs font-medium">Từ chối</span>
                             </button>
                           </Tooltip>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   );
