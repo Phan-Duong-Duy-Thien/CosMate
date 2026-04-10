@@ -81,6 +81,7 @@ export async function createMomoTopUp(
         amount,
         returnUrl,
       },
+      timeout: 60000,
     }
   )
   return response.data
@@ -106,6 +107,7 @@ export async function createVnpayTopUp(
         amount,
         returnUrl,
       },
+      timeout: 60000,
     }
   )
   return response.data

@@ -2,6 +2,7 @@ import type { FormInstance } from "antd"
 import { Form } from "antd"
 import type { ReactNode } from "react"
 
+import { AlertMessage } from "@/shared/components/AlertMessage"
 import { ConfirmButton } from "./ConfirmButton"
 
 type AuthFormProps<TValues extends object> = {
@@ -24,9 +25,7 @@ export function AuthForm<TValues extends object>({
   return (
     <Form form={form} layout="vertical" onFinish={onFinish} className="space-y-4">
       {formError ? (
-        <div className="rounded-md border border-red-100 bg-red-50 px-3 py-2 text-sm text-red-700">
-          {formError}
-        </div>
+        <AlertMessage type="error" message={formError} />
       ) : null}
 
       <div className="space-y-4">{children}</div>
