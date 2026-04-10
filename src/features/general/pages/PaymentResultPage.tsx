@@ -39,22 +39,24 @@ function parsePaymentResultFromUrl(): {
   const orderId = params.get('orderId') || params.get('transactionId') || null;
   const message = params.get('message') || null;
 
-  // 1. Generic status param: ?status=success&transactionId=...
+  // 1. MoMo resultCode: resultCode=0 → success, 1006/1009 → cancelled, other/non-0 → failed
+  // Check FIRST so MoMo redirects take priority over any status= param set by BE.
+  const rawResultCode = params.get('resultCode');
+  if (rawResultCode !== null) {
+    // resultCode is a string from URL; parse and compare strictly.
+    if (rawResultCode === '0') return { status: 'success', orderId, message };
+    if (rawResultCode === '1006' || rawResultCode === '1009') return { status: 'cancelled', orderId, message };
+    return { status: 'failed', orderId, message };
+  }
+
+  // 2. Generic status param (fallback for BE's own redirects: ?status=success&orderId=...)
   const rawStatus = params.get('status');
   if (rawStatus !== null) {
     const status = (rawStatus as PaymentStatus) || 'unknown';
     return { status, orderId, message };
   }
 
-  // 2. MoMo resultCode: 0 = success, 1006/1009 = cancelled, other = failed
-  const rawResultCode = params.get('resultCode');
-  if (rawResultCode !== null) {
-    const resultCode = parseInt(rawResultCode, 10);
-    if (resultCode === 0) return { status: 'success', orderId, message };
-    if (resultCode === 1006 || resultCode === 1009) return { status: 'cancelled', orderId, message };
-    return { status: 'failed', orderId, message };
-  }
-
+  // 3. No recognizable params — unknown state, do NOT assume failure.
   return { status: 'unknown', orderId, message };
 }
 

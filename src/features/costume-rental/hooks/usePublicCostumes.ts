@@ -39,7 +39,7 @@ function computePriceRange(costume: Costume): { priceMin: number; priceMax: numb
   return { priceMin: minK, priceMax: maxK }
 }
 
-function mapCostumeToItem(costume: Costume): CostumeItem {
+export function mapCostumeToItem(costume: Costume): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
   const { priceMin, priceMax } = computePriceRange(costume)

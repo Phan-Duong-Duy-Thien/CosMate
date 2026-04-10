@@ -47,9 +47,9 @@ export async function createOrder(
  * Submit order and handle post-submit behavior
  *
  * Decision logic:
- * A) If paymentUrl is non-empty string: redirect to payment gateway
- * B) Else if paymentUrl is null AND status === "PAID" (WALLET): redirect to success page
- * C) Else: redirect to failed page
+ * A) paymentMethod === 'WALLET' + no paymentUrl: BE processed internally → success
+ * B) paymentUrl is non-empty string (MoMo/VNPay): redirect to external gateway
+ * C) Otherwise: redirect to failed page
  */
 export async function submitOrderAndHandleResult(
   params: CreateOrderParams
@@ -81,8 +81,11 @@ export async function submitOrderAndHandleResult(
 
   // API returns result directly, not wrapped in .result
   const orderId = (result as unknown as { id?: number }).id;
-  const paymentUrl = (result as unknown as { paymentUrl?: string }).paymentUrl;
-  const status = (result as unknown as { status?: string }).status;
+  // BE returns null for WALLET (no external URL needed), string for MoMo/VNPay
+  const paymentUrl = (result as unknown as { paymentUrl?: string | null }).paymentUrl;
+  // For WALLET: BE may return status=PAID immediately (internal processing)
+  // For MoMo/VNPay: BE returns UNPAID (pending external confirmation)
+  const status = (result as unknown as { status?: string | null }).status;
 
   // DEBUG: Log decision variables
   console.log('[DEBUG] orderId:', orderId);
@@ -92,35 +95,26 @@ export async function submitOrderAndHandleResult(
   console.log('[DEBUG] Check: paymentUrl === null:', paymentUrl === null);
   console.log('[DEBUG] Check: status === "PAID":', status === 'PAID');
 
-  // Case A: Redirect to payment gateway (MoMo/VNPAY)
+  // Case A: WALLET payment — BE processes internally, no external redirect needed.
+  // BE signals this by returning null for paymentUrl.
+  if (paymentUrl === null || paymentUrl === undefined) {
+    console.log('[DEBUG] Case A: WALLET — BE processed internally, redirecting to success');
+    clearDraft();
+    window.location.href = `/payment/result?status=success&orderId=${orderId}`;
+    return { redirected: true };
+  }
+
+  // Case B: External gateway (MoMo/VNPay) — redirect to paymentUrl.
   if (paymentUrl) {
-    console.log('[DEBUG] Case A: Redirecting to payment gateway');
+    console.log('[DEBUG] Case B: Redirecting to payment gateway');
     window.location.href = paymentUrl;
     return { redirected: true };
   }
 
-  // Case B: WALLET payment - check if already PAID
-  if (paymentUrl === null && status === 'PAID') {
-    // DEBUG
-    console.log('[DEBUG] Case B: WALLET payment - PAID');
-
-    // Clear rental draft on successful wallet payment
-    clearDraft();
-
-    // Redirect to success page
-    const successUrl = `/payment/result?status=success&orderId=${orderId}`;
-    window.location.href = successUrl;
-    return { redirected: true };
-  }
-
-  // Case C: Payment failed or other error
-  // DEBUG
+  // Case C: Unexpected state — no paymentUrl and not WALLET, treat as failed.
   console.log('[DEBUG] Case C: Redirecting to failed page');
   console.log('[DEBUG] Reason: paymentUrl is', paymentUrl, 'status is', status);
-
-  // Redirect to failed page
-  const failedUrl = `/payment/result?status=failed&orderId=${orderId}`;
-  window.location.href = failedUrl;
+  window.location.href = `/payment/result?status=failed&orderId=${orderId}`;
   return { redirected: true };
 }
 

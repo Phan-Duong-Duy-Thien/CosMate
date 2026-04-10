@@ -30,6 +30,7 @@ import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { VI } from "@/shared/i18n/vi"
+import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import bgImage from "@/assets/background.jpg"
@@ -452,6 +453,7 @@ export default function CosplayerSiteLayout() {
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
+            <SearchBar className="hidden md:flex" />
 
             <button
               type="button"

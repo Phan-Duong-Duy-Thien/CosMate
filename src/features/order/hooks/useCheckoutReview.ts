@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { message } from 'antd';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
 import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
 import { submitOrderAndHandleResult } from '../services/order.service';
@@ -72,7 +73,7 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
         promises.push(
           getUserAddresses(userId)
             .then((addresses) => setState((prev) => ({ ...prev, addresses })))
-            .catch(() => setState((prev) => ({ ...prev, error: 'Không thể tải địa chỉ.' })))
+            .catch(() => { message.error('Không thể tải danh sách địa chỉ.'); setState((prev) => ({ ...prev, error: 'Không thể tải địa chỉ.' })); })
         );
       }
 
@@ -80,7 +81,7 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
         promises.push(
           getCostumeById(draft.costumeId)
             .then((res) => setState((prev) => ({ ...prev, costume: res.result })))
-            .catch(() => setState((prev) => ({ ...prev, error: 'Không thể tải thông tin trang phục.' })))
+            .catch(() => { message.error('Không thể tải thông tin trang phục.'); setState((prev) => ({ ...prev, error: 'Không thể tải thông tin trang phục.' })); })
         );
       }
 
@@ -164,27 +165,34 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
     const draft = state.draft;
     const totalToPay = computed?.totalToPay ?? 0;
 
-    if (!userId) { setState((prev) => ({ ...prev, error: 'Vui lòng đăng nhập.' })); return; }
-    if (!draft) { setState((prev) => ({ ...prev, error: 'Không có thông tin đơn thuê.' })); return; }
-    if (!selectedAddressId) { setState((prev) => ({ ...prev, error: 'Vui lòng chọn địa chỉ.' })); return; }
-    if (!state.policyAccepted) { setState((prev) => ({ ...prev, error: 'Cần đồng ý điều khoản.' })); return; }
+    if (!userId) { message.error('Vui lòng đăng nhập để tiếp tục.'); setState((prev) => ({ ...prev, error: 'Vui lòng đăng nhập.' })); return; }
+    if (!draft) { message.error('Không tìm thấy thông tin đơn thuê. Vui lòng chọn trang phục.'); setState((prev) => ({ ...prev, error: 'Không có thông tin đơn thuê.' })); return; }
+    if (!selectedAddressId) { message.error('Bạn chưa chọn địa chỉ nhận hàng.'); setState((prev) => ({ ...prev, error: 'Vui lòng chọn địa chỉ.' })); return; }
+    if (!state.policyAccepted) { message.error('Bạn cần đồng ý với điều khoản dịch vụ để tiếp tục.'); setState((prev) => ({ ...prev, error: 'Cần đồng ý điều khoản.' })); return; }
 
     // Check wallet balance if using WALLET payment
     if (paymentMethod === 'WALLET') {
       if (walletBalance === null) {
+        message.error('Đang tải số dư ví. Vui lòng thử lại.');
         setState((prev) => ({ ...prev, error: 'Đang tải số dư ví. Vui lòng thử lại.' }));
         return;
       }
       if (walletBalance < totalToPay) {
         const missing = totalToPay - walletBalance;
-        setState((prev) => ({ ...prev, error: `Số dư ví không đủ. Bạn cần thêm ${missing.toLocaleString('vi-VN')}VNĐ.` }));
+        message.error(`Số dư ví không đủ. Bạn cần thêm ${missing.toLocaleString('vi-VN')} VNĐ để thanh toán.`);
+        setState((prev) => ({ ...prev, error: `Số dư ví không đủ. Cần thêm ${missing.toLocaleString('vi-VN')}VNĐ.` }));
         return;
       }
     }
 
     setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
-      const returnUrl = state.paymentMethod === 'MOMO' ? 'http://localhost:8080/payment/api/momo/return' : 'http://localhost:5173/payment/return';
+      const returnUrl =
+        state.paymentMethod === 'WALLET'
+          ? 'http://localhost:5173/payment/result'
+          : state.paymentMethod === 'MOMO'
+          ? 'http://localhost:8080/payment/api/momo/return'
+          : 'http://localhost:5173/payment/result';
       const params: CreateOrderParams = {
         cosplayerId: userId,
         costumeId: draft.costumeId,
@@ -199,9 +207,11 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
       // Service handles redirect logic (gateway or wallet success/fail)
       await submitOrderAndHandleResult(params);
       // If we reach here, something went wrong (service should redirect)
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Co loi xay ra. Vui long thu lai.' }));
+      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
+      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Có lỗi xảy ra. Vui lòng thử lại.' }));
     } catch {
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Khong the tao don thue.' }));
+      message.error('Không thể tạo đơn thuê. Vui lòng thử lại sau.');
+      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Không thể tạo đơn thuê.' }));
     }
   }, [state, computed]);
 

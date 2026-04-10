@@ -1,8 +1,9 @@
 import {
   getAllCostumes,
   getCostumeById as getCostumeByIdResponse,
-} from "./costumeRental.api"
-import type { Costume } from "../types"
+  searchCostumes,
+} from './costumeRental.api'
+import type { Costume } from '../types'
 
 export async function getCostumes(): Promise<Costume[]> {
   const response = await getAllCostumes()
@@ -13,3 +14,5 @@ export async function getCostumeById(id: number): Promise<Costume> {
   const response = await getCostumeByIdResponse(id)
   return response.result
 }
+
+export { searchCostumes }

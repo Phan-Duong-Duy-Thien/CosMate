@@ -94,3 +94,10 @@ export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
   const response = await axiosInstance.get<CostumeApiResponse<Costume[]>>('/api/costumes')
   return response.data
 }
+
+export async function searchCostumes(keyword: string): Promise<CostumeApiResponse<Costume[]>> {
+  const response = await axiosInstance.get<CostumeApiResponse<Costume[]>>('/api/costumes/search', {
+    params: { keyword },
+  })
+  return response.data
+}
