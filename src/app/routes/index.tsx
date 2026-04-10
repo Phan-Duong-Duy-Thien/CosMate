@@ -15,6 +15,7 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage"
 import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
+import OnboardingRolePage from "@/features/auth/pages/OnboardingRolePage"
 
 import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
@@ -152,6 +153,7 @@ export default function AppRoutes() {
       {/* Auth Pages (public) */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/onboarding/role" element={<OnboardingRolePage />} />
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />

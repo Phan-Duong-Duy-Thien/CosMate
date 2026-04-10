@@ -34,13 +34,19 @@ function parsePaymentResultFromUrl(): {
   orderId: string | null;
   message: string | null;
 } {
-  // Always parse from query params: ?partnerCode=...&resultCode=0&message=...
   const params = new URLSearchParams(window.location.search);
 
-  const orderId = params.get('orderId') || null;
+  const orderId = params.get('orderId') || params.get('transactionId') || null;
   const message = params.get('message') || null;
 
-  // MoMo uses resultCode (number): 0 = success, 1006/1009 = cancelled, other = failed
+  // 1. Generic status param: ?status=success&transactionId=...
+  const rawStatus = params.get('status');
+  if (rawStatus !== null) {
+    const status = (rawStatus as PaymentStatus) || 'unknown';
+    return { status, orderId, message };
+  }
+
+  // 2. MoMo resultCode: 0 = success, 1006/1009 = cancelled, other = failed
   const rawResultCode = params.get('resultCode');
   if (rawResultCode !== null) {
     const resultCode = parseInt(rawResultCode, 10);
@@ -49,9 +55,7 @@ function parsePaymentResultFromUrl(): {
     return { status: 'failed', orderId, message };
   }
 
-  // Generic status param (e.g., ?status=success&orderId=...)
-  const status = (params.get('status') as PaymentStatus) || 'unknown';
-  return { status, orderId, message };
+  return { status: 'unknown', orderId, message };
 }
 
 export default function PaymentResultPage() {

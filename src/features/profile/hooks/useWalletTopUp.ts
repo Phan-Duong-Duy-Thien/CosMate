@@ -61,8 +61,14 @@ export function useWalletTopUp(): UseWalletTopUpResult {
       }
     } catch (err) {
       console.error("Top-up failed:", err)
-      setError(VI.profile.wallet.error)
-      message.error(VI.profile.wallet.error)
+      const axiosErr = err as { code?: string; message?: string }
+      if (axiosErr.code === "ECONNABORTED" || axiosErr.message?.includes("timeout")) {
+        setError("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
+        message.error("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
+      } else {
+        setError(VI.profile.wallet.error)
+        message.error(VI.profile.wallet.error)
+      }
     } finally {
       setLoading(false)
     }

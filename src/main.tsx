@@ -1,12 +1,16 @@
 import React, { useEffect } from "react"
 import ReactDOM from "react-dom/client"
 import { BrowserRouter, useLocation } from "react-router-dom"
+import { message } from "antd"
 
 import App from "@/app/App"
 import ScrollToTop from "@/shared/components/ScrollToTop"
 import faviconImage from "@/assets/logo.png"
 import "./index.css"
 import "antd/dist/reset.css"
+
+// Global default: all message toasts auto-dismiss after 5 seconds
+message.config({ duration: 5, maxCount: 3 })
 
 // Move required asterisk (*) from BEFORE label to AFTER label
 const requiredAsteriskStyle = `
@@ -78,6 +82,7 @@ function DocumentTitleSync() {
     else if (pathname === "/profile/purchase-history") pageTitle = "Lịch sử mua hàng"
     else if (pathname === "/profile/wallet") pageTitle = "Ví của tôi"
     else if (pathname === "/profile/wallet/topup") pageTitle = "Nạp ví"
+    else if (pathname === "/profile/wallet/withdraw") pageTitle = "Rút tiền"
     else if (pathname === "/photographers") pageTitle = "Thuê Photographer"
     else if (pathname.startsWith("/photographer/")) pageTitle = "Hồ sơ Photographer"
     else if (pathname === "/staffs") pageTitle = "Thuê Staff"

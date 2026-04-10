@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react"
-import { fetchNotifications, markRead, markAllRead } from "../services/notification.service"
+import { fetchNotifications, markRead, markAllRead as markAllReadService } from "../services/notification.service"
 import type { NotificationItem } from "../types"
 
 interface UseNotificationsResult {
@@ -53,7 +53,7 @@ export function useNotifications(): UseNotificationsResult {
     const previous = notifications
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
     try {
-      await markAllRead()
+      await markAllReadService()
       console.log("[useNotifications] Mark all as read success")
     } catch (err) {
       setNotifications(previous)
