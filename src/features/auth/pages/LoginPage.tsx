@@ -90,16 +90,6 @@ export default function LoginPage() {
             )}
             {VI.common.actions.continueWithGoogle}
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full border-[#E5E7EB] text-[#111827]"
-          >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#E5E7EB] text-[11px] font-semibold">
-              f
-            </span>
-            {VI.common.actions.continueWithFacebook}
-          </Button>
         </div>
 
         <div className="flex items-center gap-4 text-xs text-[#6B7280]">

@@ -58,7 +58,9 @@ export function useLogin() {
       return roles
     } catch (error) {
       console.error("❌ Login error:", error)
-      setFormError(VI.auth.login.messages.invalidCredentials)
+      const axiosError = error as { response?: { data?: { message?: string } } }
+      const backendMessage = axiosError.response?.data?.message
+      setFormError(backendMessage || VI.auth.login.messages.invalidCredentials)
       return null
     } finally {
       setSubmitting(false)
