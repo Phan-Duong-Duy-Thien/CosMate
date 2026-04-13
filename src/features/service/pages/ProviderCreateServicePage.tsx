@@ -130,6 +130,7 @@ export default function ProviderCreateServicePage() {
       {!profileLoading && verified === true && (
         <div className="mx-auto max-w-3xl">
           <CreateServiceForm
+            mode="create"
             serviceType={serviceType}
             providerId={profile?.id ?? 0}
             shopAddress={shopAddress}

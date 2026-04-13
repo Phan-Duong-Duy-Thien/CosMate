@@ -4,7 +4,7 @@
  * Orchestration layer — builds FormData and calls the API.
  * Called by hooks only; never by components or pages.
  */
-import { createService, getProviderServices, getPublicServices, getServiceById } from '../api/service.api';
+import { createService, getProviderServices, getPublicServices, getServiceById, updateService as updateServiceApi } from '../api/service.api';
 import type {
   CreateServiceFormData,
   CreateServicePayload,
@@ -60,4 +60,30 @@ export async function fetchPublicServices(): Promise<PublicServiceItem[]> {
  */
 export async function fetchServiceById(serviceId: number): Promise<ServiceItem> {
   return getServiceById(serviceId);
+}
+
+/**
+ * Updates an existing service.
+ */
+export async function updateService(
+  serviceId: number,
+  formData: CreateServiceFormData
+): Promise<ServiceItem> {
+  const num = (val: string | number): number => Number(String(val).replace(/,/g, ''));
+
+  const payload: CreateServicePayload = {
+    serviceType: formData.serviceType,
+    description: formData.description,
+    slotDurationHours: num(formData.slotDurationHours),
+    pricePerSlot: num(formData.pricePerSlot),
+    equipmentDepreciationCost: num(formData.equipmentDepreciationCost),
+    depositAmount: num(formData.depositAmount),
+    providerId: formData.providerId,
+    areas: JSON.stringify(formData.areas),
+    albumFiles: formData.albumFiles,
+    minPrice: num(formData.minPrice),
+    maxPrice: num(formData.maxPrice),
+  };
+
+  return updateServiceApi(serviceId, payload);
 }
