@@ -2,11 +2,17 @@
  * Payment Result Page
  * Displays payment result after redirect from payment gateway.
  *
- * Anti-replay guard: Once a payment result (identified by orderId) has been
- * shown on this page, it is marked in sessionStorage. Re-mounting or
- * re-navigating to the same result will not re-trigger anything.
- * This prevents duplicate processing in StrictMode, back-button scenarios,
- * and any future on-mount effects that read from query params.
+ * Single source of truth: BE API (via usePaymentVerification).
+ * URL params are only a shortcut hint — the hook fetches the real order
+ * status to determine the final UI state.
+ *
+ * Priority:
+ *  1. resultCode param  → MoMo external redirect (resultCode=0 → success, else → use BE)
+ *  2. status param     → WALLET or BE internal redirect (use BE as final truth)
+ *  3. No params / unknown → use BE as final truth if orderId is real
+ *
+ * Anti-replay guard: each orderId is marked in sessionStorage to prevent
+ * duplicate processing on re-mount or back-button scenarios.
  */
 import * as React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
@@ -14,106 +20,80 @@ import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
+import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
 import type { UserRole } from '@/types/auth';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
 
-const PROCESSED_KEY_PREFIX = 'cosmate:payment:processed:';
-
-interface MomoReturn {
-  partnerCode?: string;
-  orderId?: string;
-  responseTime?: number;
-  message?: string;
-  resultCode?: number;
-  [key: string]: unknown;
-}
-
-function parsePaymentResultFromUrl(): {
-  status: PaymentStatus;
-  orderId: string | null;
-  message: string | null;
-} {
+function parseUrlHint(): { status: PaymentStatus; orderId: string | null; message: string | null } {
   const params = new URLSearchParams(window.location.search);
 
   const orderId = params.get('orderId') || params.get('transactionId') || null;
   const message = params.get('message') || null;
 
-  // 1. MoMo resultCode: resultCode=0 → success, 1006/1009 → cancelled, other/non-0 → failed
-  // Check FIRST so MoMo redirects take priority over any status= param set by BE.
+  // MoMo / external gateway: resultCode present
   const rawResultCode = params.get('resultCode');
   if (rawResultCode !== null) {
-    // resultCode is a string from URL; parse and compare strictly.
     if (rawResultCode === '0') return { status: 'success', orderId, message };
     if (rawResultCode === '1006' || rawResultCode === '1009') return { status: 'cancelled', orderId, message };
-    return { status: 'failed', orderId, message };
+    // resultCode present but not success/cancelled → treat as hint only; use BE as truth
   }
 
-  // 2. Generic status param (fallback for BE's own redirects: ?status=success&orderId=...)
+  // Internal BE redirect: status param present
   const rawStatus = params.get('status');
   if (rawStatus !== null) {
-    const status = (rawStatus as PaymentStatus) || 'unknown';
-    return { status, orderId, message };
+    const valid = (['success', 'failed', 'cancelled'].includes(rawStatus)
+      ? rawStatus
+      : 'unknown') as PaymentStatus;
+    return { status: valid, orderId, message };
   }
 
-  // 3. No recognizable params — unknown state, do NOT assume failure.
   return { status: 'unknown', orderId, message };
 }
 
 export default function PaymentResultPage() {
   const navigate = useNavigate();
 
-  const { status, orderId, message } = parsePaymentResultFromUrl();
+  const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
+
+  // Authoritative status from BE API — overrides URL hint for WALLET / BE redirects
+  const { status: verifiedStatus, isLoading, error } = usePaymentVerification(rawOrderId);
+
+  // Final status: use verified BE status when available, fall back to URL hint
+  const status: PaymentStatus = verifiedStatus !== 'unknown' ? verifiedStatus : urlStatus;
   const isSuccess = status === 'success';
 
-  // Anti-replay guard: only process each orderId once per session.
-  // Once this page has been shown for a given orderId, mark it as
-  // processed so re-mounts / repeated navigations won't re-trigger anything.
-  // This also protects against React StrictMode double-invocation in dev.
+  // Anti-replay guard
   React.useEffect(() => {
-    if (orderId) {
-      const key = `${PROCESSED_KEY_PREFIX}${orderId}`;
-      if (sessionStorage.getItem(key) === '1') {
-        // Already shown this result — do nothing on re-mount.
-        return;
-      }
+    if (rawOrderId) {
+      const key = `cosmate:payment:processed:${rawOrderId}`;
+      if (sessionStorage.getItem(key) === '1') return;
       sessionStorage.setItem(key, '1');
     }
-  }, [orderId]);
+  }, [rawOrderId]);
 
   const getTitle = () => {
     switch (status) {
-      case 'success':
-        return VI.paymentResult.successTitle;
-      case 'failed':
-        return VI.paymentResult.failedTitle;
-      case 'cancelled':
-        return VI.paymentResult.cancelledTitle;
-      default:
-        return VI.paymentResult.unknownTitle;
+      case 'success':   return VI.paymentResult.successTitle;
+      case 'failed':    return VI.paymentResult.failedTitle;
+      case 'cancelled': return VI.paymentResult.cancelledTitle;
+      default:          return VI.paymentResult.unknownTitle;
     }
   };
 
   const getDescription = () => {
+    if (isLoading) return 'Verifying payment status...';
+    if (error) return error;
     switch (status) {
-      case 'success':
-        return VI.paymentResult.successDesc;
-      case 'failed':
-        return message || VI.paymentResult.failedDesc;
-      case 'cancelled':
-        return VI.paymentResult.cancelledDesc;
-      default:
-        return VI.paymentResult.unknownDesc;
+      case 'success':   return VI.paymentResult.successDesc;
+      case 'failed':    return VI.paymentResult.failedDesc;
+      case 'cancelled': return VI.paymentResult.cancelledDesc;
+      default:          return VI.paymentResult.unknownDesc;
     }
   };
 
   const handlePrimaryAction = () => {
-    if (isSuccess) {
-      // Always redirect to wallet page so the balance is refreshed via useWallet
-      navigate('/profile/wallet');
-    } else {
-      navigate('/profile/wallet');
-    }
+    navigate('/profile/wallet');
   };
 
   const getHomeRedirectPath = () => {
@@ -125,77 +105,46 @@ export default function PaymentResultPage() {
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-16">
         <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 shadow-xl text-center">
-          {/* Icon */}
           <div className="mb-6 flex justify-center">
-            {isSuccess ? (
+            {isLoading ? (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                <svg className="h-10 w-10 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+            ) : isSuccess ? (
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <svg
-                  className="h-10 w-10 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
+                <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
             ) : (
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-                <svg
-                  className="h-10 w-10 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             )}
           </div>
 
-          {/* Title */}
-          <h1 className="text-2xl font-semibold text-slate-900">
-            {getTitle()}
-          </h1>
+          <h1 className="text-2xl font-semibold text-slate-900">{getTitle()}</h1>
 
-          {/* Description */}
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
-            {getDescription()}
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600">{getDescription()}</p>
 
-          {/* Order ID */}
-          {orderId && (
+          {rawOrderId && rawOrderId !== 'unknown' && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-4">
               <p className="text-xs text-slate-500">{VI.paymentResult.orderIdLabel}</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{orderId}</p>
+              <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{rawOrderId}</p>
             </div>
           )}
 
-          {/* Actions */}
           <div className="mt-8 flex flex-col gap-3">
-            <Button
-              variant="default"
-              size="lg"
-              className="w-full rounded-full"
-              onClick={handlePrimaryAction}
-            >
+            <Button variant="default" size="lg" className="w-full rounded-full" onClick={handlePrimaryAction}>
               {isSuccess ? VI.paymentResult.primarySuccessCta : VI.paymentResult.primaryFailedCta}
             </Button>
             <Link to={getHomeRedirectPath()}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full rounded-full"
-              >
+              <Button variant="outline" size="lg" className="w-full rounded-full">
                 {VI.paymentResult.homeCta}
               </Button>
             </Link>

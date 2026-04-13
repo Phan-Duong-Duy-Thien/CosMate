@@ -1,9 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { message } from 'antd';
+import type { NavigateFunction } from 'react-router';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
 import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
 import { submitOrderAndHandleResult } from '../services/order.service';
-import { loadDraft, clearDraft } from '../utils/rentalDraftStorage';
+import { loadDraft } from '../utils/rentalDraftStorage';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume, PaymentMethod } from '@/features/costume-rental/types';
 import { getUserId } from '@/features/auth/services/tokenStorage';
@@ -33,7 +34,7 @@ interface CheckoutActions {
 
 export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
 
-export function useCheckoutReview(): UseCheckoutReviewReturn {
+export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReviewReturn {
   const [state, setState] = useState<CheckoutState>({
     addresses: [],
     draft: null,
@@ -187,33 +188,43 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
 
     setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
-      const returnUrl =
-        state.paymentMethod === 'WALLET'
-          ? 'http://localhost:5173/payment/result'
-          : state.paymentMethod === 'MOMO'
-          ? 'http://localhost:8080/payment/api/momo/return'
-          : 'http://localhost:5173/payment/result';
+      // returnUrl is used only by MoMo/VNPay for gateway redirects.
+      // For WALLET, BE does NOT use returnUrl — omit it entirely by setting it to the payment result page.
+      const returnUrl = `${window.location.origin}/payment/result`;
       const params: CreateOrderParams = {
         cosplayerId: userId,
         costumeId: draft.costumeId,
         rentDay: draft.rentDay,
         rentStart: draft.rentStart,
-        paymentMethod: state.paymentMethod,
+        paymentMethod,
         returnUrl,
         cosplayerAddressId: selectedAddressId,
         selectedAccessoryIds: draft.selectedAccessoryIds,
         selectedRentalOptionId: draft.selectedRentalOptionId,
       };
-      // Service handles redirect logic (gateway or wallet success/fail)
-      await submitOrderAndHandleResult(params);
-      // If we reach here, something went wrong (service should redirect)
-      message.error('Có lỗi xảy ra. Vui lòng thử lại.');
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Có lỗi xảy ra. Vui lòng thử lại.' }));
+
+      const result = await submitOrderAndHandleResult(params);
+
+      // WALLET: navigate using real orderId/status from BE response — no returnUrl involved
+      if (result.type === 'wallet') {
+        navigate(`/payment/result?status=${result.status}&orderId=${result.orderId}`);
+        return;
+      }
+
+      // MoMo/VNPay: redirect to external payment gateway
+      if (result.type === 'gateway') {
+        window.location.href = result.paymentUrl;
+        return;
+      }
+
+      // Failed (no paymentUrl returned by BE)
+      navigate('/payment/result?status=failed&orderId=unknown');
     } catch {
-      message.error('Không thể tạo đơn thuê. Vui lòng thử lại sau.');
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Không thể tạo đơn thuê.' }));
+      navigate('/payment/result?status=failed&orderId=unknown');
+    } finally {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
     }
-  }, [state, computed]);
+  }, [state, computed, navigate]);
 
   return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses };
 }

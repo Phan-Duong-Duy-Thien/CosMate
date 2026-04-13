@@ -28,7 +28,7 @@ export default function CheckoutReviewPage() {
     setPolicyAccepted,
     setPaymentMethod,
     submitOrder,
-  } = useCheckoutReview();
+  } = useCheckoutReview(navigate);
 
   // Helper to format currency
   const formatCurrency = (amount: number): string => {
