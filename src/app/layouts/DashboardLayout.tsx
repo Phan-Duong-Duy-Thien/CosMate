@@ -2,6 +2,20 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
+import {
+  DashboardOutlined,
+  AppstoreOutlined,
+  PlusCircleOutlined,
+  CalendarOutlined,
+  CameraOutlined,
+  StarOutlined,
+  SettingOutlined,
+  MessageOutlined,
+  FileTextOutlined,
+  ShoppingOutlined,
+  LayoutOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
 import { LogOut, User, ChevronRight, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
@@ -49,18 +63,46 @@ export function DashboardLayout({
   useChatPopup(); // ensure popup context is initialized
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
+    // Map Lucide icon names to Ant Design icons for the collapsed sidebar
+    const lucideToAntd: Record<string, React.ReactNode> = {
+      LayoutDashboard: <LayoutOutlined />,
+      Package: <AppstoreOutlined />,
+      ShoppingBag: <ShoppingOutlined />,
+      Calendar: <CalendarOutlined />,
+      Star: <StarOutlined />,
+      Settings: <SettingOutlined />,
+      ClipboardList: <FileTextOutlined />,
+      Camera: <CameraOutlined />,
+      Briefcase: <TeamOutlined />,
+      PlusCircle: <PlusCircleOutlined />,
+      MessageCircle: <MessageOutlined />,
+    };
+
     return items.map((item) => {
+      let iconNode: React.ReactNode;
+      if (item.icon) {
+        if (typeof item.icon === 'function') {
+          // Use Ant Design icon when sidebar is collapsed (icon-only mode)
+          const iconName = item.icon.displayName || item.icon.name;
+          iconNode = lucideToAntd[iconName] ?? <item.icon size={16} />;
+        } else {
+          iconNode = item.icon;
+        }
+      } else {
+        iconNode = undefined;
+      }
+
       if (item.children && item.children.length > 0) {
         return {
           key: item.key,
-          icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
+          icon: iconNode,
           label: item.label,
           children: mapToAntdMenuItems(item.children),
         };
       }
       return {
         key: item.key,
-        icon: typeof item.icon === 'function' ? <item.icon size={16} /> : undefined,
+        icon: iconNode,
         label: item.label,
         onClick: () => {
           if (item.path) {
@@ -245,6 +287,7 @@ export function DashboardLayout({
         {/* Menu */}
         <Menu
           mode="inline"
+          inlineCollapsed={collapsed}
           selectedKeys={[activeKey]}
           defaultOpenKeys={defaultOpenKeys}
           items={menuItems}
