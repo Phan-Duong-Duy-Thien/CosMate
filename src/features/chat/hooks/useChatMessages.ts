@@ -20,7 +20,7 @@ export function useChatMessages(roomId: number | null): UseChatMessagesResult {
     setError(null);
     try {
       const data = await getChatMessagesService(roomId);
-      setMessages(data ?? []);
+      setMessages(data?.content ?? []);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load messages");
     } finally {

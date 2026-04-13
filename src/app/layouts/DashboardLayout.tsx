@@ -2,7 +2,7 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight, type LucideIcon } from 'lucide-react';
+import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -11,6 +11,7 @@ import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import type { AdminUserProfile } from '@/features/admin/types';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
+import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
 const { Header, Sider, Content } = Layout;
 
@@ -47,6 +48,10 @@ export function DashboardLayout({
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
   const { userProfile, setUserProfile } = useUserProfile();
   useChatPopup(); // ensure popup context is initialized
+
+  const userId = getUserId();
+  const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null);
+  const { openChat } = useChatPopup();
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
     return items.map((item) => {
@@ -258,6 +263,21 @@ export function DashboardLayout({
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {showChatButton && (
+              <button
+                type="button"
+                onClick={() => openChat(0, 0)}
+                title="Messages"
+                style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <MessageCircle size={22} style={{ color: '#64748b' }} />
+                {chatUnreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: 0, right: 0, minWidth: 16, height: 16, padding: '0 3px', borderRadius: 8, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                    {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                  </span>
+                )}
+              </button>
+            )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
                 {userProfile.avatarUrl ? (

@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Send } from "lucide-react"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatRoomList } from "./ChatRoomList"
 import {
   connectChatSocket,
@@ -29,6 +30,7 @@ export function ProviderChatPanel() {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const currentUserId = getUserId()
+  const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Message store (single source of truth) ────────────────────────────
   const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
@@ -42,10 +44,16 @@ export function ProviderChatPanel() {
     setIsLoadingHistory(true)
     clearMessages()
     getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data ?? []))
+      .then((data) => setMessages(data?.content ?? []))
       .catch(() => setMessages([]))
       .finally(() => setIsLoadingHistory(false))
   }, [activeRoom?.roomId, setMessages, clearMessages])
+
+  // Mark room as read when user opens it
+  useEffect(() => {
+    if (activeRoom?.roomId == null || currentUserId === null) return
+    markRoomAsReadService(activeRoom.roomId, currentUserId).then(refetchUnread)
+  }, [activeRoom?.roomId, currentUserId, refetchUnread])
 
   // Connect socket
   useEffect(() => {

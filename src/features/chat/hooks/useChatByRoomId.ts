@@ -27,7 +27,7 @@ export function useChatByRoomId(
         getChatMessagesService(roomId),
         getChatPartnerService(roomId, currentUserId),
       ])
-      setMessages(msgs ?? [])
+      setMessages(msgs?.content ?? [])
       setPartner(partnerData)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load chat")

@@ -29,6 +29,7 @@ import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
+import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
@@ -75,6 +76,8 @@ export default function CosplayerSiteLayout() {
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
+  const userId = getUserId()
+  const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -458,10 +461,15 @@ export default function CosplayerSiteLayout() {
             <button
               type="button"
               aria-label="Tin nhắn"
-              className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               onClick={() => openChat(0, 0)}
             >
               <MessageCircle className="h-6 w-6" />
+              {chatUnreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
             </button>
 
             <button

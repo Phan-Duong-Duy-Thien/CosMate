@@ -15,7 +15,8 @@ import {
   sendChatMessage,
   disconnectChatSocket,
 } from "../services/chatSocket.service"
-import { getChatMessagesService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { useUnreadCount } from "../hooks/useUnreadCount"
 import type { ChatPartner, ChatMessage } from "../types"
 
 type ChatMode = "partner" | "room" | "list"
@@ -44,6 +45,8 @@ export default function ChatPage() {
 
   const resolvedRoomId = mode === "room" ? roomIdNum : (activeRoomId ?? room?.id ?? null)
 
+  const { refetch: refetchUnread } = useUnreadCount(currentUserId)
+
   // Derive partner info from rooms array (single source of truth)
   const roomFromList = rooms.find((r) => r.roomId === activeRoomId)
   const partnerFromList = roomFromList
@@ -70,10 +73,16 @@ export default function ChatPage() {
     setIsLoadingHistory(true)
     clearMessages()
     getChatMessagesService(resolvedRoomId)
-      .then((data) => setMessages(data ?? []))
+      .then((data) => setMessages(data?.content ?? []))
       .catch(() => setMessages([]))
       .finally(() => setIsLoadingHistory(false))
   }, [resolvedRoomId, setMessages, clearMessages])
+
+  // Mark room as read when user opens it
+  useEffect(() => {
+    if (resolvedRoomId === null || currentUserIdNum === null) return
+    markRoomAsReadService(resolvedRoomId, currentUserIdNum).then(refetchUnread)
+  }, [resolvedRoomId, currentUserIdNum, refetchUnread])
 
   // Connect socket
   useEffect(() => {
