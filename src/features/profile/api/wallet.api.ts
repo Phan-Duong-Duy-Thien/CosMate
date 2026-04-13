@@ -73,7 +73,7 @@ export async function createMomoTopUp(
   returnUrl: string
 ): Promise<CreatePaymentResponse> {
   const response = await axiosInstance.post<CreatePaymentResponse>(
-    "/payment/api/momo/create",
+    "/api/payment/api/momo/create",
     null,
     {
       params: {
@@ -99,7 +99,7 @@ export async function createVnpayTopUp(
   returnUrl: string
 ): Promise<CreatePaymentResponse> {
   const response = await axiosInstance.post<CreatePaymentResponse>(
-    "/payment/api/vnpay/create",
+    "/api/payment/api/vnpay/create",
     null,
     {
       params: {
