@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Spin } from 'antd';
-import { PortfolioGrid } from '../mocks/PortfolioGrid';
 import { Star, Clock, CheckCircle2, ChevronRight, Camera, ShieldCheck, MapPin, ImageIcon } from 'lucide-react';
 import type { PortfolioImage } from '../types';
 import { usePublicProviderServices } from '@/features/service/hooks/usePublicProviderServices';
@@ -17,9 +16,9 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
   const navigate = useNavigate();
   const { services: apiServices, loading: servicesLoading, error: servicesError } = usePublicProviderServices(providerId);
   // Mặc định tab đầu tiên được chọn
-  const [activeTab, setActiveTab] = useState('Portfolio');
+  const [activeTab, setActiveTab] = useState('Gói dịch vụ');
 
-  const tabs = ['Portfolio', 'Gói dịch vụ', 'Đánh giá', 'Điều khoản'];
+  const tabs = ['Gói dịch vụ', 'Đánh giá', 'Điều khoản'];
 
   const formatPrice = (item: ServiceItem): string => {
     if (item.minPrice != null && item.maxPrice != null && item.minPrice > 0 && item.maxPrice > 0) {
@@ -93,23 +92,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
           exit={{ opacity: 0, y: -10 }}
           transition={{ duration: 0.3 }}
         >
-          {/* TAB 1: PORTFOLIO */}
-          {activeTab === 'Portfolio' && (
-            <div className="space-y-8">
-              <div className="flex items-center justify-between px-2">
-                <h2 className="text-xl font-bold text-[#4A3B6B]">Dự án nổi bật</h2>
-                <div className="flex gap-2">
-                  <span className="px-3 py-1 bg-[#F5F1FF] text-[#8E7AB5] text-xs font-bold rounded-full cursor-pointer hover:bg-[#B59DFF] hover:text-white transition-colors">Tất cả</span>
-                  <span className="px-3 py-1 bg-white text-[#A090C5] text-xs font-bold rounded-full border border-[#F0E6FF] cursor-pointer hover:border-[#B59DFF] transition-colors">Fantasy</span>
-                  <span className="px-3 py-1 bg-white text-[#A090C5] text-xs font-bold rounded-full border border-[#F0E6FF] cursor-pointer hover:border-[#B59DFF] transition-colors">Sci-Fi</span>
-                  <span className="px-3 py-1 bg-white text-[#A090C5] text-xs font-bold rounded-full border border-[#F0E6FF] cursor-pointer hover:border-[#B59DFF] transition-colors">Đường phố</span>
-                </div>
-              </div>
-              <PortfolioGrid images={portfolioItems} />
-            </div>
-          )}
-
-          {/* TAB 2: GÓI DỊCH VỤ */}
+          {/* TAB 1: GÓI DỊCH VỤ */}
           {activeTab === 'Gói dịch vụ' && (
             <div>
               {servicesLoading && (
@@ -193,7 +176,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
             </div>
           )}
 
-          {/* TAB 3: ĐIỀU KHOẢN */}
+          {/* TAB 2: ĐIỀU KHOẢN */}
           {activeTab === 'Điều khoản' && (
             <div className="bg-white border border-[#F0E6FF] rounded-3xl p-8 space-y-6">
               <h2 className="text-xl font-bold text-[#4A3B6B]">Điều khoản & Chính sách</h2>
@@ -220,7 +203,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
             </div>
           )}
 
-          {/* TAB 4: ĐÁNH GIÁ */}
+          {/* TAB 3: ĐÁNH GIÁ */}
           {activeTab === 'Đánh giá' && (
             <div className="space-y-6">
               <div className="bg-[#F5F1FF] rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 mb-8">
