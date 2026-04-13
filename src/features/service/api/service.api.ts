@@ -82,3 +82,37 @@ export async function getServiceById(
   );
   return response.data.result;
 }
+
+/**
+ * PUT /api/services/:id
+ * Updates an existing service.
+ * Accepts multipart/form-data for file uploads (same fields as create).
+ */
+export async function updateService(
+  serviceId: number,
+  payload: CreateServicePayload
+): Promise<ServiceItem> {
+  const form = new FormData();
+
+  form.append('serviceType', payload.serviceType);
+  form.append('description', payload.description);
+  form.append('slotDurationHours', String(payload.slotDurationHours));
+  form.append('pricePerSlot', String(payload.pricePerSlot));
+  form.append('equipmentDepreciationCost', String(payload.equipmentDepreciationCost));
+  form.append('depositAmount', String(payload.depositAmount));
+  form.append('providerId', String(payload.providerId));
+  form.append('areas', payload.areas);
+
+  form.append('minPrice', String(payload.minPrice));
+  form.append('maxPrice', String(payload.maxPrice));
+
+  for (const file of payload.albumFiles) {
+    form.append('albumFiles', file);
+  }
+
+  const response = await axiosInstance.put<ApiResponse<ServiceItem>>(
+    `/api/services/${serviceId}`,
+    form
+  );
+  return response.data.result;
+}

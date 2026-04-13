@@ -1213,6 +1213,16 @@ export const VI = {
         submit: "Tạo dịch vụ",
       },
     },
+    edit: {
+      pageTitle: "Chỉnh sửa dịch vụ",
+      button: {
+        submit: "Lưu thay đổi",
+      },
+      messages: {
+        updateSuccess: "Cập nhật dịch vụ thành công!",
+        updateError: "Không thể cập nhật dịch vụ. Vui lòng thử lại.",
+      },
+    },
 
     list: {
       pageTitle: "Danh sách dịch vụ",
@@ -1235,6 +1245,28 @@ export const VI = {
       messages: {
         loadError: "Không thể tải danh sách dịch vụ.",
         refresh: "Làm mới",
+      },
+      detail: {
+        title: "Chi tiết dịch vụ",
+        viewButton: "Xem",
+        loading: "Đang tải chi tiết dịch vụ...",
+        loadError: "Không thể tải chi tiết dịch vụ.",
+        serviceName: "Tên dịch vụ",
+        serviceNameFallback: "(Không có tên)",
+        serviceType: "Loại dịch vụ",
+        description: "Mô tả",
+        descriptionEmpty: "Không có mô tả",
+        pricePerSlot: "Giá mỗi slot",
+        minPrice: "Giá tối thiểu",
+        maxPrice: "Giá tối đa",
+        slotDuration: "Thời lượng slot",
+        slotDurationUnit: "giờ",
+        depositAmount: "Tiền cọc",
+        areas: "Khu vực hoạt động",
+        areasEmpty: "Chưa có khu vực nào",
+        images: "Hình ảnh",
+        imagesEmpty: "Chưa có hình ảnh nào",
+        status: "Trạng thái",
       },
     },
   },
