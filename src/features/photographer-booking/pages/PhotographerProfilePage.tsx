@@ -1,8 +1,8 @@
 import { useParams } from 'react-router-dom';
 import { Spin } from 'antd';
+import { motion } from 'motion/react';
 import { ProfileSidebar } from '../components/ProfileSidebar';
 import { ProfileMainContent } from '../components/ProfileMainContent';
-import { motion } from 'motion/react';
 import { useProviderProfile } from '@/features/provider/hooks/useProviderProfile';
 import { useStartChat } from '@/features/chat/hooks/useStartChat';
 
