@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Plus } from "lucide-react"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatRoomList } from "../components/ChatRoomList"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
@@ -26,12 +27,15 @@ import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
 
 function mapSidebar(items: typeof providerSidebarItems): DashboardSidebarItem[] {
-  return items.map((item) => ({
-    key: item.key,
-    label: item.label,
-    icon: <item.icon size={18} />,
-    path: item.path,
-  }))
+  return items.map((item) => {
+    const Icon = item.icon;
+    return {
+      key: item.key,
+      label: item.label,
+      icon: <Icon size={18} />,
+      path: item.path,
+    };
+  });
 }
 
 export default function ProviderMessagesPage() {
@@ -47,6 +51,7 @@ export default function ProviderMessagesPage() {
 
   const currentUserId = getUserId()
   const { rooms, loading: roomsLoading } = useChatRooms()
+  const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Provider profile (needed for providerId to fetch services) ────────
   const { provider } = useCurrentProviderProfile()
@@ -72,10 +77,16 @@ export default function ProviderMessagesPage() {
     setIsLoadingHistory(true)
     clearMessages()
     getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data ?? []))
+      .then((data) => setMessages(data?.content ?? []))
       .catch(() => setMessages([]))
       .finally(() => setIsLoadingHistory(false))
   }, [activeRoom?.roomId, setMessages, clearMessages])
+
+  // Mark room as read when user opens it
+  useEffect(() => {
+    if (activeRoom?.roomId == null || currentUserId === null) return
+    markRoomAsReadService(activeRoom.roomId, currentUserId).then(refetchUnread)
+  }, [activeRoom?.roomId, currentUserId, refetchUnread])
 
   // Connect socket
   useEffect(() => {
@@ -229,7 +240,7 @@ export default function ProviderMessagesPage() {
               )}
             </div>
 
-            {/* Create Order button — only shown when a room is active */}
+            {/* Create Booking button — only shown when a room is active */}
             {canBooking && (
               <button
                 type="button"
@@ -237,7 +248,7 @@ export default function ProviderMessagesPage() {
                 className="inline-flex items-center gap-1.5 rounded-full bg-pink-400 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-pink-500 disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Create Order
+                Create Booking
               </button>
             )}
           </div>
@@ -367,7 +378,7 @@ export default function ProviderMessagesPage() {
               disabled={!selectedServiceId || !bookingDate || bookingLoading}
               className="inline-flex items-center gap-2 rounded-full bg-pink-400 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-500 disabled:opacity-50"
             >
-              {bookingLoading ? "Creating..." : "Create Order"}
+              {bookingLoading ? "Creating..." : "Create Booking"}
             </button>
           </div>
         </DialogContent>

@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, type ReactNode } from "react"
+import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react"
 
 interface ChatPopupState {
   isOpen: boolean
@@ -10,6 +10,8 @@ interface ChatPopupState {
 interface ChatPopupContextValue extends ChatPopupState {
   openChat: (roomId: number, partnerId: number, partnerName?: string) => void
   closeChat: () => void
+  triggerUnreadRefetch: () => void
+  onUnreadRefetch: (fn: () => void) => void
 }
 
 const ChatPopupContext = createContext<ChatPopupContextValue | null>(null)
@@ -22,6 +24,8 @@ export function ChatPopupProvider({ children }: { children: ReactNode }) {
     partnerName: null,
   })
 
+  const unreadRefetchFnRef = useRef<(() => void) | null>(null)
+
   const openChat = useCallback((roomId: number, partnerId: number, partnerName?: string) => {
     setState({ isOpen: true, roomId, partnerId, partnerName: partnerName ?? null })
   }, [])
@@ -30,8 +34,16 @@ export function ChatPopupProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, isOpen: false }))
   }, [])
 
+  const triggerUnreadRefetch = useCallback(() => {
+    unreadRefetchFnRef.current?.()
+  }, [])
+
+  const onUnreadRefetch = useCallback((fn: () => void) => {
+    unreadRefetchFnRef.current = fn
+  }, [])
+
   return (
-    <ChatPopupContext.Provider value={{ ...state, openChat, closeChat }}>
+    <ChatPopupContext.Provider value={{ ...state, openChat, closeChat, triggerUnreadRefetch, onUnreadRefetch }}>
       {children}
     </ChatPopupContext.Provider>
   )

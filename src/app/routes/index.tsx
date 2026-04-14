@@ -15,6 +15,7 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage"
 import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
+import OnboardingRolePage from "@/features/auth/pages/OnboardingRolePage"
 
 import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
@@ -29,6 +30,7 @@ import AddressCreatePage from "@/features/profile/pages/AddressCreatePage"
 import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
 import WalletPage from "@/features/profile/pages/WalletPage"
 import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
+import WalletWithdrawPage from "@/features/profile/pages/WalletWithdrawPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -54,6 +56,9 @@ import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderPro
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
 import ProviderMessagesPage from "@/features/chat/pages/ProviderMessagesPage"
+import StaffLayout from "@/features/staff/layout/StaffLayout"
+import StaffHomePage from "@/features/staff/pages/StaffHomePage"
+import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
 
 export default function AppRoutes() {
   return (
@@ -75,6 +80,7 @@ export default function AppRoutes() {
         <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
         <Route path="profile/wallet" element={<WalletPage />} />
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
+        <Route path="profile/wallet/withdraw" element={<WalletWithdrawPage />} />
         <Route path="photographers" element={<PhotographersListingPage />} />
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="service/:serviceId" element={<ServiceDetailPage />} />
@@ -133,12 +139,21 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff/messages" element={<ProviderMessagesPage />} />
       </Route>
 
+      {/* Staff Routes (Protected) */}
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}>
+        <Route element={<StaffLayout />}>
+          <Route path="/staff" element={<StaffHomePage />} />
+          <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
+        </Route>
+      </Route>
+
       {/* Global Error Pages */}
       <Route path="/no-permission" element={<NoPermissionPage />} />
 
       {/* Auth Pages (public) */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
+      <Route path="/onboarding/role" element={<OnboardingRolePage />} />
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />

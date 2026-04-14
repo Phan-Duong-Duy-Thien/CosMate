@@ -28,7 +28,7 @@ export default function CheckoutReviewPage() {
     setPolicyAccepted,
     setPaymentMethod,
     submitOrder,
-  } = useCheckoutReview();
+  } = useCheckoutReview(navigate);
 
   // Helper to format currency
   const formatCurrency = (amount: number): string => {
@@ -367,6 +367,56 @@ export default function CheckoutReviewPage() {
                   </label>
                 ))}
               </div>
+
+              {/* Wallet balance info - shown immediately after payment options */}
+              {paymentMethod === 'WALLET' && (
+                <div className="mt-4">
+                  {isLoadingWallet && (
+                    <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+                      <div className="mx-auto h-4 w-4 animate-spin rounded-full border-2 border-pink-300 border-t-pink-500" />
+                    </div>
+                  )}
+                  {!isLoadingWallet && isWalletInsufficient && (
+                    <div className="rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50 to-orange-50 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">⚠️</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-800">
+                            {VI.profile.wallet.checkoutValidation.insufficientTitle}
+                          </p>
+                          <div className="mt-1 space-y-0.5 text-xs text-amber-700">
+                            <p>
+                              {VI.profile.wallet.checkoutValidation.balanceLabel}: <span className="font-semibold">{formatCurrency(walletBalance ?? 0)}</span>
+                            </p>
+                            <p>
+                              {VI.profile.wallet.checkoutValidation.missingLabel}: <span className="font-semibold text-orange-600">{formatCurrency(missingAmount)}</span>
+                            </p>
+                          </div>
+                        </div>
+                        <Button
+                          variant="default"
+                          size="sm"
+                          className="shrink-0 rounded-full bg-amber-500 hover:bg-amber-600"
+                          onClick={() => navigate('/profile/wallet/topup')}
+                        >
+                          {VI.profile.wallet.checkoutValidation.topUpCta}
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                  {!isLoadingWallet && !isWalletInsufficient && walletBalance !== null && (
+                    <div className="rounded-2xl border border-green-200 bg-linear-to-r from-green-50 to-emerald-50 p-4">
+                      <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-lg">👛</div>
+                        <div className="flex-1">
+                          <p className="text-xs text-slate-500">{VI.profile.wallet.checkoutValidation.payWithWalletNote}</p>
+                          <p className="text-lg font-bold text-green-700">{formatCurrency(walletBalance)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Policy Checkbox */}
@@ -399,54 +449,6 @@ export default function CheckoutReviewPage() {
             >
               {isSubmitting ? VI.checkout.actions.submitting : VI.checkout.actions.submit}
             </Button>
-
-            {/* Wallet Insufficient Balance Warning */}
-            {paymentMethod === 'WALLET' && isWalletInsufficient && (
-              <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">
-                      {VI.profile.wallet.checkoutValidation.insufficientTitle}
-                    </p>
-                    <div className="mt-2 space-y-1 text-xs text-amber-700">
-                      <p>
-                        {VI.profile.wallet.checkoutValidation.balanceLabel}: {formatCurrency(walletBalance ?? 0)}
-                      </p>
-                      <p>
-                        {VI.profile.wallet.checkoutValidation.totalLabel}: {formatCurrency(computed?.totalToPay ?? 0)}
-                      </p>
-                      <p className="font-medium">
-                        {VI.profile.wallet.checkoutValidation.missingLabel}: {formatCurrency(missingAmount)}
-                      </p>
-                    </div>
-                  </div>
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="rounded-full bg-amber-500 hover:bg-amber-600"
-                    onClick={() => navigate('/profile/wallet/topup')}
-                  >
-                    {VI.profile.wallet.checkoutValidation.topUpCta}
-                  </Button>
-                </div>
-              </div>
-            )}
-
-            {/* Wallet Loading State */}
-            {paymentMethod === 'WALLET' && isLoadingWallet && (
-              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
-                <p className="text-sm text-slate-500">{VI.profile.wallet.loading}</p>
-              </div>
-            )}
-
-            {/* Wallet Success State - show balance */}
-            {paymentMethod === 'WALLET' && !isLoadingWallet && walletBalance !== null && !isWalletInsufficient && (
-              <div className="rounded-2xl border border-green-200 bg-green-50 p-4">
-                <p className="text-sm text-green-700">
-                  {VI.profile.wallet.checkoutValidation.payWithWalletNote}: {formatCurrency(walletBalance)}
-                </p>
-              </div>
-            )}
 
             {/* Back Link */}
             <div className="text-center">

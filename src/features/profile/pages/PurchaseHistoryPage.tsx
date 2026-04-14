@@ -1,7 +1,8 @@
 import { useState, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
-import { message } from "antd"
+import { message, Tooltip } from "antd"
+import { MessageOutlined } from "@ant-design/icons"
 import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
@@ -11,7 +12,7 @@ import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
-import { PackageCheck, Clock, Truck, CheckCircle, XCircle, Star, Flag } from "lucide-react"
+import { PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw } from "lucide-react"
 
 // Format date safely
 const formatDate = (dateString: string | undefined | null): string => {
@@ -36,11 +37,11 @@ const TAB_LABELS: Record<OrderTab, string> = {
 const TAB_ICONS: Record<OrderTab, React.ElementType> = {
   all: PackageCheck,
   wait_confirm: Clock,
-  wait_shipping: Truck,
+  wait_shipping: Package,
   shipping_out: Truck,
-  delivering_out: Truck,
-  in_use: PackageCheck,
-  shipping_back: Truck,
+  delivering_out: PackageOpen,
+  in_use: Eye,
+  shipping_back: RotateCcw,
   completed: CheckCircle,
   cancelled: XCircle,
 }
@@ -293,11 +294,22 @@ export default function PurchaseHistoryPage() {
           </div>
         </div>
 
-        {/* Right: Total amount */}
+        {/* Right: Total amount + Chat */}
         <div className="flex flex-col items-end justify-between text-right">
           <span className="text-base font-bold text-purple-600">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
+          {order.cosplayerId && (
+            <Tooltip title="Nhắn tin">
+              <button
+                type="button"
+                onClick={() => navigate(`/messages?target=${order.cosplayerId}`)}
+                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
+              >
+                <MessageOutlined className="text-lg" />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
     )
@@ -310,34 +322,34 @@ export default function PurchaseHistoryPage() {
           <h1 className="text-2xl font-bold text-slate-900">{VI.profile.orders.title}</h1>
 
           {/* Tab Navigation */}
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
             {(Object.keys(TAB_LABELS) as OrderTab[]).map((tabKey) => {
               const Icon = TAB_ICONS[tabKey]
               const isActive = tab === tabKey
               const count = counts[tabKey]
               return (
-                <button
-                  key={tabKey}
-                  type="button"
-                  onClick={() => handleTabClick(tabKey)}
-                  className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium transition-colors ${
-                    isActive
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                  }`}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{TAB_LABELS[tabKey]}</span>
-                  {count > 0 && (
-                    <span
-                      className={`ml-1 rounded-full px-1.5 py-0.5 text-xs ${
-                        isActive ? "bg-white/20" : "bg-slate-200"
-                      }`}
-                    >
-                      {count}
-                    </span>
-                  )}
-                </button>
+                <Tooltip key={tabKey} title={TAB_LABELS[tabKey]} placement="top">
+                  <button
+                    type="button"
+                    onClick={() => handleTabClick(tabKey)}
+                    className={`relative flex items-center justify-center rounded-full w-10 h-10 transition-colors ${
+                      isActive
+                        ? "bg-purple-600 text-white"
+                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                    }`}
+                  >
+                    <Icon className="h-4 w-4" />
+                    {count > 0 && (
+                      <span
+                        className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+                          isActive ? "bg-white text-purple-600" : "bg-purple-600 text-white"
+                        }`}
+                      >
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
               )
             })}
           </div>

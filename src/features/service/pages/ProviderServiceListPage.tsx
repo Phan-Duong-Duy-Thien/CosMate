@@ -4,12 +4,15 @@
  * Lists all services created by the current provider.
  * Data flow: Page → hooks → services → API → axiosInstance
  */
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Tag, Typography, Button, Spin, Image, Card } from 'antd';
+import { Table, Tag, Typography, Button, Spin, Image, Card, Modal, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
-import { PlusOutlined, ReloadOutlined } from '@ant-design/icons';
+import { PlusOutlined, ReloadOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
+import { CreateServiceForm } from '../components/CreateServiceForm';
+import { ServiceDetailModal } from '../components/ServiceDetailModal';
+import { useViewService } from '../hooks/useViewService';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
 import { useProviderGate } from '@/features/provider/hooks/useProviderGate';
@@ -17,6 +20,7 @@ import { ProviderActivationGate } from '@/features/provider/components/ProviderA
 import { useProviderServices } from '../hooks/useProviderServices';
 import { useProviderVerification } from '@/features/provider/hooks/useProviderVerification';
 import type { ServiceItem } from '../types';
+import { SERVICE_TYPE } from '../types';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
@@ -37,6 +41,13 @@ function deriveSidebarItems(): DashboardSidebarItem[] {
 function deriveBrandName(): string {
   const roles = getRoles();
   return roles.includes(ROLE.PROVIDER_PHOTOGRAPH) ? 'CosMate Photographer' : 'CosMate Event Staff';
+}
+
+function deriveServiceType(): string {
+  const roles = getRoles();
+  return roles.includes(ROLE.PROVIDER_PHOTOGRAPH)
+    ? SERVICE_TYPE.PHOTOGRAPHER
+    : SERVICE_TYPE.EVENT_STAFF;
 }
 
 function deriveCreatePath(): string {
@@ -65,6 +76,10 @@ function formatPrice(value: number | null): string {
 
 export default function ProviderServiceListPage() {
   const navigate = useNavigate();
+  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+
   const {
     verified,
     profileLoading,
@@ -82,10 +97,12 @@ export default function ProviderServiceListPage() {
 
   const { profile } = useProviderVerification();
   const { services, loading, refetch } = useProviderServices(profile?.id ?? 0);
+  const { serviceDetail, loading: viewLoading, error: viewError, open: openView, close: closeView } = useViewService();
 
   const sidebarItems = deriveSidebarItems();
   const brandName = deriveBrandName();
   const createPath = deriveCreatePath();
+  const serviceType = deriveServiceType();
 
   useEffect(() => {
     if (profile?.id) {
@@ -139,6 +156,35 @@ export default function ProviderServiceListPage() {
       key: 'status',
       width: 120,
       render: (val: string) => <Tag color={getStatusTagColor(val)}>{getStatusLabel(val)}</Tag>,
+    },
+    {
+      title: VI.service.list.table.actions,
+      key: 'actions',
+      width: 100,
+      render: (_, record) => (
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={VI.service.list.detail.viewButton}>
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setViewModalOpen(true);
+                openView(record.id);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title={VI.common.actions.edit}>
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setEditingService(record);
+                setEditModalOpen(true);
+              }}
+            />
+          </Tooltip>
+        </div>
+      ),
     },
   ];
 
@@ -203,6 +249,43 @@ export default function ProviderServiceListPage() {
           </Card>
         </div>
       )}
+
+      <Modal
+        open={editModalOpen}
+        title={VI.service.edit?.pageTitle ?? 'Chỉnh sửa dịch vụ'}
+        onCancel={() => {
+          setEditModalOpen(false);
+          setEditingService(null);
+        }}
+        footer={null}
+        width={720}
+        destroyOnClose
+      >
+        {editingService && (
+          <CreateServiceForm
+            mode="edit"
+            serviceType={serviceType as 'Photographer' | 'Event Staff'}
+            providerId={profile?.id ?? 0}
+            editingService={editingService}
+            onSuccess={() => {
+              setEditModalOpen(false);
+              setEditingService(null);
+              refetch();
+            }}
+          />
+        )}
+      </Modal>
+
+      <ServiceDetailModal
+        open={viewModalOpen}
+        loading={viewLoading}
+        service={serviceDetail}
+        error={viewError}
+        onClose={() => {
+          setViewModalOpen(false);
+          closeView();
+        }}
+      />
     </DashboardLayout>
   );
 }

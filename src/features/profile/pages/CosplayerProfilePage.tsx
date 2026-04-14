@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useUserProfile } from "../hooks/useUserProfile"
 import { useUserAddresses } from "../hooks/useUserAddresses"
 import { usePurchaseOrders } from "../hooks/usePurchaseOrders"
+import { useWallet } from "../hooks/useWallet"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
@@ -39,6 +40,7 @@ export default function CosplayerProfilePage() {
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
   const { counts } = usePurchaseOrders("all")
+  const { walletInfo } = useWallet()
 
   const displayedAddresses = showAllAddresses ? addresses : addresses.slice(0, 1)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
@@ -153,7 +155,9 @@ export default function CosplayerProfilePage() {
                         {VI.profile.wallet.title}
                       </h2>
                       <p className="mt-1 text-sm text-slate-600">{VI.profile.wallet.balance}</p>
-                      <p className="mt-2 text-2xl font-bold text-purple-700">0 ₫</p>
+                      <p className="mt-2 text-2xl font-bold text-purple-700">
+                        {walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫
+                      </p>
                     </div>
                     <Button
                       type="button"

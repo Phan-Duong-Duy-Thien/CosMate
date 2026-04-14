@@ -2,7 +2,20 @@ import { useState, useEffect, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight } from 'lucide-react';
+import {
+  AppstoreOutlined,
+  PlusCircleOutlined,
+  CalendarOutlined,
+  CameraOutlined,
+  StarOutlined,
+  SettingOutlined,
+  MessageOutlined,
+  FileTextOutlined,
+  ShoppingOutlined,
+  LayoutOutlined,
+  TeamOutlined,
+} from '@ant-design/icons';
+import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -11,13 +24,15 @@ import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import type { AdminUserProfile } from '@/features/admin/types';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
+import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
 const { Header, Sider, Content } = Layout;
 
 export type DashboardSidebarItem = {
   key: string;
   label: string;
-  icon?: ReactNode;
+  /** LucideIcon reference (preferred) or ReactNode JSX element */
+  icon?: LucideIcon | ReactNode;
   path?: string;
   children?: DashboardSidebarItem[];
 };
@@ -47,19 +62,51 @@ export function DashboardLayout({
   const { userProfile, setUserProfile } = useUserProfile();
   useChatPopup(); // ensure popup context is initialized
 
+  const userId = getUserId();
+  const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null);
+  const { openChat } = useChatPopup();
+
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
+    // Map Lucide icon names to Ant Design icons for the collapsed sidebar
+    const lucideToAntd: Record<string, React.ReactNode> = {
+      LayoutDashboard: <LayoutOutlined />,
+      Package: <AppstoreOutlined />,
+      ShoppingBag: <ShoppingOutlined />,
+      Calendar: <CalendarOutlined />,
+      Star: <StarOutlined />,
+      Settings: <SettingOutlined />,
+      ClipboardList: <FileTextOutlined />,
+      Camera: <CameraOutlined />,
+      Briefcase: <TeamOutlined />,
+      PlusCircle: <PlusCircleOutlined />,
+      MessageCircle: <MessageOutlined />,
+    };
+
     return items.map((item) => {
+      let iconNode: React.ReactNode;
+      if (item.icon) {
+        if (typeof item.icon === 'function') {
+          // Use Ant Design icon when sidebar is collapsed (icon-only mode)
+          const iconName = item.icon.displayName || item.icon.name;
+          iconNode = lucideToAntd[iconName] ?? <item.icon size={16} />;
+        } else {
+          iconNode = item.icon;
+        }
+      } else {
+        iconNode = undefined;
+      }
+
       if (item.children && item.children.length > 0) {
         return {
           key: item.key,
-          icon: item.icon,
+          icon: iconNode,
           label: item.label,
           children: mapToAntdMenuItems(item.children),
         };
       }
       return {
         key: item.key,
-        icon: item.icon,
+        icon: iconNode,
         label: item.label,
         onClick: () => {
           if (item.path) {
@@ -130,6 +177,17 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
       ]);
     }
+    // --- STAFF ROUTES ---
+    else if (path === '/staff') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+      ]);
+    } else if (path.startsWith('/staff/')) {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.withdraw.title },
+      ]);
+    }
   }, [location.pathname, setItems]);
 
   // Fetch user profile for header avatar
@@ -192,6 +250,8 @@ export function DashboardLayout({
           navigate('/provider-photograph/settings');
         } else if (location.pathname.startsWith('/provider-event-staff')) {
           navigate('/provider-event-staff/settings');
+        } else if (location.pathname.startsWith('/staff')) {
+          navigate('/staff/settings');
         } else {
           navigate('/provider/settings');
         }
@@ -231,6 +291,7 @@ export function DashboardLayout({
         {/* Menu */}
         <Menu
           mode="inline"
+          inlineCollapsed={collapsed}
           selectedKeys={[activeKey]}
           defaultOpenKeys={defaultOpenKeys}
           items={menuItems}
@@ -244,6 +305,21 @@ export function DashboardLayout({
           <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            {showChatButton && (
+              <button
+                type="button"
+                onClick={() => openChat(0, 0)}
+                title="Messages"
+                style={{ position: 'relative', background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <MessageCircle size={22} style={{ color: '#64748b' }} />
+                {chatUnreadCount > 0 && (
+                  <span style={{ position: 'absolute', top: 0, right: 0, minWidth: 16, height: 16, padding: '0 3px', borderRadius: 8, backgroundColor: '#ef4444', color: '#fff', fontSize: 9, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', lineHeight: 1 }}>
+                    {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
+                  </span>
+                )}
+              </button>
+            )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', padding: '4px 8px', borderRadius: 8 }}>
                 {userProfile.avatarUrl ? (

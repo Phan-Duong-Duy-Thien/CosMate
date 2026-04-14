@@ -119,6 +119,7 @@ export interface CreateCostumeBasicPayload {
   rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   rentDiscount?: number
   providerId: number
@@ -184,6 +185,7 @@ export interface Costume {
   rentPurpose: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   status: CostumeStatus
   imageUrls: string[]
@@ -214,6 +216,7 @@ export interface UpdateCostumeBasicInput {
   rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   rentDiscount?: number
   imageFiles?: File[]

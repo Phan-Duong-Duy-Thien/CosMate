@@ -31,11 +31,21 @@ export interface CreateOrderPayload {
 }
 
 // Create order response
+// Matches BE: POST /api/orders returns full order object
+// paymentUrl: null for WALLET (no external redirect), string for MoMo/VNPay
+// status: "PAID" if BE processed payment (e.g. WALLET success, MoMo resultCode=0)
+//         "UNPAID" if payment still pending
 export interface CreateOrderResponse {
   id: number;
-  status: 'UNPAID';
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: OrderStatus;
   totalAmount: number;
-  paymentUrl: string;
+  totalDepositAmount: number;
+  createdAt: string;
+  rentDate: string;
+  paymentUrl: string | null;
 }
 
 // Create order params (for service layer)

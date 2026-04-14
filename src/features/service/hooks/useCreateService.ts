@@ -18,36 +18,42 @@ interface UseCreateServiceResult {
   submit: (formData: CreateServiceFormData) => Promise<boolean>;
 }
 
+// Normalize Ant Design InputNumber values that may arrive as formatted strings
+const num = (val: string | number): number => Number(String(val).replace(/,/g, ''));
+
 export function useCreateService(): UseCreateServiceResult {
   const [submitting, setSubmitting] = useState(false);
 
   const submit = useCallback(async (formData: CreateServiceFormData): Promise<boolean> => {
+    const minPrice = num(formData.minPrice);
+    const maxPrice = num(formData.maxPrice);
+
     // Validate required fields
     if (!formData.description.trim()) {
       message.error(VI.service.create.validation.required);
       return false;
     }
-    if (formData.slotDurationHours <= 0) {
+    if (num(formData.slotDurationHours) <= 0) {
       message.error(VI.service.create.validation.positiveNumber);
       return false;
     }
-    if (formData.pricePerSlot < 0) {
+    if (num(formData.pricePerSlot) < 0) {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;
     }
-    if (formData.equipmentDepreciationCost < 0) {
+    if (num(formData.equipmentDepreciationCost) < 0) {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;
     }
-    if (formData.depositAmount < 0) {
+    if (num(formData.depositAmount) < 0) {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;
     }
-    if (formData.minPrice < 0 || formData.maxPrice < 0) {
+    if (minPrice < 0 || maxPrice < 0) {
       message.error(VI.service.create.validation.nonNegativeNumber);
       return false;
     }
-    if (formData.maxPrice > 0 && formData.minPrice > formData.maxPrice) {
+    if (maxPrice > 0 && minPrice > maxPrice) {
       message.error(VI.service.create.validation.minMaxRange);
       return false;
     }
@@ -61,8 +67,7 @@ export function useCreateService(): UseCreateServiceResult {
       await submitService(formData);
       message.success(VI.service.create.messages.createSuccess);
       return true;
-    } catch (err) {
-      console.error('[useCreateService] submit error:', err);
+    } catch {
       message.error(VI.service.create.messages.createError);
       return false;
     } finally {

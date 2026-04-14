@@ -16,7 +16,7 @@ function normalizeToRoleName(role: any): string {
 
 export function getRedirectPath(roles: any[]): string {
   if (!roles || roles.length === 0) {
-    return '/login';
+    return '/onboarding/role';
   }
 
   // Dịch toàn bộ ID số (nếu có) thành chữ để dễ check
@@ -24,7 +24,7 @@ export function getRedirectPath(roles: any[]): string {
 
   // Priority 1: Admin & Superadmin
   if (
-    normalizedRoles.includes(ROLE.ADMIN) || 
+    normalizedRoles.includes(ROLE.ADMIN) ||
     normalizedRoles.includes('ADMIN') ||
     normalizedRoles.includes('SUPERADMIN')
   ) {
@@ -57,19 +57,17 @@ export function getRedirectPath(roles: any[]): string {
 
   // Priority 5: Cosplayer
   if (
-    normalizedRoles.includes(ROLE.COSPLAYER) || 
+    normalizedRoles.includes(ROLE.COSPLAYER) ||
     normalizedRoles.includes('COSPLAYER')
   ) {
     return '/';
   }
 
   // Priority 6: Staff
-  if (normalizedRoles.includes('STAFF')) {
-    // Tạm thời tui đẩy STAFF về trang Admin nhé. 
-    // Nếu sau này ông có trang riêng (ví dụ '/staff') thì sửa lại chỗ này!
-    return '/admin'; 
+  if (normalizedRoles.includes(ROLE.STAFF) || normalizedRoles.includes('STAFF')) {
+    return '/staff';
   }
 
-  // Fallback: No matching role
-  return '/no-permission';
+  // No valid role → onboarding
+  return '/onboarding/role';
 }

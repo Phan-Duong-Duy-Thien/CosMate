@@ -11,6 +11,7 @@ import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
+import { VI } from '@/shared/i18n/vi'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -23,6 +24,7 @@ interface FormValues {
   size: CostumeSizeOption
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   imageFiles: { fileList: UploadFile[] }
 }
@@ -93,6 +95,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       size: values.size,
       numberOfItems: values.numberOfItems,
       pricePerDay: values.pricePerDay,
+      rentDiscount: values.rentDiscount,
       depositAmount: values.depositAmount,
       imageFiles: rawFiles,
     })

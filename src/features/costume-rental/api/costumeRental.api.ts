@@ -36,6 +36,7 @@ export async function createCostumeMultipart(payload: CreateCostumeBasicPayload)
   if (payload.rentPurpose) form.append('rentPurpose', payload.rentPurpose)
   form.append('numberOfItems', String(payload.numberOfItems))
   form.append('pricePerDay', String(payload.pricePerDay))
+  form.append('rentDiscount', String(payload.rentDiscount))
   form.append('depositAmount', String(payload.depositAmount))
   if (typeof payload.rentDiscount === 'number') form.append('rentDiscount', String(payload.rentDiscount))
   form.append('providerId', String(payload.providerId))
@@ -114,4 +115,10 @@ export async function generateCostumeDescriptionByAI(
 
   const wrapped = response.data
   return wrapped?.result ?? ''
+}
+export async function searchCostumes(keyword: string): Promise<CostumeApiResponse<Costume[]>> {
+  const response = await axiosInstance.get<CostumeApiResponse<Costume[]>>('/api/costumes/search', {
+    params: { keyword },
+  })
+  return response.data
 }

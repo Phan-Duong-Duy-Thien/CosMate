@@ -222,12 +222,12 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
   }, [userId, providerId]);
 
   const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
-    if (!providerId) {
-      message.error('Không tìm thấy thông tin nhà cung cấp');
+    if (!userId) {
+      message.error('Không tìm thấy thông tin người dùng');
       return;
     }
     try {
-      await uploadProviderCoverImageSvc(providerId, file);
+      await uploadProviderCoverImageSvc(userId, file);
       message.success('Ảnh bìa đã được cập nhật');
       // refetch provider to update profile data
       const updated = await getProviderByUserId(userId);
@@ -236,7 +236,7 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
       console.error('[useProviderProfileCompletion] upload cover image error:', err);
       message.error('Tải ảnh bìa thất bại');
     }
-  }, [userId, providerId]);
+  }, [userId]);
 
   return {
     addresses,

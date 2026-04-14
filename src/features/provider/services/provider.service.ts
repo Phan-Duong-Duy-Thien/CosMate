@@ -105,7 +105,15 @@ export async function uploadProviderAvatar(userId: number, file: File): Promise<
 
 /**
  * Upload provider cover image
+ *
+ * Uses PUT /api/users/{userId}/avatar which accepts a `coverImage` field.
+ * This works on BOTH the creation page (no providerId yet) and the update page
+ * (provider already exists), as the BE routes by userId internally.
  */
-export async function uploadProviderCoverImageSvc(providerId: number, file: File): Promise<void> {
-  await uploadProviderCoverImage(providerId, file);
+export async function uploadProviderCoverImageSvc(userId: number, file: File): Promise<void> {
+  const formData = new FormData();
+  formData.append('coverImage', file);
+  await axiosInstance.put(`/api/users/${userId}/avatar`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 }

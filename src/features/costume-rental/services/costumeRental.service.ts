@@ -92,6 +92,7 @@ export function buildUpdateCostumeFormData(
   if (input.rentPurpose) form.append('rentPurpose', input.rentPurpose)
   form.append('numberOfItems', String(input.numberOfItems))
   form.append('pricePerDay', String(input.pricePerDay))
+  form.append('rentDiscount', String(input.rentDiscount))
   form.append('depositAmount', String(input.depositAmount))
   if (typeof input.rentDiscount === 'number') form.append('rentDiscount', String(input.rentDiscount))
   form.append('providerId', String(providerId))

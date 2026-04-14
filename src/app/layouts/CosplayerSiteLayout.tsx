@@ -29,7 +29,9 @@ import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
+import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
+import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import bgImage from "@/assets/background.jpg"
@@ -73,7 +75,9 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount, markNotificationRead } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
+  const userId = getUserId()
+  const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
   React.useEffect(() => {
     if (loggedIn) {
@@ -206,6 +210,37 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.notification.title },
       ])
+    } else if (path === "/profile") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile },
+      ])
+    } else if (path === "/profile/purchase-history") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: VI.profile.orders.title },
+      ])
+    } else if (path === "/profile/addresses/new") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Địa chỉ", to: "/profile" },
+        { label: "Thêm địa chỉ" },
+      ])
+    } else if (path === "/profile/wallet") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi" },
+      ])
+    } else if (path === "/profile/wallet/withdraw") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi", to: "/profile/wallet" },
+        { label: VI.profile.wallet.withdrawTitle },
+      ])
     }
   }, [location.pathname, setItems])
 
@@ -230,11 +265,6 @@ export default function CosplayerSiteLayout() {
   ]
 
   const [notifOpen, setNotifOpen] = React.useState(false)
-
-  const markAllRead = async () => {
-    await markAllRead()
-    console.log("Đã đánh dấu tất cả là đã đọc!");
-  };
 
   const notifPopoverContent = (
     <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
@@ -426,14 +456,20 @@ export default function CosplayerSiteLayout() {
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
+            <SearchBar className="hidden md:flex" />
 
             <button
               type="button"
               aria-label="Tin nhắn"
-              className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               onClick={() => openChat(0, 0)}
             >
               <MessageCircle className="h-6 w-6" />
+              {chatUnreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
             </button>
 
             <button

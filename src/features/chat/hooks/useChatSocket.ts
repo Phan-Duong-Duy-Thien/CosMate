@@ -21,7 +21,7 @@ export function useChatSocket(
   const [isConnected, setIsConnected] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
-  const { messages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const { messages, mergeServerMessage } = useChatMessageStore()
 
   // ── Connect socket on mount, disconnect on unmount ───────────────────────
   useEffect(() => {
@@ -44,13 +44,12 @@ export function useChatSocket(
       unsubscribeRef.current()
       unsubscribeRef.current = null
     }
-    clearMessages()
 
     unsubscribeRef.current = subscribeChatRoom(roomId, (msg: ChatMessage) => {
       console.log("[useChatSocket] Server message:", msg)
       mergeServerMessage(msg)
     })
-  }, [isConnected, roomId, mergeServerMessage, clearMessages])
+  }, [isConnected, roomId, mergeServerMessage])
 
   // ── Send message ─────────────────────────────────────────────────────────
   const sendMessage = useCallback(

@@ -1,8 +1,10 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { message } from 'antd';
+import type { NavigateFunction } from 'react-router';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
 import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
 import { submitOrderAndHandleResult } from '../services/order.service';
-import { loadDraft, clearDraft } from '../utils/rentalDraftStorage';
+import { loadDraft } from '../utils/rentalDraftStorage';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume, PaymentMethod } from '@/features/costume-rental/types';
 import { getUserId } from '@/features/auth/services/tokenStorage';
@@ -32,7 +34,7 @@ interface CheckoutActions {
 
 export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
 
-export function useCheckoutReview(): UseCheckoutReviewReturn {
+export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReviewReturn {
   const [state, setState] = useState<CheckoutState>({
     addresses: [],
     draft: null,
@@ -72,7 +74,7 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
         promises.push(
           getUserAddresses(userId)
             .then((addresses) => setState((prev) => ({ ...prev, addresses })))
-            .catch(() => setState((prev) => ({ ...prev, error: 'Không thể tải địa chỉ.' })))
+            .catch(() => { message.error('Không thể tải danh sách địa chỉ.'); setState((prev) => ({ ...prev, error: 'Không thể tải địa chỉ.' })); })
         );
       }
 
@@ -80,7 +82,7 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
         promises.push(
           getCostumeById(draft.costumeId)
             .then((res) => setState((prev) => ({ ...prev, costume: res.result })))
-            .catch(() => setState((prev) => ({ ...prev, error: 'Không thể tải thông tin trang phục.' })))
+            .catch(() => { message.error('Không thể tải thông tin trang phục.'); setState((prev) => ({ ...prev, error: 'Không thể tải thông tin trang phục.' })); })
         );
       }
 
@@ -164,46 +166,65 @@ export function useCheckoutReview(): UseCheckoutReviewReturn {
     const draft = state.draft;
     const totalToPay = computed?.totalToPay ?? 0;
 
-    if (!userId) { setState((prev) => ({ ...prev, error: 'Vui lòng đăng nhập.' })); return; }
-    if (!draft) { setState((prev) => ({ ...prev, error: 'Không có thông tin đơn thuê.' })); return; }
-    if (!selectedAddressId) { setState((prev) => ({ ...prev, error: 'Vui lòng chọn địa chỉ.' })); return; }
-    if (!state.policyAccepted) { setState((prev) => ({ ...prev, error: 'Cần đồng ý điều khoản.' })); return; }
+    if (!userId) { message.error('Vui lòng đăng nhập để tiếp tục.'); setState((prev) => ({ ...prev, error: 'Vui lòng đăng nhập.' })); return; }
+    if (!draft) { message.error('Không tìm thấy thông tin đơn thuê. Vui lòng chọn trang phục.'); setState((prev) => ({ ...prev, error: 'Không có thông tin đơn thuê.' })); return; }
+    if (!selectedAddressId) { message.error('Bạn chưa chọn địa chỉ nhận hàng.'); setState((prev) => ({ ...prev, error: 'Vui lòng chọn địa chỉ.' })); return; }
+    if (!state.policyAccepted) { message.error('Bạn cần đồng ý với điều khoản dịch vụ để tiếp tục.'); setState((prev) => ({ ...prev, error: 'Cần đồng ý điều khoản.' })); return; }
 
     // Check wallet balance if using WALLET payment
     if (paymentMethod === 'WALLET') {
       if (walletBalance === null) {
+        message.error('Đang tải số dư ví. Vui lòng thử lại.');
         setState((prev) => ({ ...prev, error: 'Đang tải số dư ví. Vui lòng thử lại.' }));
         return;
       }
       if (walletBalance < totalToPay) {
         const missing = totalToPay - walletBalance;
-        setState((prev) => ({ ...prev, error: `Số dư ví không đủ. Bạn cần thêm ${missing.toLocaleString('vi-VN')}VNĐ.` }));
+        message.error(`Số dư ví không đủ. Bạn cần thêm ${missing.toLocaleString('vi-VN')} VNĐ để thanh toán.`);
+        setState((prev) => ({ ...prev, error: `Số dư ví không đủ. Cần thêm ${missing.toLocaleString('vi-VN')}VNĐ.` }));
         return;
       }
     }
 
     setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
-      const returnUrl = state.paymentMethod === 'MOMO' ? 'http://localhost:8080/payment/api/momo/return' : 'http://localhost:5173/payment/return';
+      // returnUrl is used only by MoMo/VNPay for gateway redirects.
+      // For WALLET, BE does NOT use returnUrl — omit it entirely by setting it to the payment result page.
+      const returnUrl = `${window.location.origin}/payment/result`;
       const params: CreateOrderParams = {
         cosplayerId: userId,
         costumeId: draft.costumeId,
         rentDay: draft.rentDay,
         rentStart: draft.rentStart,
-        paymentMethod: state.paymentMethod,
+        paymentMethod,
         returnUrl,
         cosplayerAddressId: selectedAddressId,
         selectedAccessoryIds: draft.selectedAccessoryIds,
         selectedRentalOptionId: draft.selectedRentalOptionId,
       };
-      // Service handles redirect logic (gateway or wallet success/fail)
-      await submitOrderAndHandleResult(params);
-      // If we reach here, something went wrong (service should redirect)
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Co loi xay ra. Vui long thu lai.' }));
+
+      const result = await submitOrderAndHandleResult(params);
+
+      // WALLET: navigate using real orderId/status from BE response — no returnUrl involved
+      if (result.type === 'wallet') {
+        navigate(`/payment/result?status=${result.status}&orderId=${result.orderId}`);
+        return;
+      }
+
+      // MoMo/VNPay: redirect to external payment gateway
+      if (result.type === 'gateway') {
+        window.location.href = result.paymentUrl;
+        return;
+      }
+
+      // Failed (no paymentUrl returned by BE)
+      navigate('/payment/result?status=failed&orderId=unknown');
     } catch {
-      setState((prev) => ({ ...prev, isSubmitting: false, error: 'Khong the tao don thue.' }));
+      navigate('/payment/result?status=failed&orderId=unknown');
+    } finally {
+      setState((prev) => ({ ...prev, isSubmitting: false }));
     }
-  }, [state, computed]);
+  }, [state, computed, navigate]);
 
   return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses };
 }
