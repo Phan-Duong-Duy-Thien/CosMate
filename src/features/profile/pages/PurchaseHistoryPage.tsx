@@ -5,6 +5,7 @@ import { message, Tooltip } from "antd"
 import { MessageOutlined } from "@ant-design/icons"
 import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
+import { useServiceOrders, type ServiceOrderTab } from "../hooks/useServiceOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
 import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
@@ -12,15 +13,27 @@ import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
-import { PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw } from "lucide-react"
+import {
+  PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw,
+  CalendarClock, WalletCards, AlertCircle, Ban
+} from "lucide-react"
+import type { ServiceOrder } from "@/features/service/api/booking.api"
 
-// Format date safely
-const formatDate = (dateString: string | undefined | null): string => {
-  if (!dateString) return '-';
-  const date = new Date(dateString);
-  if (isNaN(date.getTime())) return '-';
-  return date.toLocaleDateString('vi-VN');
-};
+// ─── Parent Tab ────────────────────────────────────────────────────────────────
+
+type ParentTab = 'costume' | 'service'
+
+const PARENT_TAB_LABELS: Record<ParentTab, string> = {
+  costume: VI.profile.serviceOrders.tabCostume,
+  service: VI.profile.serviceOrders.tabService,
+}
+
+const PARENT_TAB_ICONS: Record<ParentTab, React.ElementType> = {
+  costume: PackageCheck,
+  service: CalendarClock,
+}
+
+// ─── Costume Order Filter Tabs ────────────────────────────────────────────────
 
 const TAB_LABELS: Record<OrderTab, string> = {
   all: VI.profile.orders.tabAll,
@@ -46,15 +59,80 @@ const TAB_ICONS: Record<OrderTab, React.ElementType> = {
   cancelled: XCircle,
 }
 
+// ─── Service Order Filter Tabs ─────────────────────────────────────────────────
+
+const SERVICE_TAB_LABELS: Record<ServiceOrderTab, string> = {
+  all: VI.profile.orders.tabAll,
+  UNCONFIRM: VI.profile.serviceOrders.statusUnconfirm,
+  UNPAID: VI.profile.serviceOrders.statusUnpaid,
+  PAID: VI.profile.serviceOrders.statusPaid,
+  WAITING_SERVICE_DATE: VI.profile.serviceOrders.statusWaitingServiceDate,
+  IN_SERVICE: VI.profile.serviceOrders.statusInService,
+  COMPLETED: VI.profile.serviceOrders.statusCompleted,
+  DISPUTE: VI.profile.serviceOrders.statusDispute,
+  CANCELLED: VI.profile.serviceOrders.statusCancelled,
+}
+
+const SERVICE_TAB_ICONS: Record<ServiceOrderTab, React.ElementType> = {
+  all: PackageCheck,
+  UNCONFIRM: Clock,
+  UNPAID: WalletCards,
+  PAID: CheckCircle,
+  WAITING_SERVICE_DATE: CalendarClock,
+  IN_SERVICE: Truck,
+  COMPLETED: CheckCircle,
+  DISPUTE: Flag,
+  CANCELLED: Ban,
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+// Format date safely
+const formatDate = (dateString: string | undefined | null): string => {
+  if (!dateString) return '-';
+  const date = new Date(dateString);
+  if (isNaN(date.getTime())) return '-';
+  return date.toLocaleDateString('vi-VN');
+};
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
 export default function PurchaseHistoryPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+
+  // ── Parent tab state ──────────────────────────────────────────────────────
+  const parentParam = searchParams.get("parent") as ParentTab | null
+  const parentTab: ParentTab = parentParam && parentParam in PARENT_TAB_LABELS ? parentParam : 'costume'
+
+  // ── Costume tab state ──────────────────────────────────────────────────────
   const tabParam = searchParams.get("tab") as OrderTab | null
-  const tab: OrderTab = tabParam && tabParam in TAB_LABELS ? tabParam : "all"
+  const costumeTab: OrderTab = tabParam && tabParam in TAB_LABELS ? tabParam : "all"
 
-  const { filteredOrders, counts, loading, error, confirmDelivery, confirmingDeliveryId, returnOrder, returningOrderId, refetch } = usePurchaseOrders(tab)
+  // ── Hook calls ──────────────────────────────────────────────────────────────
+  const {
+    filteredOrders,
+    counts,
+    loading: costumeLoading,
+    error: costumeError,
+    confirmDelivery,
+    confirmingDeliveryId,
+    returnOrder,
+    returningOrderId,
+    refetch: costumeRefetch,
+  } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
-  // Review modal state
+  const {
+    filteredOrders: serviceFilteredOrders,
+    counts: serviceCounts,
+    loading: serviceLoading,
+    error: serviceError,
+    refetch: serviceRefetch,
+    selectedStatus,
+    setStatus,
+  } = useServiceOrders()
+
+  // ── Review modal state ─────────────────────────────────────────────────────
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [reviewOrderId, setReviewOrderId] = useState<number | null>(null)
   const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
@@ -62,30 +140,41 @@ export default function PurchaseHistoryPage() {
   const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
   const { createDispute, disputingOrderId } = useCreateDispute()
 
-  // Confirm delivery modal state
+  // ── Confirm delivery modal state ────────────────────────────────────────────
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
 
-  // Return order modal state
+  // ── Return order modal state ─────────────────────────────────────────────────
   const [returnModalOpen, setReturnModalOpen] = useState(false)
   const [returnOrderId, setReturnOrderId] = useState<number | null>(null)
 
-  // Detail drawer state
+  // ── Detail drawer state ─────────────────────────────────────────────────────
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
 
-  // Dispute modal state
+  // ── Dispute modal state ──────────────────────────────────────────────────────
   const [disputeModalOpen, setDisputeModalOpen] = useState(false)
   const [disputeOrderId, setDisputeOrderId] = useState<number | null>(null)
 
-  const currentFilterLabel = useMemo(() => {
-    return TAB_LABELS[tab]
-  }, [tab])
-
-  const handleTabClick = (newTab: OrderTab) => {
-    navigate(`/profile/purchase-history?tab=${newTab}`)
+  // ── Navigation helpers ────────────────────────────────────────────────────────
+  const handleParentTabClick = (newTab: ParentTab) => {
+    if (newTab === 'costume') {
+      navigate(`/profile/purchase-history?parent=${newTab}&tab=${costumeTab}`)
+    } else {
+      navigate(`/profile/purchase-history?parent=${newTab}`)
+    }
   }
 
+  const currentFilterLabel = useMemo(() => {
+    if (parentTab === 'service') return SERVICE_TAB_LABELS[selectedStatus]
+    return TAB_LABELS[costumeTab]
+  }, [parentTab, costumeTab, selectedStatus])
+
+  const handleTabClick = (newTab: OrderTab) => {
+    navigate(`/profile/purchase-history?parent=${parentTab}&tab=${newTab}`)
+  }
+
+  // ── Costume order handlers ───────────────────────────────────────────────────
   const handleConfirmDelivery = (orderId: number) => {
     setSelectedOrderId(orderId)
     setConfirmModalOpen(true)
@@ -103,7 +192,6 @@ export default function PurchaseHistoryPage() {
     }
   }
 
-  // Handle return order
   const handleReturnOrder = (orderId: number) => {
     setReturnOrderId(orderId)
     setReturnModalOpen(true)
@@ -121,7 +209,6 @@ export default function PurchaseHistoryPage() {
     }
   }
 
-  // Handle create dispute
   const handleCreateDispute = (orderId: number) => {
     setDisputeOrderId(orderId)
     setDisputeModalOpen(true)
@@ -134,13 +221,12 @@ export default function PurchaseHistoryPage() {
       message.success(VI.profile.orders.toastDisputeSuccess)
       setDisputeModalOpen(false)
       setDisputeOrderId(null)
-      refetch()
+      costumeRefetch()
     } else {
       message.error(VI.profile.orders.toastDisputeFailed)
     }
   }
 
-  // Handle review order
   const handleReviewOrder = (orderId: number, cosplayerId: number) => {
     setReviewOrderId(orderId)
     setReviewCosplayerId(cosplayerId)
@@ -161,13 +247,13 @@ export default function PurchaseHistoryPage() {
       setReviewModalOpen(false)
       setReviewOrderId(null)
       setReviewCosplayerId(null)
-      // Optionally refetch orders
-      refetch()
+      costumeRefetch()
     } else {
       message.error(VI.profile.orders.toastReviewFailed)
     }
   }
 
+  // ── Costume order card renderer ─────────────────────────────────────────────
   const renderOrderItem = (order: (typeof filteredOrders)[number]) => {
     const statusLabel = {
       PAID: VI.profile.orders.tabWaitConfirm,
@@ -214,7 +300,7 @@ export default function PurchaseHistoryPage() {
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
               <h3 className="truncate font-semibold text-slate-900">
-                {order.costumeName || 'Trang phục'}
+                {order.costumeName || VI.profile.orders.cardCostumeName}
               </h3>
               <p className="mt-0.5 text-sm font-medium text-slate-500">
                 {VI.profile.orders.orderTitle} {orderCode}
@@ -300,7 +386,7 @@ export default function PurchaseHistoryPage() {
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
           {order.cosplayerId && (
-            <Tooltip title="Nhắn tin">
+            <Tooltip title={VI.profile.serviceOrders.chatTooltip}>
               <button
                 type="button"
                 onClick={() => navigate(`/messages?target=${order.cosplayerId}`)}
@@ -315,79 +401,254 @@ export default function PurchaseHistoryPage() {
     )
   }
 
+  // ── Service order card renderer ─────────────────────────────────────────────
+  const renderServiceOrderItem = (order: ServiceOrder) => {
+    const statusLabel = SERVICE_TAB_LABELS[order.status as ServiceOrderTab] || order.status
+    const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
+
+    return (
+      <div
+        key={order.id}
+        className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
+      >
+        {/* Left: Icon */}
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-purple-50 flex items-center justify-center">
+          <CalendarClock className="h-10 w-10 text-purple-400" />
+        </div>
+
+        {/* Middle: Info */}
+        <div className="flex flex-1 flex-col justify-between">
+          {/* Top row: order code + status badge */}
+          <div className="flex items-start justify-between">
+            <div className="min-w-0 flex-1">
+              <h3 className="truncate font-semibold text-slate-900">
+                {VI.profile.serviceOrders.orderTitle}
+              </h3>
+              <p className="mt-0.5 text-sm font-medium text-slate-500">
+                {orderCode}
+              </p>
+            </div>
+            <span className="ml-2 shrink-0 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-700">
+              {statusLabel}
+            </span>
+          </div>
+
+          {/* Middle row: booking details */}
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+            <span className="flex items-center gap-1">
+              <CalendarClock className="h-3.5 w-3.5" />
+              {order.bookings.length} {order.bookings.length === 1 ? VI.profile.serviceOrders.cardBookings : VI.profile.serviceOrders.cardBookingsCount}
+            </span>
+            <span>{formatDate(order.createdAt)}</span>
+          </div>
+
+          {/* Bottom row: bookings summary */}
+          <div className="mt-2 flex flex-col gap-1">
+            {order.bookings.slice(0, 2).map((booking) => (
+              <div key={booking.id} className="flex flex-wrap items-center gap-x-3 text-xs text-slate-500">
+                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600">
+                  {formatDate(booking.bookingDate)}
+                </span>
+                <span>{booking.timeSlot}</span>
+                <span>{booking.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}</span>
+                <span>{booking.rentSlotAmount} {VI.profile.serviceOrders.cardSlotAmount}</span>
+              </div>
+            ))}
+            {order.bookings.length > 2 && (
+              <span className="text-xs text-slate-400">+{order.bookings.length - 2} {VI.profile.serviceOrders.cardMoreBookings}</span>
+            )}
+          </div>
+        </div>
+
+        {/* Right: Total amount */}
+        <div className="flex flex-col items-end justify-between text-right">
+          <span className="text-base font-bold text-purple-600">
+            {order.totalAmount.toLocaleString('vi-VN')} ₫
+          </span>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Status filter renderer (reused for both tabs) ───────────────────────────
+  const renderStatusFilter = (
+    activeTab: OrderTab | ServiceOrderTab,
+    tabLabels: Record<string, string>,
+    tabIcons: Record<string, React.ElementType>,
+    countsObj: Record<string, number>,
+    onTabClick: (tab: string) => void
+  ) => (
+    <div className="mt-4 flex flex-wrap justify-center gap-2">
+      {(Object.keys(tabLabels) as (OrderTab | ServiceOrderTab)[]).map((tabKey) => {
+        const Icon = tabIcons[tabKey]
+        const isActive = activeTab === tabKey
+        const count = countsObj[tabKey] ?? 0
+        return (
+          <Tooltip key={tabKey} title={tabLabels[tabKey]} placement="top">
+            <button
+              type="button"
+              onClick={() => onTabClick(tabKey)}
+              className={`relative flex items-center justify-center rounded-full w-10 h-10 transition-colors ${
+                isActive
+                  ? "bg-purple-600 text-white"
+                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+              }`}
+            >
+              <Icon className="h-4 w-4" />
+              {count > 0 && (
+                <span
+                  className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+                    isActive ? "bg-white text-purple-600" : "bg-purple-600 text-white"
+                  }`}
+                >
+                  {count > 99 ? VI.common.status.countOverflow : count}
+                </span>
+              )}
+            </button>
+          </Tooltip>
+        )
+      })}
+    </div>
+  )
+
+  // ── Content renderer ─────────────────────────────────────────────────────────
+  const renderContent = (
+    isLoading: boolean,
+    hasError: boolean,
+    isEmpty: boolean,
+    emptyLabel: string,
+    loadErrorLabel: string,
+    renderItem: (item: any) => React.ReactNode,
+    items: any[]
+  ) => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center py-8">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
+          <span className="ml-2 text-slate-600">{VI.common.status.loading}</span>
+        </div>
+      )
+    }
+    if (hasError) {
+      return (
+        <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-600">
+          {loadErrorLabel}
+        </p>
+      )
+    }
+    if (isEmpty) {
+      return (
+        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center">
+          <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
+          <p className="mt-3 text-sm text-slate-500">{emptyLabel}</p>
+        </div>
+      )
+    }
+    return <div className="space-y-3">{items.map(renderItem)}</div>
+  }
+
   return (
     <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#fff6fc] via-[#f6f5ff] to-[#eef7ff] px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900">{VI.profile.orders.title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{VI.profile.serviceOrders.title}</h1>
 
-          {/* Tab Navigation */}
-          <div className="mt-4 flex flex-wrap justify-center gap-2">
-            {(Object.keys(TAB_LABELS) as OrderTab[]).map((tabKey) => {
-              const Icon = TAB_ICONS[tabKey]
-              const isActive = tab === tabKey
-              const count = counts[tabKey]
+          {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
+          <div className="mt-4 flex gap-2">
+            {(Object.keys(PARENT_TAB_LABELS) as ParentTab[]).map((tabKey) => {
+              const Icon = PARENT_TAB_ICONS[tabKey]
+              const isActive = parentTab === tabKey
               return (
-                <Tooltip key={tabKey} title={TAB_LABELS[tabKey]} placement="top">
-                  <button
-                    type="button"
-                    onClick={() => handleTabClick(tabKey)}
-                    className={`relative flex items-center justify-center rounded-full w-10 h-10 transition-colors ${
-                      isActive
-                        ? "bg-purple-600 text-white"
-                        : "bg-slate-100 text-slate-600 hover:bg-slate-200"
-                    }`}
-                  >
-                    <Icon className="h-4 w-4" />
-                    {count > 0 && (
-                      <span
-                        className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                          isActive ? "bg-white text-purple-600" : "bg-purple-600 text-white"
-                        }`}
-                      >
-                        {count > 99 ? '99+' : count}
-                      </span>
-                    )}
-                  </button>
-                </Tooltip>
+                <button
+                  key={tabKey}
+                  type="button"
+                  onClick={() => handleParentTabClick(tabKey)}
+                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                    isActive
+                      ? "bg-purple-600 text-white"
+                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  }`}
+                >
+                  <Icon className="h-4 w-4" />
+                  {PARENT_TAB_LABELS[tabKey]}
+                </button>
               )
             })}
           </div>
 
-          {/* Current Filter Info - only show when not on "all" tab */}
-          {tab !== "all" && (
-            <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-              <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
-              <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
-            </div>
+          {/* ── Costume Orders Content ──────────────────────────────────────── */}
+          {parentTab === 'costume' && (
+            <>
+              {/* Status filter */}
+              {renderStatusFilter(
+                costumeTab,
+                TAB_LABELS,
+                TAB_ICONS,
+                counts,
+                handleTabClick
+              )}
+
+              {/* Current filter info */}
+              {costumeTab !== "all" && (
+                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="mt-6">
+                {renderContent(
+                  costumeLoading,
+                  !!costumeError,
+                  filteredOrders.length === 0,
+                  VI.profile.orders.empty,
+                  VI.profile.orders.loadError,
+                  renderOrderItem,
+                  filteredOrders
+                )}
+              </div>
+            </>
           )}
 
-          {/* Content */}
-          <div className="mt-6">
-            {loading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
-                <span className="ml-2 text-slate-600">{VI.common.status.loading}</span>
+          {/* ── Service Orders Content ──────────────────────────────────────── */}
+          {parentTab === 'service' && (
+            <>
+              {/* Status filter */}
+              {renderStatusFilter(
+                selectedStatus,
+                SERVICE_TAB_LABELS,
+                SERVICE_TAB_ICONS,
+                serviceCounts,
+                (tab) => setStatus(tab as ServiceOrderTab)
+              )}
+
+              {/* Current filter info */}
+              {selectedStatus !== 'all' && (
+                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
+                  <p className="text-xs font-medium text-slate-500">{VI.profile.serviceOrders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                </div>
+              )}
+
+              {/* Content */}
+              <div className="mt-6">
+                {renderContent(
+                  serviceLoading,
+                  !!serviceError,
+                  serviceFilteredOrders.length === 0,
+                  VI.profile.serviceOrders.empty,
+                  VI.profile.serviceOrders.loadError,
+                  renderServiceOrderItem,
+                  serviceFilteredOrders
+                )}
               </div>
-            ) : error ? (
-              <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-600">
-                {VI.profile.orders.loadError}
-              </p>
-            ) : filteredOrders.length === 0 ? (
-              <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center">
-                <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
-                <p className="mt-3 text-sm text-slate-500">{VI.profile.orders.empty}</p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filteredOrders.map(renderOrderItem)}
-              </div>
-            )}
-          </div>
+            </>
+          )}
         </Card>
       </div>
 
-      {/* Confirm Delivery Modal */}
+      {/* ── Modals (only for costume orders) ─────────────────────────────── */}
       <ConfirmDeliveryModal
         open={confirmModalOpen}
         orderId={selectedOrderId || 0}
@@ -399,7 +660,6 @@ export default function PurchaseHistoryPage() {
         onSubmit={handleConfirmSubmit}
       />
 
-      {/* Return Order Modal */}
       <ReturnOrderModal
         open={returnModalOpen}
         orderId={returnOrderId || 0}
@@ -411,7 +671,6 @@ export default function PurchaseHistoryPage() {
         onSubmit={handleReturnSubmit}
       />
 
-      {/* Order Detail Drawer */}
       <OrderDetailDrawer
         open={detailDrawerOpen}
         orderId={detailOrderId}
@@ -421,7 +680,6 @@ export default function PurchaseHistoryPage() {
         }}
       />
 
-      {/* Review Modal */}
       <ReviewModal
         open={reviewModalOpen}
         orderId={reviewOrderId || 0}
@@ -435,7 +693,6 @@ export default function PurchaseHistoryPage() {
         onSubmit={handleReviewSubmit}
       />
 
-      {/* Create Dispute Modal */}
       <CreateDisputeModal
         open={disputeModalOpen}
         orderId={disputeOrderId || 0}

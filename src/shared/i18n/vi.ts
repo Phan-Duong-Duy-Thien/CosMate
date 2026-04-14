@@ -103,6 +103,7 @@ export const VI = {
       pending: "Đang chờ",
       active: "Hoạt động",
       inactive: "Không hoạt động",
+      countOverflow: "99+",
     },
 
     // Toast messages
@@ -860,6 +861,7 @@ export const VI = {
       statusShippingBack: "Đang trả hàng",
       // Card display
       orderTitle: "Đơn hàng",
+      cardCostumeName: "Trang phục",
       orderCodePrefix: "CM",
       cardRentPeriod: "Thuê",
       cardDayCount: "ngày",
@@ -904,6 +906,33 @@ export const VI = {
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },
+    },
+
+    serviceOrders: {
+      title: "Lịch sử đơn hàng",
+      tabCostume: "Đơn thuê trang phục",
+      tabService: "Đơn đặt dịch vụ",
+      empty: "Chưa có đơn đặt dịch vụ nào",
+      loadError: "Không thể tải danh sách đơn đặt dịch vụ",
+      orderTitle: "Đặt dịch vụ",
+      orderCodePrefix: "DV",
+      cardBookingDate: "Ngày đặt",
+      cardTimeSlot: "Khung giờ",
+      cardPeopleCount: "Số người",
+      cardSlotAmount: "Số slot",
+      cardBookings: "Lịch đặt",
+      cardBookingsCount: "lịch đặt",
+      cardMoreBookings: "thêm lịch đặt",
+      statusUnconfirm: "Chờ xác nhận",
+      statusUnpaid: "Chưa thanh toán",
+      statusPaid: "Đã thanh toán",
+      statusWaitingServiceDate: "Chờ ngày dịch vụ",
+      statusInService: "Đang thực hiện",
+      statusCompleted: "Hoàn thành",
+      statusDispute: "Tranh chấp",
+      statusCancelled: "Đã hủy",
+      filterLabel: "Bộ lọc hiện tại",
+      chatTooltip: "Nhắn tin",
     },
 
     wallet: {

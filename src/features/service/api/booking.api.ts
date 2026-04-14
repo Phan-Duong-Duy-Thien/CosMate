@@ -28,6 +28,51 @@ export interface ServiceBookingResult {
   paymentUrl: string | null;
 }
 
+export interface ServiceOrderBooking {
+  id: number;
+  serviceId: number;
+  bookingDate: string;
+  timeSlot: string;
+  numberOfHuman: number;
+  rentSlotAmount: number;
+}
+
+export interface ServiceOrder {
+  id: number;
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: string;
+  totalAmount: number;
+  createdAt: string;
+  bookings: ServiceOrderBooking[];
+}
+
+export interface ApiResponse<T> {
+  code: number;
+  message: string;
+  result: T;
+}
+
+/**
+ * GET /api/service-orders/cosplayer/{userId}
+ * Fetches service orders for the current user (cosplayer side).
+ * @param userId - the cosplayer's user ID
+ * @param statuses - optional comma-separated list of statuses to filter by
+ */
+export async function getServiceOrdersByCosplayer(
+  userId: number,
+  statuses?: string
+): Promise<ServiceOrder[]> {
+  const response = await axiosInstance.get<ApiResponse<ServiceOrder[]>>(
+    `/api/service-orders/cosplayer/${userId}`,
+    {
+      params: statuses ? { statuses } : undefined,
+    }
+  );
+  return response.data.result;
+}
+
 /**
  * POST /api/service-orders/provider-create
  * Creates a service booking (photographer / event staff) from chat.
