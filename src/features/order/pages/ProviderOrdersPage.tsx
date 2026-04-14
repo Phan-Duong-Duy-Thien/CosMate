@@ -148,9 +148,9 @@ export default function ProviderOrdersPage() {
     setDisputeModalOpen(true);
   };
 
-  const handleDisputeSubmit = async (reason: string) => {
+  const handleDisputeSubmit = async () => {
     if (!disputeOrderId) return;
-    const success = await createDispute(disputeOrderId, reason);
+    const success = await createDispute(disputeOrderId);
     if (success) {
       message.success(VI.profile.orders.toastDisputeSuccess);
       setDisputeModalOpen(false);
@@ -257,6 +257,17 @@ export default function ProviderOrdersPage() {
               {VI.provider.orders.actions.deliverOut}
             </Button>
           )}
+          {record.status === 'IN_USE' && (
+            <Button
+              danger
+              size="small"
+              icon={<FlagOutlined />}
+              loading={disputingOrderId === record.id}
+              onClick={() => handleDispute(record.id)}
+            >
+              {VI.dispute.button}
+            </Button>
+          )}
           {record.status === 'SHIPPING_BACK' && (
             <>
               <Button
@@ -275,7 +286,7 @@ export default function ProviderOrdersPage() {
                 loading={disputingOrderId === record.id}
                 onClick={() => handleDispute(record.id)}
               >
-                Khiếu nại
+                {VI.dispute.button}
               </Button>
             </>
           )}

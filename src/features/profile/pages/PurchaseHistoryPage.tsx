@@ -127,9 +127,9 @@ export default function PurchaseHistoryPage() {
     setDisputeModalOpen(true)
   }
 
-  const handleDisputeSubmit = async (reason: string) => {
+  const handleDisputeSubmit = async () => {
     if (!disputeOrderId) return
-    const success = await createDispute(disputeOrderId, reason)
+    const success = await createDispute(disputeOrderId)
     if (success) {
       message.success(VI.profile.orders.toastDisputeSuccess)
       setDisputeModalOpen(false)
@@ -183,7 +183,7 @@ export default function PurchaseHistoryPage() {
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
-    const canCreateDispute = order.status === 'DELIVERING_OUT'
+    const canCreateDispute = isInUse
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
@@ -277,7 +277,7 @@ export default function PurchaseHistoryPage() {
                 className="flex items-center gap-1 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
               >
                 <Flag className="h-3.5 w-3.5" />
-                {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : 'Khiếu nại'}
+                {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
               </button>
             )}
             {isCompleted && (

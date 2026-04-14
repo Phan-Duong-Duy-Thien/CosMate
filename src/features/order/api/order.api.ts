@@ -234,16 +234,9 @@ export async function returnOrder(
 /**
  * Create a dispute for an order
  * @param orderId - The order ID
- * @param reason - The dispute reason (raw string body)
  */
-export async function createDispute(orderId: number, reason: string): Promise<void> {
-  await axiosInstance.post(
-    `/api/disputes?orderId=${orderId}`,
-    reason,
-    {
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    }
-  );
+export async function createDispute(orderId: number): Promise<void> {
+  await axiosInstance.post(`/api/disputes`, null, {
+    params: { orderId },
+  });
 }

@@ -378,13 +378,13 @@ export default function CheckoutReviewPage() {
                   )}
                   {!isLoadingWallet && isWalletInsufficient && (
                     <div className="rounded-2xl border border-amber-200 bg-linear-to-r from-amber-50 to-orange-50 p-4">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-start gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">⚠️</div>
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-amber-800">
+                        <div className="min-w-0 flex-1 space-y-2">
+                          <p className="text-sm font-semibold text-amber-800 leading-tight">
                             {VI.profile.wallet.checkoutValidation.insufficientTitle}
                           </p>
-                          <div className="mt-1 space-y-0.5 text-xs text-amber-700">
+                          <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-amber-700">
                             <p>
                               {VI.profile.wallet.checkoutValidation.balanceLabel}: <span className="font-semibold">{formatCurrency(walletBalance ?? 0)}</span>
                             </p>
@@ -392,15 +392,17 @@ export default function CheckoutReviewPage() {
                               {VI.profile.wallet.checkoutValidation.missingLabel}: <span className="font-semibold text-orange-600">{formatCurrency(missingAmount)}</span>
                             </p>
                           </div>
+                          <div className="flex justify-end">
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="rounded-full bg-amber-500 hover:bg-amber-600 text-white border-0"
+                              onClick={() => navigate('/profile/wallet/topup')}
+                            >
+                              {VI.profile.wallet.checkoutValidation.topUpCta}
+                            </Button>
+                          </div>
                         </div>
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="shrink-0 rounded-full bg-amber-500 hover:bg-amber-600"
-                          onClick={() => navigate('/profile/wallet/topup')}
-                        >
-                          {VI.profile.wallet.checkoutValidation.topUpCta}
-                        </Button>
                       </div>
                     </div>
                   )}

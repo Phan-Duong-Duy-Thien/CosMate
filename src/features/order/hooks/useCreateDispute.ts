@@ -6,17 +6,17 @@ import { useState, useCallback } from 'react';
 import { createDisputeService } from '../services/order.service';
 
 interface UseCreateDisputeResult {
-  createDispute: (orderId: number, reason: string) => Promise<boolean>;
+  createDispute: (orderId: number) => Promise<boolean>;
   disputingOrderId: number | null;
 }
 
 export function useCreateDispute(): UseCreateDisputeResult {
   const [disputingOrderId, setDisputingOrderId] = useState<number | null>(null);
 
-  const createDispute = useCallback(async (orderId: number, reason: string) => {
+  const createDispute = useCallback(async (orderId: number) => {
     setDisputingOrderId(orderId);
     try {
-      await createDisputeService(orderId, reason);
+      await createDisputeService(orderId);
       return true;
     } catch {
       return false;

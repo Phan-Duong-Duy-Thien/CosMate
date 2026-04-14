@@ -27,6 +27,17 @@ export const VI = {
   },
 
   /**
+   * Dispute
+   */
+  dispute: {
+    button: "Khiếu nại",
+    modalTitle: "Khiếu nại đơn hàng",
+    reasonLabel: "Lý do khiếu nại",
+    reasonPlaceholder: "Mô tả chi tiết vấn đề của bạn...",
+    submit: "Gửi khiếu nại",
+  },
+
+  /**
    * Common shared text
    */
   common: {
@@ -824,7 +835,7 @@ export const VI = {
     },
 
     orders: {
-      title: "Đơn mua",
+      title: "Đơn thuê trang phục",
       history: "Xem lịch sử mua hàng",
       pendingConfirm: "Chờ xác nhận",
       pendingPickup: "Chờ lấy hàng",
