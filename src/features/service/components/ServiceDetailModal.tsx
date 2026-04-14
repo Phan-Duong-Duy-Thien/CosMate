@@ -132,7 +132,7 @@ export function ServiceDetailModal({
             </Descriptions.Item>
 
             <Descriptions.Item label={VI.service.list.detail.slotDuration}>
-              {service.slotDurationHours}{VI.service.list.detail.slotDurationUnit}
+              {service.slotDurationHours} {VI.service.list.detail.slotDurationUnit}
             </Descriptions.Item>
 
             <Descriptions.Item label={VI.service.list.detail.depositAmount}>

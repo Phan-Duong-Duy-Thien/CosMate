@@ -6,7 +6,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Tag, Typography, Button, Spin, Image, Card, Modal } from 'antd';
+import { Table, Tag, Typography, Button, Spin, Image, Card, Modal, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { PlusOutlined, ReloadOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
@@ -160,29 +160,30 @@ export default function ProviderServiceListPage() {
     {
       title: VI.service.list.table.actions,
       key: 'actions',
-      width: 120,
+      width: 100,
       render: (_, record) => (
-        <>
-          <Button
-            icon={<EyeOutlined />}
-            size="small"
-            style={{ marginRight: 8 }}
-            onClick={() => {
-              setViewModalOpen(true);
-              openView(record.id);
-            }}
-          >
-            {VI.service.list.detail.viewButton}
-          </Button>
-          <Button
-            icon={<EditOutlined />}
-            size="small"
-            onClick={() => {
-              setEditingService(record);
-              setEditModalOpen(true);
-            }}
-          />
-        </>
+        <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={VI.service.list.detail.viewButton}>
+            <Button
+              type="text"
+              icon={<EyeOutlined />}
+              onClick={() => {
+                setViewModalOpen(true);
+                openView(record.id);
+              }}
+            />
+          </Tooltip>
+          <Tooltip title={VI.common.actions.edit}>
+            <Button
+              type="text"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setEditingService(record);
+                setEditModalOpen(true);
+              }}
+            />
+          </Tooltip>
+        </div>
       ),
     },
   ];

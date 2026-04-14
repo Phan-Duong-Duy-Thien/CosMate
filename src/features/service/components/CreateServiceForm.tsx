@@ -35,6 +35,21 @@ import { VI } from '@/shared/i18n/vi';
 const { TextArea } = Input;
 const { Text } = Typography;
 
+/**
+ * Parses an area string from API into structured city/district fields.
+ * API format: "Phường Thủ Đức, Thành phố Hồ Chí Minh"
+ * Falls back gracefully on invalid or unexpected formats.
+ */
+function parseAreaString(area: string): { city: string; district: string } {
+  if (!area) return { city: '', district: '' };
+  const parts = area.split(',').map((p) => p.trim());
+  if (parts.length >= 2) {
+    // Last part is the city; first is the district/ward
+    return { city: parts[parts.length - 1], district: parts[0] };
+  }
+  return { city: area.trim(), district: area.trim() };
+}
+
 interface ServiceFormProps {
   /** 'create' or 'edit' */
   mode: 'create' | 'edit';
@@ -75,9 +90,14 @@ export function CreateServiceForm({
     selectedDistrict,
   } = useAreaLocations();
 
-  // Set default numeric values once when component mounts (form ref is stable — runs only once)
-  // Only set defaults in create mode; edit mode relies on prefilled values from editingService
+  // Prefill form when mode or editingService changes.
+  // resetFields() must be called FIRST to clear stale state, then setFieldsValue()
+  // sets the correct values immediately — all in one synchronous batch.
   useEffect(() => {
+    form.resetFields();
+    setAreas([]);
+    setFiles([]);
+
     if (mode === 'create') {
       form.setFieldsValue({
         pricePerSlot: 0,
@@ -85,24 +105,36 @@ export function CreateServiceForm({
         depositAmount: 0,
         minPrice: 0,
         maxPrice: 0,
+        slotDurationHours: 1,
+        description: '',
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
-
-  // Prefill form when in edit mode
-  useEffect(() => {
-    if (mode === 'edit' && editingService) {
+    } else if (mode === 'edit' && editingService) {
       form.setFieldsValue({
-        description: editingService.description,
-        slotDurationHours: editingService.slotDurationHours,
-        pricePerSlot: editingService.pricePerSlot,
-        equipmentDepreciationCost: editingService.equipmentDepreciationCost,
-        depositAmount: editingService.depositAmount,
+        description: editingService.description ?? '',
+        slotDurationHours: editingService.slotDurationHours ?? 1,
+        pricePerSlot: editingService.pricePerSlot ?? 0,
+        equipmentDepreciationCost: editingService.equipmentDepreciationCost ?? 0,
+        depositAmount: editingService.depositAmount ?? 0,
         minPrice: editingService.minPrice ?? 0,
         maxPrice: editingService.maxPrice ?? 0,
       });
-      setAreas(editingService.areas ?? []);
+
+      // Parse API string areas into structured ServiceArea[]
+      const parsedAreas: ServiceArea[] = (editingService.areas ?? []).map((area) => {
+        if (typeof area === 'string') return parseAreaString(area);
+        return area;
+      });
+      setAreas(parsedAreas);
+
+      // Auto-select province dropdown to match the first area
+      if (parsedAreas.length > 0) {
+        const first = parsedAreas[0];
+        const matchedProvince = provinces.find((p) => p.name === first.city);
+        if (matchedProvince) {
+          setSelectedProvinceId(matchedProvince.code);
+        }
+      }
+
       // Convert existing imageUrls to UploadFile[] for display
       setFiles(
         (editingService.imageUrls ?? []).map((url, idx) => ({
@@ -115,6 +147,22 @@ export function CreateServiceForm({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, editingService]);
+
+  // Auto-select district when districts are loaded in edit mode
+  useEffect(() => {
+    if (mode !== 'edit' || !editingService || districts.length === 0) return;
+    const parsedAreas: ServiceArea[] = (editingService.areas ?? []).map((area) => {
+      if (typeof area === 'string') return parseAreaString(area);
+      return area;
+    });
+    if (parsedAreas.length === 0) return;
+    const first = parsedAreas[0];
+    const matchedDistrict = districts.find((d) => d.name === first.district);
+    if (matchedDistrict && selectedDistrictId !== matchedDistrict.code) {
+      setSelectedDistrictId(matchedDistrict.code);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [districts]);
 
   // Prefill service area from shop address only in create mode
   useEffect(() => {
@@ -282,6 +330,7 @@ export function CreateServiceForm({
             name="description"
             label={VI.service.create.form.description}
             rules={[{ required: true }]}
+            initialValue=""
           >
             <TextArea
               rows={4}
@@ -308,6 +357,7 @@ export function CreateServiceForm({
               name="pricePerSlot"
               label={VI.service.create.form.pricePerSlot}
               rules={[{ required: true, min: 0 }]}
+              initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <InputNumber
@@ -323,6 +373,7 @@ export function CreateServiceForm({
               name="equipmentDepreciationCost"
               label={VI.service.create.form.equipmentDepreciationCost}
               rules={[{ required: false }]}
+              initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <InputNumber min={0} step={10000} style={{ width: '100%' }} />
@@ -334,6 +385,7 @@ export function CreateServiceForm({
               name="depositAmount"
               label={VI.service.create.form.depositAmount}
               rules={[{ required: true }]}
+              initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <InputNumber min={0} step={10000} style={{ width: '100%' }} />
@@ -345,6 +397,7 @@ export function CreateServiceForm({
               name="minPrice"
               label={VI.service.create.form.minPrice}
               rules={[{ required: true }]}
+              initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <InputNumber min={0} step={10000} style={{ width: '100%' }} />
@@ -356,6 +409,7 @@ export function CreateServiceForm({
               name="maxPrice"
               label={VI.service.create.form.maxPrice}
               rules={[{ required: false }]}
+              initialValue={0}
             >
               <Space.Compact style={{ width: '100%' }}>
                 <InputNumber min={0} step={10000} style={{ width: '100%' }} />
