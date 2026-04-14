@@ -3,6 +3,7 @@ import { useNavigate }from "react-router-dom"
 
 import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
+import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
@@ -120,11 +121,14 @@ export default function CostumeListPage() {
   type UIState = "loading" | "error" | "empty" | "success"
   const uiState: UIState = isLoading ? "loading" : error ? "error" : sortedItems.length === 0 ? "empty" : "success"
 
+  const { addToWishlist } = useWishlist()
+
   const handleReset = () => {
     setFilters(initialFilters)
     setAiResults(null)
   }
   const handleToggleWishlist = (costumeId: string) => {
+    addToWishlist(Number(costumeId))
     setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
   }
 
