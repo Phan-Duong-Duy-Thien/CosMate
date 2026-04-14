@@ -13,22 +13,8 @@ import { useState, useEffect, useCallback, useRef }from 'react'
 import { message }from 'antd'
 import { getCostumesByProvider, getCostumeById } from '../api/costumeRental.api'
 import type { Costume, CostumeStatus } from '../types'
-
-/** Read providerId from JWT payload (same pattern as useCreateCostumeWizard) */
-function getProviderIdFromToken(): number | null {
-  const token = localStorage.getItem('cosmate_access_token')
-  if (!token) return null
-  try {
-    const base64 = token.split('.')[1]
-    if (!base64) return null
-    const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'))
-    const payload = JSON.parse(json) as Record<string, unknown>
-    if (typeof payload.providerId === 'number') return payload.providerId
-    return null
-  } catch {
-    return null
-  }
-}
+import { getUserId } from '@/features/auth/services/tokenStorage'
+import { getProviderByUserId } from '@/features/provider/api/provider.api'
 
 export type CostumeSortKey = 'name' | 'pricePerDay' | 'status' | 'createdAt'
 export type SortOrder = 'asc' | 'desc'
@@ -69,23 +55,37 @@ export function useProviderCostumes() {
   const [modalOpen, setModalOpen] = useState(false)
   const detailRequestIdRef = useRef(0)
 
-  // Resolved once on mount; if null the UI shows an error and skips the API call
-  const providerId = getProviderIdFromToken()
+  const [providerId, setProviderId] = useState<number | null>(null)
 
   /**
    * Fetch the provider's costume list.
    * Called on mount and exposed as `refetch` for manual refresh.
    */
   const fetchCostumes = useCallback(async () => {
-    if (providerId === null) {
-      setError('Không tìm thấy providerId trong token. Vui lòng đăng nhập lại.')
-      return
-    }
     try {
       setIsLoading(true)
       setError(null)
-      const res = await getCostumesByProvider(providerId)
-      setCostumes(res.result ?? [])
+
+      let resolvedProviderId = providerId
+      if (resolvedProviderId === null) {
+        const userId = getUserId()
+        if (!userId) {
+          setError('Không tìm thấy thông tin đăng nhập. Vui lòng đăng nhập lại.')
+          return
+        }
+        const provider = await getProviderByUserId(userId)
+        resolvedProviderId = provider?.id ?? null
+        setProviderId(resolvedProviderId)
+      }
+
+      if (resolvedProviderId === null) {
+        setError('Không tìm thấy hồ sơ provider. Vui lòng hoàn tất hồ sơ provider.')
+        return
+      }
+
+      const res = await getCostumesByProvider(resolvedProviderId)
+      const visible = (res.result ?? []).filter((c) => c.status !== 'DELETED')
+      setCostumes(visible)
     }catch (err) {
       const msg = err instanceof Error ? err.message : 'Không thể tải danh sách trang phục.'
       setError(msg)

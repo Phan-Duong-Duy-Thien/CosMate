@@ -116,9 +116,11 @@ export interface CreateCostumeBasicPayload {
   name: string
   description: string
   size: CostumeSizeOption
+  rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
   depositAmount: number
+  rentDiscount?: number
   providerId: number
   imageFiles: File[]
 }
@@ -145,7 +147,7 @@ export interface RentalOptionInput {
 // â”€â”€â”€ Backend API Types (Provider / Costume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Status values returned by the backend for a Costume */
-export type CostumeStatus = 'AVAILABLE' | 'RENTED' | string
+export type CostumeStatus = 'AVAILABLE' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
 
 export interface CostumeSurcharge {
   id: number
@@ -209,9 +211,11 @@ export interface UpdateCostumeBasicInput {
   name: string
   description?: string
   size: CostumeSizeOption
+  rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
   depositAmount: number
+  rentDiscount?: number
   imageFiles?: File[]
 }
 

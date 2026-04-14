@@ -1,4 +1,4 @@
-﻿/**
+/**
  * useCreateCostumeWizard
  *
  * Manages all state for the 2-phase create-costume wizard.
@@ -8,9 +8,10 @@
 import { useState } from 'react'
 import { message } from 'antd'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
-import { uploadMainThenDetails } from '../services/costumeImages.service'
 import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
+import { getUserId } from '@/features/auth/services/tokenStorage'
+import { getProviderByUserId } from '@/features/provider/api/provider.api'
 import type {
   CreateCostumeBasicPayload,
   SurchargeInput,
@@ -18,27 +19,15 @@ import type {
   RentalOptionInput,
 } from '../types'
 
-interface JwtPayload {
-  providerId?: number
-  [key: string]: unknown
-}
-
-function decodeJwtPayload(token: string): JwtPayload | null {
+async function resolveProviderIdForCurrentUser(): Promise<number | null> {
+  const userId = getUserId()
+  if (!userId) return null
   try {
-    const base64 = token.split('.')[1]
-    if (!base64) return null
-    const json = atob(base64.replace(/-/g, '+').replace(/_/g, '/'))
-    return JSON.parse(json) as JwtPayload
-  }catch {
+    const provider = await getProviderByUserId(userId)
+    return provider?.id ?? null
+  } catch {
     return null
   }
-}
-
-function getProviderIdFromToken(): number | null {
-  const token = localStorage.getItem('cosmate_access_token')
-  if (!token) return null
-  const payload = decodeJwtPayload(token)
-  return payload?.providerId ?? null
 }
 
 export interface UseCreateCostumeWizardReturn {
@@ -84,9 +73,9 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     values: Omit<CreateCostumeBasicPayload, 'providerId'> & { imageFiles: File[] },
   ) => {
     setPhase1Error(null)
-    const providerId = getProviderIdFromToken()
+    const providerId = await resolveProviderIdForCurrentUser()
     if (providerId === null) {
-      setPhase1Error('Khong tim thay providerId trong token. Vui long dang nhap lai.')
+      setPhase1Error('Khong tim thay provider profile. Vui long dang nhap lai.')
       return
     }
     setIsPhase1Loading(true)
@@ -96,20 +85,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
 
-      if (values.imageFiles && values.imageFiles.length > 0) {
-        try {
-          const { failedDetailIndices } = await uploadMainThenDetails(result.id, values.imageFiles)
-          if (failedDetailIndices.length > 0) {
-            message.warning(VI.costumeRental.images.uploadDetailPartialError)
-          }
-        } catch (imgErr) {
-          const msg = imgErr instanceof Error ? imgErr.message : VI.costumeRental.images.uploadError
-          setPhase1Error(msg)
-          message.error(msg)
-          setIsPhase1Loading(false)
-          return
-        }
-      }
 
       setCostumeId(result.id)
       setNumberOfItems(values.numberOfItems)

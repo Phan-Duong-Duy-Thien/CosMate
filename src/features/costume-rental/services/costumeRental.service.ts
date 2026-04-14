@@ -89,9 +89,11 @@ export function buildUpdateCostumeFormData(
   form.append('name', input.name)
   form.append('description', input.description ?? '')
   form.append('size', input.size)
+  if (input.rentPurpose) form.append('rentPurpose', input.rentPurpose)
   form.append('numberOfItems', String(input.numberOfItems))
   form.append('pricePerDay', String(input.pricePerDay))
   form.append('depositAmount', String(input.depositAmount))
+  if (typeof input.rentDiscount === 'number') form.append('rentDiscount', String(input.rentDiscount))
   form.append('providerId', String(providerId))
   if (input.imageFiles && input.imageFiles.length > 0) {
     input.imageFiles.forEach((file) => form.append('imageFiles', file))

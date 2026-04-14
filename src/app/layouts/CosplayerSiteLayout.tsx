@@ -469,7 +469,12 @@ export default function CosplayerSiteLayout() {
             </Popover>
 
             {loggedIn ? (
-              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]} overlayStyle={{ zIndex: 9999 }}>
+              <Dropdown 
+                menu={{ items: userMenuItems }} 
+                placement="bottomRight" 
+                trigger={["click"]} 
+                styles={{ root: { zIndex: 9999 } }}
+              >
                 <div className="cursor-pointer" style={{ display: "inline-flex" }}>
                   {userProfile.avatarUrl ? (
                     <Avatar size={36} src={userProfile.avatarUrl} />

@@ -100,8 +100,9 @@ export function usePublicCostumes() {
     try {
       // Call real API
       const costumes = await getCostumes()
+      const visibleCostumes = costumes.filter((c) => c.status !== 'DELETED')
       // Mock rentalsCount for testing (API chua tra ve truong nay)
-      const mapped = costumes.map((c) => mapCostumeToItem({ ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) }))
+      const mapped = visibleCostumes.map((c) => mapCostumeToItem({ ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) }))
       setItems(mapped)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Khong the tai danh sach trang phuc.')
