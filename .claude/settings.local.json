@@ -63,7 +63,8 @@
       "Bash(python3 -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(list\\(d.keys\\(\\)\\)\\)\")",
       "Bash(curl -s \"https://provinces.open-api.vn/api/d/1\")",
       "Bash(curl -sL \"https://provinces.open-api.vn/api/p/1\")",
-      "Bash(curl -sL \"https://provinces.open-api.vn/api/d/?province=1\")"
+      "Bash(curl -sL \"https://provinces.open-api.vn/api/d/?province=1\")",
+      "Bash(grep -v \"//\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Duy Thien"

@@ -47,7 +47,6 @@ export default function CostumeListPage() {
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [sortKey, setSortKey] = React.useState<SortKey>("relevance")
   const [currentPage, setCurrentPage] = React.useState(1)
-  const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
   const [heroVisible, setHeroVisible] = React.useState(false)
   const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
   const navigate = useNavigate()
@@ -124,9 +123,6 @@ export default function CostumeListPage() {
     setFilters(initialFilters)
     setAiResults(null)
   }
-  const handleToggleWishlist = (costumeId: string) => {
-    setWishlistIds((prev) => prev.includes(costumeId) ? prev.filter((id) => id !== costumeId) : [...prev, costumeId])
-  }
 
   const handleAISearchCompleted = React.useCallback((results: AISearchResultItem[]) => {
     setAiResults(results)
@@ -169,6 +165,10 @@ export default function CostumeListPage() {
       aiSimilarityScore: item.similarityScore * 100,
     }))
   }, [aiResults])
+
+  const handleViewDetail = (costumeId: string) => {
+    navigate(`/costumes/${costumeId}`)
+  }
 
   return (
     <section className="min-h-screen bg-transparent pb-20">
@@ -247,9 +247,7 @@ export default function CostumeListPage() {
 
                 <CostumeGrid
                   costumes={aiGridItems}
-                  wishlistIds={wishlistIds}
-                  onToggleWishlist={handleToggleWishlist}
-                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
+                  onViewDetail={handleViewDetail}
                 />
               </div>
             )}
@@ -282,9 +280,7 @@ export default function CostumeListPage() {
               <>
                 <CostumeGrid
                   costumes={pagedItems}
-                  wishlistIds={wishlistIds}
-                  onToggleWishlist={handleToggleWishlist}
-                  onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
+                  onViewDetail={handleViewDetail}
                 />
                 <Pagination
                   currentPage={displayPage}

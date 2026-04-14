@@ -102,6 +102,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/services',
   },
   {
+    key: 'serviceOrders',
+    label: VI.provider.serviceOrders.sidebar,
+    icon: ClipboardList,
+    path: '/provider-photograph/service-orders',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
@@ -154,6 +160,12 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.service.sidebar.serviceList,
     icon: Package,
     path: '/provider-event-staff/services',
+  },
+  {
+    key: 'serviceOrders',
+    label: VI.provider.serviceOrders.sidebar,
+    icon: ClipboardList,
+    path: '/provider-event-staff/service-orders',
   },
   {
     key: 'serviceCreate',

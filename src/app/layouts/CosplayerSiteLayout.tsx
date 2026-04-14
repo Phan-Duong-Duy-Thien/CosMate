@@ -13,6 +13,7 @@ import {
   Phone,
   Shirt,
   ShoppingCart,
+  Heart,
   Smartphone,
   Sparkles,
   FileText,
@@ -240,6 +241,11 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: "Ví của tôi", to: "/profile/wallet" },
         { label: VI.profile.wallet.withdrawTitle },
+      ])
+    } else if (path === "/wishlist") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Wishlist" },
       ])
     }
   }, [location.pathname, setItems])
@@ -481,6 +487,17 @@ export default function CosplayerSiteLayout() {
               <ShoppingCart className="h-6 w-6" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
             </button>
+
+            <Tooltip title="Wishlist">
+              <button
+                type="button"
+                aria-label="Wishlist"
+                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                onClick={() => navigate('/wishlist')}
+              >
+                <Heart className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
             <Popover
               content={notifPopoverContent}

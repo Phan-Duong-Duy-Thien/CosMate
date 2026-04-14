@@ -23,6 +23,7 @@ export async function createService(
 ): Promise<CreatedService> {
   const form = new FormData();
 
+  form.append('serviceName', payload.serviceName ?? '');
   form.append('serviceType', payload.serviceType);
   form.append('description', payload.description);
   form.append('slotDurationHours', String(payload.slotDurationHours));
@@ -94,6 +95,7 @@ export async function updateService(
 ): Promise<ServiceItem> {
   const form = new FormData();
 
+  form.append('serviceName', payload.serviceName ?? '');
   form.append('serviceType', payload.serviceType);
   form.append('description', payload.description);
   form.append('slotDurationHours', String(payload.slotDurationHours));

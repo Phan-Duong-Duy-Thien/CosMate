@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Plus } from "lucide-react"
+import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
+import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
 import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
@@ -20,9 +22,9 @@ import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { useCreateServiceBooking } from "@/features/service/hooks/useCreateServiceBooking"
 import { useProviderServices } from "@/features/service/hooks/useProviderServices"
 import { useCurrentProviderProfile } from "@/features/provider/hooks/useCurrentProviderProfile"
-import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Input } from "@/shared/components/Input"
+import { Modal } from "antd"
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
 
@@ -44,10 +46,11 @@ export default function ProviderMessagesPage() {
   const [inputValue, setInputValue] = useState("")
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null)
-  const [bookingDate, setBookingDate] = useState("")
+  const [bookingDate, setBookingDate] = useState<dayjs.Dayjs | null>(null)
   const [timeSlot, setTimeSlot] = useState("09:00")
-  const [numberOfHuman, setNumberOfHuman] = useState("1")
-  const [rentSlotAmount, setRentSlotAmount] = useState("1")
+  const [numberOfHuman, setNumberOfHuman] = useState<number>(1)
+  const [rentSlotAmount, setRentSlotAmount] = useState<number>(1)
+  const [form] = Form.useForm()
 
   const currentUserId = getUserId()
   const { rooms, loading: roomsLoading } = useChatRooms()
@@ -126,12 +129,12 @@ export default function ProviderMessagesPage() {
   }
 
   const handleOpenBookingModal = () => {
-    // Reset form
     setSelectedServiceId(null)
-    setBookingDate("")
+    setBookingDate(null)
     setTimeSlot("09:00")
-    setNumberOfHuman("1")
-    setRentSlotAmount("1")
+    setNumberOfHuman(1)
+    setRentSlotAmount(1)
+    form.resetFields()
     setShowBookingModal(true)
   }
 
@@ -141,14 +144,15 @@ export default function ProviderMessagesPage() {
     const result = await createBooking({
       cosplayerId: activeRoom.partnerId,
       serviceId: selectedServiceId,
-      bookingDate,
+      bookingDate: bookingDate.format("YYYY-MM-DD"),
       timeSlot,
-      numberOfHuman: parseInt(numberOfHuman, 10) || 1,
-      rentSlotAmount: parseInt(rentSlotAmount, 10) || 1,
+      numberOfHuman,
+      rentSlotAmount,
     })
 
     if (result) {
       setShowBookingModal(false)
+      message.success(VI.booking.create.success)
     }
   }
 
@@ -165,13 +169,13 @@ export default function ProviderMessagesPage() {
   const canBooking = activeRoom != null && provider != null
 
   return (
-    <DashboardLayout title="Messages" sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
+    <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
 
         {/* LEFT: Conversation List */}
         <div className="flex w-72 shrink-0 flex-col border-r border-slate-100">
           <div className="flex h-14 shrink-0 items-center border-b border-slate-100 px-4">
-            <h2 className="text-base font-semibold text-slate-700">Messages</h2>
+            <h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>
           </div>
           <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
             {roomsLoading ? (
@@ -207,7 +211,7 @@ export default function ProviderMessagesPage() {
                     {activeRoom.partnerAvatar ? (
                       <img
                         src={activeRoom.partnerAvatar || undefined}
-                        alt={activeRoom.partnerName || "Partner"}
+                        alt={activeRoom.partnerName || VI.common.status.noData}
                         className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm"
                       />
                     ) : (
@@ -222,10 +226,10 @@ export default function ProviderMessagesPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="truncate text-sm font-semibold text-slate-800">
-                      {activeRoom.partnerName || "Unknown"}
+                      {activeRoom.partnerName || VI.common.status.noData}
                     </p>
                     <p className="text-xs text-slate-400">
-                      {isConnected ? "Online" : "Offline"}
+                      {isConnected ? VI.common.status.online : VI.common.status.offline}
                     </p>
                   </div>
                 </>
@@ -248,7 +252,7 @@ export default function ProviderMessagesPage() {
                 className="inline-flex items-center gap-1.5 rounded-full bg-pink-400 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-pink-500 disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
-                Create Booking
+                {VI.booking.create.title}
               </button>
             )}
           </div>
@@ -258,19 +262,19 @@ export default function ProviderMessagesPage() {
             {!activeRoom ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
                 <MessageCircle className="h-12 w-12 text-slate-300" />
-                <p className="text-base font-medium">No conversation selected</p>
-                <p className="text-sm">Select a conversation from the list</p>
+                <p className="text-base font-medium">{VI.common.messages.noConversation}</p>
+                <p className="text-sm">{VI.common.messages.selectConversation}</p>
               </div>
             ) : isLoadingHistory ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
-                <p className="text-sm font-medium">Loading...</p>
+                <p className="text-sm font-medium">{VI.common.status.loading}</p>
               </div>
             ) : messages.length === 0 ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
                 <MessageCircle className="h-12 w-12 text-slate-300" />
-                <p className="text-base font-medium">Start a conversation</p>
-                <p className="text-sm">Say hello to get things started!</p>
+                <p className="text-base font-medium">{VI.common.messages.startConversation}</p>
+                <p className="text-sm">{VI.common.messages.sayHello}</p>
               </div>
             ) : (
               <ChatMessageList messages={messages} currentUserId={currentUserId} />
@@ -290,99 +294,124 @@ export default function ProviderMessagesPage() {
       </div>
 
       {/* Create Booking Modal */}
-      <Dialog open={showBookingModal} onOpenChange={setShowBookingModal}>
-        <DialogContent
-          className="max-w-md"
-          onClose={() => setShowBookingModal(false)}
+      <Modal
+        open={showBookingModal}
+        title={VI.booking.create.title}
+        onCancel={() => setShowBookingModal(false)}
+        footer={null}
+        destroyOnClose
+        className="booking-modal"
+      >
+        <p className="text-sm text-slate-500 mb-4">
+          {VI.booking.create.customer}: <strong>{activeRoom?.partnerName}</strong>
+        </p>
+
+        <Form
+          form={form}
+          layout="vertical"
+          className="space-y-3"
+          onFinish={handleSubmitBooking}
         >
-          <h2 className="text-lg font-semibold text-slate-800">Create Booking</h2>
-          <p className="text-sm text-slate-500">
-            Customer: <strong>{activeRoom?.partnerName}</strong>
-          </p>
-
-          {/* Service selection */}
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-slate-700">Service</label>
-            <select
-              value={selectedServiceId ?? ""}
-              onChange={(e) => setSelectedServiceId(e.target.value ? Number(e.target.value) : null)}
-              className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+          <Form.Item
+            label={VI.booking.create.service}
+            name="service"
+            rules={[{ required: true, message: VI.booking.create.selectService }]}
+          >
+            <Select
+              placeholder={VI.booking.create.selectService}
+              value={selectedServiceId}
+              onChange={setSelectedServiceId}
+              size="large"
             >
-              <option value="">-- Select a service --</option>
               {services.map((s) => (
-                <option key={s.id} value={s.id}>
-                  {s.description ? s.description.slice(0, 60) : `Service #${s.id}`}
-                </option>
+                <Select.Option key={s.id} value={s.id}>
+                  <div className="py-0.5">
+                    <div className="font-medium text-slate-800">
+                      {s.serviceName || s.description || `${VI.booking.create.service} #${s.id}`}
+                    </div>
+                    {s.description && s.serviceName && (
+                      <div className="text-xs text-slate-400 truncate">{s.description}</div>
+                    )}
+                  </div>
+                </Select.Option>
               ))}
-            </select>
-          </div>
+            </Select>
+          </Form.Item>
 
-          {/* Booking date + time slot row */}
-          <div className="flex gap-3">
-            <div className="flex-1 space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Booking Date</label>
-              <Input
-                type="date"
+          <div className="grid grid-cols-2 gap-3">
+            <Form.Item
+              label={VI.booking.create.bookingDate}
+              name="bookingDate"
+              rules={[{ required: true, message: VI.booking.create.bookingDate }]}
+            >
+              <DatePicker
+                className="w-full"
+                size="large"
                 value={bookingDate}
-                onChange={(e) => setBookingDate(e.target.value)}
-                className="rounded-xl"
+                onChange={(date) => setBookingDate(date)}
+                format="DD/MM/YYYY"
               />
-            </div>
-            <div className="w-28 space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Time</label>
+            </Form.Item>
+
+            <Form.Item label={VI.booking.create.time} className="mb-0">
               <Input
                 type="time"
                 value={timeSlot}
                 onChange={(e) => setTimeSlot(e.target.value)}
-                className="rounded-xl"
+                size="large"
               />
-            </div>
+            </Form.Item>
           </div>
 
-          {/* Number of humans + rent slot row */}
-          <div className="flex gap-3">
-            <div className="flex-1 space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Number of People</label>
-              <Input
-                type="number"
-                min="1"
+          <div className="grid grid-cols-2 gap-3">
+            <Form.Item
+              label={VI.booking.create.numberOfPeople}
+              name="numberOfHuman"
+              initialValue={1}
+            >
+              <InputNumber
+                min={1}
                 value={numberOfHuman}
-                onChange={(e) => setNumberOfHuman(e.target.value)}
-                className="rounded-xl"
+                onChange={(val) => setNumberOfHuman(val ?? 1)}
+                size="large"
+                className="w-full"
               />
-            </div>
-            <div className="flex-1 space-y-1.5">
-              <label className="text-sm font-medium text-slate-700">Rent Slots</label>
-              <Input
-                type="number"
-                min="1"
+            </Form.Item>
+
+            <Form.Item
+              label={VI.booking.create.price}
+              name="rentSlotAmount"
+              initialValue={1}
+            >
+              <InputNumber
+                min={1}
                 value={rentSlotAmount}
-                onChange={(e) => setRentSlotAmount(e.target.value)}
-                className="rounded-xl"
+                onChange={(val) => setRentSlotAmount(val ?? 1)}
+                size="large"
+                className="w-full"
+                addonAfter="VNĐ"
               />
-            </div>
+            </Form.Item>
           </div>
 
-          {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
               onClick={() => setShowBookingModal(false)}
-              className="rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-50"
+              className="px-5 py-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
-              Cancel
+              {VI.booking.create.cancel}
             </button>
             <button
-              type="button"
-              onClick={handleSubmitBooking}
+              type="submit"
               disabled={!selectedServiceId || !bookingDate || bookingLoading}
-              className="inline-flex items-center gap-2 rounded-full bg-pink-400 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-pink-500 disabled:opacity-50"
+              className="px-5 py-2 rounded-lg bg-pink-400 text-sm font-semibold text-white hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
-              {bookingLoading ? "Creating..." : "Create Booking"}
+              {bookingLoading ? VI.booking.create.creating : VI.booking.create.create}
             </button>
           </div>
-        </DialogContent>
-      </Dialog>
+        </Form>
+      </Modal>
     </DashboardLayout>
   )
 }

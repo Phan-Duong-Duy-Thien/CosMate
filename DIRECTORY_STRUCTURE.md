@@ -1,6 +1,6 @@
 # CosMate_FE — Cấu trúc thư mục (Directory Structure)
 
-> Xuất ngày: 2026-04-07
+> Xuất ngày: 2026-04-14
 
 ```
 src/
@@ -42,6 +42,7 @@ src/
 │       └── separator.tsx
 │
 ├── lib/
+│   ├── datetime.ts
 │   └── utils.ts
 │
 ├── services/
@@ -49,10 +50,12 @@ src/
 │   └── axiosInstance.ts
 │
 ├── shared/
-│   ├── .gitkeep
 │   ├── api/
 │   │   └── vnLocation.api.ts
 │   ├── components/
+│   │   ├── AlertMessage/
+│   │   │   ├── AlertMessage.tsx
+│   │   │   └── index.ts
 │   │   ├── AILoadingMascot.tsx
 │   │   ├── Badge.tsx
 │   │   ├── Breadcrumbs.tsx
@@ -64,6 +67,8 @@ src/
 │   │   ├── RatingStars.tsx
 │   │   ├── ScrollToTop.tsx
 │   │   └── SectionHeader.tsx
+│   ├── constants/
+│   │   └── bankList.ts
 │   ├── data/
 │   │   ├── vietnamLocations.ts
 │   │   └── vietnamLocations.types.ts
@@ -83,16 +88,15 @@ src/
 │   ├── layouts/
 │   │   ├── AdminLayout.tsx
 │   │   ├── CosplayerSiteLayout.tsx
+│   │   ├── CosplayerSiteLayout.tsx
 │   │   └── DashboardLayout.tsx
 │   ├── pages/
 │   │   └── NoPermissionPage.tsx
 │   ├── providers/
-│   │   ├── .gitkeep
 │   │   ├── BreadcrumbProvider.tsx
 │   │   ├── ChatPopupRoot.tsx
 │   │   └── UserProfileProvider.tsx
 │   └── routes/
-│       ├── .gitkeep
 │       ├── ProtectedRoute.tsx
 │       └── index.tsx
 │
@@ -141,6 +145,7 @@ src/
     │   │   ├── CosplayerRegPage.tsx
     │   │   ├── ForgotPasswordPage.tsx
     │   │   ├── LoginPage.tsx
+    │   │   ├── OnboardingRolePage.tsx
     │   │   ├── PhotographerRegPage.tsx
     │   │   ├── ProviderRegPage.tsx
     │   │   ├── RegisterPage.tsx
@@ -166,9 +171,12 @@ src/
     │   │   ├── ChatPopup.tsx
     │   │   ├── ChatPopupContext.tsx
     │   │   ├── ChatRoomList.tsx
-    │   │   └── ProviderChatPanel.tsx
+    │   │   ├── ProviderChatPanel.tsx
+    │   │   ├── ChatMessageStore.ts
+    │   │   └── useUnreadCount.ts
     │   ├── hooks/
     │   │   ├── useChatByRoomId.ts
+    │   │   ├── useChatMessageStore.ts
     │   │   ├── useChatMessages.ts
     │   │   ├── useChatPartner.ts
     │   │   ├── useChatRoom.ts
@@ -229,7 +237,8 @@ src/
     │   │   ├── useProviderCostumes.ts
     │   │   ├── useProviderInfo.ts
     │   │   ├── usePublicCostumeDetail.ts
-    │   │   └── usePublicCostumes.ts
+    │   │   ├── usePublicCostumes.ts
+    │   │   └── useSearchCostumes.ts
     │   ├── mocks/
     │   │   ├── costumes.mock.ts
     │   │   ├── moreFromShop.mock.ts
@@ -292,6 +301,7 @@ src/
     │   │   ├── useCheckoutReview.ts
     │   │   ├── useCreateDispute.ts
     │   │   ├── useOrderDetail.ts
+    │   │   ├── usePaymentVerification.ts
     │   │   ├── usePrepareOrder.ts
     │   │   └── useProviderOrders.ts
     │   ├── pages/
@@ -344,7 +354,8 @@ src/
     │   │   ├── userAddress.api.ts
     │   │   ├── userProfile.api.ts
     │   │   ├── vnLocation.api.ts
-    │   │   └── wallet.api.ts
+    │   │   ├── wallet.api.ts
+    │   │   └── withdraw.api.ts
     │   ├── components/
     │   │   ├── AddressModal.tsx
     │   │   ├── EditProfileModal.tsx
@@ -367,17 +378,20 @@ src/
     │   │   ├── useUserProfile.ts
     │   │   ├── useVnLocation.ts
     │   │   ├── useWallet.ts
-    │   │   └── useWalletTopUp.ts
+    │   │   ├── useWalletTopUp.ts
+    │   │   └── useWithdraw.ts
     │   ├── pages/
     │   │   ├── AddressCreatePage.tsx
     │   │   ├── CosplayerProfilePage.tsx
     │   │   ├── PurchaseHistoryPage.tsx
     │   │   ├── WalletPage.tsx
-    │   │   └── WalletTopUpPage.tsx
+    │   │   ├── WalletTopUpPage.tsx
+    │   │   └── WalletWithdrawPage.tsx
     │   ├── services/
     │   │   ├── userAddress.service.ts
     │   │   ├── userProfile.service.ts
-    │   │   └── wallet.service.ts
+    │   │   ├── wallet.service.ts
+    │   │   └── withdraw.service.ts
     │   └── types.ts
     │
     ├── provider/
@@ -432,28 +446,50 @@ src/
     │
     ├── search/
     │   ├── components/
-    │   │   └── AISearchBar.tsx
+    │   │   ├── AISearchBar.tsx
+    │   │   └── SearchBar.tsx
     │   └── hooks/
     │       └── useAISearch.ts
     │
     ├── service/
     │   ├── api/
+    │   │   ├── booking.api.ts
     │   │   └── service.api.ts
     │   ├── components/
-    │   │   └── CreateServiceForm.tsx
+    │   │   ├── CreateServiceForm.tsx
+    │   │   └── ServiceDetailModal.tsx
     │   ├── hooks/
     │   │   ├── useCreateService.ts
+    │   │   ├── useCreateServiceBooking.ts
     │   │   ├── useProviderServices.ts
     │   │   ├── usePublicProviderServices.ts
     │   │   ├── usePublicServices.ts
-    │   │   └── useServiceDetail.ts
+    │   │   ├── useServiceDetail.ts
+    │   │   ├── useUpdateService.ts
+    │   │   └── useViewService.ts
     │   ├── pages/
     │   │   ├── ProviderCreateServicePage.tsx
     │   │   ├── ProviderServiceListPage.tsx
     │   │   └── ServiceDetailPage.tsx
     │   ├── services/
+    │   │   ├── booking.service.ts
     │   │   └── service.service.ts
     │   └── types.ts
+    │
+    ├── staff/
+    │   ├── constants/
+    │   │   └── sidebar.ts
+    │   ├── hooks/
+    │   │   ├── useApproveWithdraw.ts
+    │   │   ├── useRejectWithdraw.ts
+    │   │   └── useWithdrawRequests.ts
+    │   ├── layout/
+    │   │   └── StaffLayout.tsx
+    │   ├── pages/
+    │   │   ├── StaffHomePage.tsx
+    │   │   └── StaffWithdrawPage.tsx
+    │   └── services/
+    │       └── withdraw.service.ts
     │
     ├── staff-booking/
     │   ├── components/
@@ -475,21 +511,35 @@ src/
     │   │   └── StaffsListingPage.tsx
     │   └── types.ts
     │
-    └── style-quiz/
-        ├── components/
-        │   ├── QuizBoard.tsx
-        │   ├── QuizHero.tsx
-        │   ├── ResultCostumeGrid.tsx
-        │   └── StyleResultCard.tsx
-        ├── constants/
-        │   └── quizQuestions.ts
+    ├── style-quiz/
+    │   ├── components/
+    │   │   ├── QuizBoard.tsx
+    │   │   ├── QuizHero.tsx
+    │   │   ├── ResultCostumeGrid.tsx
+    │   │   └── StyleResultCard.tsx
+    │   ├── constants/
+    │   │   ├── archetypes.ts
+    │   │   └── stageQuestions.ts
+    │   ├── hooks/
+    │   │   └── useStyleQuiz.ts
+    │   ├── pages/
+    │   │   └── StyleQuizPage.tsx
+    │   ├── quizAlgorithm.ts
+    │   ├── services/
+    │   │   └── styleQuiz.service.ts
+    │   └── types.ts
+    │
+    └── wishlist/
+        ├── api/
+        │   └── wishlist.api.ts
         ├── hooks/
-        │   └── useStyleQuiz.ts
+        │   └── useWishlist.ts
         ├── pages/
-        │   └── StyleQuizPage.tsx
+        │   └── WishlistPage.tsx
         ├── services/
-        │   └── styleQuiz.service.ts
-        └── types.ts
+        │   └── wishlist.service.ts
+        └── types/
+            └── index.ts
 ```
 
 ---
@@ -498,9 +548,9 @@ src/
 
 | Mục | Số lượng |
 |-----|----------|
-| **Features** | 14 (admin, auth, chat, costume-rental, general, notification, order, photographer-booking, pose-battle, profile, provider, search, service, staff-booking, style-quiz) |
-| **App layouts** | 3 (AdminLayout, CosplayerSiteLayout, DashboardLayout) |
-| **Shared components** | 13 |
+| **Features** | 16 (admin, auth, chat, costume-rental, general, notification, order, photographer-booking, pose-battle, profile, provider, search, service, staff, staff-booking, style-quiz, wishlist) |
+| **App layouts** | 4 (AdminLayout, CosplayerSiteLayout, DashboardLayout, StaffLayout) |
+| **Shared components** | 14 |
 | **UI components (shadcn)** | 3 |
 | **Services (root)** | 2 (authService, axiosInstance) |
-| **Total files in src/** | ~320 |
+| **Total files in src/** | ~370 |

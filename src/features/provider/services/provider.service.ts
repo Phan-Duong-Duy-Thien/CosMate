@@ -18,6 +18,7 @@ import {
   type UpsertUserAddressPayload,
 } from '@/features/profile/api/userAddress.api';
 import { createUserAddress as createUserAddressSvc } from '@/features/profile/services/userAddress.service';
+import axiosInstance from '@/services/axiosInstance';
 
 /**
  * Get a single user address by ID
@@ -106,14 +107,12 @@ export async function uploadProviderAvatar(userId: number, file: File): Promise<
 /**
  * Upload provider cover image
  *
- * Uses PUT /api/users/{userId}/avatar which accepts a `coverImage` field.
- * This works on BOTH the creation page (no providerId yet) and the update page
- * (provider already exists), as the BE routes by userId internally.
+ * Uses PUT /api/providers/{providerId}/cover-image which accepts a `coverImage` field.
  */
 export async function uploadProviderCoverImageSvc(userId: number, file: File): Promise<void> {
   const formData = new FormData();
   formData.append('coverImage', file);
-  await axiosInstance.put(`/api/users/${userId}/avatar`, formData, {
+  await axiosInstance.put(`/api/providers/${userId}/cover-image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 }

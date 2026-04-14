@@ -1,8 +1,8 @@
 /**
  * CreateDisputeModal
  *
- * UI-only modal for creating a dispute
- * Props: open, orderId, loading, onCancel, onSubmit
+ * UI-only modal for creating a dispute.
+ * Reason is collected for UX but NOT sent to the API (BE handles it internally).
  */
 import { useState, useEffect } from 'react';
 import { Modal, Input, Button } from 'antd';
@@ -13,30 +13,24 @@ interface CreateDisputeModalProps {
   orderId: number;
   loading: boolean;
   onCancel: () => void;
-  onSubmit: (reason: string) => Promise<void>;
+  onSubmit: () => Promise<void>;
 }
 
-export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit }: CreateDisputeModalProps) {
+export function CreateDisputeModal({ open, loading, onCancel, onSubmit }: CreateDisputeModalProps) {
   const [reason, setReason] = useState('');
 
-  // Reset form when modal opens/closes
   useEffect(() => {
-    if (!open) {
-      setReason('');
-    }
+    if (!open) setReason('');
   }, [open]);
 
+  // onSubmit does NOT receive reason — BE handles it internally
   const handleSubmit = async () => {
-    const trimmed = reason.trim();
-    if (!trimmed) {
-      return;
-    }
-    await onSubmit(trimmed);
+    await onSubmit();
   };
 
   return (
     <Modal
-      title="Khiếu nại đơn hàng"
+      title={VI.dispute.modalTitle}
       open={open}
       onCancel={onCancel}
       footer={[
@@ -49,9 +43,8 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
           danger
           loading={loading}
           onClick={handleSubmit}
-          disabled={!reason.trim()}
         >
-          Gửi khiếu nại
+          {VI.dispute.submit}
         </Button>,
       ]}
       width={480}
@@ -60,10 +53,10 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            Lý do khiếu nại <span style={{ color: '#ff4d4f' }}>*</span>
+            {VI.dispute.reasonLabel}
           </label>
           <Input.TextArea
-            placeholder="Mô tả chi tiết lý do khiếu nại của bạn..."
+            placeholder={VI.dispute.reasonPlaceholder}
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             rows={4}
