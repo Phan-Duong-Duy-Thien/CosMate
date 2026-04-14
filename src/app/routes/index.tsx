@@ -48,6 +48,7 @@ import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderC
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
 import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
+import ProviderServiceOrdersPage from "@/features/service/pages/ProviderServiceOrdersPage"
 import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
 import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
 import ProviderCreateServicePage from "@/features/service/pages/ProviderCreateServicePage"
@@ -124,6 +125,7 @@ export default function AppRoutes() {
         <Route path="/provider-photograph" element={<PhotographHomePage />} />
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
+        <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-photograph/settings/completion" element={<ProviderProfileCompletionPage />} />
@@ -135,6 +137,7 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
+        <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-event-staff/settings/completion" element={<ProviderProfileCompletionPage />} />
