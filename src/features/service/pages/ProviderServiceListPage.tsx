@@ -112,6 +112,20 @@ export default function ProviderServiceListPage() {
 
   const columns: TableProps<ServiceItem>['columns'] = [
     {
+      title: VI.service.list.table.serviceName,
+      key: 'serviceName',
+      width: 180,
+      ellipsis: true,
+      render: (_, record) => <Text>{record.serviceName || record.description || '-'}</Text>,
+    },
+    {
+      title: VI.service.list.table.serviceType,
+      dataIndex: 'serviceType',
+      key: 'serviceType',
+      width: 140,
+      render: (val: string) => <Tag color="purple">{val}</Tag>,
+    },
+    {
       title: VI.service.list.table.coverImage,
       key: 'cover',
       width: 80,
@@ -121,13 +135,6 @@ export default function ProviderServiceListPage() {
         ) : (
           <div style={{ width: 60, height: 60, background: '#f0f0f0', borderRadius: 8 }} />
         ),
-    },
-    {
-      title: VI.service.list.table.serviceType,
-      dataIndex: 'serviceType',
-      key: 'serviceType',
-      width: 140,
-      render: (val: string) => <Tag color="purple">{val}</Tag>,
     },
     {
       title: VI.service.list.table.description,

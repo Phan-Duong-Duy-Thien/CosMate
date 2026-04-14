@@ -22,6 +22,7 @@ export async function submitService(
   const num = (val: string | number): number => Number(String(val).replace(/,/g, ''));
 
   const payload: CreateServicePayload = {
+    serviceName: (formData.serviceName ?? '').trim(),
     serviceType: formData.serviceType,
     description: formData.description,
     slotDurationHours: num(formData.slotDurationHours),
@@ -72,6 +73,7 @@ export async function updateService(
   const num = (val: string | number): number => Number(String(val).replace(/,/g, ''));
 
   const payload: CreateServicePayload = {
+    serviceName: (formData.serviceName ?? '').trim(),
     serviceType: formData.serviceType,
     description: formData.description,
     slotDurationHours: num(formData.slotDurationHours),

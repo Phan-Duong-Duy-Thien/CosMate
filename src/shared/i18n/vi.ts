@@ -103,6 +103,9 @@ export const VI = {
       pending: "Đang chờ",
       active: "Hoạt động",
       inactive: "Không hoạt động",
+      online: "Trực tuyến",
+      offline: "Ngoại tuyến",
+      loadingDots: "Đang tải...",
     },
 
     // Toast messages
@@ -138,6 +141,14 @@ export const VI = {
       profile: "Hồ sơ",
       account: "Tài khoản",
       settings: "Cài đặt",
+    },
+
+    messages: {
+      title: "Tin nhắn",
+      noConversation: "Chưa chọn cuộc trò chuyện",
+      selectConversation: "Chọn một cuộc trò chuyện từ danh sách",
+      startConversation: "Bắt đầu trò chuyện",
+      sayHello: "Chào hỏi để bắt đầu!",
     },
   },
 
@@ -523,7 +534,7 @@ export const VI = {
       schedule: "Lịch trình / Khả dụng",
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
-      messages: "Messages",
+      messages: "Tin nhắn",
       // Event Staff
       eventStaffDashboard: "Bảng điều khiển Staff",
       eventStaffSchedule: "Lịch làm việc",
@@ -1186,8 +1197,19 @@ export const VI = {
    */
   booking: {
     create: {
-      success: "Dat dich vu thanh cong!",
-      error: "Khong the tao don dat. Vui long thu lai.",
+      title: "Tạo đơn đặt",
+      customer: "Khách hàng",
+      service: "Dịch vụ",
+      selectService: "-- Chọn dịch vụ --",
+      bookingDate: "Ngày đặt",
+      time: "Thời gian",
+      numberOfPeople: "Số người",
+      price: "Giá dịch vụ",
+      cancel: "Hủy",
+      create: "Tạo đơn đặt",
+      creating: "Đang tạo...",
+      success: "Đặt dịch vụ thành công!",
+      error: "Không thể tạo đơn đặt. Vui lòng thử lại.",
     },
     photographer: {
       title: "Đặt nhiếp ảnh gia",
@@ -1215,6 +1237,8 @@ export const VI = {
     create: {
       pageTitle: "Tạo dịch vụ mới",
       form: {
+        serviceName: "Tên dịch vụ",
+        serviceNamePlaceholder: "Nhập tên dịch vụ...",
         serviceType: "Loại dịch vụ",
         providerId: "Mã nhà cung cấp",
         areas: "Khu vực hoạt động",
@@ -1267,6 +1291,7 @@ export const VI = {
       table: {
         coverImage: "Ảnh",
         serviceType: "Loại dịch vụ",
+        serviceName: "Tên dịch vụ",
         description: "Mô tả",
         slotDuration: "Thời lượng slot",
         pricePerSlot: "Giá mỗi slot",

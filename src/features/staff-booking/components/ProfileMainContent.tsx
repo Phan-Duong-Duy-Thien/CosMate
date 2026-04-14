@@ -150,7 +150,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                       )}
                       <div className="p-5 flex flex-col flex-1">
                         <div className="mb-3">
-                          <h3 className="text-base font-bold text-[#4A3B6B] mb-1">{service.serviceType}</h3>
+                          <h3 className="text-base font-bold text-[#4A3B6B] mb-1">{service.serviceName || service.serviceType}</h3>
                           <div className="text-xl font-black text-[#B59DFF]">{formatPrice(service)}</div>
                         </div>
 

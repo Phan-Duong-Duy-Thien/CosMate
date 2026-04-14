@@ -85,12 +85,14 @@ export function DashboardLayout({
     return items.map((item) => {
       let iconNode: React.ReactNode;
       if (item.icon) {
-        if (typeof item.icon === 'function') {
-          // Use Ant Design icon when sidebar is collapsed (icon-only mode)
-          const iconName = item.icon.displayName || item.icon.name;
-          iconNode = lucideToAntd[iconName] ?? <item.icon size={16} />;
+        // Always render Lucide icon as JSX element, then map to Ant Design equivalent
+        const IconComponent = typeof item.icon === 'function' ? item.icon : null;
+        const renderedIcon = IconComponent ? <IconComponent size={16} /> : item.icon;
+        if (IconComponent) {
+          const iconName = IconComponent.displayName || (IconComponent as any).name;
+          iconNode = lucideToAntd[iconName] ?? renderedIcon;
         } else {
-          iconNode = item.icon;
+          iconNode = renderedIcon;
         }
       } else {
         iconNode = undefined;

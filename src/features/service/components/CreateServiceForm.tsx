@@ -100,6 +100,7 @@ export function CreateServiceForm({
 
     if (mode === 'create') {
       form.setFieldsValue({
+        serviceName: '',
         pricePerSlot: 0,
         equipmentDepreciationCost: 0,
         depositAmount: 0,
@@ -110,6 +111,7 @@ export function CreateServiceForm({
       });
     } else if (mode === 'edit' && editingService) {
       form.setFieldsValue({
+        serviceName: editingService.serviceName ?? '',
         description: editingService.description ?? '',
         slotDurationHours: editingService.slotDurationHours ?? 1,
         pricePerSlot: editingService.pricePerSlot ?? 0,
@@ -216,6 +218,7 @@ export function CreateServiceForm({
         .map((f) => f.originFileObj as File);
 
       const formData = {
+        serviceName: (values.serviceName ?? '').trim(),
         serviceType,
         providerId,
         description: values.description ?? '',
@@ -326,6 +329,18 @@ export function CreateServiceForm({
       {/* Basic Info */}
       <Card title={VI.service.create.form.basicInfo} style={{ borderRadius: 12 }}>
         <Form form={form} layout="vertical">
+          <Form.Item
+            name="serviceName"
+            label={VI.service.create.form.serviceName}
+            rules={[{ required: true }]}
+          >
+            <Input
+              placeholder={VI.service.create.form.serviceNamePlaceholder}
+              showCount
+              maxLength={100}
+            />
+          </Form.Item>
+
           <Form.Item
             name="description"
             label={VI.service.create.form.description}
