@@ -35,6 +35,7 @@ export interface ServiceOrderBooking {
   timeSlot: string;
   numberOfHuman: number;
   rentSlotAmount: number;
+  depositSlotAmount?: number; // from provider API response
 }
 
 export interface ServiceOrder {
@@ -96,4 +97,53 @@ export interface ServiceBookingPayload {
   numberOfHuman: number    // default 1
   rentSlotAmount: number   // default 1
   cosplayerId: number
+}
+
+export type PaymentMethod = 'MOMO' | 'VNPAY' | 'WALLET';
+
+/**
+ * POST /api/service-orders/{id}/confirm-by-cosplayer
+ * Confirms a service order (cosplayer side).
+ */
+export async function confirmServiceOrder(orderId: number): Promise<void> {
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/service-orders/${orderId}/confirm-by-cosplayer`
+  );
+  return response.data.result;
+}
+
+/**
+ * POST /api/service-orders/{id}/pay
+ * Triggers payment for a service order.
+ */
+export async function payServiceOrder(
+  orderId: number,
+  paymentMethod: PaymentMethod,
+  returnUrl: string
+): Promise<string> {
+  const response = await axiosInstance.post<ApiResponse<{ paymentUrl: string }>>(
+    `/api/service-orders/${orderId}/pay`,
+    null,
+    {
+      params: { paymentMethod, returnUrl },
+    }
+  );
+  return response.data.result.paymentUrl;
+}
+
+/**
+ * GET /api/service-orders/provider
+ * Fetches service orders for the provider (staff/photographer side).
+ * @param statuses - optional comma-separated list of statuses to filter by
+ */
+export async function getProviderServiceOrders(
+  statuses?: string
+): Promise<ServiceOrder[]> {
+  const response = await axiosInstance.get<ApiResponse<ServiceOrder[]>>(
+    '/api/service-orders/provider',
+    {
+      params: statuses ? { statuses } : undefined,
+    }
+  );
+  return response.data.result;
 }

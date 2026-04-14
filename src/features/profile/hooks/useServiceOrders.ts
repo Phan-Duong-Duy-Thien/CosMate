@@ -4,8 +4,8 @@
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
-import { fetchServiceOrders } from '@/features/service/services/booking.service';
-import type { ServiceOrder } from '@/features/service/api/booking.api';
+import { fetchServiceOrders, confirmServiceOrder, payServiceOrderFn } from '@/features/service/services/booking.service';
+import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
 
 export type ServiceOrderTab = 'all' | 'UNCONFIRM' | 'UNPAID' | 'PAID' | 'WAITING_SERVICE_DATE' | 'IN_SERVICE' | 'COMPLETED' | 'DISPUTE' | 'CANCELLED';
 
@@ -30,6 +30,9 @@ export interface UseServiceOrdersResult {
   refetch: () => Promise<void>;
   selectedStatus: ServiceOrderTab;
   setStatus: (status: ServiceOrderTab) => void;
+  confirmingOrderId: number | null;
+  confirmAndPay: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
+  payOnly: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
 }
 
 export function useServiceOrders(): UseServiceOrdersResult {
@@ -37,6 +40,8 @@ export function useServiceOrders(): UseServiceOrdersResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<ServiceOrderTab>('all');
+  const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
+  const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
 
   const userId = getUserId();
 
@@ -100,6 +105,41 @@ export function useServiceOrders(): UseServiceOrdersResult {
     await fetchData(selectedStatus);
   }, [fetchData, selectedStatus]);
 
+  const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
+    const returnUrl = `${window.location.origin}/payment/result`;
+    setConfirmingOrderId(orderId);
+    try {
+      await confirmServiceOrder(orderId);
+      const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      return paymentUrl;
+    } catch (err: unknown) {
+      console.error('[useServiceOrders] confirmAndPay failed:', err);
+      const message = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : 'Xác nhận và thanh toán thất bại';
+      throw new Error(message || 'Xác nhận và thanh toán thất bại');
+    } finally {
+      setConfirmingOrderId(null);
+    }
+  }, []);
+
+  const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
+    const returnUrl = `${window.location.origin}/payment/result`;
+    setPayingOrderId(orderId);
+    try {
+      const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      return paymentUrl;
+    } catch (err: unknown) {
+      console.error('[useServiceOrders] payOnly failed:', err);
+      const message = err && typeof err === 'object' && 'response' in err
+        ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+        : 'Thanh toán thất bại';
+      throw new Error(message || 'Thanh toán thất bại');
+    } finally {
+      setPayingOrderId(null);
+    }
+  }, []);
+
   return {
     serviceOrders,
     filteredOrders,
@@ -109,5 +149,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
     refetch,
     selectedStatus,
     setStatus: handleSetStatus,
+    confirmingOrderId,
+    confirmAndPay,
+    payingOrderId,
+    payOnly,
   };
 }

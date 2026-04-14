@@ -13,6 +13,8 @@ import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
+import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
+import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
   PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw,
   CalendarClock, WalletCards, AlertCircle, Ban
@@ -130,6 +132,10 @@ export default function PurchaseHistoryPage() {
     refetch: serviceRefetch,
     selectedStatus,
     setStatus,
+    confirmingOrderId,
+    confirmAndPay,
+    payingOrderId,
+    payOnly,
   } = useServiceOrders()
 
   // ── Review modal state ─────────────────────────────────────────────────────
@@ -152,6 +158,11 @@ export default function PurchaseHistoryPage() {
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
 
+  // ── Payment modal state ──────────────────────────────────────────────────────
+  const [paymentModalOpen, setPaymentModalOpen] = useState(false)
+  const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null)
+  const [paymentModalAction, setPaymentModalAction] = useState<'confirm-pay' | 'pay-only'>('confirm-pay')
+
   // ── Dispute modal state ──────────────────────────────────────────────────────
   const [disputeModalOpen, setDisputeModalOpen] = useState(false)
   const [disputeOrderId, setDisputeOrderId] = useState<number | null>(null)
@@ -172,6 +183,35 @@ export default function PurchaseHistoryPage() {
 
   const handleTabClick = (newTab: OrderTab) => {
     navigate(`/profile/purchase-history?parent=${parentTab}&tab=${newTab}`)
+  }
+
+  // ── Service payment handlers ─────────────────────────────────────────────────
+  const handleOpenPaymentModal = (orderId: number, action: 'confirm-pay' | 'pay-only') => {
+    setPaymentOrderId(orderId)
+    setPaymentModalAction(action)
+    setPaymentModalOpen(true)
+  }
+
+  const handlePaymentConfirm = async (paymentMethod: PaymentMethod) => {
+    if (!paymentOrderId) return
+
+    try {
+      let paymentUrl: string | null = null
+      if (paymentModalAction === 'confirm-pay') {
+        paymentUrl = await confirmAndPay(paymentOrderId, paymentMethod)
+      } else {
+        paymentUrl = await payOnly(paymentOrderId, paymentMethod)
+      }
+      setPaymentModalOpen(false)
+      if (paymentUrl) {
+        message.info(VI.profile.serviceOrders.toastPaySuccess)
+        window.location.href = paymentUrl
+      }
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : VI.profile.serviceOrders.toastPayFailed
+      message.error(msg)
+      // Keep modal open on error
+    }
   }
 
   // ── Costume order handlers ───────────────────────────────────────────────────
@@ -405,6 +445,10 @@ export default function PurchaseHistoryPage() {
   const renderServiceOrderItem = (order: ServiceOrder) => {
     const statusLabel = SERVICE_TAB_LABELS[order.status as ServiceOrderTab] || order.status
     const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
+    const isUnconfirm = order.status === 'UNCONFIRM'
+    const isUnpaid = order.status === 'UNPAID'
+    const isConfirmProcessing = confirmingOrderId === order.id
+    const isPayProcessing = payingOrderId === order.id
 
     return (
       <div
@@ -458,6 +502,27 @@ export default function PurchaseHistoryPage() {
               <span className="text-xs text-slate-400">+{order.bookings.length - 2} {VI.profile.serviceOrders.cardMoreBookings}</span>
             )}
           </div>
+
+          {/* CTA: Confirm & Pay / Pay Now */}
+          {(isUnconfirm || isUnpaid) && (
+            <div className="mt-2">
+              <button
+                type="button"
+                disabled={isConfirmProcessing || isPayProcessing}
+                onClick={() => {
+                  if (isConfirmProcessing || isPayProcessing) return
+                  handleOpenPaymentModal(order.id, isUnconfirm ? 'confirm-pay' : 'pay-only')
+                }}
+                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+              >
+                {isConfirmProcessing || isPayProcessing
+                  ? VI.profile.serviceOrders.btnProcessing
+                  : isUnconfirm
+                    ? VI.profile.serviceOrders.btnConfirmAndPay
+                    : VI.profile.serviceOrders.btnPayNow}
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Right: Total amount */}
@@ -702,6 +767,18 @@ export default function PurchaseHistoryPage() {
           setDisputeOrderId(null)
         }}
         onSubmit={handleDisputeSubmit}
+      />
+
+      <ServicePaymentModal
+        open={paymentModalOpen}
+        onClose={() => setPaymentModalOpen(false)}
+        onConfirm={handlePaymentConfirm}
+        loading={confirmingOrderId !== null || payingOrderId !== null}
+        totalAmount={
+          paymentOrderId != null
+            ? (serviceFilteredOrders.find((o) => o.id === paymentOrderId)?.totalAmount)
+            : undefined
+        }
       />
     </section>
   )

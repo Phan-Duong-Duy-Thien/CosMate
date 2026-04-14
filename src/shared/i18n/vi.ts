@@ -703,6 +703,13 @@ export const VI = {
       empty: "Chưa có đánh giá nào",
       loadError: "Không thể tải danh sách đánh giá",
     },
+
+    serviceOrders: {
+      title: "Quản lý đơn đặt dịch vụ",
+      sidebar: "Đơn đặt dịch vụ",
+      empty: "Chưa có đơn đặt dịch vụ nào",
+      loadError: "Không thể tải danh sách đơn đặt dịch vụ",
+    },
   },
 
   /**
@@ -933,83 +940,101 @@ export const VI = {
       statusCancelled: "Đã hủy",
       filterLabel: "Bộ lọc hiện tại",
       chatTooltip: "Nhắn tin",
+      // Confirm & Pay
+      btnConfirmAndPay: "Xác nhận & Thanh toán",
+      btnPayNow: "Thanh toán ngay",
+      btnProcessing: "Đang xử lý...",
+      toastConfirmPaySuccess: "Xác nhận thành công! Đang chuyển đến thanh toán...",
+      toastConfirmPayFailed: "Xác nhận và thanh toán thất bại",
+      toastPayFailed: "Thanh toán thất bại",
+      toastPaySuccess: "Đang chuyển đến thanh toán...",
     },
 
-    wallet: {
-      title: "Ví của tôi",
-      balance: "Số dư ví",
-      depositBalance: "Tiền cọc",
-      manage: "Quản lý ví",
-      topup: "Nạp tiền vào ví",
-      topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
-      amount: "Số tiền nạp",
-      amountPlaceholder: "Nhập số tiền",
-      submit: "Nạp tiền",
-
-      // Transaction history
-      viewTransactions: "Xem giao dịch",
-      hideTransactions: "Ẩn giao dịch",
-      transactionDate: "Ngày",
-      transactionType: "Loại giao dịch",
-      transactionAmount: "Số tiền",
-      transactionStatus: "Trạng thái",
-      noTransactions: "Chưa có giao dịch nào",
-      loading: "Đang tải...",
-      walletError: "Không thể tải thông tin ví",
-
-      // Wallet checkout validation
-      checkoutValidation: {
-        insufficientTitle: "Số dư ví không đủ",
-        balanceLabel: "Số dư hiện tại",
-        totalLabel: "Tổng cần thanh toán",
-        missingLabel: "Thiếu",
-        topUpCta: "Nạp thêm",
-        payWithWalletNote: "Thanh toán bằng số dư ví CosMate",
-      },
-
-      // Transaction status
-      statusCompleted: "Hoàn thành",
-      statusFailed: "Thất bại",
-      statusPending: "Đang chờ",
-
-      // Transaction types
-      typeTopUp: "Nạp tiền",
-      typePayment: "Thanh toán",
-      typeRefund: "Hoàn tiền",
-      typeDeposit: "Đặt cọc",
-      typeOther: "Khác",
-
-      // Top-up form
-      topUpTitle: "Nạp tiền vào ví",
-      topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
-      paymentMethodLabel: "Phương thức thanh toán",
-      momo: "MoMo",
-      momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
-      vnpay: "VNPAY",
-      vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
-      invalidAmount: "Số tiền phải lớn hơn 0",
-      selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
-      processing: "Đang xử lý...",
-      error: "Có lỗi xảy ra. Vui lòng thử lại.",
-
-      // Withdraw form
-      withdraw: "Rút tiền",
-      withdrawTitle: "Rút tiền từ ví",
-      withdrawDescription: "Nhập số tiền và thông tin tài khoản ngân hàng để rút tiền",
-      withdrawAmountLabel: "Số tiền rút",
-      withdrawAmountPlaceholder: "Nhập số tiền muốn rút",
-      withdrawBankAccountLabel: "Số tài khoản",
-      withdrawBankAccountPlaceholder: "Nhập số tài khoản ngân hàng",
-      withdrawBankNameLabel: "Tên ngân hàng",
-      withdrawBankNamePlaceholder: "Nhập tên ngân hàng",
-      withdrawSubmit: "Rút tiền",
-      withdrawProcessing: "Đang xử lý...",
-      withdrawSuccess: "Yêu cầu rút tiền đã được gửi thành công",
-      withdrawError: "Không thể gửi yêu cầu rút tiền. Vui lòng thử lại.",
-      withdrawValidationInvalidAmount: "Số tiền rút phải lớn hơn 0",
-      withdrawValidationBankAccountRequired: "Vui lòng nhập số tài khoản",
-      withdrawValidationBankNameRequired: "Vui lòng nhập tên ngân hàng",
+    servicePayment: {
+      modalTitle: "Chọn phương thức thanh toán",
+      totalLabel: "Tổng cần thanh toán",
+      btnConfirm: "Xác nhận",
+      btnProcessing: "Đang xử lý...",
     },
+  },
+
+  /**
+   * Wallet page text
+   */
+  wallet: {
+    title: "Ví của tôi",
+    balance: "Số dư ví",
+    depositBalance: "Tiền cọc",
+    manage: "Quản lý ví",
+    topup: "Nạp tiền vào ví",
+    topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
+    amount: "Số tiền nạp",
+    amountPlaceholder: "Nhập số tiền",
+    submit: "Nạp tiền",
+
+    // Transaction history
+    viewTransactions: "Xem giao dịch",
+    hideTransactions: "Ẩn giao dịch",
+    transactionDate: "Ngày",
+    transactionType: "Loại giao dịch",
+    transactionAmount: "Số tiền",
+    transactionStatus: "Trạng thái",
+    noTransactions: "Chưa có giao dịch nào",
+    loading: "Đang tải...",
+    walletError: "Không thể tải thông tin ví",
+
+    // Wallet checkout validation
+    checkoutValidation: {
+      insufficientTitle: "Số dư ví không đủ",
+      balanceLabel: "Số dư hiện tại",
+      totalLabel: "Tổng cần thanh toán",
+      missingLabel: "Thiếu",
+      topUpCta: "Nạp thêm",
+      payWithWalletNote: "Thanh toán bằng số dư ví CosMate",
+    },
+
+    // Transaction status
+    statusCompleted: "Hoàn thành",
+    statusFailed: "Thất bại",
+    statusPending: "Đang chờ",
+
+    // Transaction types
+    typeTopUp: "Nạp tiền",
+    typePayment: "Thanh toán",
+    typeRefund: "Hoàn tiền",
+    typeDeposit: "Đặt cọc",
+    typeOther: "Khác",
+
+    // Top-up form
+    topUpTitle: "Nạp tiền vào ví",
+    topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
+    paymentMethodLabel: "Phương thức thanh toán",
+    momo: "MoMo",
+    momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
+    vnpay: "VNPAY",
+    vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
+    invalidAmount: "Số tiền phải lớn hơn 0",
+    selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
+    processing: "Đang xử lý...",
+    error: "Có lỗi xảy ra. Vui lòng thử lại.",
+
+    // Withdraw form
+    withdraw: "Rút tiền",
+    withdrawTitle: "Rút tiền từ ví",
+    withdrawDescription: "Nhập số tiền và thông tin tài khoản ngân hàng để rút tiền",
+    withdrawAmountLabel: "Số tiền rút",
+    withdrawAmountPlaceholder: "Nhập số tiền muốn rút",
+    withdrawBankAccountLabel: "Số tài khoản",
+    withdrawBankAccountPlaceholder: "Nhập số tài khoản ngân hàng",
+    withdrawBankNameLabel: "Tên ngân hàng",
+    withdrawBankNamePlaceholder: "Nhập tên ngân hàng",
+    withdrawSubmit: "Rút tiền",
+    withdrawProcessing: "Đang xử lý...",
+    withdrawSuccess: "Yêu cầu rút tiền đã được gửi thành công",
+    withdrawError: "Không thể gửi yêu cầu rút tiền. Vui lòng thử lại.",
+    withdrawValidationInvalidAmount: "Số tiền rút phải lớn hơn 0",
+    withdrawValidationBankAccountRequired: "Vui lòng nhập số tài khoản",
+    withdrawValidationBankNameRequired: "Vui lòng nhập tên ngân hàng",
   },
 
   /**
