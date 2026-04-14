@@ -94,6 +94,28 @@ export const VI = {
       inactive: "Không hoạt động",
     },
 
+    // Toast messages
+    toast: {
+      success: "Thành công",
+      error: "Đã xảy ra lỗi",
+      loading: "Đang xử lý...",
+      loginRequired: "Vui lòng đăng nhập để tiếp tục.",
+      wishlist: {
+        addSuccess: "Đã thêm vào danh sách yêu thích.",
+        removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
+        fetchFailed: "Không thể tải danh sách yêu thích.",
+        removeFailed: "Không thể xóa khỏi danh sách yêu thích.",
+        addFailed: "Không thể thêm vào danh sách yêu thích.",
+        loginRequired: "Vui lòng đăng nhập để thêm vào yêu thích.",
+        emptyTitle: "Danh sách yêu thích trống",
+        emptyDescription: "Hãy thêm trang phục bạn thích vào đây nhé!",
+        browseButton: "Khám phá trang phục",
+        itemsCount: "mặt hàng",
+        itemCount: "mặt hàng",
+        viewDetails: "Xem chi tiết",
+      },
+    },
+
     permission: {
       accessDenied: "Không có quyền truy cập",
       noPermissionMessage: "Bạn không có quyền truy cập trang này. Tính năng này có thể chưa được hỗ trợ cho loại tài khoản của bạn. Vui lòng liên hệ hỗ trợ nếu bạn cho rằng đây là lỗi.",
@@ -866,6 +888,8 @@ export const VI = {
       },
       toastReviewSuccess: "Gửi đánh giá thành công",
       toastReviewFailed: "Không thể gửi đánh giá",
+      toastDisputeSuccess: "Đã gửi khiếu nại thành công",
+      toastDisputeFailed: "Gửi khiếu nại thất bại",
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },

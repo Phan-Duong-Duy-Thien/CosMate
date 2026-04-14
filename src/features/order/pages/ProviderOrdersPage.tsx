@@ -152,12 +152,12 @@ export default function ProviderOrdersPage() {
     if (!disputeOrderId) return;
     const success = await createDispute(disputeOrderId, reason);
     if (success) {
-      message.success('Đã gửi khiếu nại thành công');
+      message.success(VI.profile.orders.toastDisputeSuccess);
       setDisputeModalOpen(false);
       setDisputeOrderId(null);
       refetch();
     } else {
-      message.error('Gửi khiếu nại thất bại');
+      message.error(VI.profile.orders.toastDisputeFailed);
     }
   };
 

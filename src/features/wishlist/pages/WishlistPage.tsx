@@ -6,6 +6,7 @@ import { useWishlist } from '../hooks/useWishlist'
 import { Card } from '@/shared/components/Card'
 import { Badge } from '@/shared/components/Badge'
 import { Button } from '@/shared/components/Button'
+import { VI } from '@/shared/i18n/vi'
 import { cn } from '@/lib/utils'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -47,7 +48,7 @@ function WishlistItemCard({
       {/* Remove button */}
       <button
         type="button"
-        aria-label="Remove from wishlist"
+        aria-label="Xóa khỏi danh sách yêu thích"
         disabled={isRemoving}
         className={cn(
           'absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-slate-400 shadow-sm transition-all duration-200 hover:bg-white hover:text-pink-500 hover:shadow-md',
@@ -70,7 +71,7 @@ function WishlistItemCard({
         {firstImage ? (
           <img
             src={firstImage}
-            alt={costume.name || 'Costume'}
+            alt={costume.name || VI.common.toast.error}
             className="h-56 w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
             onClick={() => onViewDetail(costume.id)}
           />
@@ -94,13 +95,13 @@ function WishlistItemCard({
           className="line-clamp-2 cursor-pointer text-sm font-semibold text-slate-800 transition-colors hover:text-pink-600"
           onClick={() => onViewDetail(costume.id)}
         >
-          {costume.name || 'Untitled Costume'}
+          {costume.name || VI.common.status.error}
         </h3>
         <div className="flex items-baseline gap-1.5">
           <span className="text-lg font-bold text-pink-600">
             {displayPrice.toLocaleString('vi-VN')}đ
           </span>
-          <span className="text-xs text-slate-400">/day</span>
+          <span className="text-xs text-slate-400">/ngày</span>
         </div>
         <div className="flex items-center justify-between pt-1">
           <span className="text-xs text-slate-400">
@@ -111,7 +112,7 @@ function WishlistItemCard({
             size="sm"
             onClick={() => onViewDetail(costume.id)}
           >
-            View Details
+            {VI.common.toast.wishlist.viewDetails}
           </Button>
         </div>
       </div>
@@ -140,12 +141,17 @@ export default function WishlistPage() {
     removeFromWishlist(wishlistId)
   }
 
+  const itemCountLabel =
+    wishlistItems.length === 1
+      ? VI.common.toast.wishlist.itemCount
+      : VI.common.toast.wishlist.itemsCount
+
   if (loading && wishlistItems.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
-          <p className="text-sm text-slate-500">Loading wishlist...</p>
+          <p className="text-sm text-slate-500">{VI.common.status.loading}</p>
         </div>
       </div>
     )
@@ -157,10 +163,11 @@ export default function WishlistPage() {
         {/* Header */}
         <div className="mb-6 flex items-center gap-3">
           <Heart className="h-7 w-7 fill-pink-500 text-pink-500" />
-          <h1 className="text-2xl font-bold text-pink-700">My Wishlist</h1>
+          <h1 className="text-2xl font-bold text-pink-700">
+            {VI.common.toast.wishlist.wishlist}
+          </h1>
           <Badge className="bg-pink-100 text-pink-600">
-            {wishlistItems.length}{' '}
-            {wishlistItems.length === 1 ? 'item' : 'items'}
+            {wishlistItems.length} {itemCountLabel}
           </Badge>
         </div>
 
@@ -169,17 +176,17 @@ export default function WishlistPage() {
           <div className="rounded-2xl border border-pink-100 bg-white/80 p-16 text-center shadow-sm">
             <Heart className="mx-auto h-14 w-14 text-pink-200" />
             <h2 className="mt-5 text-xl font-semibold text-slate-700">
-              Your wishlist is empty
+              {VI.common.toast.wishlist.emptyTitle}
             </h2>
             <p className="mt-2 text-sm text-slate-500">
-              Browse costumes and click the heart icon to add them here.
+              {VI.common.toast.wishlist.emptyDescription}
             </p>
             <Button
               variant="soft"
               className="mt-8 rounded-full px-6"
               onClick={() => navigate('/costumes')}
             >
-              Browse Costumes
+              {VI.common.toast.wishlist.browseButton}
             </Button>
           </div>
         ) : (
