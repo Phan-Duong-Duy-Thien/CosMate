@@ -20,6 +20,7 @@ import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
 import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
 import type { UserRole } from '@/types/auth';
+import { MessageCircle } from 'lucide-react';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'pending' | 'unknown';
 
@@ -132,10 +133,8 @@ export default function PaymentResultPage() {
                 </svg>
               </div>
             ) : isSuccess ? (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-pink-100">
+                <MessageCircle className="h-10 w-10 text-pink-500" />
               </div>
             ) : finalStatus === 'pending' ? (
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
