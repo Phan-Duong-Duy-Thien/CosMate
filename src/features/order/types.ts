@@ -78,6 +78,7 @@ export type OrderStatus =
 
 export interface OrderItem {
   id: number;
+  orderType: string; // 'RENT_COSTUME' = costume/rental order, 'RENT_SERVICE' = service order
   status: OrderStatus;
   totalAmount: number;
   depositAmount: number;
