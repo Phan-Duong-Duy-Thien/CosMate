@@ -341,6 +341,27 @@ export const VI = {
       },
     },
 
+    changePassword: {
+      title: "Đổi mật khẩu",
+      oldPassword: "Mật khẩu cũ",
+      newPassword: "Mật khẩu mới",
+      confirmPassword: "Xác nhận mật khẩu mới",
+      placeholders: {
+        oldPassword: "Nhập mật khẩu hiện tại",
+        newPassword: "Nhập mật khẩu mới",
+        confirmPassword: "Nhập lại mật khẩu mới",
+      },
+      submit: "Đổi mật khẩu",
+      success: "Đổi mật khẩu thành công!",
+      error: {
+        required: "Vui lòng điền đầy đủ thông tin.",
+        minLength: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+        passwordMismatch: "Mật khẩu xác nhận không khớp.",
+        failed: "Không thể đổi mật khẩu. Vui lòng thử lại.",
+        notAuthenticated: "Vui lòng đăng nhập để đổi mật khẩu.",
+      },
+    },
+
     register: {
       title: "Tạo tài khoản mới",
       subtitle: "Tham gia cộng đồng CosMate ngay hôm nay",
@@ -1142,6 +1163,7 @@ export const VI = {
       rentalCount: "Lượt thuê",
       reviewsTitle: "Đánh giá",
       myReviewTitle: "Đánh giá của tôi",
+      ratingOfYou: "Đánh giá của bạn:",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",
@@ -1153,6 +1175,10 @@ export const VI = {
       addPhotos: "Thêm ảnh",
       loadReviewsError: "Không thể tải đánh giá.",
       reviewer: "Người dùng",
+      validation: {
+        ratingRequired: "Vui lòng chọn số sao đánh giá.",
+        commentRequired: "Vui lòng nhập nội dung đánh giá.",
+      },
     },
 
     // Validation messages

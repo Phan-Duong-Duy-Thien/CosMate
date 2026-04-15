@@ -35,6 +35,7 @@ import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
+import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import bgImage from "@/assets/background.jpg"
 import sideBannerImage1 from "@/assets/anh1.jpg"
 import sideBannerImage2 from "@/assets/quiz1.jpg"
@@ -267,9 +268,11 @@ export default function CosplayerSiteLayout() {
 
   const userMenuItems: MenuProps["items"] = [
     { key: "profile", label: "Trang cá nhân", onClick: () => navigate("/profile") },
+    { key: "change-password", label: VI.auth.changePassword.title, onClick: () => setChangePasswordOpen(true) },
     { key: "logout", label: "Đăng xuất", danger: true, onClick: handleLogout },
   ]
 
+  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false)
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
@@ -800,6 +803,7 @@ export default function CosplayerSiteLayout() {
           © 2026 CosMate. All rights reserved.
         </div>
       </footer>
+      <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </div>
   )
 }
