@@ -2322,6 +2322,8 @@ export const VI = {
     failedDesc: "Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
     cancelledTitle: "Thanh toán đã bị hủy",
     cancelledDesc: "Giao dịch thanh toán đã bị hủy. Bạn có thể thử lại hoặc quay lại sau.",
+    pendingTitle: "Thanh toán đang xử lý",
+    pendingDesc: "Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để xác nhận đơn.",
     unknownTitle: "Kết quả thanh toán",
     unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
     orderIdLabel: "Mã đơn hàng",

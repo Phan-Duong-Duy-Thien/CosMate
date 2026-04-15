@@ -107,10 +107,12 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = `${window.location.origin}/payment/result`;
+    console.log('[useServiceOrders] confirmAndPay → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setConfirmingOrderId(orderId);
     try {
       await confirmServiceOrder(orderId);
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      console.log('[useServiceOrders] confirmAndPay ← paymentUrl:', paymentUrl);
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] confirmAndPay failed:', err);
@@ -125,16 +127,18 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = `${window.location.origin}/payment/result`;
+    console.log('[useServiceOrders] payOnly → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setPayingOrderId(orderId);
     try {
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      console.log('[useServiceOrders] payOnly ← paymentUrl:', paymentUrl);
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] payOnly failed:', err);
       const message = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Thanh toán thất bại';
-      throw new Error(message || 'Thanh toán thất bại');
+      throw new Error(message || 'Thanh toán thất toán thất bại');
     } finally {
       setPayingOrderId(null);
     }

@@ -3,6 +3,9 @@
  *
  * Fetches and filters service orders from the provider perspective.
  * Uses server-side filtering via the `statuses` query param.
+ *
+ * Keeps all orders in a separate state so counts stay correct regardless
+ * of the currently active filter tab.
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { fetchProviderServiceOrders } from '../services/serviceOrder.service';
@@ -19,18 +22,6 @@ export type ProviderServiceOrderTab =
   | 'DISPUTE'
   | 'CANCELLED';
 
-export interface ProviderServiceOrderCounts {
-  all: number;
-  UNCONFIRM: number;
-  UNPAID: number;
-  PAID: number;
-  WAITING_SERVICE_DATE: number;
-  IN_SERVICE: number;
-  COMPLETED: number;
-  DISPUTE: number;
-  CANCELLED: number;
-}
-
 export interface UseProviderServiceOrdersResult {
   orders: ServiceOrder[];
   loading: boolean;
@@ -41,7 +32,10 @@ export interface UseProviderServiceOrdersResult {
 }
 
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
-  const [orders, setOrders] = useState<ServiceOrder[]>([]);
+  // allOrders — always holds the complete unfiltered list (used for tab counts)
+  const [allOrders, setAllOrders] = useState<ServiceOrder[]>([]);
+  // filteredOrders — only the orders matching the selected tab (used for display)
+  const [filteredOrders, setFilteredOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<ProviderServiceOrderTab>('all');
@@ -52,11 +46,18 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
       const data = await fetchProviderServiceOrders(apiStatuses);
-      // Sort by createdAt DESC
       const sorted = [...data].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );
-      setOrders(sorted);
+
+      if (!apiStatuses) {
+        // No filter → this IS the full list for counts
+        setAllOrders(sorted);
+        setFilteredOrders(sorted);
+      } else {
+        // Filtered response → keep allOrders intact, update display only
+        setFilteredOrders(sorted);
+      }
     } catch (err) {
       console.error('[useProviderServiceOrders] Failed to fetch orders:', err);
       setError('Không thể tải danh sách đơn đặt dịch vụ');
@@ -65,6 +66,7 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
     }
   }, []);
 
+  // Load all orders on mount (no filter) for correct counts
   useEffect(() => {
     fetchData();
   }, [fetchData]);
@@ -72,32 +74,26 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   const handleSetStatus = useCallback(
     (status: ProviderServiceOrderTab) => {
       setSelectedStatus(status);
-      fetchData(status);
+      if (status === 'all') {
+        // Restore full list from stored allOrders
+        setFilteredOrders(
+          [...allOrders].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          )
+        );
+      } else {
+        fetchData(status);
+      }
     },
-    [fetchData]
+    [fetchData, allOrders]
   );
 
   const refetch = useCallback(async () => {
-    await fetchData(selectedStatus);
+    await fetchData(selectedStatus === 'all' ? undefined : selectedStatus);
   }, [fetchData, selectedStatus]);
 
-  // Calculate counts for each status tab
-  const counts = useMemo(() => {
-    const countByStatus = (status: string) =>
-      orders.filter((order) => order.status === status).length;
-
-    return {
-      all: orders.length,
-      UNCONFIRM: countByStatus('UNCONFIRM'),
-      UNPAID: countByStatus('UNPAID'),
-      PAID: countByStatus('PAID'),
-      WAITING_SERVICE_DATE: countByStatus('WAITING_SERVICE_DATE'),
-      IN_SERVICE: countByStatus('IN_SERVICE'),
-      COMPLETED: countByStatus('COMPLETED'),
-      DISPUTE: countByStatus('DISPUTE'),
-      CANCELLED: countByStatus('CANCELLED'),
-    };
-  }, [orders]);
+  // Return allOrders for counts, filteredOrders for display
+  const orders = selectedStatus === 'all' ? allOrders : filteredOrders;
 
   return {
     orders,

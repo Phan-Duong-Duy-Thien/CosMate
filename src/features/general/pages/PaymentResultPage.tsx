@@ -2,14 +2,11 @@
  * Payment Result Page
  * Displays payment result after redirect from payment gateway.
  *
- * Single source of truth: BE API (via usePaymentVerification).
- * URL params are only a shortcut hint — the hook fetches the real order
- * status to determine the final UI state.
+ * Handles BOTH costume orders (via usePaymentVerification → /api/orders/{id})
+ * and service orders (via useServiceOrderVerification → GET /api/service-orders/cosplayer/{userId}).
  *
- * Priority:
- *  1. resultCode param  → MoMo external redirect (resultCode=0 → success, else → use BE)
- *  2. status param     → WALLET or BE internal redirect (use BE as final truth)
- *  3. No params / unknown → use BE as final truth if orderId is real
+ * Status priority: service verification → costume verification → URL hint.
+ * Only uses EXISTING BE APIs — no invented endpoints.
  *
  * Anti-replay guard: each orderId is marked in sessionStorage to prevent
  * duplicate processing on re-mount or back-button scenarios.
@@ -21,25 +18,26 @@ import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
+import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
 import type { UserRole } from '@/types/auth';
 
-type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
+type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'pending' | 'unknown';
 
+/**
+ * Determines the payment status hint from URL params.
+ * resultCode is MoMo/VNPay callback; status is BE internal redirect.
+ */
 function parseUrlHint(): { status: PaymentStatus; orderId: string | null; message: string | null } {
   const params = new URLSearchParams(window.location.search);
-
   const orderId = params.get('orderId') || params.get('transactionId') || null;
   const message = params.get('message') || null;
 
-  // MoMo / external gateway: resultCode present
   const rawResultCode = params.get('resultCode');
   if (rawResultCode !== null) {
     if (rawResultCode === '0') return { status: 'success', orderId, message };
     if (rawResultCode === '1006' || rawResultCode === '1009') return { status: 'cancelled', orderId, message };
-    // resultCode present but not success/cancelled → treat as hint only; use BE as truth
   }
 
-  // Internal BE redirect: status param present
   const rawStatus = params.get('status');
   if (rawStatus !== null) {
     const valid = (['success', 'failed', 'cancelled'].includes(rawStatus)
@@ -53,15 +51,33 @@ function parseUrlHint(): { status: PaymentStatus; orderId: string | null; messag
 
 export default function PaymentResultPage() {
   const navigate = useNavigate();
-
   const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
 
-  // Authoritative status from BE API — overrides URL hint for WALLET / BE redirects
-  const { status: verifiedStatus, isLoading, error } = usePaymentVerification(rawOrderId);
+  // Authoritative status for costume orders (orderType = COSTUME_RENTAL)
+  const costumeVerification = usePaymentVerification(rawOrderId);
+  // Authoritative status for service orders (orderType = RENT_SERVICE)
+  const serviceVerification = useServiceOrderVerification(rawOrderId);
 
-  // Final status: use verified BE status when available, fall back to URL hint
-  const status: PaymentStatus = verifiedStatus !== 'unknown' ? verifiedStatus : urlStatus;
-  const isSuccess = status === 'success';
+  // Use whichever verification has returned a definitive result (not 'unknown')
+  const costumeResolved = costumeVerification.status !== 'unknown';
+  const serviceResolved = serviceVerification.status !== 'unknown';
+
+  let finalStatus: PaymentStatus;
+  if (serviceResolved) {
+    finalStatus = serviceVerification.status;
+  } else if (costumeResolved) {
+    finalStatus = costumeVerification.status;
+  } else {
+    finalStatus = urlStatus;
+  }
+
+  const isLoading = !costumeResolved && !serviceResolved;
+  const isSuccess = finalStatus === 'success';
+  const error = (serviceVerification.error || costumeVerification.error) ?? null;
+
+  React.useEffect(() => {
+    console.log('[FINAL STATUS]', finalStatus);
+  }, [finalStatus]);
 
   // Anti-replay guard
   React.useEffect(() => {
@@ -73,10 +89,11 @@ export default function PaymentResultPage() {
   }, [rawOrderId]);
 
   const getTitle = () => {
-    switch (status) {
+    switch (finalStatus) {
       case 'success':   return VI.paymentResult.successTitle;
       case 'failed':    return VI.paymentResult.failedTitle;
       case 'cancelled': return VI.paymentResult.cancelledTitle;
+      case 'pending':   return VI.paymentResult.pendingTitle ?? VI.paymentResult.unknownTitle;
       default:          return VI.paymentResult.unknownTitle;
     }
   };
@@ -84,10 +101,11 @@ export default function PaymentResultPage() {
   const getDescription = () => {
     if (isLoading) return 'Verifying payment status...';
     if (error) return error;
-    switch (status) {
+    switch (finalStatus) {
       case 'success':   return VI.paymentResult.successDesc;
       case 'failed':    return VI.paymentResult.failedDesc;
       case 'cancelled': return VI.paymentResult.cancelledDesc;
+      case 'pending':   return VI.paymentResult.pendingDesc ?? 'Thanh toán đang được xử lý. Vui lòng chờ.';
       default:          return VI.paymentResult.unknownDesc;
     }
   };
@@ -117,6 +135,12 @@ export default function PaymentResultPage() {
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
                 <svg className="h-10 w-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+            ) : finalStatus === 'pending' ? (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+                <svg className="h-10 w-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             ) : (

@@ -121,6 +121,7 @@ export async function payServiceOrder(
   paymentMethod: PaymentMethod,
   returnUrl: string
 ): Promise<string> {
+  console.log('[booking.api] payServiceOrder → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
   const response = await axiosInstance.post<ApiResponse<{ paymentUrl: string }>>(
     `/api/service-orders/${orderId}/pay`,
     null,
@@ -128,6 +129,7 @@ export async function payServiceOrder(
       params: { paymentMethod, returnUrl },
     }
   );
+  console.log('[booking.api] payServiceOrder ← response:', response.data);
   return response.data.result.paymentUrl;
 }
 
