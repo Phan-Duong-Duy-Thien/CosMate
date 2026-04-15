@@ -188,39 +188,47 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
 
     setState((prev) => ({ ...prev, isSubmitting: true, error: null }));
     try {
-      // returnUrl is used only by MoMo/VNPay for gateway redirects.
-      // For WALLET, BE does NOT use returnUrl — omit it entirely by setting it to the payment result page.
-      const returnUrl = `${window.location.origin}/payment/result`;
+      // returnUrl is used ONLY by MoMo/VNPay for gateway redirects.
+      // For WALLET: BE processes internally — omit returnUrl entirely.
       const params: CreateOrderParams = {
         cosplayerId: userId,
         costumeId: draft.costumeId,
         rentDay: draft.rentDay,
         rentStart: draft.rentStart,
         paymentMethod,
-        returnUrl,
         cosplayerAddressId: selectedAddressId,
         selectedAccessoryIds: draft.selectedAccessoryIds,
         selectedRentalOptionId: draft.selectedRentalOptionId,
       };
 
+      // returnUrl must point to BE callback endpoints so BE can receive the payment gateway callback,
+      // update DB, then redirect back to FE with a clean URL.
+      if (paymentMethod === 'MOMO' || paymentMethod === 'VNPAY') {
+        params.returnUrl = paymentMethod === 'MOMO'
+          ? 'http://localhost:8080/api/payment/api/momo/return'
+          : 'http://localhost:8080/api/payment/api/vnpay/return';
+      }
+
       const result = await submitOrderAndHandleResult(params);
 
-      // WALLET: navigate using real orderId/status from BE response — no returnUrl involved
+      // WALLET: BE processed internally — use BE response status to navigate.
       if (result.type === 'wallet') {
         navigate(`/payment/result?status=${result.status}&orderId=${result.orderId}`);
         return;
       }
 
-      // MoMo/VNPay: redirect to external payment gateway
+      // MoMo/VNPay: redirect to external payment gateway. BE handles return.
       if (result.type === 'gateway') {
         window.location.href = result.paymentUrl;
         return;
       }
 
-      // Failed (no paymentUrl returned by BE)
-      navigate('/payment/result?status=failed&orderId=unknown');
+      // Failed: show error message, do NOT redirect.
+      message.error('Tạo đơn thất bại. Vui lòng thử lại.');
+      setState((prev) => ({ ...prev, error: 'Tạo đơn thất bại. Vui lòng thử lại.' }));
     } catch {
-      navigate('/payment/result?status=failed&orderId=unknown');
+      message.error('Đã xảy ra lỗi khi tạo đơn. Vui lòng thử lại.');
+      setState((prev) => ({ ...prev, error: 'Đã xảy ra lỗi khi tạo đơn. Vui lòng thử lại.' }));
     } finally {
       setState((prev) => ({ ...prev, isSubmitting: false }));
     }

@@ -55,7 +55,7 @@ export interface CreateOrderParams {
   rentDay: number;
   rentStart: string; // date-only format YYYY-MM-DD
   paymentMethod: PaymentMethod;
-  returnUrl: string;
+  returnUrl?: string;
   cosplayerAddressId: number;
   selectedAccessoryIds: number[];
   selectedRentalOptionId: number | null;
