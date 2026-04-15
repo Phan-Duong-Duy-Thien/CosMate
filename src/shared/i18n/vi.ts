@@ -35,6 +35,16 @@ export const VI = {
     reasonLabel: "Lý do khiếu nại",
     reasonPlaceholder: "Mô tả chi tiết vấn đề của bạn...",
     submit: "Gửi khiếu nại",
+    imagesLabel: "Hình ảnh đính kèm",
+    imagesOptional: "không bắt buộc",
+    imagesHint: "Kéo thả hoặc nhấn để tải ảnh lên",
+    uploadImages: "Tải ảnh lên",
+    maxImagesWarning: "Tối đa 3 hình ảnh",
+    maxImagesReached: "Đã đạt tối đa 3 ảnh",
+    uploadingImages: "Đang tải ảnh...",
+    uploadFailed: "Tải ảnh thất bại. Vui lòng thử lại.",
+    reasonTooShort: "Lý do phải có ít nhất 10 ký tự",
+    helperText: "Hình ảnh giúp CosMate xử lý khiếu nại nhanh hơn. Khuyến nghị tải lên ảnh/video làm bằng chứng.",
   },
 
   /**

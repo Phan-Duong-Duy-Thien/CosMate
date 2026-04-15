@@ -148,9 +148,9 @@ export default function ProviderOrdersPage() {
     setDisputeModalOpen(true);
   };
 
-  const handleDisputeSubmit = async () => {
+  const handleDisputeSubmit = async (payload: { reason: string; files: string[] }) => {
     if (!disputeOrderId) return;
-    const success = await createDispute(disputeOrderId);
+    const success = await createDispute(disputeOrderId, payload);
     if (success) {
       message.success(VI.profile.orders.toastDisputeSuccess);
       setDisputeModalOpen(false);
@@ -257,7 +257,7 @@ export default function ProviderOrdersPage() {
               {VI.provider.orders.actions.deliverOut}
             </Button>
           )}
-          {record.status === 'IN_USE' && (
+          {(record.status === 'DELIVERY_OUT' || record.status === 'IN_USE') && (
             <Button
               danger
               size="small"

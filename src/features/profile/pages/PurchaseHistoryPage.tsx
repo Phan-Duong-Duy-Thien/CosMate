@@ -256,9 +256,9 @@ export default function PurchaseHistoryPage() {
     setDisputeModalOpen(true)
   }
 
-  const handleDisputeSubmit = async () => {
+  const handleDisputeSubmit = async (payload: { reason: string; files: string[] }) => {
     if (!disputeOrderId) return
-    const success = await createDispute(disputeOrderId)
+    const success = await createDispute(disputeOrderId, payload)
     if (success) {
       message.success(VI.profile.orders.toastDisputeSuccess)
       setDisputeModalOpen(false)
@@ -311,7 +311,7 @@ export default function PurchaseHistoryPage() {
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
-    const canCreateDispute = isInUse
+    const canCreateDispute = isInUse || order.status === 'DELIVERY_OUT'
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`

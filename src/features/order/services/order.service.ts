@@ -3,6 +3,7 @@
  * Orchestrates order creation and data formatting
  */
 import * as orderApi from '../api/order.api';
+import { createDispute as disputeApi, type CreateDisputePayload } from '../api/dispute.api';
 import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod, OrderDetail } from '../types';
 import { clearDraft } from '../utils/rentalDraftStorage';
 
@@ -200,7 +201,11 @@ export async function returnCosplayerOrder(
 /**
  * Create a dispute for an order
  * @param orderId - The order ID
+ * @param payload - { reason, files: string[] }
  */
-export async function createDisputeService(orderId: number) {
-  await orderApi.createDispute(orderId);
+export async function createDisputeService(
+  orderId: number,
+  payload: CreateDisputePayload
+) {
+  await disputeApi(orderId, payload);
 }

@@ -231,12 +231,4 @@ export async function returnOrder(
   return response.data.result;
 }
 
-/**
- * Create a dispute for an order
- * @param orderId - The order ID
- */
-export async function createDispute(orderId: number): Promise<void> {
-  await axiosInstance.post(`/api/disputes`, null, {
-    params: { orderId },
-  });
-}
+// createDispute moved to dispute.api.ts
