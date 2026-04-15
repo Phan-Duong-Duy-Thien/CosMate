@@ -48,3 +48,24 @@ export async function createReview(params: CreateReviewParams): Promise<CreateRe
 
   return res.data.result
 }
+
+export interface ReviewImage {
+  id: number
+  url: string
+}
+
+export interface ReviewItem {
+  id: number
+  orderId: number
+  rating: number
+  comment: string
+  createdAt: string
+  images: ReviewImage[]
+}
+
+export async function getReviewsByCostumeId(costumeId: number): Promise<ReviewItem[]> {
+  const res = await axiosInstance.get<ApiResponse<ReviewItem[]>>(
+    `/api/reviews/costume/${costumeId}`
+  )
+  return res.data.result
+}

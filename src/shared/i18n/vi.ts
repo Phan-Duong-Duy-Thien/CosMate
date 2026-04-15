@@ -1151,6 +1151,8 @@ export const VI = {
       writeReview: "Viết đánh giá",
       uploadImages: "Tải ảnh lên",
       addPhotos: "Thêm ảnh",
+      loadReviewsError: "Không thể tải đánh giá.",
+      reviewer: "Người dùng",
     },
 
     // Validation messages
