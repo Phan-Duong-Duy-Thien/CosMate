@@ -134,6 +134,19 @@ export async function payServiceOrder(
 }
 
 /**
+ * POST /api/service-orders/{id}/provider-set-waiting
+ * Moves an order from PAID → WAITING_SERVICE_DATE (provider side).
+ */
+export async function setWaitingServiceDate(orderId: number): Promise<void> {
+  console.log('[booking.api] setWaitingServiceDate → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/service-orders/${orderId}/provider-set-waiting`
+  );
+  console.log('[booking.api] setWaitingServiceDate ← response:', response.data);
+  return response.data.result;
+}
+
+/**
  * GET /api/service-orders/provider
  * Fetches service orders for the provider (staff/photographer side).
  * @param statuses - optional comma-separated list of statuses to filter by

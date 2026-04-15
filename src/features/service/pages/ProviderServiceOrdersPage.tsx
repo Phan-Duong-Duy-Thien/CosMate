@@ -6,8 +6,9 @@
  *
  * Data flow: Page → hook → service → API → axiosInstance
  */
-import { Spin, Tooltip } from 'antd';
-import { CalendarClock, PackageCheck } from 'lucide-react';
+import { useState } from 'react';
+import { Spin, Tooltip, Button, Modal } from 'antd';
+import { CalendarClock, PackageCheck, Clock } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
@@ -16,6 +17,7 @@ import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
 import type { ServiceOrder } from '../api/booking.api';
+import { ORDER_STATUS, ORDER_STATUS_UI, URGENT_STATUSES, type OrderStatusValue } from '@/constants/orderStatus';
 
 // ─── Sidebar / Layout Helpers ─────────────────────────────────────────────────
 
@@ -35,7 +37,7 @@ function deriveBrandName(): string {
   return roles.includes(ROLE.PROVIDER_PHOTOGRAPH) ? 'CosMate Photographer' : 'CosMate Event Staff';
 }
 
-// ─── Status Config ────────────────────────────────────────────────────────────
+// ─── Status Tabs (driven by centralized config) ──────────────────────────────
 
 const STATUS_TABS: Array<{ key: ProviderServiceOrderTab; label: string }> = [
   { key: 'all', label: VI.profile.orders.tabAll },
@@ -77,24 +79,15 @@ interface StatusBadgeProps {
 }
 
 function StatusBadge({ status }: StatusBadgeProps) {
-  const colorMap: Record<string, string> = {
-    UNCONFIRM: 'bg-slate-100 text-slate-600',
-    UNPAID: 'bg-orange-100 text-orange-700',
-    PAID: 'bg-blue-100 text-blue-700',
-    WAITING_SERVICE_DATE: 'bg-purple-100 text-purple-700',
-    IN_SERVICE: 'bg-cyan-100 text-cyan-700',
-    COMPLETED: 'bg-green-100 text-green-700',
-    DISPUTE: 'bg-red-100 text-red-700',
-    CANCELLED: 'bg-slate-700 text-slate-100',
-  };
-
-  const label =
-    STATUS_TABS.find((t) => t.key === status)?.label ?? status;
-  const colorClass = colorMap[status] ?? colorMap.UNCONFIRM;
+  const uiConfig = ORDER_STATUS_UI[status as OrderStatusValue];
 
   return (
-    <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${colorClass}`}>
-      {label}
+    <span
+      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
+        uiConfig?.badgeClass ?? 'bg-slate-100 text-slate-600'
+      }`}
+    >
+      {uiConfig?.label ?? status}
     </span>
   );
 }
@@ -104,10 +97,14 @@ function StatusBadge({ status }: StatusBadgeProps) {
 interface OrderCardProps {
   order: ServiceOrder;
   isUrgent: boolean;
+  onSetWaiting: (orderId: number) => void;
+  isActionLoading: boolean;
 }
 
-function OrderCard({ order, isUrgent }: OrderCardProps) {
+function OrderCard({ order, isUrgent, onSetWaiting, isActionLoading }: OrderCardProps) {
   const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`;
+  const uiConfig = ORDER_STATUS_UI[order.status as OrderStatusValue];
+  const canSetWaiting = uiConfig?.actions.includes('SET_WAITING');
 
   return (
     <div
@@ -130,8 +127,20 @@ function OrderCard({ order, isUrgent }: OrderCardProps) {
             </h3>
             <p className="mt-0.5 text-sm font-medium text-slate-500">{orderCode}</p>
           </div>
-          <div className="ml-2 shrink-0">
+          <div className="ml-2 flex flex-col items-end gap-1">
             <StatusBadge status={order.status} />
+            {canSetWaiting && (
+              <Button
+                size="small"
+                type="primary"
+                loading={isActionLoading}
+                onClick={() => onSetWaiting(order.id)}
+                icon={<Clock size={12} />}
+                className="flex items-center gap-1 text-xs"
+              >
+                {VI.profile.serviceOrders.setWaiting}
+              </Button>
+            )}
           </div>
         </div>
 
@@ -186,7 +195,14 @@ export default function ProviderServiceOrdersPage() {
     refetch,
     selectedStatus,
     setStatus,
+    setWaitingStatus,
+    loadingAction,
   } = useProviderServiceOrders();
+
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; orderId: number | null }>({
+    open: false,
+    orderId: null,
+  });
 
   const sidebarItems: DashboardSidebarItem[] = deriveSidebarItems();
   const brandName = deriveBrandName();
@@ -201,85 +217,114 @@ export default function ProviderServiceOrdersPage() {
     return acc;
   }, {});
 
-  const urgentStatuses = new Set(['UNCONFIRM', 'UNPAID']);
+  const handleSetWaitingClick = (orderId: number) => {
+    setConfirmModal({ open: true, orderId });
+  };
+
+  const handleConfirmSetWaiting = async () => {
+    if (confirmModal.orderId !== null) {
+      await setWaitingStatus(confirmModal.orderId);
+      setConfirmModal({ open: false, orderId: null });
+    }
+  };
+
+  const handleCancelConfirm = () => {
+    setConfirmModal({ open: false, orderId: null });
+  };
 
   return (
-    <DashboardLayout
-      title={VI.provider.serviceOrders.title}
-      sidebarItems={sidebarItems}
-      showChatButton={false}
-      brandName={brandName}
-    >
-      {error && (
-        <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-          {error}
-        </div>
-      )}
+    <>
+      <Modal
+        title={VI.profile.serviceOrders.setWaitingModalTitle}
+        open={confirmModal.open}
+        onOk={handleConfirmSetWaiting}
+        onCancel={handleCancelConfirm}
+        okText={VI.profile.serviceOrders.setWaitingModalOk}
+        cancelText={VI.common.actions.cancel}
+        confirmLoading={confirmModal.orderId !== null && loadingAction === confirmModal.orderId}
+      >
+        <p>{VI.profile.serviceOrders.setWaitingModalMessage}</p>
+      </Modal>
 
-      {/* Sticky status filter bar */}
-      <div className="sticky top-0 z-10 mb-4 bg-white/95 py-3 backdrop-blur-sm">
-        <div className="flex flex-wrap gap-2">
-          {STATUS_TABS.map((tab) => {
-            const isActive = selectedStatus === tab.key;
-            const count = counts[tab.key] ?? 0;
-            const isUrgent = urgentStatuses.has(tab.key) && count > 0;
+      <DashboardLayout
+        title={VI.provider.serviceOrders.title}
+        sidebarItems={sidebarItems}
+        showChatButton={false}
+        brandName={brandName}
+      >
+        {error && (
+          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+            {error}
+          </div>
+        )}
 
-            return (
-              <Tooltip key={tab.key} title={tab.label} placement="top">
-                <button
-                  type="button"
-                  onClick={() => setStatus(tab.key)}
-                  className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
-                    isActive
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : isUrgent
-                        ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                        : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                  }`}
-                >
-                  {tab.label}
-                  {count > 0 && (
-                    <span
-                      className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold leading-none ${
-                        isActive
-                          ? 'bg-white text-purple-600'
-                          : 'bg-purple-600 text-white'
-                      }`}
-                    >
-                      {count > 99 ? '99+' : count}
-                    </span>
-                  )}
-                </button>
-              </Tooltip>
-            );
-          })}
-        </div>
-      </div>
+        {/* Sticky status filter bar */}
+        <div className="sticky top-0 z-10 mb-4 bg-white/95 py-3 backdrop-blur-sm">
+          <div className="flex flex-wrap gap-2">
+            {STATUS_TABS.map((tab) => {
+              const isActive = selectedStatus === tab.key;
+              const count = counts[tab.key] ?? 0;
+              const isUrgent = URGENT_STATUSES.has(tab.key as OrderStatusValue) && count > 0;
 
-      {/* Orders list */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Spin size="large" />
-          <span className="ml-3 text-slate-500">{VI.common.status.loading}</span>
+              return (
+                <Tooltip key={tab.key} title={tab.label} placement="top">
+                  <button
+                    type="button"
+                    onClick={() => setStatus(tab.key)}
+                    className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
+                      isActive
+                        ? 'bg-purple-600 text-white shadow-sm'
+                        : isUrgent
+                          ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                    {count > 0 && (
+                      <span
+                        className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold leading-none ${
+                          isActive
+                            ? 'bg-white text-purple-600'
+                            : 'bg-purple-600 text-white'
+                        }`}
+                      >
+                        {count > 99 ? '99+' : count}
+                      </span>
+                    )}
+                  </button>
+                </Tooltip>
+              );
+            })}
+          </div>
         </div>
-      ) : orders.length === 0 ? (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-12 text-center">
-          <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
-          <p className="mt-3 text-sm text-slate-500">
-            {VI.profile.serviceOrders.empty}
-          </p>
-        </div>
-      ) : (
-        <div className="space-y-3">
-          {orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              isUrgent={urgentStatuses.has(order.status)}
-            />
-          ))}
-        </div>
-      )}
-    </DashboardLayout>
+
+        {/* Orders list */}
+        {loading ? (
+          <div className="flex items-center justify-center py-16">
+            <Spin size="large" />
+            <span className="ml-3 text-slate-500">{VI.common.status.loading}</span>
+          </div>
+        ) : orders.length === 0 ? (
+          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-12 text-center">
+            <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
+            <p className="mt-3 text-sm text-slate-500">
+              {VI.profile.serviceOrders.empty}
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {orders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                isUrgent={URGENT_STATUSES.has(order.status as OrderStatusValue)}
+                onSetWaiting={handleSetWaitingClick}
+                isActionLoading={loadingAction === order.id}
+              />
+            ))}
+          </div>
+        )}
+      </DashboardLayout>
+    </>
   );
 }

@@ -951,6 +951,11 @@ export const VI = {
       statusCancelled: "Đã hủy",
       filterLabel: "Bộ lọc hiện tại",
       chatTooltip: "Nhắn tin",
+      // Set Waiting action
+      setWaiting: "Chờ ngày thực hiện",
+      setWaitingModalTitle: "Xác nhận chuyển trạng thái",
+      setWaitingModalMessage: "Bạn có chắc chắn muốn chuyển đơn này sang trạng thái \"Chờ ngày thực hiện\" không?",
+      setWaitingModalOk: "Xác nhận",
       // Confirm & Pay
       btnConfirmAndPay: "Xác nhận & Thanh toán",
       btnPayNow: "Thanh toán ngay",

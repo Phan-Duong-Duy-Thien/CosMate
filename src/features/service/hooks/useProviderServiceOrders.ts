@@ -7,7 +7,9 @@
  * Keeps all orders in a separate state so counts stay correct regardless
  * of the currently active filter tab.
  */
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { message } from 'antd';
+import { setWaitingStatus } from '../services/serviceOrder.service';
 import { fetchProviderServiceOrders } from '../services/serviceOrder.service';
 import type { ServiceOrder } from '../api/booking.api';
 
@@ -29,6 +31,8 @@ export interface UseProviderServiceOrdersResult {
   refetch: () => Promise<void>;
   selectedStatus: ProviderServiceOrderTab;
   setStatus: (status: ProviderServiceOrderTab) => void;
+  setWaitingStatus: (orderId: number) => Promise<void>;
+  loadingAction: number | null;
 }
 
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
@@ -39,6 +43,7 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<ProviderServiceOrderTab>('all');
+  const [loadingAction, setLoadingAction] = useState<number | null>(null);
 
   const fetchData = useCallback(async (status?: ProviderServiceOrderTab) => {
     try {
@@ -92,6 +97,23 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
     await fetchData(selectedStatus === 'all' ? undefined : selectedStatus);
   }, [fetchData, selectedStatus]);
 
+  const handleSetWaitingStatus = useCallback(
+    async (orderId: number) => {
+      try {
+        setLoadingAction(orderId);
+        await setWaitingStatus(orderId);
+        await refetch();
+        message.success('Đã chuyển sang chờ ngày thực hiện');
+      } catch (err: any) {
+        console.error('[useProviderServiceOrders] setWaitingStatus failed:', err);
+        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+      } finally {
+        setLoadingAction(null);
+      }
+    },
+    [refetch]
+  );
+
   // Return allOrders for counts, filteredOrders for display
   const orders = selectedStatus === 'all' ? allOrders : filteredOrders;
 
@@ -102,5 +124,7 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
     refetch,
     selectedStatus,
     setStatus: handleSetStatus,
+    setWaitingStatus: handleSetWaitingStatus,
+    loadingAction,
   };
 }
