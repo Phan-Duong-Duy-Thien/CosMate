@@ -59,3 +59,14 @@ export async function updateUserRole(role: string): Promise<{ code: number; mess
   const response = await axiosInstance.post('/api/auth/role', { role });
   return response.data;
 }
+
+/**
+ * POST /api/users/{userId}/change-password
+ * Change the current user's password.
+ */
+export async function changePassword(userId: number, payload: {
+  oldPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  await axiosInstance.post<void>(`/api/users/${userId}/change-password`, payload);
+}

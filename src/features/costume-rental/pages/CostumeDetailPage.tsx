@@ -12,7 +12,8 @@ import { MoreFromShop } from "../components/detail/MoreFromShop"
 import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
 import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
-import { getMockReviewPermission } from "../mocks/reviewPermission.mock"
+import { useReviewPermission } from "../hooks/useReviewPermission"
+import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -55,10 +56,30 @@ export default function CostumeDetailPage() {
 
   // Review permission and submission
   const { submit: submitReview, loading: reviewSubmitting } = useCreateReview()
-  const reviewPermission = getMockReviewPermission(
-    costume ? Number(costume.id) : 0,
-    currentUserId ?? undefined
+  const { canReview, orderId, loading: reviewPermissionLoading } = useReviewPermission(
+    costume ? Number(costume.id) : 0
   )
+
+  // Wishlist
+  const { isInWishlist, addToWishlist: addToWishlistHandler, removeFromWishlist: removeFromWishlistHandler, wishlistItems } = useWishlist()
+  const isCostumeWishlisted = costume ? isInWishlist(costume.id) : false
+  const wishlistItem = wishlistItems.find((w) => w.costumeId === costume?.id)
+  const [wishlistToggling, setWishlistToggling] = React.useState(false)
+
+  const handleToggleWishlist = async () => {
+    if (!costume) return
+    if (wishlistToggling) return
+    setWishlistToggling(true)
+    try {
+      if (isCostumeWishlisted && wishlistItem) {
+        await removeFromWishlistHandler(wishlistItem.id)
+      } else {
+        await addToWishlistHandler(costume.id)
+      }
+    } finally {
+      setWishlistToggling(false)
+    }
+  }
 
   // Handlers for shop actions
   const handleChat = () => {
@@ -74,14 +95,14 @@ export default function CostumeDetailPage() {
   }
 
   const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
-    if (!currentUserId || !reviewPermission.orderId) {
+    if (!currentUserId || !orderId) {
       alert("Bạn cần đăng nhập để gửi đánh giá")
       return
     }
 
     const result = await submitReview({
       cosplayerId: currentUserId,
-      orderId: reviewPermission.orderId,
+      orderId: orderId,
       rating: data.rating,
       comment: data.comment,
       images: data.images,
@@ -89,7 +110,6 @@ export default function CostumeDetailPage() {
 
     if (result) {
       alert("Đánh giá của bạn đã được gửi thành công!")
-      // Optionally: refetch reviews or prepend the new review to the list
     }
   }
 
@@ -240,6 +260,9 @@ export default function CostumeDetailPage() {
             rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
             hasAccessories={accessoryCount > 0}
             accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
+            isWishlisted={isCostumeWishlisted}
+            onToggleWishlist={handleToggleWishlist}
+            wishlistLoading={wishlistToggling}
           />
           <PurchasePanel
             costume={costume}
@@ -297,11 +320,11 @@ export default function CostumeDetailPage() {
         )}
 
         {/* My Review Form */}
-        {reviewPermission.canReview && currentUserId && (
+        {!reviewPermissionLoading && canReview && currentUserId && (
           <div className="mt-4">
             <MyReviewForm
-              canReview={reviewPermission.canReview}
-              orderId={reviewPermission.orderId}
+              canReview={canReview}
+              orderId={orderId}
               cosplayerId={currentUserId}
               onSubmit={handleReviewSubmit}
               loading={reviewSubmitting}
