@@ -1080,6 +1080,7 @@ export const VI = {
     detail: {
       title: "Chi tiết đơn hàng",
       basicInfo: "Thông tin cơ bản",
+      costumeInfo: "Trang phục thuê",
       orderId: "Mã đơn",
       status: "Trạng thái",
       totalAmount: "Tổng tiền",

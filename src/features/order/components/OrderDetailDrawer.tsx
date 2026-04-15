@@ -6,9 +6,11 @@
  * No API calls - receives orderId and callbacks via props.
  */
 
-import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
+import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography, Card } from 'antd';
+import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined } from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
+import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
+import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderDetail, OrderStatus } from '../types';
 
@@ -83,6 +85,10 @@ const getStatusColor = (status: OrderStatus): string => {
 export function OrderDetailDrawer({ open, orderId, orderType, onClose }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error } = useOrderDetail(orderId);
 
+  // Fetch costume basic info from costumeId in first detail item
+  const costumeId = orderDetail?.details?.[0]?.costumeId ?? null;
+  const { costume: costumeInfo, loading: costumeLoading, error: costumeError } = useCostumeBasicInfo(costumeId);
+
   // Guard: reject cross-type contamination.
   // If orderType is passed but doesn't match, log a warning and skip rendering.
   if (orderDetail && orderType && orderDetail.orderType && orderDetail.orderType !== orderType) {
@@ -102,6 +108,61 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose }: OrderDe
     type: orderDetail?.orderType,
     status: orderDetail?.status,
   });
+
+  const renderCostumeInfo = () => {
+    if (costumeLoading) {
+      return (
+        <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <Spin size="small" />
+          <span className="text-sm text-slate-500">{VI.costumeRental.detail.productDetailTitle}</span>
+        </div>
+      );
+    }
+
+    if (costumeError || !costumeInfo) {
+      return (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <span className="text-sm text-slate-400">{VI.order.detail.empty}</span>
+        </div>
+      );
+    }
+
+    const primaryImage = costumeInfo.imageUrls?.[0];
+    const resolvedUrl = primaryImage ? resolveImageUrl(primaryImage) : null;
+
+    return (
+      <div className="flex gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
+        {resolvedUrl ? (
+          <img
+            src={resolvedUrl}
+            alt={costumeInfo.name}
+            className="h-16 w-16 flex-shrink-0 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100">
+            <AppstoreOutlined className="text-2xl text-purple-300" />
+          </div>
+        )}
+        <div className="flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <AppstoreOutlined className="text-purple-600" />
+            <span className="font-semibold text-slate-800">{costumeInfo.name}</span>
+          </div>
+          <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+            <span>
+              {VI.order.detail.size}: {costumeInfo.size}
+            </span>
+            <span>
+              {VI.order.detail.depositAmount}: {formatCurrency(costumeInfo.depositAmount)}
+            </span>
+            <span>
+              {VI.order.detail.rentAmount.split(' ')[0]}: {formatCurrency(costumeInfo.pricePerDay)}/ngày
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderBasicInfo = () => {
     if (!orderDetail) return null;
@@ -346,6 +407,17 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose }: OrderDe
         <div className="text-center text-red-500">{error}</div>
       ) : orderDetail ? (
         <div className="space-y-4">
+          {/* Costume Info */}
+          <div>
+            <h3 className="mb-2 flex items-center gap-1 font-semibold">
+              <AppstoreOutlined className="text-purple-600" />
+              {VI.order.detail.costumeInfo ?? 'Trang phục'}
+            </h3>
+            {renderCostumeInfo()}
+          </div>
+
+          <Divider />
+
           {/* Basic Info */}
           <div>
             <h3 className="mb-2 font-semibold">{VI.order.detail.basicInfo}</h3>
