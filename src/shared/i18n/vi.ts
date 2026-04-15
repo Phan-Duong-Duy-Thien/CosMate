@@ -1164,6 +1164,8 @@ export const VI = {
       reviewsTitle: "Đánh giá",
       myReviewTitle: "Đánh giá của tôi",
       ratingOfYou: "Đánh giá của bạn:",
+      rentedBanner: "Trang phục này hiện đang được thuê. Vui lòng quay lại sau.",
+      rentedButton: "Đã được thuê",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",
