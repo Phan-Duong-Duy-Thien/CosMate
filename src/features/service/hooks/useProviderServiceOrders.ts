@@ -9,8 +9,8 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
-import { setWaitingStatus } from '../services/serviceOrder.service';
-import { fetchProviderServiceOrders } from '../services/serviceOrder.service';
+import { setWaitingStatus, fetchProviderServiceOrders, startService } from '../services/serviceOrder.service';
+import { completeService } from '../services/serviceOrder.service';
 import type { ServiceOrder } from '../api/booking.api';
 
 export type ProviderServiceOrderTab =
@@ -32,6 +32,8 @@ export interface UseProviderServiceOrdersResult {
   selectedStatus: ProviderServiceOrderTab;
   setStatus: (status: ProviderServiceOrderTab) => void;
   setWaitingStatus: (orderId: number) => Promise<void>;
+  startService: (orderId: number) => Promise<void>;
+  completeService: (orderId: number) => Promise<void>;
   loadingAction: number | null;
 }
 
@@ -102,7 +104,8 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       try {
         setLoadingAction(orderId);
         await setWaitingStatus(orderId);
-        await refetch();
+        // Always refetch full list to keep allOrders + filteredOrders in sync
+        await fetchData();
         message.success('Đã chuyển sang chờ ngày thực hiện');
       } catch (err: any) {
         console.error('[useProviderServiceOrders] setWaitingStatus failed:', err);
@@ -111,7 +114,43 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         setLoadingAction(null);
       }
     },
-    [refetch]
+    [fetchData]
+  );
+
+  const handleStartService = useCallback(
+    async (orderId: number) => {
+      try {
+        setLoadingAction(orderId);
+        await startService(orderId);
+        // Always refetch full list to keep allOrders + filteredOrders in sync
+        await fetchData();
+        message.success('Đã bắt đầu dịch vụ');
+      } catch (err: any) {
+        console.error('[useProviderServiceOrders] startService failed:', err);
+        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+      } finally {
+        setLoadingAction(null);
+      }
+    },
+    [fetchData]
+  );
+
+  const handleCompleteService = useCallback(
+    async (orderId: number) => {
+      try {
+        setLoadingAction(orderId);
+        await completeService(orderId);
+        // Always refetch full list to keep allOrders + filteredOrders in sync
+        await fetchData();
+        message.success('Đã hoàn thành dịch vụ');
+      } catch (err: any) {
+        console.error('[useProviderServiceOrders] completeService failed:', err);
+        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+      } finally {
+        setLoadingAction(null);
+      }
+    },
+    [fetchData]
   );
 
   // Return allOrders for counts, filteredOrders for display
@@ -125,6 +164,8 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
     selectedStatus,
     setStatus: handleSetStatus,
     setWaitingStatus: handleSetWaitingStatus,
+    startService: handleStartService,
+    completeService: handleCompleteService,
     loadingAction,
   };
 }

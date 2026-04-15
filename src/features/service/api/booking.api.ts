@@ -134,6 +134,19 @@ export async function payServiceOrder(
 }
 
 /**
+ * POST /api/service-orders/{id}/start-service-now
+ * Moves an order from WAITING_SERVICE_DATE → IN_SERVICE (provider side).
+ */
+export async function startServiceNow(orderId: number): Promise<{ id: number; status: string }> {
+  console.log('[booking.api] startServiceNow → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<{ id: number; status: string }>>(
+    `/api/service-orders/${orderId}/start-service-now`
+  );
+  console.log('[booking.api] startServiceNow ← response:', response.data);
+  return response.data.result;
+}
+
+/**
  * POST /api/service-orders/{id}/provider-set-waiting
  * Moves an order from PAID → WAITING_SERVICE_DATE (provider side).
  */
@@ -143,6 +156,21 @@ export async function setWaitingServiceDate(orderId: number): Promise<void> {
     `/api/service-orders/${orderId}/provider-set-waiting`
   );
   console.log('[booking.api] setWaitingServiceDate ← response:', response.data);
+  return response.data.result;
+}
+
+/**
+ * POST /api/service-orders/{id}/provider-complete
+ * Moves an order from IN_SERVICE → COMPLETED (provider side).
+ */
+export async function completeServiceByProvider(
+  orderId: number
+): Promise<{ id: number; status: string }> {
+  console.log('[booking.api] completeServiceByProvider → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<{ id: number; status: string }>>(
+    `/api/service-orders/${orderId}/provider-complete`
+  );
+  console.log('[booking.api] completeServiceByProvider ← response:', response.data);
   return response.data.result;
 }
 

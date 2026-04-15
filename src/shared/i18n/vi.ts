@@ -956,6 +956,16 @@ export const VI = {
       setWaitingModalTitle: "Xác nhận chuyển trạng thái",
       setWaitingModalMessage: "Bạn có chắc chắn muốn chuyển đơn này sang trạng thái \"Chờ ngày thực hiện\" không?",
       setWaitingModalOk: "Xác nhận",
+      // Start Service action
+      startService: "Bắt đầu dịch vụ",
+      startServiceModalTitle: "Xác nhận bắt đầu dịch vụ",
+      startServiceModalMessage: "Bắt đầu dịch vụ ngay bây giờ?",
+      startServiceModalOk: "Bắt đầu",
+      // Complete Service action
+      completeService: "Hoàn thành dịch vụ",
+      completeServiceModalTitle: "Xác nhận hoàn thành dịch vụ",
+      completeServiceModalMessage: "Bạn có chắc chắn muốn xác nhận hoàn thành dịch vụ này không?",
+      completeServiceModalOk: "Xác nhận",
       // Confirm & Pay
       btnConfirmAndPay: "Xác nhận & Thanh toán",
       btnPayNow: "Thanh toán ngay",

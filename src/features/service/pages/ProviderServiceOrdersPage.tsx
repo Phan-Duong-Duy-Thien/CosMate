@@ -8,7 +8,7 @@
  */
 import { useState } from 'react';
 import { Spin, Tooltip, Button, Modal } from 'antd';
-import { CalendarClock, PackageCheck, Clock } from 'lucide-react';
+import { CalendarClock, PackageCheck, Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
@@ -98,13 +98,17 @@ interface OrderCardProps {
   order: ServiceOrder;
   isUrgent: boolean;
   onSetWaiting: (orderId: number) => void;
+  onStartService: (orderId: number) => void;
+  onCompleteService: (orderId: number) => void;
   isActionLoading: boolean;
 }
 
-function OrderCard({ order, isUrgent, onSetWaiting, isActionLoading }: OrderCardProps) {
+function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteService, isActionLoading }: OrderCardProps) {
   const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`;
   const uiConfig = ORDER_STATUS_UI[order.status as OrderStatusValue];
   const canSetWaiting = uiConfig?.actions.includes('SET_WAITING');
+  const canStartService = uiConfig?.actions.includes('START_SERVICE');
+  const canCompleteService = uiConfig?.actions.includes('COMPLETE_SERVICE');
 
   return (
     <div
@@ -132,13 +136,37 @@ function OrderCard({ order, isUrgent, onSetWaiting, isActionLoading }: OrderCard
             {canSetWaiting && (
               <Button
                 size="small"
-                type="primary"
+                type="default"
                 loading={isActionLoading}
                 onClick={() => onSetWaiting(order.id)}
                 icon={<Clock size={12} />}
                 className="flex items-center gap-1 text-xs"
               >
                 {VI.profile.serviceOrders.setWaiting}
+              </Button>
+            )}
+            {canStartService && (
+              <Button
+                size="small"
+                type="primary"
+                loading={isActionLoading}
+                onClick={() => onStartService(order.id)}
+                icon={<PlayCircle size={12} />}
+                className="flex items-center gap-1 text-xs"
+              >
+                {VI.profile.serviceOrders.startService}
+              </Button>
+            )}
+            {canCompleteService && (
+              <Button
+                size="small"
+                type="primary"
+                loading={isActionLoading}
+                onClick={() => onCompleteService(order.id)}
+                icon={<CheckCircle size={12} />}
+                className="flex items-center gap-1 text-xs"
+              >
+                {VI.profile.serviceOrders.completeService}
               </Button>
             )}
           </div>
@@ -196,12 +224,15 @@ export default function ProviderServiceOrdersPage() {
     selectedStatus,
     setStatus,
     setWaitingStatus,
+    startService,
+    completeService,
     loadingAction,
   } = useProviderServiceOrders();
 
-  const [confirmModal, setConfirmModal] = useState<{ open: boolean; orderId: number | null }>({
+  const [confirmModal, setConfirmModal] = useState<{ open: boolean; orderId: number | null; type: 'setWaiting' | 'startService' | 'completeService' }>({
     open: false,
     orderId: null,
+    type: 'setWaiting',
   });
 
   const sidebarItems: DashboardSidebarItem[] = deriveSidebarItems();
@@ -218,32 +249,64 @@ export default function ProviderServiceOrdersPage() {
   }, {});
 
   const handleSetWaitingClick = (orderId: number) => {
-    setConfirmModal({ open: true, orderId });
+    setConfirmModal({ open: true, orderId, type: 'setWaiting' });
   };
 
-  const handleConfirmSetWaiting = async () => {
+  const handleStartServiceClick = (orderId: number) => {
+    setConfirmModal({ open: true, orderId, type: 'startService' });
+  };
+
+  const handleCompleteServiceClick = (orderId: number) => {
+    setConfirmModal({ open: true, orderId, type: 'completeService' });
+  };
+
+  const handleConfirmAction = async () => {
     if (confirmModal.orderId !== null) {
-      await setWaitingStatus(confirmModal.orderId);
-      setConfirmModal({ open: false, orderId: null });
+      if (confirmModal.type === 'startService') {
+        await startService(confirmModal.orderId);
+      } else if (confirmModal.type === 'completeService') {
+        await completeService(confirmModal.orderId);
+      } else {
+        await setWaitingStatus(confirmModal.orderId);
+      }
+      setConfirmModal({ open: false, orderId: null, type: 'setWaiting' });
     }
   };
 
   const handleCancelConfirm = () => {
-    setConfirmModal({ open: false, orderId: null });
+    setConfirmModal({ open: false, orderId: null, type: 'setWaiting' });
   };
 
   return (
     <>
       <Modal
-        title={VI.profile.serviceOrders.setWaitingModalTitle}
+        title={
+          confirmModal.type === 'startService'
+            ? VI.profile.serviceOrders.startServiceModalTitle
+            : confirmModal.type === 'completeService'
+              ? VI.profile.serviceOrders.completeServiceModalTitle
+              : VI.profile.serviceOrders.setWaitingModalTitle
+        }
         open={confirmModal.open}
-        onOk={handleConfirmSetWaiting}
+        onOk={handleConfirmAction}
         onCancel={handleCancelConfirm}
-        okText={VI.profile.serviceOrders.setWaitingModalOk}
+        okText={
+          confirmModal.type === 'startService'
+            ? VI.profile.serviceOrders.startServiceModalOk
+            : confirmModal.type === 'completeService'
+              ? VI.profile.serviceOrders.completeServiceModalOk
+              : VI.profile.serviceOrders.setWaitingModalOk
+        }
         cancelText={VI.common.actions.cancel}
         confirmLoading={confirmModal.orderId !== null && loadingAction === confirmModal.orderId}
       >
-        <p>{VI.profile.serviceOrders.setWaitingModalMessage}</p>
+        <p>
+          {confirmModal.type === 'startService'
+            ? VI.profile.serviceOrders.startServiceModalMessage
+            : confirmModal.type === 'completeService'
+              ? VI.profile.serviceOrders.completeServiceModalMessage
+              : VI.profile.serviceOrders.setWaitingModalMessage}
+        </p>
       </Modal>
 
       <DashboardLayout
@@ -319,6 +382,8 @@ export default function ProviderServiceOrdersPage() {
                 order={order}
                 isUrgent={URGENT_STATUSES.has(order.status as OrderStatusValue)}
                 onSetWaiting={handleSetWaitingClick}
+                onStartService={handleStartServiceClick}
+                onCompleteService={handleCompleteServiceClick}
                 isActionLoading={loadingAction === order.id}
               />
             ))}

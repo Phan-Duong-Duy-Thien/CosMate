@@ -49,15 +49,15 @@ export const ORDER_STATUS_UI: Record<
   },
   WAITING_SERVICE_DATE: {
     label: 'Chờ ngày thực hiện',
-    color: 'purple',
-    actions: [],
+    color: 'orange',
+    actions: ['START_SERVICE'],
     badgeClass: 'bg-purple-100 text-purple-700',
   },
   IN_SERVICE: {
     label: 'Đang thực hiện',
-    color: 'cyan',
-    actions: [],
-    badgeClass: 'bg-cyan-100 text-cyan-700',
+    color: 'purple',
+    actions: ['COMPLETE_SERVICE'],
+    badgeClass: 'bg-purple-100 text-purple-700',
   },
   COMPLETED: {
     label: 'Hoàn thành',
