@@ -1,20 +1,7 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, createElement, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
-import {
-  AppstoreOutlined,
-  PlusCircleOutlined,
-  CalendarOutlined,
-  CameraOutlined,
-  StarOutlined,
-  SettingOutlined,
-  MessageOutlined,
-  FileTextOutlined,
-  ShoppingOutlined,
-  LayoutOutlined,
-  TeamOutlined,
-} from '@ant-design/icons';
 import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
@@ -67,35 +54,22 @@ export function DashboardLayout({
   const { openChat } = useChatPopup();
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
-    // Map Lucide icon names to Ant Design icons for the collapsed sidebar
-    const lucideToAntd: Record<string, React.ReactNode> = {
-      LayoutDashboard: <LayoutOutlined />,
-      Package: <AppstoreOutlined />,
-      ShoppingBag: <ShoppingOutlined />,
-      Calendar: <CalendarOutlined />,
-      Star: <StarOutlined />,
-      Settings: <SettingOutlined />,
-      ClipboardList: <FileTextOutlined />,
-      Camera: <CameraOutlined />,
-      Briefcase: <TeamOutlined />,
-      PlusCircle: <PlusCircleOutlined />,
-      MessageCircle: <MessageOutlined />,
-    };
-
     return items.map((item) => {
-      let iconNode: React.ReactNode;
+      let iconNode: React.ReactNode | undefined;
+
       if (item.icon) {
-        // Always render Lucide icon as JSX element, then map to Ant Design equivalent
-        const IconComponent = typeof item.icon === 'function' ? item.icon : null;
-        const renderedIcon = IconComponent ? <IconComponent size={16} /> : item.icon;
-        if (IconComponent) {
-          const iconName = IconComponent.displayName || (IconComponent as any).name;
-          iconNode = lucideToAntd[iconName] ?? renderedIcon;
+        if (typeof item.icon === 'function') {
+          // Lucide icon — render as JSX element
+          const IconComp = item.icon;
+          iconNode = <IconComp size={16} />;
+        } else if (item.icon && typeof item.icon === 'object' && 'render' in item.icon) {
+          // Lucide forwardRef object (ESM bundle) — create element from descriptor
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          iconNode = createElement(item.icon as any, { size: 16 });
         } else {
-          iconNode = renderedIcon;
+          // Already a ReactNode (e.g. pre-rendered JSX element)
+          iconNode = item.icon;
         }
-      } else {
-        iconNode = undefined;
       }
 
       if (item.children && item.children.length > 0) {
