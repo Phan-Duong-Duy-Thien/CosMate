@@ -57,7 +57,11 @@ import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
+import { ProviderWalletLayout } from "@/features/provider/pages/ProviderWalletLayout"
+import ProviderWalletPage from "@/features/provider/pages/ProviderWalletPage"
 import ProviderMessagesPage from "@/features/chat/pages/ProviderMessagesPage"
+import { ProviderEventStaffWalletLayout } from "@/features/provider/pages/ProviderEventStaffWalletLayout"
+import { ProviderPhotographWalletLayout } from "@/features/provider/pages/ProviderPhotographWalletLayout"
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
@@ -110,6 +114,11 @@ export default function AppRoutes() {
       {/* Provider Rental Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}>
         <Route path="/provider-rental" element={<ProviderHomePage />} />
+        <Route element={<ProviderWalletLayout />}>
+          <Route path="/provider-rental/wallet" element={<ProviderWalletPage />} />
+          <Route path="/provider-rental/wallet/topup" element={<WalletTopUpPage />} />
+          <Route path="/provider-rental/wallet/withdraw" element={<WalletWithdrawPage />} />
+        </Route>
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
@@ -123,6 +132,11 @@ export default function AppRoutes() {
       {/* Provider Photograph Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_PHOTOGRAPH]} />}>
         <Route path="/provider-photograph" element={<PhotographHomePage />} />
+        <Route element={<ProviderPhotographWalletLayout />}>
+          <Route path="/provider-photograph/wallet" element={<ProviderWalletPage />} />
+          <Route path="/provider-photograph/wallet/topup" element={<WalletTopUpPage />} />
+          <Route path="/provider-photograph/wallet/withdraw" element={<WalletWithdrawPage />} />
+        </Route>
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
@@ -135,6 +149,11 @@ export default function AppRoutes() {
       {/* Provider Event Staff Routes (Protected) */}
       <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_EVENT_STAFF]} />}>
         <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
+        <Route element={<ProviderEventStaffWalletLayout />}>
+          <Route path="/provider-event-staff/wallet" element={<ProviderWalletPage />} />
+          <Route path="/provider-event-staff/wallet/topup" element={<WalletTopUpPage />} />
+          <Route path="/provider-event-staff/wallet/withdraw" element={<WalletWithdrawPage />} />
+        </Route>
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />

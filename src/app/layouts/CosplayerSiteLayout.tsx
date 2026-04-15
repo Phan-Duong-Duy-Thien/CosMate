@@ -240,7 +240,7 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: "Ví của tôi", to: "/profile/wallet" },
-        { label: VI.profile.wallet.withdrawTitle },
+        { label: VI.wallet.withdrawTitle },
       ])
     } else if (path === "/wishlist") {
       setItems([

@@ -25,22 +25,22 @@ export default function WalletWithdrawPage() {
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
           <h1 className="text-2xl font-bold text-slate-900">
-            {VI.profile.wallet.withdrawTitle}
+            {VI.wallet.withdrawTitle}
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            {VI.profile.wallet.withdrawDescription}
+            {VI.wallet.withdrawDescription}
           </p>
 
           <div className="mt-6 space-y-6">
             {/* Amount Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
-                {VI.profile.wallet.withdrawAmountLabel}
+                {VI.wallet.withdrawAmountLabel}
               </label>
               <Input
                 type="number"
                 min={1}
-                placeholder={VI.profile.wallet.withdrawAmountPlaceholder}
+                placeholder={VI.wallet.withdrawAmountPlaceholder}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="mt-2"
@@ -50,11 +50,11 @@ export default function WalletWithdrawPage() {
             {/* Bank Account Number Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
-                {VI.profile.wallet.withdrawBankAccountLabel}
+                {VI.wallet.withdrawBankAccountLabel}
               </label>
               <Input
                 type="text"
-                placeholder={VI.profile.wallet.withdrawBankAccountPlaceholder}
+                placeholder={VI.wallet.withdrawBankAccountPlaceholder}
                 value={bankAccountNumber}
                 onChange={(e) => setBankAccountNumber(e.target.value)}
                 className="mt-2"
@@ -64,12 +64,12 @@ export default function WalletWithdrawPage() {
             {/* Bank Name Dropdown */}
             <div>
               <label className="mb-2 block text-sm font-medium text-slate-700">
-                {VI.profile.wallet.withdrawBankNameLabel}
+                {VI.wallet.withdrawBankNameLabel}
               </label>
               <Select
                 showSearch
                 optionFilterProp="label"
-                placeholder={VI.profile.wallet.withdrawBankNamePlaceholder}
+                placeholder={VI.wallet.withdrawBankNamePlaceholder}
                 value={bankName || undefined}
                 onChange={(value) => setBankName(value)}
                 className="w-full"
@@ -90,7 +90,7 @@ export default function WalletWithdrawPage() {
                   onClick={handleSubmit}
                   className="min-w-32"
                 >
-                  {loading ? VI.profile.wallet.withdrawProcessing : VI.profile.wallet.withdrawSubmit}
+                  {loading ? VI.wallet.withdrawProcessing : VI.wallet.withdrawSubmit}
                 </Button>
               </div>
             </div>

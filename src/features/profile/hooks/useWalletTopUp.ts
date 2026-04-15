@@ -33,13 +33,13 @@ export function useWalletTopUp(): UseWalletTopUpResult {
     // Validate amount
     const numAmount = parseFloat(amount)
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      message.error(VI.profile.wallet.invalidAmount)
+      message.error(VI.wallet.invalidAmount)
       return
     }
 
     // Validate payment method
     if (!paymentMethod) {
-      message.error(VI.profile.wallet.selectPaymentMethod)
+      message.error(VI.wallet.selectPaymentMethod)
       return
     }
 
@@ -66,8 +66,8 @@ export function useWalletTopUp(): UseWalletTopUpResult {
         setError("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
         message.error("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
       } else {
-        setError(VI.profile.wallet.error)
-        message.error(VI.profile.wallet.error)
+        setError(VI.wallet.error)
+        message.error(VI.wallet.error)
       }
     } finally {
       setLoading(false)
