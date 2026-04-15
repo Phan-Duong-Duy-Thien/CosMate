@@ -165,19 +165,19 @@ export function DashboardLayout({
     } else if (path === '/provider-rental/wallet') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
-        { label: VI.profile.wallet.title },
+        { label: VI.wallet.title },
       ]);
     } else if (path === '/provider-rental/wallet/withdraw') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
-        { label: VI.profile.wallet.title, to: '/provider-rental/wallet' },
-        { label: VI.profile.wallet.withdraw },
+        { label: VI.wallet.title, to: '/provider-rental/wallet' },
+        { label: VI.wallet.withdraw },
       ]);
     } else if (path === '/provider-rental/wallet/topup') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
-        { label: VI.profile.wallet.title, to: '/provider-rental/wallet' },
-        { label: VI.profile.wallet.topup },
+        { label: VI.wallet.title, to: '/provider-rental/wallet' },
+        { label: VI.wallet.topup },
       ]);
     } else if (path === '/provider-photograph') {
       setItems([
@@ -190,36 +190,36 @@ export function DashboardLayout({
     } else if (path === '/provider-photograph/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
-        { label: VI.profile.wallet.title },
+        { label: VI.wallet.title },
       ]);
     } else if (path === '/provider-photograph/wallet/withdraw') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
-        { label: VI.profile.wallet.title, to: '/provider-photograph/wallet' },
-        { label: VI.profile.wallet.withdraw },
+        { label: VI.wallet.title, to: '/provider-photograph/wallet' },
+        { label: VI.wallet.withdraw },
       ]);
     } else if (path === '/provider-photograph/wallet/topup') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
-        { label: VI.profile.wallet.title, to: '/provider-photograph/wallet' },
-        { label: VI.profile.wallet.topup },
+        { label: VI.wallet.title, to: '/provider-photograph/wallet' },
+        { label: VI.wallet.topup },
       ]);
     } else if (path === '/provider-event-staff/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
-        { label: VI.profile.wallet.title },
+        { label: VI.wallet.title },
       ]);
     } else if (path === '/provider-event-staff/wallet/withdraw') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
-        { label: VI.profile.wallet.title, to: '/provider-event-staff/wallet' },
-        { label: VI.profile.wallet.withdraw },
+        { label: VI.wallet.title, to: '/provider-event-staff/wallet' },
+        { label: VI.wallet.withdraw },
       ]);
     } else if (path === '/provider-event-staff/wallet/topup') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
-        { label: VI.profile.wallet.title, to: '/provider-event-staff/wallet' },
-        { label: VI.profile.wallet.topup },
+        { label: VI.wallet.title, to: '/provider-event-staff/wallet' },
+        { label: VI.wallet.topup },
       ]);
     } else if (path === '/provider-event-staff') {
       setItems([
