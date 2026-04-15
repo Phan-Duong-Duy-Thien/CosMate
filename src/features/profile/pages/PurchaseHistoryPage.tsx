@@ -157,6 +157,8 @@ export default function PurchaseHistoryPage() {
   // ── Detail drawer state ─────────────────────────────────────────────────────
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
+  // Cross-type contamination guard: track which order type is being viewed
+  const [detailOrderType, setDetailOrderType] = useState<string>('RENT_COSTUME')
 
   // ── Payment modal state ──────────────────────────────────────────────────────
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -368,6 +370,7 @@ export default function PurchaseHistoryPage() {
             <button
               type="button"
               onClick={() => {
+                setDetailOrderType('RENT_COSTUME')
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
@@ -739,6 +742,7 @@ export default function PurchaseHistoryPage() {
       <OrderDetailDrawer
         open={detailDrawerOpen}
         orderId={detailOrderId}
+        orderType={detailOrderType}
         onClose={() => {
           setDetailDrawerOpen(false)
           setDetailOrderId(null)
@@ -776,7 +780,11 @@ export default function PurchaseHistoryPage() {
         loading={confirmingOrderId !== null || payingOrderId !== null}
         totalAmount={
           paymentOrderId != null
-            ? (serviceFilteredOrders.find((o) => o.id === paymentOrderId)?.totalAmount)
+            ? (serviceFilteredOrders.find(
+                // Composite key lookup — guards against cross-type contamination
+                // even though serviceFilteredOrders already only contains RENT_SERVICE orders.
+                (o) => o.orderType === 'RENT_SERVICE' && o.id === paymentOrderId
+              )?.totalAmount)
             : undefined
         }
       />

@@ -53,7 +53,7 @@ export default function PaymentResultPage() {
   const navigate = useNavigate();
   const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
 
-  // Authoritative status for costume orders (orderType = COSTUME_RENTAL)
+  // Authoritative status for costume orders (orderType = RENT_COSTUME)
   const costumeVerification = usePaymentVerification(rawOrderId);
   // Authoritative status for service orders (orderType = RENT_SERVICE)
   const serviceVerification = useServiceOrderVerification(rawOrderId);

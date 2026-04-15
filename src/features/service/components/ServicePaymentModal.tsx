@@ -3,6 +3,11 @@
  *
  * Reusable payment method selection modal.
  * Used for service order confirm+pay and retry-payment flows.
+ *
+ * NOTE: totalAmount is passed directly from the parent page (PurchaseHistoryPage)
+ * which already scopes by serviceFilteredOrders — no cross-type contamination risk here.
+ * If totalAmount lookup is needed by order ID, use composite key:
+ *   serviceFilteredOrders.find(o => o.orderType === 'RENT_SERVICE' && o.id === orderId)
  */
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent } from '@/shared/components/Dialog'

@@ -4,6 +4,9 @@
  * Verifies service-order payment status by calling GET /api/service-orders/cosplayer/{userId}
  * (the only existing API) and finding the order by ID from the returned list.
  *
+ * IMPORTANT: Orders are filtered by orderType = 'RENT_SERVICE' to prevent cross-contamination
+ * with costume orders that may share the same numeric ID.
+ *
  * Data flow: Hook → service → API → axiosInstance
  * No fake API — ONLY uses existing BE contract.
  */
@@ -19,6 +22,11 @@ interface UseServiceOrderVerificationResult {
   isLoading: boolean;
   error: string | null;
 }
+
+// RENT_SERVICE = service orders, RENT_COSTUME = costume orders
+// A service order and costume order can share the same numeric ID.
+// MUST filter by orderType to avoid cross-type contamination.
+const SERVICE_ORDER_TYPE = 'RENT_SERVICE';
 
 export function useServiceOrderVerification(
   rawOrderId: string | null
@@ -44,7 +52,19 @@ export function useServiceOrderVerification(
       console.log('[useServiceOrderVerification] orders from BE:', orders);
 
       console.log('[ORDERS API]', orders);
-      const order = orders.find((o) => o.id === Number(id));
+
+      // FIX: Filter by BOTH id AND orderType to prevent cross-contamination.
+      // Without orderType filter, a service order id=13 could incorrectly match
+      // a costume order id=13 if the costume API is ever mixed in.
+      const order = orders.find(
+        (o) => o.id === Number(id) && o.orderType === SERVICE_ORDER_TYPE
+      );
+      console.log('[ORDER DEBUG]', {
+        id: Number(id),
+        type: SERVICE_ORDER_TYPE,
+        status: order?.status,
+        found: !!order,
+      });
       console.log('[ORDER FOUND]', order);
 
       if (!order) {

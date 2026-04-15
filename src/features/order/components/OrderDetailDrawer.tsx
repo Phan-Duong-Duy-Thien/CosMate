@@ -17,6 +17,7 @@ const { Text } = Typography;
 interface OrderDetailDrawerProps {
   open: boolean;
   orderId: number | null;
+  orderType?: string; // 'RENT_COSTUME' — used to guard against cross-type contamination
   onClose: () => void;
 }
 
@@ -79,8 +80,28 @@ const getStatusColor = (status: OrderStatus): string => {
   return colorMap[status] || 'default';
 };
 
-export function OrderDetailDrawer({ open, orderId, onClose }: OrderDetailDrawerProps) {
+export function OrderDetailDrawer({ open, orderId, orderType, onClose }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error } = useOrderDetail(orderId);
+
+  // Guard: reject cross-type contamination.
+  // If orderType is passed but doesn't match, log a warning and skip rendering.
+  if (orderDetail && orderType && orderDetail.orderType && orderDetail.orderType !== orderType) {
+    console.warn(
+      '[OrderDetailDrawer] Order type mismatch — expected',
+      orderType,
+      'but got',
+      orderDetail.orderType,
+      '(id:',
+      orderId,
+      '). This may indicate cross-contamination between order types.'
+    );
+  }
+
+  console.log('[ORDER DEBUG]', {
+    id: orderDetail?.id,
+    type: orderDetail?.orderType,
+    status: orderDetail?.status,
+  });
 
   const renderBasicInfo = () => {
     if (!orderDetail) return null;

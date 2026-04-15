@@ -57,7 +57,26 @@ export function useServiceOrders(): UseServiceOrdersResult {
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
       const data = await fetchServiceOrders(userId, apiStatuses);
-      setServiceOrders(data);
+      // Defensive: only keep RENT_SERVICE orders. If BE ever returns RENT_COSTUME
+      // from this endpoint, filter it out to prevent cross-contamination.
+      const serviceOrders = data.filter((o) => o.orderType === 'RENT_SERVICE');
+      serviceOrders.forEach((order) => {
+        console.log('[ORDER DEBUG]', {
+          id: order.id,
+          type: order.orderType,
+          status: order.status,
+        });
+      });
+      const unexpected = data.filter((o) => o.orderType !== 'RENT_SERVICE');
+      if (unexpected.length > 0) {
+        console.warn(
+          '[useServiceOrders] BE returned',
+          unexpected.length,
+          'non-service orders — filtered out:',
+          unexpected.map((o) => ({ id: o.id, type: o.orderType }))
+        );
+      }
+      setServiceOrders(serviceOrders);
     } catch (err) {
       console.error('[useServiceOrders] Failed to fetch service orders:', err);
       setError('Failed to load service orders');
