@@ -547,6 +547,7 @@ export const VI = {
       photographBookings: "Đơn đặt PTG",
       photographReviews: "Đánh giá",
       photographSettings: "Hồ sơ / Cài đặt",
+      wallet: "Ví của tôi",
     },
 
     dashboardPhotograph: {
