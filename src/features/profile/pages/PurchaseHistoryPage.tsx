@@ -122,6 +122,7 @@ export default function PurchaseHistoryPage() {
     returnOrder,
     returningOrderId,
     refetch: costumeRefetch,
+    costumeImageMap,
   } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
   const {
@@ -323,9 +324,9 @@ export default function PurchaseHistoryPage() {
       >
         {/* Left: Thumbnail */}
         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
-          {order.costumeImage ? (
+          {costumeImageMap[order.costumeId] ? (
             <img
-              src={order.costumeImage}
+              src={costumeImageMap[order.costumeId]}
               alt={order.costumeName}
               className="h-full w-full object-cover"
             />
