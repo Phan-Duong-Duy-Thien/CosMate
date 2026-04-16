@@ -16,25 +16,27 @@ const getIconComponent = (iconName?: string): LucideIcon => {
   }
 };
 
-const ADMIN_SAFE_MENUS: DashboardSidebarItem[] = [
+const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
   { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} /> },
+  { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} /> },
+];
+
+
+const ADMIN_DERIVED_MENUS: DashboardSidebarItem[] = [
   { key: '/admin/users', label: 'Người dùng', path: '/admin/users', icon: <Users size={16} /> },
   { key: '/admin/providers', label: 'Provider', path: '/admin/providers', icon: <ShoppingBag size={16} /> },
   { key: '/admin/costumes', label: 'Trang phục', path: '/admin/costumes', icon: <Shirt size={16} /> },
   { key: '/admin/orders', label: 'Đơn hàng', path: '/admin/orders', icon: <BarChart3 size={16} /> },
   { key: '/admin/reports', label: 'Báo cáo', path: '/admin/reports', icon: <BarChart3 size={16} /> },
-  { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} /> },
+  { key: '/admin/audit-logs', label: 'Nhật ký hệ thống', path: '/admin/audit-logs', icon: <Folder size={16} /> },
 ];
 
-const canShowForRole = (item: any, roles: string[]) => {
-  const allowed = item.visibleForRoles as string[] | undefined;
-  if (!allowed || allowed.length === 0) return true;
-  return roles.some((role) => allowed.includes(role));
-};
+const ADMIN_SAFE_MENUS: DashboardSidebarItem[] = [...ADMIN_CORE_MENUS, ...ADMIN_DERIVED_MENUS];
+const ADMIN_ROLE_ALLOWLIST = ['SUPERADMIN', 'ADMIN'];
 
 const normalizeChildren = (children: any[] = [], roles: string[]): DashboardSidebarItem[] => {
   return children
-    .filter((item) => item?.isActive !== false && item?.url && canShowForRole(item, roles) && (!item.requiredPermission || roles.includes(item.requiredPermission)))
+    .filter((item) => item?.isActive !== false && item?.url)
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
     .map((item: any) => {
       const Icon = getIconComponent(item.icon);
@@ -56,9 +58,15 @@ export function useDynamicMenu() {
     try {
       setLoading(true);
       const roles = JSON.parse(localStorage.getItem('roles') || '[]') as string[];
+      const isAdminContext = roles.some((role) => ADMIN_ROLE_ALLOWLIST.includes(String(role).toUpperCase()));
+      if (!isAdminContext) {
+        setSidebarItems(ADMIN_CORE_MENUS);
+        return;
+      }
+
       const response = await axiosInstance.get('/api/v1/menus/active');
       const menus = (response.data?.result || response.data || [])
-        .filter((menu: any) => menu?.isActive !== false && canShowForRole(menu, roles))
+        .filter((menu: any) => menu?.isActive !== false)
         .sort((a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
 
       const dynamicMenus: DashboardSidebarItem[] = menus.map((menu: any) => ({
@@ -66,12 +74,12 @@ export function useDynamicMenu() {
         label: menu.name,
         icon: <Folder size={16} />,
         children: normalizeChildren(menu.menuItems || [], roles),
-      })).filter((menu: DashboardSidebarItem) => menu.children && menu.children.length > 0);
+      }));
 
-      setSidebarItems([...ADMIN_SAFE_MENUS, ...dynamicMenus]);
+      setSidebarItems([...ADMIN_CORE_MENUS, ...dynamicMenus]);
     } catch (error) {
       console.error('Lỗi khi tải menu:', error);
-      setSidebarItems(ADMIN_SAFE_MENUS);
+      setSidebarItems(ADMIN_CORE_MENUS);
     } finally {
       setLoading(false);
     }

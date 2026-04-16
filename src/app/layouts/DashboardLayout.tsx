@@ -115,6 +115,16 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: 'Quản lý menu' },
       ]);
+    } else if (path === '/admin/audit-logs') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: 'Nhật ký hệ thống' },
+      ]);
+    } else if (path === '/admin/reports') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: 'Báo cáo' },
+      ]);
     } else if (path === '/admin/users') {
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },

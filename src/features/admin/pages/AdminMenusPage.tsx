@@ -1,7 +1,8 @@
 import { useState, useRef } from 'react';
-import { Table, Button, Space, Switch, Popconfirm, Modal, Form, Input, Select, Tag } from 'antd';
+import { Table, Button, Space, Switch, Popconfirm, Modal, Form, Input, Select, Tag, Alert } from 'antd';
 import { PlusOutlined, DeleteOutlined, FolderOutlined } from '@ant-design/icons';
 import { useMenuManagement } from '../hooks/useMenuManagement';
+
 
 const routeOptions = [
   { label: 'Khu vực Admin', options: [
@@ -11,6 +12,7 @@ const routeOptions = [
     { label: '/admin/costumes (Quản lý Trang phục)', value: '/admin/costumes' },
     { label: '/admin/orders (Quản lý Đơn hàng)', value: '/admin/orders' },
     { label: '/admin/reports (Báo cáo)', value: '/admin/reports' },
+    { label: '/admin/audit-logs (Nhật ký hệ thống)', value: '/admin/audit-logs' },
     { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' },
   ]},
 ];
@@ -65,6 +67,7 @@ export default function AdminMenusPage() {
 
   return (
     <div className="space-y-4">
+
       <div style={{ marginBottom: 16, display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         <Button type="primary" icon={<FolderOutlined />} onClick={() => { formMenu.resetFields(); setIsMenuModalOpen(true); }}>Tạo Nhóm Menu Mới</Button>
         <input type="file" ref={fileInputRef} accept=".xlsx, .xls, .csv" style={{ display: 'none' }} onChange={(e) => { const file = e.target.files?.[0]; if (file) { handleImport(file); e.target.value = ''; } }} />

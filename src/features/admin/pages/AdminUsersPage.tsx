@@ -23,6 +23,17 @@ import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
 import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
 import { getRoleTagProps } from '../utils/userRole';
+
+const ROLE_OPTIONS = [
+  { id: 1, name: 'SUPERADMIN' },
+  { id: 2, name: 'ADMIN' },
+  { id: 3, name: 'COSPLAYER' },
+  { id: 4, name: 'PROVIDER' },
+  { id: 5, name: 'PROVIDER_RENTAL' },
+  { id: 6, name: 'PROVIDER_PHOTOGRAPH' },
+  { id: 7, name: 'PROVIDER_EVENT_STAFF' },
+  { id: 8, name: 'STAFF' },
+];
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
@@ -77,7 +88,7 @@ export default function AdminUsersPage() {
   const currentUserRoles = getRoles();
   const currentUserId = getUserId();
 
-  const allRoles = Array.from(new Set(users.flatMap((user) => getUserRolesArray(user)))).sort();
+  const allRoles = ROLE_OPTIONS.map((role) => role.name);
   const allStatuses = Array.from(new Set(users.map((user) => user.status))).sort();
 
   const handleViewDetail = (user: AdminUser) => {
@@ -513,12 +524,11 @@ export default function AdminUsersPage() {
               rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
             >
               <Select placeholder="Chọn vai trò">
-                <Select.Option value="COSPLAYER">Cosplayer</Select.Option>
-                <Select.Option value="PROVIDER_RENTAL">Provider (Thuê trang phục)</Select.Option>
-                <Select.Option value="PROVIDER_PHOTOGRAPH">Photographer (Thợ ảnh)</Select.Option>
-                <Select.Option value="PROVIDER_EVENT_STAFF">Event Staff (Nhân sự sự kiện)</Select.Option>
-                <Select.Option value="STAFF">Staff (Nhân viên hệ thống)</Select.Option>
-                <Select.Option value="ADMIN">Admin (Quản trị viên)</Select.Option>
+                {ROLE_OPTIONS.map((role) => (
+                  <Select.Option key={role.id} value={role.name}>
+                    {role.id} - {role.name}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>

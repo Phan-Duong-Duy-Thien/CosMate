@@ -24,6 +24,11 @@ export async function getDashboardSummary() {
   return unwrap<AdminDashboardSummary>(response.data);
 }
 
+export async function getAuditLogs() {
+  const response = await axiosInstance.get('/api/v1/admin/audit-logs');
+  return unwrap<any[]>(response.data);
+}
+
 export async function getRevenueReport() {
   const response = await axiosInstance.get('/api/v1/admin/reports/revenue');
   return unwrap<SeriesPoint[]>(response.data);
