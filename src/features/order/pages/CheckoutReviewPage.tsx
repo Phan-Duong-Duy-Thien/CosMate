@@ -2,14 +2,17 @@
  * Checkout Review Page
  * Displays order summary, address selection, and payment method selection
  */
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useEffect } from 'react';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { useCheckoutReview } from '../hooks/useCheckoutReview';
 import type { PaymentMethod } from '../types';
+import { message } from 'antd';
 
 export default function CheckoutReviewPage() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const {
     addresses,
     draft,
@@ -37,6 +40,16 @@ export default function CheckoutReviewPage() {
       currency: 'VND',
     }).format(amount);
   };
+
+  // Show success toast when returning from top-up
+  useEffect(() => {
+    if (searchParams.get('topup') === 'success') {
+      message.success(VI.wallet.topUpSuccessResume);
+      const url = new URL(window.location.href);
+      url.searchParams.delete('topup');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  }, []);
 
   // Check if wallet has insufficient balance
   const isWalletInsufficient = paymentMethod === 'WALLET' &&
@@ -397,7 +410,7 @@ export default function CheckoutReviewPage() {
                               variant="default"
                               size="sm"
                               className="rounded-full bg-amber-500 hover:bg-amber-600 text-white border-0"
-                              onClick={() => navigate('/profile/wallet/topup')}
+                              onClick={() => navigate('/profile/wallet/topup?redirect=/rent/checkout')}
                             >
                               {VI.wallet.checkoutValidation.topUpCta}
                             </Button>

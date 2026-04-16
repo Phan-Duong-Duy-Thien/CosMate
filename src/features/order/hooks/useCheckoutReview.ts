@@ -99,6 +99,19 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     }
   }, [state.paymentMethod, state.userId, state.walletBalance, state.isLoadingWallet, fetchWalletBalance]);
 
+  // Refetch wallet balance when returning from top-up (wallet service redirects back with topup=success)
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('topup') === 'success' && state.userId) {
+      fetchWalletBalance(state.userId);
+      // Clean up param so toast only fires once (on next render)
+      const url = new URL(window.location.href);
+      url.searchParams.delete('topup');
+      window.history.replaceState({}, '', url.pathname + url.search);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.userId]);
+
   // Computed values
   const computed = useMemo(() => {
     const { draft, costume } = state;

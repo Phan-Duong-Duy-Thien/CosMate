@@ -20,6 +20,61 @@ interface ShipImage {
   confirm: boolean;
 }
 
+/**
+ * Raw API response shape from GET /api/orders/user/{userId} and /api/orders/provider/{providerId}
+ */
+interface RawOrderItem {
+  id: number;
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: string;
+  totalAmount: number;
+  totalDepositAmount: number;
+  createdAt: string;
+  updatedAt?: string;
+  cosplayerName?: string;
+  details: Array<{
+    id: number;
+    orderId: number;
+    costumeId: number;
+    size: string;
+    numberOfItems: number;
+    rentDay: number;
+    rentStart: string;
+    rentEnd: string;
+    returnDay: string | null;
+    depositAmount: number;
+    rentAmount: number;
+    surchargeAmount: number;
+    accessoriesAmount: number;
+    rentOptionAmount: number;
+    rentDiscount: number;
+  }>;
+}
+
+/** Map raw API order to OrderItem shape */
+function mapRawOrder(raw: RawOrderItem): OrderItem {
+  const detail = raw.details?.[0];
+  return {
+    id: raw.id,
+    orderType: raw.orderType,
+    status: raw.status as OrderItem['status'],
+    totalAmount: raw.totalAmount,
+    depositAmount: raw.totalDepositAmount,
+    rentDay: detail?.rentDay ?? 0,
+    rentStart: detail?.rentStart ?? '',
+    rentEnd: detail?.rentEnd ?? '',
+    costumeId: detail?.costumeId ?? 0,
+    costumeName: '', // populated by usePurchaseOrders batch-fetch
+    costumeImage: '',
+    cosplayerId: raw.cosplayerId,
+    cosplayerName: raw.cosplayerName ?? '',
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt ?? raw.createdAt,
+  };
+}
+
 interface ShipTracking {
   id: number;
   trackingCode: string;
@@ -56,10 +111,10 @@ export async function createOrder(
  * @returns List of orders for the provider
  */
 export async function getOrdersByProvider(providerId: number): Promise<OrderItem[]> {
-  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[]>>(
     `/api/orders/provider/${providerId}`
   );
-  return response.data.result;
+  return response.data.result.map(mapRawOrder);
 }
 
 /**
@@ -68,10 +123,10 @@ export async function getOrdersByProvider(providerId: number): Promise<OrderItem
  * @returns List of orders for the user
  */
 export async function getOrdersByUserId(userId: number): Promise<OrderItem[]> {
-  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[]>>(
     `/api/orders/user/${userId}`
   );
-  return response.data.result;
+  return response.data.result.map(mapRawOrder);
 }
 
 /**

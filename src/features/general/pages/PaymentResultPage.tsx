@@ -12,7 +12,7 @@
  * duplicate processing on re-mount or back-button scenarios.
  */
 import * as React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
@@ -52,7 +52,9 @@ function parseUrlHint(): { status: PaymentStatus; orderId: string | null; messag
 
 export default function PaymentResultPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
+  const redirectUrl = searchParams.get('redirect') || null;
 
   // Authoritative status for costume orders (orderType = RENT_COSTUME)
   const costumeVerification = usePaymentVerification(rawOrderId);
@@ -112,6 +114,19 @@ export default function PaymentResultPage() {
   };
 
   const handlePrimaryAction = () => {
+    // After top-up (redirect param): go back to checkout with state intact
+    if (redirectUrl) {
+      // Append topup=success so checkout can show a toast
+      const separator = redirectUrl.includes('?') ? '&' : '?'
+      navigate(`${redirectUrl}${separator}topup=success`);
+      return;
+    }
+    // After order payment success: go to purchase history list
+    if (isSuccess) {
+      navigate('/profile/purchase-history');
+      return;
+    }
+    // Fallback: wallet history
     navigate('/profile/wallet');
   };
 

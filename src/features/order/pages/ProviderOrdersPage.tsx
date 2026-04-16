@@ -148,7 +148,7 @@ export default function ProviderOrdersPage() {
     setDisputeModalOpen(true);
   };
 
-  const handleDisputeSubmit = async (payload: { reason: string; files: string[] }) => {
+  const handleDisputeSubmit = async (payload: { reason: string; files: File[] }) => {
     if (!disputeOrderId) return;
     const success = await createDispute(disputeOrderId, payload);
     if (success) {

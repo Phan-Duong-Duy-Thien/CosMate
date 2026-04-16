@@ -6,6 +6,8 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getOrdersByUserId } from '@/features/order/api/order.api';
 import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
+import { getCostumeById } from '@/features/costume-rental/api/costume.api';
+import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
 
 // Map UI tab to backend status
@@ -49,6 +51,8 @@ export interface UsePurchaseOrdersResult {
   confirmingDeliveryId: number | null;
   returnOrder: (orderId: number, trackingCode: string, images: File[], notes: string[]) => Promise<boolean>;
   returningOrderId: number | null;
+  /** Map costumeId -> resolved first image URL for display in order cards */
+  costumeImageMap: Record<number, string>;
 }
 
 export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResult {
@@ -57,6 +61,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   const [error, setError] = useState<string | null>(null);
   const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
   const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
+  const [costumeImageMap, setCostumeImageMap] = useState<Record<number, string>>({});
 
   const userId = getUserId();
 
@@ -94,6 +99,21 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
           );
         }
         setOrders(costumeOrders);
+        // Batch-fetch costume images for order cards
+        const uniqueIds = [...new Set(costumeOrders.map((o) => o.costumeId).filter(Boolean))];
+        await Promise.all(
+          uniqueIds.map(async (cid) => {
+            try {
+              const costume = await getCostumeById(cid);
+              const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
+              if (url) {
+                setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
+              }
+            } catch {
+              // Silently ignore costume fetch errors
+            }
+          })
+        );
       } catch (err) {
         console.error('Failed to fetch orders:', err);
         setError('Failed to load orders');
@@ -146,6 +166,21 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       const data = await getOrdersByUserId(userId);
       const costumeOrders = data.filter((o) => o.orderType === 'RENT_COSTUME');
       setOrders(costumeOrders);
+      // Re-fetch costume images
+      const uniqueIds = [...new Set(costumeOrders.map((o) => o.costumeId).filter(Boolean))];
+      await Promise.all(
+        uniqueIds.map(async (cid) => {
+          try {
+            const costume = await getCostumeById(cid);
+            const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
+            if (url) {
+              setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
+            }
+          } catch {
+            // Silently ignore
+          }
+        })
+      );
     } catch (err) {
       console.error('Failed to refetch orders:', err);
     }
@@ -196,5 +231,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     confirmingDeliveryId,
     returnOrder,
     returningOrderId,
+    costumeImageMap,
   };
 }

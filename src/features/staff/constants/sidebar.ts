@@ -6,6 +6,7 @@ import {
   Settings,
   MessageSquare,
   Banknote,
+  AlertTriangle,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -65,5 +66,11 @@ export const staffSidebarItems: StaffSidebarItem[] = [
     label: VI.staff.sidebar.withdraw,
     icon: Banknote,
     path: '/staff/withdraw',
+  },
+  {
+    key: 'disputes',
+    label: VI.staff.sidebar.disputes,
+    icon: AlertTriangle,
+    path: '/staff/disputes',
   },
 ];
