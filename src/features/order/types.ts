@@ -55,7 +55,7 @@ export interface CreateOrderParams {
   rentDay: number;
   rentStart: string; // date-only format YYYY-MM-DD
   paymentMethod: PaymentMethod;
-  returnUrl: string;
+  returnUrl?: string;
   cosplayerAddressId: number;
   selectedAccessoryIds: number[];
   selectedRentalOptionId: number | null;
@@ -78,6 +78,7 @@ export type OrderStatus =
 
 export interface OrderItem {
   id: number;
+  orderType: string; // 'RENT_COSTUME' = costume/rental order, 'RENT_SERVICE' = service order
   status: OrderStatus;
   totalAmount: number;
   depositAmount: number;

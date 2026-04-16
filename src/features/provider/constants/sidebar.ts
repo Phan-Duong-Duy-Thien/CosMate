@@ -10,6 +10,7 @@ import {
   Briefcase,
   PlusCircle,
   MessageCircle,
+  Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -83,6 +84,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     icon: MessageCircle,
     path: '/provider/messages',
   },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-rental/wallet',
+  },
 ];
 
 /**
@@ -143,6 +150,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     icon: MessageCircle,
     path: '/provider-photograph/messages',
   },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-photograph/wallet',
+  },
 ];
 
 /**
@@ -202,5 +215,11 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.messages,
     icon: MessageCircle,
     path: '/provider-event-staff/messages',
+  },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-event-staff/wallet',
   },
 ];

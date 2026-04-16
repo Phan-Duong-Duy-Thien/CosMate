@@ -17,8 +17,8 @@ export default function WalletTopUpPage() {
   const isSubmitDisabled = loading || !amount || !paymentMethod
 
   const paymentMethods: { value: PaymentMethod; label: string; desc: string; icon: string; color: string; bgColor: string }[] = [
-    { value: 'MOMO', label: VI.profile.wallet.momo, desc: VI.profile.wallet.momoDesc, icon: '🔴', color: 'text-pink-600', bgColor: 'bg-pink-50' },
-    { value: 'VNPAY', label: VI.profile.wallet.vnpay, desc: VI.profile.wallet.vnpayDesc, icon: '💳', color: 'text-blue-600', bgColor: 'bg-blue-50' },
+    { value: 'MOMO', label: VI.wallet.momo, desc: VI.wallet.momoDesc, icon: '🔴', color: 'text-pink-600', bgColor: 'bg-pink-50' },
+    { value: 'VNPAY', label: VI.wallet.vnpay, desc: VI.wallet.vnpayDesc, icon: '💳', color: 'text-blue-600', bgColor: 'bg-blue-50' },
   ]
 
   return (
@@ -26,22 +26,22 @@ export default function WalletTopUpPage() {
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
           <h1 className="text-2xl font-bold text-slate-900">
-            {VI.profile.wallet.topUpTitle}
+            {VI.wallet.topUpTitle}
           </h1>
           <p className="mt-3 text-sm text-slate-600">
-            {VI.profile.wallet.topUpDescription}
+            {VI.wallet.topUpDescription}
           </p>
 
           <div className="mt-6 space-y-6">
             {/* Amount Input */}
             <div>
               <label className="block text-sm font-medium text-slate-700">
-                {VI.profile.wallet.amount}
+                {VI.wallet.amount}
               </label>
               <Input
                 type="number"
                 min={1}
-                placeholder={VI.profile.wallet.amountPlaceholder}
+                placeholder={VI.wallet.amountPlaceholder}
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 className="mt-2"
@@ -51,7 +51,7 @@ export default function WalletTopUpPage() {
             {/* Payment Method Selection */}
             <div>
               <label className="mb-3 block text-sm font-medium text-slate-700">
-                {VI.profile.wallet.paymentMethodLabel}
+                {VI.wallet.paymentMethodLabel}
               </label>
               <div className="grid gap-3">
                 {paymentMethods.map((method) => (
@@ -113,7 +113,7 @@ export default function WalletTopUpPage() {
                   onClick={handleSubmit}
                   className="min-w-32"
                 >
-                  {loading ? VI.profile.wallet.processing : VI.profile.wallet.submit}
+                  {loading ? VI.wallet.processing : VI.wallet.submit}
                 </Button>
               </div>
             </div>

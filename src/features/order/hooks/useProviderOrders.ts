@@ -72,7 +72,27 @@ export function useProviderOrders() {
     setError(null);
     try {
       const result = await fetchProviderOrders(providerId);
-      setOrders(result);
+      // Defensive: only keep RENT_COSTUME orders. Service orders (RENT_SERVICE) should never
+      // appear here — they have their own API and page. Filter to prevent cross-type
+      // contamination if BE ever returns both types from this endpoint.
+      const costumeOrders = result.filter((o) => o.orderType === 'RENT_COSTUME');
+      costumeOrders.forEach((order) => {
+        console.log('[ORDER DEBUG]', {
+          id: order.id,
+          type: order.orderType,
+          status: order.status,
+        });
+      });
+      const unexpected = result.filter((o) => o.orderType !== 'RENT_COSTUME');
+      if (unexpected.length > 0) {
+        console.warn(
+          '[useProviderOrders] BE returned',
+          unexpected.length,
+          'non-RENT_COSTUME orders — filtered out:',
+          unexpected.map((o) => ({ id: o.id, type: o.orderType }))
+        );
+      }
+      setOrders(costumeOrders);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch orders';
       setError(message);

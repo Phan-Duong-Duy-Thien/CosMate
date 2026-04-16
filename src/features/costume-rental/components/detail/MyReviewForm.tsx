@@ -3,6 +3,7 @@ import { Star, Upload, X } from "lucide-react"
 import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { VI } from "@/shared/i18n/vi"
+import { message } from "antd"
 
 interface MyReviewFormProps {
   canReview: boolean
@@ -48,11 +49,11 @@ export function MyReviewForm({ canReview, orderId, cosplayerId, onSubmit, loadin
 
   const handleSubmit = () => {
     if (rating === 0) {
-      alert("Vui lòng chọn số sao đánh giá")
+      message.error(VI.costumeRental.detail.validation.ratingRequired)
       return
     }
     if (!comment.trim()) {
-      alert("Vui lòng nhập nội dung đánh giá")
+      message.error(VI.costumeRental.detail.validation.commentRequired)
       return
     }
     onSubmit({ rating, comment, images })
@@ -66,7 +67,7 @@ export function MyReviewForm({ canReview, orderId, cosplayerId, onSubmit, loadin
 
       {/* Rating Selection */}
       <div className="mb-4">
-        <p className="mb-2 text-sm text-slate-600">Đánh giá của bạn:</p>
+        <p className="mb-2 text-sm text-slate-600">{VI.costumeRental.detail.ratingOfYou}</p>
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5].map((star) => (
             <button
@@ -140,7 +141,7 @@ export function MyReviewForm({ canReview, orderId, cosplayerId, onSubmit, loadin
         disabled={loading || rating === 0 || !comment.trim()}
         className="w-full rounded-full bg-pink-500 hover:bg-pink-600"
       >
-        {loading ? "Đang gửi..." : VI.costumeRental.detail.submitReview}
+        {loading ? VI.common.status.loading : VI.costumeRental.detail.submitReview}
       </Button>
     </Card>
   )

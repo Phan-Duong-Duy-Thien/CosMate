@@ -57,7 +57,26 @@ export function useServiceOrders(): UseServiceOrdersResult {
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
       const data = await fetchServiceOrders(userId, apiStatuses);
-      setServiceOrders(data);
+      // Defensive: only keep RENT_SERVICE orders. If BE ever returns RENT_COSTUME
+      // from this endpoint, filter it out to prevent cross-contamination.
+      const serviceOrders = data.filter((o) => o.orderType === 'RENT_SERVICE');
+      serviceOrders.forEach((order) => {
+        console.log('[ORDER DEBUG]', {
+          id: order.id,
+          type: order.orderType,
+          status: order.status,
+        });
+      });
+      const unexpected = data.filter((o) => o.orderType !== 'RENT_SERVICE');
+      if (unexpected.length > 0) {
+        console.warn(
+          '[useServiceOrders] BE returned',
+          unexpected.length,
+          'non-service orders — filtered out:',
+          unexpected.map((o) => ({ id: o.id, type: o.orderType }))
+        );
+      }
+      setServiceOrders(serviceOrders);
     } catch (err) {
       console.error('[useServiceOrders] Failed to fetch service orders:', err);
       setError('Failed to load service orders');
@@ -107,10 +126,12 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = `${window.location.origin}/payment/result`;
+    console.log('[useServiceOrders] confirmAndPay → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setConfirmingOrderId(orderId);
     try {
       await confirmServiceOrder(orderId);
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      console.log('[useServiceOrders] confirmAndPay ← paymentUrl:', paymentUrl);
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] confirmAndPay failed:', err);
@@ -125,16 +146,18 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = `${window.location.origin}/payment/result`;
+    console.log('[useServiceOrders] payOnly → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setPayingOrderId(orderId);
     try {
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
+      console.log('[useServiceOrders] payOnly ← paymentUrl:', paymentUrl);
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] payOnly failed:', err);
       const message = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Thanh toán thất bại';
-      throw new Error(message || 'Thanh toán thất bại');
+      throw new Error(message || 'Thanh toán thất toán thất bại');
     } finally {
       setPayingOrderId(null);
     }

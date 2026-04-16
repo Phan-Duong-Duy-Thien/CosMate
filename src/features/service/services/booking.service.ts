@@ -4,7 +4,7 @@
  * Orchestration layer — calls the API.
  * Called by hooks only; never by components or pages.
  */
-import { createServiceBooking, type ServiceBookingPayload, type ServiceBookingResult, getServiceOrdersByCosplayer, type ServiceOrder, confirmServiceOrder as apiConfirmServiceOrder, payServiceOrder as apiPayServiceOrder, type PaymentMethod, getProviderServiceOrders as apiGetProviderServiceOrders } from '../api/booking.api'
+import { createServiceBooking, type ServiceBookingPayload, type ServiceBookingResult, getServiceOrdersByCosplayer, type ServiceOrder, confirmServiceOrder as apiConfirmServiceOrder, payServiceOrder as apiPayServiceOrder, type PaymentMethod, getProviderServiceOrders as apiGetProviderServiceOrders, setWaitingServiceDate as apiSetWaitingServiceDate } from '../api/booking.api'
 
 export interface CreateServiceBookingParams {
   serviceId: number
@@ -49,8 +49,10 @@ export async function payServiceOrderFn(
   paymentMethod: PaymentMethod,
   returnUrl: string
 ): Promise<string> {
-  console.log("[booking.service] payServiceOrder orderId:", orderId, "paymentMethod:", paymentMethod)
-  return apiPayServiceOrder(orderId, paymentMethod, returnUrl)
+  console.log('[booking.service] payServiceOrderFn → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
+  const result = await apiPayServiceOrder(orderId, paymentMethod, returnUrl);
+  console.log('[booking.service] payServiceOrderFn ← paymentUrl:', result);
+  return result;
 }
 
 export async function fetchProviderServiceOrders(
@@ -58,4 +60,9 @@ export async function fetchProviderServiceOrders(
 ): Promise<ServiceOrder[]> {
   console.log("[booking.service] fetchProviderServiceOrders statuses:", statuses)
   return apiGetProviderServiceOrders(statuses)
+}
+
+export async function setWaitingStatus(orderId: number): Promise<void> {
+  console.log('[booking.service] setWaitingStatus → orderId:', orderId);
+  return apiSetWaitingServiceDate(orderId);
 }

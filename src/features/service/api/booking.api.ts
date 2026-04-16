@@ -121,6 +121,7 @@ export async function payServiceOrder(
   paymentMethod: PaymentMethod,
   returnUrl: string
 ): Promise<string> {
+  console.log('[booking.api] payServiceOrder → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
   const response = await axiosInstance.post<ApiResponse<{ paymentUrl: string }>>(
     `/api/service-orders/${orderId}/pay`,
     null,
@@ -128,7 +129,49 @@ export async function payServiceOrder(
       params: { paymentMethod, returnUrl },
     }
   );
+  console.log('[booking.api] payServiceOrder ← response:', response.data);
   return response.data.result.paymentUrl;
+}
+
+/**
+ * POST /api/service-orders/{id}/start-service-now
+ * Moves an order from WAITING_SERVICE_DATE → IN_SERVICE (provider side).
+ */
+export async function startServiceNow(orderId: number): Promise<{ id: number; status: string }> {
+  console.log('[booking.api] startServiceNow → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<{ id: number; status: string }>>(
+    `/api/service-orders/${orderId}/start-service-now`
+  );
+  console.log('[booking.api] startServiceNow ← response:', response.data);
+  return response.data.result;
+}
+
+/**
+ * POST /api/service-orders/{id}/provider-set-waiting
+ * Moves an order from PAID → WAITING_SERVICE_DATE (provider side).
+ */
+export async function setWaitingServiceDate(orderId: number): Promise<void> {
+  console.log('[booking.api] setWaitingServiceDate → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<void>>(
+    `/api/service-orders/${orderId}/provider-set-waiting`
+  );
+  console.log('[booking.api] setWaitingServiceDate ← response:', response.data);
+  return response.data.result;
+}
+
+/**
+ * POST /api/service-orders/{id}/provider-complete
+ * Moves an order from IN_SERVICE → COMPLETED (provider side).
+ */
+export async function completeServiceByProvider(
+  orderId: number
+): Promise<{ id: number; status: string }> {
+  console.log('[booking.api] completeServiceByProvider → orderId:', orderId);
+  const response = await axiosInstance.post<ApiResponse<{ id: number; status: string }>>(
+    `/api/service-orders/${orderId}/provider-complete`
+  );
+  console.log('[booking.api] completeServiceByProvider ← response:', response.data);
+  return response.data.result;
 }
 
 /**

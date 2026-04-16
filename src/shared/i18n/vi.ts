@@ -35,6 +35,16 @@ export const VI = {
     reasonLabel: "Lý do khiếu nại",
     reasonPlaceholder: "Mô tả chi tiết vấn đề của bạn...",
     submit: "Gửi khiếu nại",
+    imagesLabel: "Hình ảnh đính kèm",
+    imagesOptional: "không bắt buộc",
+    imagesHint: "Kéo thả hoặc nhấn để tải ảnh lên",
+    uploadImages: "Tải ảnh lên",
+    maxImagesWarning: "Tối đa 3 hình ảnh",
+    maxImagesReached: "Đã đạt tối đa 3 ảnh",
+    uploadingImages: "Đang tải ảnh...",
+    uploadFailed: "Tải ảnh thất bại. Vui lòng thử lại.",
+    reasonTooShort: "Lý do phải có ít nhất 10 ký tự",
+    helperText: "Hình ảnh giúp CosMate xử lý khiếu nại nhanh hơn. Khuyến nghị tải lên ảnh/video làm bằng chứng.",
   },
 
   /**
@@ -341,6 +351,27 @@ export const VI = {
       },
     },
 
+    changePassword: {
+      title: "Đổi mật khẩu",
+      oldPassword: "Mật khẩu cũ",
+      newPassword: "Mật khẩu mới",
+      confirmPassword: "Xác nhận mật khẩu mới",
+      placeholders: {
+        oldPassword: "Nhập mật khẩu hiện tại",
+        newPassword: "Nhập mật khẩu mới",
+        confirmPassword: "Nhập lại mật khẩu mới",
+      },
+      submit: "Đổi mật khẩu",
+      success: "Đổi mật khẩu thành công!",
+      error: {
+        required: "Vui lòng điền đầy đủ thông tin.",
+        minLength: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+        passwordMismatch: "Mật khẩu xác nhận không khớp.",
+        failed: "Không thể đổi mật khẩu. Vui lòng thử lại.",
+        notAuthenticated: "Vui lòng đăng nhập để đổi mật khẩu.",
+      },
+    },
+
     register: {
       title: "Tạo tài khoản mới",
       subtitle: "Tham gia cộng đồng CosMate ngay hôm nay",
@@ -547,6 +578,7 @@ export const VI = {
       photographBookings: "Đơn đặt PTG",
       photographReviews: "Đánh giá",
       photographSettings: "Hồ sơ / Cài đặt",
+      wallet: "Ví của tôi",
     },
 
     dashboardPhotograph: {
@@ -950,6 +982,21 @@ export const VI = {
       statusCancelled: "Đã hủy",
       filterLabel: "Bộ lọc hiện tại",
       chatTooltip: "Nhắn tin",
+      // Set Waiting action
+      setWaiting: "Chờ ngày thực hiện",
+      setWaitingModalTitle: "Xác nhận chuyển trạng thái",
+      setWaitingModalMessage: "Bạn có chắc chắn muốn chuyển đơn này sang trạng thái \"Chờ ngày thực hiện\" không?",
+      setWaitingModalOk: "Xác nhận",
+      // Start Service action
+      startService: "Bắt đầu dịch vụ",
+      startServiceModalTitle: "Xác nhận bắt đầu dịch vụ",
+      startServiceModalMessage: "Bắt đầu dịch vụ ngay bây giờ?",
+      startServiceModalOk: "Bắt đầu",
+      // Complete Service action
+      completeService: "Hoàn thành dịch vụ",
+      completeServiceModalTitle: "Xác nhận hoàn thành dịch vụ",
+      completeServiceModalMessage: "Bạn có chắc chắn muốn xác nhận hoàn thành dịch vụ này không?",
+      completeServiceModalOk: "Xác nhận",
       // Confirm & Pay
       btnConfirmAndPay: "Xác nhận & Thanh toán",
       btnPayNow: "Thanh toán ngay",
@@ -1054,6 +1101,7 @@ export const VI = {
     detail: {
       title: "Chi tiết đơn hàng",
       basicInfo: "Thông tin cơ bản",
+      costumeInfo: "Trang phục thuê",
       orderId: "Mã đơn",
       status: "Trạng thái",
       totalAmount: "Tổng tiền",
@@ -1126,6 +1174,9 @@ export const VI = {
       rentalCount: "Lượt thuê",
       reviewsTitle: "Đánh giá",
       myReviewTitle: "Đánh giá của tôi",
+      ratingOfYou: "Đánh giá của bạn:",
+      rentedBanner: "Trang phục này hiện đang được thuê. Vui lòng quay lại sau.",
+      rentedButton: "Đã được thuê",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",
@@ -1135,6 +1186,12 @@ export const VI = {
       writeReview: "Viết đánh giá",
       uploadImages: "Tải ảnh lên",
       addPhotos: "Thêm ảnh",
+      loadReviewsError: "Không thể tải đánh giá.",
+      reviewer: "Người dùng",
+      validation: {
+        ratingRequired: "Vui lòng chọn số sao đánh giá.",
+        commentRequired: "Vui lòng nhập nội dung đánh giá.",
+      },
     },
 
     // Validation messages
@@ -2322,6 +2379,8 @@ export const VI = {
     failedDesc: "Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
     cancelledTitle: "Thanh toán đã bị hủy",
     cancelledDesc: "Giao dịch thanh toán đã bị hủy. Bạn có thể thử lại hoặc quay lại sau.",
+    pendingTitle: "Thanh toán đang xử lý",
+    pendingDesc: "Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để xác nhận đơn.",
     unknownTitle: "Kết quả thanh toán",
     unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
     orderIdLabel: "Mã đơn hàng",

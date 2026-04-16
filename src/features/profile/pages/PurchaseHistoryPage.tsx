@@ -157,6 +157,8 @@ export default function PurchaseHistoryPage() {
   // ── Detail drawer state ─────────────────────────────────────────────────────
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
+  // Cross-type contamination guard: track which order type is being viewed
+  const [detailOrderType, setDetailOrderType] = useState<string>('RENT_COSTUME')
 
   // ── Payment modal state ──────────────────────────────────────────────────────
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -254,9 +256,9 @@ export default function PurchaseHistoryPage() {
     setDisputeModalOpen(true)
   }
 
-  const handleDisputeSubmit = async () => {
+  const handleDisputeSubmit = async (payload: { reason: string; files: string[] }) => {
     if (!disputeOrderId) return
-    const success = await createDispute(disputeOrderId)
+    const success = await createDispute(disputeOrderId, payload)
     if (success) {
       message.success(VI.profile.orders.toastDisputeSuccess)
       setDisputeModalOpen(false)
@@ -309,7 +311,7 @@ export default function PurchaseHistoryPage() {
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
-    const canCreateDispute = isInUse
+    const canCreateDispute = isInUse || order.status === 'DELIVERY_OUT'
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
@@ -368,6 +370,7 @@ export default function PurchaseHistoryPage() {
             <button
               type="button"
               onClick={() => {
+                setDetailOrderType('RENT_COSTUME')
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
@@ -739,6 +742,7 @@ export default function PurchaseHistoryPage() {
       <OrderDetailDrawer
         open={detailDrawerOpen}
         orderId={detailOrderId}
+        orderType={detailOrderType}
         onClose={() => {
           setDetailDrawerOpen(false)
           setDetailOrderId(null)
@@ -776,7 +780,11 @@ export default function PurchaseHistoryPage() {
         loading={confirmingOrderId !== null || payingOrderId !== null}
         totalAmount={
           paymentOrderId != null
-            ? (serviceFilteredOrders.find((o) => o.id === paymentOrderId)?.totalAmount)
+            ? (serviceFilteredOrders.find(
+                // Composite key lookup — guards against cross-type contamination
+                // even though serviceFilteredOrders already only contains RENT_SERVICE orders.
+                (o) => o.orderType === 'RENT_SERVICE' && o.id === paymentOrderId
+              )?.totalAmount)
             : undefined
         }
       />

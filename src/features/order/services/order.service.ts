@@ -3,6 +3,7 @@
  * Orchestrates order creation and data formatting
  */
 import * as orderApi from '../api/order.api';
+import { createDispute as disputeApi, type CreateDisputePayload } from '../api/dispute.api';
 import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod, OrderDetail } from '../types';
 import { clearDraft } from '../utils/rentalDraftStorage';
 
@@ -29,16 +30,21 @@ export async function createOrder(
   // Format rentStart to ISO with T separator
   const formattedRentStart = formatRentStartToISO(params.rentStart);
 
+  // returnUrl is only sent for external gateways (MOMO/VNPAY).
+  // For WALLET: BE processes internally — no returnUrl needed.
   const payload: CreateOrderPayload = {
     costumeId: params.costumeId,
     rentDay: params.rentDay,
     rentStart: formattedRentStart,
     paymentMethod: params.paymentMethod,
-    returnUrl: params.returnUrl,
     cosplayerAddressId: params.cosplayerAddressId,
     selectedAccessoryIds: params.selectedAccessoryIds,
     selectedRentalOptionId: params.selectedRentalOptionId,
   };
+
+  if (params.paymentMethod === 'MOMO' || params.paymentMethod === 'VNPAY') {
+    payload.returnUrl = params.returnUrl;
+  }
 
   return orderApi.createOrder(params.cosplayerId, payload);
 }
@@ -70,24 +76,22 @@ export async function submitOrderAndHandleResult(
 
   const orderId = result.id;
 
-  // WALLET: BE processes internally — trust BE's status
+  // WALLET: BE processes internally — FE must redirect manually with status/orderId.
+  // BE returns UNPAID because no external gateway redirect occurred.
+  // OrderId is trusted from the response regardless of status.
   if (params.paymentMethod === 'WALLET') {
     clearDraft();
-    // Map BE status to UI status: PAID/COMPLETED/SUCCESS → success, rest → failed
-    const isSuccess = result.status === 'PAID' || result.status === 'COMPLETED';
-    return { type: 'wallet', orderId, status: isSuccess ? 'success' : 'failed' };
+    return { type: 'wallet', orderId, status: 'success' };
   }
 
-  // External gateway (MoMo/VNPay) — redirect to paymentUrl
+  // External gateway (MoMo/VNPay) — BE will redirect user after payment.
+  // FE MUST redirect to paymentUrl; BE handles the return to /payment/result.
   if (result.paymentUrl) {
     return { type: 'gateway', paymentUrl: result.paymentUrl };
   }
 
-  // No paymentUrl: use BE status to determine outcome
-  {
-    const isSuccess = result.status === 'PAID' || result.status === 'COMPLETED';
-    return { type: 'failed', orderId: isSuccess ? orderId : 0 };
-  }
+  // No paymentUrl and not WALLET: BE failed — signal error, do NOT redirect.
+  return { type: 'failed', orderId: 0 };
 }
 
 /**
@@ -197,7 +201,11 @@ export async function returnCosplayerOrder(
 /**
  * Create a dispute for an order
  * @param orderId - The order ID
+ * @param payload - { reason, files: string[] }
  */
-export async function createDisputeService(orderId: number) {
-  await orderApi.createDispute(orderId);
+export async function createDisputeService(
+  orderId: number,
+  payload: CreateDisputePayload
+) {
+  await disputeApi(orderId, payload);
 }

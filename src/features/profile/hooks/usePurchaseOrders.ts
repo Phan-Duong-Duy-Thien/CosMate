@@ -72,7 +72,28 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setLoading(true);
         setError(null);
         const data = await getOrdersByUserId(userId);
-        setOrders(data);
+        // FIX: Only keep RENT_COSTUME orders. The BE /api/orders/user/{userId} may return
+        // both RENT_COSTUME and RENT_SERVICE orders. Filter here to prevent
+        // service orders from leaking into the costume tab.
+        const costumeOrders = data.filter((o) => o.orderType === 'RENT_COSTUME');
+        costumeOrders.forEach((order) => {
+          console.log('[ORDER DEBUG]', {
+            id: order.id,
+            type: order.orderType,
+            status: order.status,
+          });
+        });
+        // Warn if BE returned unexpected order types
+        const unexpected = data.filter((o) => o.orderType !== 'RENT_COSTUME');
+        if (unexpected.length > 0) {
+          console.warn(
+            '[usePurchaseOrders] BE returned',
+            unexpected.length,
+            'non-RENT_COSTUME orders — filtered out:',
+            unexpected.map((o) => ({ id: o.id, type: o.orderType, status: o.status }))
+          );
+        }
+        setOrders(costumeOrders);
       } catch (err) {
         console.error('Failed to fetch orders:', err);
         setError('Failed to load orders');
@@ -123,7 +144,8 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     if (!userId) return;
     try {
       const data = await getOrdersByUserId(userId);
-      setOrders(data);
+      const costumeOrders = data.filter((o) => o.orderType === 'RENT_COSTUME');
+      setOrders(costumeOrders);
     } catch (err) {
       console.error('Failed to refetch orders:', err);
     }

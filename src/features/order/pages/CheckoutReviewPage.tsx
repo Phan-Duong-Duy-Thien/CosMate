@@ -382,14 +382,14 @@ export default function CheckoutReviewPage() {
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">⚠️</div>
                         <div className="min-w-0 flex-1 space-y-2">
                           <p className="text-sm font-semibold text-amber-800 leading-tight">
-                            {VI.profile.wallet.checkoutValidation.insufficientTitle}
+                            {VI.wallet.checkoutValidation.insufficientTitle}
                           </p>
                           <div className="flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-amber-700">
                             <p>
-                              {VI.profile.wallet.checkoutValidation.balanceLabel}: <span className="font-semibold">{formatCurrency(walletBalance ?? 0)}</span>
+                              {VI.wallet.checkoutValidation.balanceLabel}: <span className="font-semibold">{formatCurrency(walletBalance ?? 0)}</span>
                             </p>
                             <p>
-                              {VI.profile.wallet.checkoutValidation.missingLabel}: <span className="font-semibold text-orange-600">{formatCurrency(missingAmount)}</span>
+                              {VI.wallet.checkoutValidation.missingLabel}: <span className="font-semibold text-orange-600">{formatCurrency(missingAmount)}</span>
                             </p>
                           </div>
                           <div className="flex justify-end">
@@ -399,7 +399,7 @@ export default function CheckoutReviewPage() {
                               className="rounded-full bg-amber-500 hover:bg-amber-600 text-white border-0"
                               onClick={() => navigate('/profile/wallet/topup')}
                             >
-                              {VI.profile.wallet.checkoutValidation.topUpCta}
+                              {VI.wallet.checkoutValidation.topUpCta}
                             </Button>
                           </div>
                         </div>
@@ -411,7 +411,7 @@ export default function CheckoutReviewPage() {
                       <div className="flex items-center gap-3">
                         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-lg">👛</div>
                         <div className="flex-1">
-                          <p className="text-xs text-slate-500">{VI.profile.wallet.checkoutValidation.payWithWalletNote}</p>
+                          <p className="text-xs text-slate-500">{VI.wallet.checkoutValidation.payWithWalletNote}</p>
                           <p className="text-lg font-bold text-green-700">{formatCurrency(walletBalance)}</p>
                         </div>
                       </div>

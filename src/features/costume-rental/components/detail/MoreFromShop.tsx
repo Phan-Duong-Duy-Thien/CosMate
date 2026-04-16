@@ -1,8 +1,8 @@
 import { Heart } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { getMockMoreFromShop, type MoreFromShopItem } from "../../mocks/moreFromShop.mock"
+import { useProviderCostumesForShop, type MoreFromShopItem } from "../../hooks/useProviderCostumesForShop"
 import { VI } from "@/shared/i18n/vi"
+import { Spin } from "antd"
 
 interface MoreFromShopProps {
   providerId: number
@@ -11,24 +11,30 @@ interface MoreFromShopProps {
 }
 
 export function MoreFromShop({ providerId, onSelectCostume, currentCostumeId }: MoreFromShopProps) {
-  const items = getMockMoreFromShop(providerId)
-  // Filter out current costume
-  const filteredItems = items.filter((item) => item.id !== currentCostumeId)
+  const { items, loading, error } = useProviderCostumesForShop(providerId, currentCostumeId)
 
-  if (filteredItems.length === 0) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Spin size="small" />
+      </div>
+    )
+  }
+
+  if (error || items.length === 0) {
     return null
   }
 
   return (
     <div className="space-y-4">
       <div className="inline-block rounded-lg border-2 border-pink-200 bg-pink-50 px-3 py-1.5">
-        <h3 className="text-sm font-semibold text-slate-800 text-center">
+        <h3 className="text-center text-sm font-semibold text-slate-800">
           {VI.costumeRental.detail.moreFromShop}
         </h3>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {filteredItems.map((item) => (
+        {items.map((item) => (
           <ProductCard key={item.id} item={item} onClick={() => onSelectCostume(item.id)} />
         ))}
       </div>
@@ -40,7 +46,6 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation()
     console.log("Wishlist clicked for:", item.id)
-    // Future: call wishlist API
   }
 
   return (

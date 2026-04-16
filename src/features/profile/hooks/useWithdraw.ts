@@ -27,15 +27,15 @@ export function useWithdraw(): UseWithdrawResult {
     const numAmount = parseFloat(amount)
 
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      message.error(VI.profile.wallet.withdrawValidationInvalidAmount)
+      message.error(VI.wallet.withdrawValidationInvalidAmount)
       return
     }
     if (!bankAccountNumber.trim()) {
-      message.error(VI.profile.wallet.withdrawValidationBankAccountRequired)
+      message.error(VI.wallet.withdrawValidationBankAccountRequired)
       return
     }
     if (!bankName.trim()) {
-      message.error(VI.profile.wallet.withdrawValidationBankNameRequired)
+      message.error(VI.wallet.withdrawValidationBankNameRequired)
       return
     }
 
@@ -49,10 +49,10 @@ export function useWithdraw(): UseWithdrawResult {
     setError(null)
     try {
       await withdrawService.requestWithdraw(payload)
-      message.success(VI.profile.wallet.withdrawSuccess)
+      message.success(VI.wallet.withdrawSuccess)
     } catch (err) {
       console.error("Withdraw failed:", err)
-      const errorMsg = err instanceof Error ? err.message : VI.profile.wallet.withdrawError
+      const errorMsg = err instanceof Error ? err.message : VI.wallet.withdrawError
       setError(errorMsg)
       message.error(errorMsg)
     } finally {

@@ -152,9 +152,9 @@ export default function CosplayerProfilePage() {
                   <div className="flex items-center justify-between gap-2">
                     <div>
                       <h2 className="text-base font-semibold text-slate-900">
-                        {VI.profile.wallet.title}
+                        {VI.wallet.title}
                       </h2>
-                      <p className="mt-1 text-sm text-slate-600">{VI.profile.wallet.balance}</p>
+                      <p className="mt-1 text-sm text-slate-600">{VI.wallet.balance}</p>
                       <p className="mt-2 text-2xl font-bold text-purple-700">
                         {walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫
                       </p>
@@ -165,7 +165,7 @@ export default function CosplayerProfilePage() {
                       size="sm"
                       onClick={() => navigate("/profile/wallet")}
                     >
-                      {VI.profile.wallet.manage}
+                      {VI.wallet.manage}
                     </Button>
                   </div>
                 </Card>
