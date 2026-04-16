@@ -13,14 +13,13 @@ import { UploadOutlined, LoadingOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 import { InboxOutlined } from '@ant-design/icons';
 import { VI } from '@/shared/i18n/vi';
-import { uploadImage } from '@/shared/api/imageUpload.api';
 
 interface CreateDisputeModalProps {
   open: boolean;
   orderId: number;
   loading: boolean;
   onCancel: () => void;
-  onSubmit: (payload: { reason: string; files: string[] }) => Promise<void>;
+  onSubmit: (payload: { reason: string; files: File[] }) => Promise<void>;
 }
 
 const { Dragger } = Upload;
@@ -28,14 +27,12 @@ const { Dragger } = Upload;
 export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit }: CreateDisputeModalProps) {
   const [reason, setReason] = useState('');
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [uploadingImages, setUploadingImages] = useState(false);
 
   // Reset form when modal opens/closes
   useEffect(() => {
     if (!open) {
       setReason('');
       setFileList([]);
-      setUploadingImages(false);
     }
   }, [open]);
 
@@ -73,43 +70,21 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
     return VI.dispute.uploadImages;
   };
 
-  // Handle submit
+  // Handle submit - pass files directly (backend handles upload via multipart)
   const handleSubmit = async () => {
-    // Validate reason
     if (!isReasonValid) {
       message.error(VI.dispute.reasonTooShort);
       return;
     }
 
-    // Upload images first (if any)
-    const uploadedUrls: string[] = [];
+    // Collect File objects for multipart upload
+    const fileObjects: File[] = fileList
+      .map((f) => f.originFileObj)
+      .filter((f): f is File => f !== undefined);
 
-    if (fileList.length > 0) {
-      setUploadingImages(true);
-
-      try {
-        for (const file of fileList) {
-          if (file.originFileObj) {
-            const result = await uploadImage(file.originFileObj);
-            uploadedUrls.push(result.url);
-          } else if (file.url && !file.status) {
-            // File already has a URL but no status — treat as already uploaded
-            uploadedUrls.push(file.url);
-          }
-        }
-      } catch {
-        message.error(VI.dispute.uploadFailed);
-        setUploadingImages(false);
-        return;
-      } finally {
-        setUploadingImages(false);
-      }
-    }
-
-    // Submit with reason + uploaded URLs
     await onSubmit({
       reason: reason.trim(),
-      files: uploadedUrls,
+      files: fileObjects,
     });
   };
 
