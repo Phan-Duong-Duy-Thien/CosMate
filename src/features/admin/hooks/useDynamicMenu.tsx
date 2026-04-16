@@ -1,8 +1,27 @@
 import { useCallback, useEffect, useState } from 'react';
-import axiosInstance from '@/services/axiosInstance';
 import { LayoutDashboard, Users, ShoppingBag, Shirt, BarChart3, Folder, Menu as MenuIcon } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
+import { getRoles } from '@/features/auth/services/tokenStorage';
+import * as menuApi from '@/features/admin/api/menu.api';
+
+type MenuItemDto = {
+  id?: string;
+  title?: string;
+  url?: string;
+  icon?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+  children?: MenuItemDto[];
+};
+
+type MenuGroupDto = {
+  id?: string;
+  name?: string;
+  displayOrder?: number;
+  isActive?: boolean;
+  menuItems?: MenuItemDto[];
+};
 
 const getIconComponent = (iconName?: string): LucideIcon => {
   switch (iconName?.toLowerCase()) {
@@ -21,60 +40,67 @@ const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
   { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} /> },
 ];
 
+const ADMIN_ROLE_ALLOWLIST = ['SUPERADMIN', 'ADMIN', '2'];
+const CORE_MENU_PATHS = new Set(ADMIN_CORE_MENUS.map((item) => item.path).filter(Boolean) as string[]);
 
-const ADMIN_DERIVED_MENUS: DashboardSidebarItem[] = [
-  { key: '/admin/users', label: 'Người dùng', path: '/admin/users', icon: <Users size={16} /> },
-  { key: '/admin/providers', label: 'Provider', path: '/admin/providers', icon: <ShoppingBag size={16} /> },
-  { key: '/admin/costumes', label: 'Trang phục', path: '/admin/costumes', icon: <Shirt size={16} /> },
-  { key: '/admin/orders', label: 'Đơn hàng', path: '/admin/orders', icon: <BarChart3 size={16} /> },
-  { key: '/admin/reports', label: 'Báo cáo', path: '/admin/reports', icon: <BarChart3 size={16} /> },
-  { key: '/admin/audit-logs', label: 'Nhật ký hệ thống', path: '/admin/audit-logs', icon: <Folder size={16} /> },
-];
-
-const ADMIN_SAFE_MENUS: DashboardSidebarItem[] = [...ADMIN_CORE_MENUS, ...ADMIN_DERIVED_MENUS];
-const ADMIN_ROLE_ALLOWLIST = ['SUPERADMIN', 'ADMIN'];
-
-const normalizeChildren = (children: any[] = [], roles: string[]): DashboardSidebarItem[] => {
+const normalizeChildren = (children: MenuItemDto[] = []): DashboardSidebarItem[] => {
   return children
-    .filter((item) => item?.isActive !== false && item?.url)
+    .filter((item) => item?.isActive !== false && item?.url && !CORE_MENU_PATHS.has(item.url))
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
-    .map((item: any) => {
+    .map((item) => {
       const Icon = getIconComponent(item.icon);
       return {
         key: String(item.url),
-        label: item.title,
+        label: item.title || item.url || 'Menu item',
         path: item.url,
         icon: <Icon size={16} />,
-        children: normalizeChildren(item.children || [], roles),
+        children: normalizeChildren(item.children || []),
       };
     });
 };
 
+const getMenuGroupItems = async (menu: MenuGroupDto): Promise<MenuItemDto[]> => {
+  if (menu.menuItems && menu.menuItems.length > 0) return menu.menuItems;
+  if (!menu.id) return [];
+
+  try {
+    const response = await menuApi.getMenuItems(String(menu.id));
+    return (response?.result || response || []) as MenuItemDto[];
+  } catch {
+    return [];
+  }
+};
+
 export function useDynamicMenu() {
-  const [sidebarItems, setSidebarItems] = useState<DashboardSidebarItem[]>(ADMIN_SAFE_MENUS);
+  const [sidebarItems, setSidebarItems] = useState<DashboardSidebarItem[]>(ADMIN_CORE_MENUS);
   const [loading, setLoading] = useState(true);
 
   const fetchMenu = useCallback(async () => {
     try {
       setLoading(true);
-      const roles = JSON.parse(localStorage.getItem('roles') || '[]') as string[];
-      const isAdminContext = roles.some((role) => ADMIN_ROLE_ALLOWLIST.includes(String(role).toUpperCase()));
+      const roles = getRoles().map((role) => String(role).toUpperCase());
+      const isAdminContext = roles.some((role) => ADMIN_ROLE_ALLOWLIST.includes(role));
       if (!isAdminContext) {
         setSidebarItems(ADMIN_CORE_MENUS);
         return;
       }
 
-      const response = await axiosInstance.get('/api/v1/menus/active');
-      const menus = (response.data?.result || response.data || [])
-        .filter((menu: any) => menu?.isActive !== false)
-        .sort((a: any, b: any) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0));
+      const menus = (await menuApi.getMenus()) as MenuGroupDto[];
+      const safeMenus = Array.isArray(menus) ? menus : [];
 
-      const dynamicMenus: DashboardSidebarItem[] = menus.map((menu: any) => ({
-        key: `group-${menu.id}`,
-        label: menu.name,
-        icon: <Folder size={16} />,
-        children: normalizeChildren(menu.menuItems || [], roles),
-      }));
+      const dynamicMenus: DashboardSidebarItem[] = [];
+      for (const menu of safeMenus.filter((menu) => menu?.isActive !== false).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))) {
+        const menuItems = await getMenuGroupItems(menu);
+        const children = normalizeChildren(menuItems);
+        if (!children.length) continue;
+
+        dynamicMenus.push({
+          key: `group-${menu.id || menu.name}`,
+          label: menu.name || 'Menu',
+          icon: <Folder size={16} />,
+          children,
+        });
+      }
 
       setSidebarItems([...ADMIN_CORE_MENUS, ...dynamicMenus]);
     } catch (error) {
