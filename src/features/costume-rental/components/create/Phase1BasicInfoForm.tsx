@@ -6,12 +6,11 @@
  */
 
 import { useMemo, useState } from 'react'
-import { Button, Form, Input, InputNumber, Select, Upload, Alert, Tooltip, message, Spin } from 'antd'
+import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
 import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
-import { VI } from '@/shared/i18n/vi'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 
 const { Dragger } = Upload
@@ -40,7 +39,6 @@ interface Props {
 export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
-  const [customPrompt, setCustomPrompt] = useState('')
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -60,7 +58,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
   const handleGenerateDescription = async () => {
     const values = form.getFieldsValue()
-    const name = values?.name?.trim()
+    const name = String(values?.name || '').trim()
+    const promptText = String(form.getFieldValue('customPrompt') || '').trim()
     const files = extractFilesFromForm(values)
 
     if (!name) {
@@ -74,7 +73,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files, customPrompt)
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, promptText)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
@@ -106,31 +105,13 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   }
 
   return (
-    <div style={{ position: 'relative' }}>
-      {(isAiGenerating || loading) && (
-        <div
-          style={{
-            position: 'absolute',
-            inset: 0,
-            background: 'rgba(255,255,255,0.72)',
-            zIndex: 20,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            borderRadius: 8,
-          }}
-        >
-          <Spin size="large" tip={isAiGenerating ? 'AI đang tạo mô tả...' : 'Đang tạo trang phục, vui lòng chờ...'} />
-        </div>
-      )}
-
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={handleFinish}
-        disabled={disabled || isAiGenerating || loading}
-        style={{ maxWidth: 640 }}
-      >
+    <Form
+      form={form}
+      layout="vertical"
+      onFinish={handleFinish}
+      disabled={disabled || loading}
+      style={{ maxWidth: 640 }}
+    >
         {error && (
           <Form.Item>
             <Alert type="error" message={error} showIcon />
@@ -145,44 +126,44 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <Input placeholder="Nhập tên trang phục" maxLength={120} />
         </Form.Item>
 
-        <Form.Item
-          label={(
-            <div className="flex items-center gap-2">
-              <span>Mô tả</span>
-              <Tooltip title="AI tạo mô tả từ tên + ảnh + prompt tuỳ chọn. Cần nhập tên và tải ít nhất 1 ảnh trước khi bấm.">
-                <Button
-                  type="link"
-                  size="small"
-                  className="h-auto p-0 text-xs"
-                  icon={<RobotOutlined />}
-                  onClick={handleGenerateDescription}
-                  loading={isAiGenerating}
-                  disabled={disabled || loading || isAiGenerating || !canGenerateAI}
-                >
-                  Tự động tạo mô tả
-                </Button>
-              </Tooltip>
-            </div>
-          )}
-          name="description"
-        >
-          <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" />
-        </Form.Item>
+        <Card size="small" title="✨ AI Hỗ trợ viết mô tả" style={{ marginBottom: 16, background: '#fafcff', borderColor: '#d9e8ff' }}>
+          <Form.Item label="Mô tả" name="description" style={{ marginBottom: 16 }}>
+            <TextArea
+              rows={4}
+              autoSize={{ minRows: 4, maxRows: 10 }}
+              placeholder="Mô tả trang phục"
+              disabled={isAiGenerating}
+            />
+          </Form.Item>
 
-        <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt">
-          <TextArea
-            rows={3}
-            autoSize={{ minRows: 2, maxRows: 6 }}
-            placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..."
-            value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
-          />
-        </Form.Item>
+          <Row gutter={12} align="middle">
+            <Col flex="auto">
+              <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt" style={{ marginBottom: 0 }}>
+                <Input.TextArea
+                  rows={3}
+                  autoSize={{ minRows: 2, maxRows: 4 }}
+                  placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..."
+                />
+              </Form.Item>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<RobotOutlined />}
+                onClick={handleGenerateDescription}
+                loading={isAiGenerating}
+                disabled={disabled || loading || isAiGenerating || !canGenerateAI}
+                style={{ marginTop: 30 }}
+              >
+                AI tự viết mô tả
+              </Button>
+            </Col>
+          </Row>
+        </Card>
 
         <Form.Item
           label="Kích cỡ"
           name="size"
-          rules={[{ required: true, message: 'Vui lòng chọn kích cỡ' }]}
         >
           <Select placeholder="Chọn kích cỡ">
             {SIZE_OPTIONS.map((s) => (
@@ -196,10 +177,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         <Form.Item
           label="Số lượng"
           name="numberOfItems"
-          rules={[
-            { required: true, message: 'Vui lòng nhập số lượng' },
-            { type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' },
-          ]}
         >
           <InputNumber min={1} style={{ width: '100%' }} placeholder="Số lượng" />
         </Form.Item>
@@ -209,7 +186,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           name="pricePerDay"
           rules={[
             { required: true, message: 'Vui lòng nhập giá thuê' },
-            { type: 'number', min: 1, message: 'Giá thuê phải lớn hơn 0' },
           ]}
         >
           <InputNumber min={1} style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
@@ -218,10 +194,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         <Form.Item
           label="Tiền đặt cọc (VNĐ)"
           name="depositAmount"
-          rules={[
-            { required: true, message: 'Vui lòng nhập tiền đặt cọc' },
-            { type: 'number', min: 0, message: 'Tiền đặt cọc không được âm' },
-          ]}
         >
           <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
         </Form.Item>
@@ -230,15 +202,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           label="Hình ảnh"
           name="imageFiles"
           valuePropName="imageFiles"
-          rules={[
-            {
-              validator: (_, value) => {
-                const list = value?.fileList ?? []
-                if (list.length === 0) return Promise.reject('Vui lòng tải lên ít nhất 1 hình ảnh')
-                return Promise.resolve()
-              },
-            },
-          ]}
         >
           <Dragger multiple beforeUpload={() => false} accept="image/*" listType="picture">
             <p className="ant-upload-drag-icon">
@@ -255,6 +218,5 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </Button>
         </Form.Item>
       </Form>
-    </div>
   )
 }

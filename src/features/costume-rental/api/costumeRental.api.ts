@@ -30,16 +30,20 @@ interface ApiWrapper<T> {
 
 export async function createCostumeMultipart(payload: CreateCostumeBasicPayload): Promise<CostumeCreatedResponse> {
   const form = new FormData()
-  form.append('name', payload.name)
-  form.append('description', payload.description)
-  form.append('size', payload.size)
-  if (payload.rentPurpose) form.append('rentPurpose', payload.rentPurpose)
-  form.append('numberOfItems', String(payload.numberOfItems))
-  form.append('pricePerDay', String(payload.pricePerDay))
-  form.append('rentDiscount', String(payload.rentDiscount))
-  form.append('depositAmount', String(payload.depositAmount))
-  if (typeof payload.rentDiscount === 'number') form.append('rentDiscount', String(payload.rentDiscount))
-  form.append('providerId', String(payload.providerId))
+  const safeNumber = (value: unknown, fallback = 0) => {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
+  form.append('name', String(payload.name ?? ''))
+  form.append('description', String(payload.description ?? ''))
+  form.append('size', String(payload.size ?? ''))
+  if (payload.rentPurpose) form.append('rentPurpose', String(payload.rentPurpose))
+  form.append('numberOfItems', String(safeNumber(payload.numberOfItems, 0)))
+  form.append('pricePerDay', String(safeNumber(payload.pricePerDay, 0)))
+  form.append('rentDiscount', String(safeNumber(payload.rentDiscount, 0)))
+  form.append('depositAmount', String(safeNumber(payload.depositAmount, 0)))
+  form.append('providerId', String(safeNumber(payload.providerId, 0)))
   form.append('surcharges', '[]')
   form.append('accessories', '[]')
   form.append('rentalOptions', '[]')
