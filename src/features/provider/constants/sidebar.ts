@@ -1,13 +1,9 @@
 import {
   LayoutDashboard,
   Package,
-  ShoppingBag,
-  Calendar,
   Star,
   Settings,
   ClipboardList,
-  Camera,
-  Briefcase,
   PlusCircle,
   MessageCircle,
   Wallet,
@@ -45,7 +41,7 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
   {
     key: 'costumeCreate',
     label: VI.provider.sidebar.costumeCreate,
-    icon: Package,
+    icon: PlusCircle,
     path: '/provider-rental/costumes/create',
   },
   {
@@ -53,18 +49,6 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.orders.title,
     icon: ClipboardList,
     path: '/provider-rental/orders',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.bookings,
-    icon: ShoppingBag,
-    path: '/provider/bookings',
-  },
-  {
-    key: 'schedule',
-    label: VI.provider.sidebar.schedule,
-    icon: Calendar,
-    path: '/provider/schedule',
   },
   {
     key: 'reviews',
@@ -121,24 +105,6 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/serviceCreate',
   },
   {
-    key: 'schedule',
-    label: VI.provider.sidebar.photographSchedule,
-    icon: Calendar,
-    path: '/provider-photograph/schedule',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.photographBookings,
-    icon: Camera,
-    path: '/provider-photograph/bookings',
-  },
-  {
-    key: 'reviews',
-    label: VI.provider.sidebar.photographReviews,
-    icon: Star,
-    path: '/provider-photograph/reviews',
-  },
-  {
     key: 'settings',
     label: VI.provider.sidebar.photographSettings,
     icon: Settings,
@@ -185,24 +151,6 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
     path: '/provider-event-staff/serviceCreate',
-  },
-  {
-    key: 'schedule',
-    label: VI.provider.sidebar.eventStaffSchedule,
-    icon: Calendar,
-    path: '/provider-event-staff/schedule',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.eventStaffBookings,
-    icon: Briefcase,
-    path: '/provider-event-staff/bookings',
-  },
-  {
-    key: 'reviews',
-    label: VI.provider.sidebar.eventStaffReviews,
-    icon: Star,
-    path: '/provider-event-staff/reviews',
   },
   {
     key: 'settings',
