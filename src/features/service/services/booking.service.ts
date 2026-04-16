@@ -4,7 +4,7 @@
  * Orchestration layer — calls the API.
  * Called by hooks only; never by components or pages.
  */
-import { createServiceBooking, type ServiceBookingPayload, type ServiceBookingResult, getServiceOrdersByCosplayer, type ServiceOrder, confirmServiceOrder as apiConfirmServiceOrder, payServiceOrder as apiPayServiceOrder, type PaymentMethod, getProviderServiceOrders as apiGetProviderServiceOrders, setWaitingServiceDate as apiSetWaitingServiceDate } from '../api/booking.api'
+import { createServiceBooking, type ServiceBookingPayload, type ServiceBookingResult, getServiceOrdersByCosplayer, getAllServiceOrdersByCosplayer, type ServiceOrder, confirmServiceOrder as apiConfirmServiceOrder, payServiceOrder as apiPayServiceOrder, type PaymentMethod, getProviderServiceOrders as apiGetProviderServiceOrders, setWaitingServiceDate as apiSetWaitingServiceDate } from '../api/booking.api'
 
 export interface CreateServiceBookingParams {
   serviceId: number
@@ -33,10 +33,20 @@ export async function submitServiceBooking(
 
 export async function fetchServiceOrders(
   userId: number,
+  statuses?: string,
+  page: number = 1,
+  size: number = 10
+): Promise<{ orders: ServiceOrder[]; total: number; isPaginated: boolean }> {
+  console.log("[booking.service] fetchServiceOrders userId:", userId, "statuses:", statuses, "page:", page, "size:", size)
+  return getServiceOrdersByCosplayer(userId, statuses, page, size)
+}
+
+export async function fetchAllServiceOrders(
+  userId: number,
   statuses?: string
 ): Promise<ServiceOrder[]> {
-  console.log("[booking.service] fetchServiceOrders userId:", userId, "statuses:", statuses)
-  return getServiceOrdersByCosplayer(userId, statuses)
+  console.log("[booking.service] fetchAllServiceOrders userId:", userId, "statuses:", statuses)
+  return getAllServiceOrdersByCosplayer(userId, statuses)
 }
 
 export async function confirmServiceOrder(orderId: number): Promise<void> {

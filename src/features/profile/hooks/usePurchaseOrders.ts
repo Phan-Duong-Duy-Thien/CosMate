@@ -4,7 +4,7 @@
  */
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
-import { getOrdersByUserId } from '@/features/order/api/order.api';
+import { getOrdersByUserId, getAllOrdersByUserId } from '@/features/order/api/order.api';
 import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
 import { getCostumeById } from '@/features/costume-rental/api/costume.api';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
@@ -37,11 +37,10 @@ export interface OrderCounts {
   shipping_back: number;
   completed: number;
   cancelled: number;
-  shipping_combined: number; // Combined count for profile summary
+  shipping_combined: number;
 }
 
 export interface UsePurchaseOrdersResult {
-  orders: OrderItem[];
   filteredOrders: OrderItem[];
   counts: OrderCounts;
   loading: boolean;
@@ -51,20 +50,29 @@ export interface UsePurchaseOrdersResult {
   confirmingDeliveryId: number | null;
   returnOrder: (orderId: number, trackingCode: string, images: File[], notes: string[]) => Promise<boolean>;
   returningOrderId: number | null;
-  /** Map costumeId -> resolved first image URL for display in order cards */
   costumeImageMap: Record<number, string>;
+  page: number;
+  setPage: (page: number) => void;
+  pageSize: number;
+  total: number;
+  isPaginated: boolean;
 }
 
 export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResult {
-  const [orders, setOrders] = useState<OrderItem[]>([]);
+  const [allOrders, setAllOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
   const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
   const [costumeImageMap, setCostumeImageMap] = useState<Record<number, string>>({});
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [isPaginated, setIsPaginated] = useState(false);
+  const PAGE_SIZE = 10;
 
   const userId = getUserId();
 
+  // Fetch all orders once (or per page if BE supports server-side pagination)
   useEffect(() => {
     if (!userId) {
       setError('User not found');
@@ -76,31 +84,31 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       try {
         setLoading(true);
         setError(null);
-        const data = await getOrdersByUserId(userId);
-        // FIX: Only keep RENT_COSTUME orders. The BE /api/orders/user/{userId} may return
-        // both RENT_COSTUME and RENT_SERVICE orders. Filter here to prevent
-        // service orders from leaking into the costume tab.
-        const costumeOrders = data.filter((o) => o.orderType === 'RENT_COSTUME');
-        costumeOrders.forEach((order) => {
-          console.log('[ORDER DEBUG]', {
-            id: order.id,
-            type: order.orderType,
-            status: order.status,
-          });
-        });
-        // Warn if BE returned unexpected order types
-        const unexpected = data.filter((o) => o.orderType !== 'RENT_COSTUME');
-        if (unexpected.length > 0) {
-          console.warn(
-            '[usePurchaseOrders] BE returned',
-            unexpected.length,
-            'non-RENT_COSTUME orders — filtered out:',
-            unexpected.map((o) => ({ id: o.id, type: o.orderType, status: o.status }))
-          );
+
+        let fetchedOrders: OrderItem[];
+        let fetchedTotal: number;
+        let fetchedPaginated: boolean;
+
+        const result = await getOrdersByUserId(userId, page, PAGE_SIZE);
+        fetchedPaginated = result.isPaginated;
+
+        if (result.isPaginated) {
+          // BE supports true server-side pagination
+          fetchedOrders = result.orders.filter((o) => o.orderType === 'RENT_COSTUME');
+          fetchedTotal = result.total;
+        } else {
+          // BE returns flat array → fetch all, apply client-side filter + slice
+          fetchedOrders = await getAllOrdersByUserId(userId);
+          fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
+          fetchedTotal = fetchedOrders.length;
         }
-        setOrders(costumeOrders);
-        // Batch-fetch costume images for order cards
-        const uniqueIds = [...new Set(costumeOrders.map((o) => o.costumeId).filter(Boolean))];
+
+        setAllOrders(fetchedOrders);
+        setTotal(fetchedTotal);
+        setIsPaginated(fetchedPaginated);
+
+        // Batch-fetch costume images
+        const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
         await Promise.all(
           uniqueIds.map(async (cid) => {
             try {
@@ -110,7 +118,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
                 setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
               }
             } catch {
-              // Silently ignore costume fetch errors
+              // Silently ignore
             }
           })
         );
@@ -125,27 +133,33 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     fetchOrders();
   }, [userId]);
 
-  // Filter orders based on tab
+  // Filter + paginate from full list
   const filteredOrders = useMemo(() => {
-    if (tab === 'all') {
-      return orders;
+    let filtered = allOrders;
+
+    if (tab !== 'all') {
+      const allowed = TAB_STATUS_MAP[tab];
+      if (allowed) {
+        filtered = filtered.filter((o) => allowed.includes(o.status));
+      }
     }
 
-    const allowedStatuses = TAB_STATUS_MAP[tab];
-    if (!allowedStatuses) {
-      return orders;
+    // Apply client-side slice only when BE doesn't support server pagination
+    if (!isPaginated) {
+      const start = (page - 1) * PAGE_SIZE;
+      filtered = filtered.slice(start, start + PAGE_SIZE);
     }
 
-    return orders.filter((order) => allowedStatuses.includes(order.status));
-  }, [orders, tab]);
+    return filtered;
+  }, [allOrders, tab, page, isPaginated]);
 
-  // Calculate counts for each tab
+  // Counts computed from full list (not filtered/paginated slice)
   const counts = useMemo(() => {
     const countByStatuses = (statuses: OrderStatus[]) =>
-      orders.filter((order) => statuses.includes(order.status)).length;
+      allOrders.filter((order) => statuses.includes(order.status)).length;
 
     return {
-      all: orders.length,
+      all: allOrders.length,
       wait_confirm: countByStatuses(TAB_STATUS_MAP.wait_confirm),
       wait_shipping: countByStatuses(TAB_STATUS_MAP.wait_shipping),
       shipping_out: countByStatuses(TAB_STATUS_MAP.shipping_out),
@@ -154,20 +168,20 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       shipping_back: countByStatuses(TAB_STATUS_MAP.shipping_back),
       completed: countByStatuses(TAB_STATUS_MAP.completed),
       cancelled: countByStatuses(TAB_STATUS_MAP.cancelled),
-      // Combined shipping count for profile summary (SHIPPING_OUT + DELIVERING_OUT)
       shipping_combined: countByStatuses(SHIPPING_STATUSES),
     };
-  }, [orders]);
+  }, [allOrders]);
 
-  // Refetch orders
+  // Refetch
   const refetch = useCallback(async () => {
+    setPage(1);
     if (!userId) return;
     try {
-      const data = await getOrdersByUserId(userId);
-      const costumeOrders = data.filter((o) => o.orderType === 'RENT_COSTUME');
-      setOrders(costumeOrders);
-      // Re-fetch costume images
-      const uniqueIds = [...new Set(costumeOrders.map((o) => o.costumeId).filter(Boolean))];
+      let fetchedOrders = await getAllOrdersByUserId(userId);
+      fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
+      setAllOrders(fetchedOrders);
+      setTotal(fetchedOrders.length);
+      const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
       await Promise.all(
         uniqueIds.map(async (cid) => {
           try {
@@ -177,7 +191,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
               setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
             }
           } catch {
-            // Silently ignore
+            // silently ignore
           }
         })
       );
@@ -186,7 +200,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     }
   }, [userId]);
 
-  // Confirm delivery action
   const confirmDelivery = useCallback(
     async (orderId: number, images: File[], notes: string[]) => {
       setConfirmingDeliveryId(orderId);
@@ -203,7 +216,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     [refetch]
   );
 
-  // Return order action
   const returnOrder = useCallback(
     async (orderId: number, trackingCode: string, images: File[], notes: string[]) => {
       setReturningOrderId(orderId);
@@ -221,7 +233,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   );
 
   return {
-    orders,
     filteredOrders,
     counts,
     loading,
@@ -232,5 +243,10 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     returnOrder,
     returningOrderId,
     costumeImageMap,
+    page,
+    setPage,
+    pageSize: PAGE_SIZE,
+    total,
+    isPaginated,
   };
 }

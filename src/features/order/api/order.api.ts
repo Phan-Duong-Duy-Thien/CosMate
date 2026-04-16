@@ -118,11 +118,43 @@ export async function getOrdersByProvider(providerId: number): Promise<OrderItem
 }
 
 /**
- * Get all orders for a user
+ * Get all orders for a user (paginated)
  * @param userId - The user ID
- * @returns List of orders for the user
+ * @param page - Page number (1-based), default 1
+ * @param size - Page size, default 10
+ * @returns Paginated orders response
  */
-export async function getOrdersByUserId(userId: number): Promise<OrderItem[]> {
+export async function getOrdersByUserId(
+  userId: number,
+  page: number = 1,
+  size: number = 10
+): Promise<{ orders: OrderItem[]; total: number; isPaginated: boolean }> {
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[] | { content: RawOrderItem[]; totalElements: number }>>(
+    `/api/orders/user/${userId}`,
+    {
+      params: { page, size },
+    }
+  );
+  const result = response.data.result;
+  if (Array.isArray(result)) {
+    return {
+      orders: result.map(mapRawOrder),
+      total: result.length,
+      isPaginated: false,
+    };
+  }
+  return {
+    orders: result.content.map(mapRawOrder),
+    total: result.totalElements,
+    isPaginated: true,
+  };
+}
+
+/**
+ * Fetch all orders for a user (client-side pagination + filtering).
+ * Use this when BE does NOT support pagination — fetches everything client-side.
+ */
+export async function getAllOrdersByUserId(userId: number): Promise<OrderItem[]> {
   const response = await axiosInstance.get<ApiResponse<RawOrderItem[]>>(
     `/api/orders/user/${userId}`
   );

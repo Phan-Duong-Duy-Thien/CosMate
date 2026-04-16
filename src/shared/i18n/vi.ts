@@ -940,7 +940,6 @@ export const VI = {
       // Review action
       actionReview: "Đánh giá",
       reviewModal: {
-        title: "Đánh giá đơn thuê",
         ratingLabel: "Chọn số sao",
         commentLabel: "Nội dung đánh giá",
         commentPlaceholder: "Chia sẻ trải nghiệm của bạn...",
@@ -955,6 +954,11 @@ export const VI = {
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },
+      // Pagination
+      paginationCostume: "Đơn thuê trang phục",
+      paginationService: "Đơn đặt dịch vụ",
+      paginationShow: "hiển thị",
+      paginationOf: "trong tổng",
     },
 
     serviceOrders: {

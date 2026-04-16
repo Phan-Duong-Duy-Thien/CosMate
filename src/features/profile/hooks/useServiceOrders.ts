@@ -33,6 +33,11 @@ export interface UseServiceOrdersResult {
   confirmingOrderId: number | null;
   confirmAndPay: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
   payOnly: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
+  /** Pagination */
+  page: number;
+  setPage: (page: number) => void;
+  pageSize: number;
+  total: number;
 }
 
 export function useServiceOrders(): UseServiceOrdersResult {
@@ -42,10 +47,13 @@ export function useServiceOrders(): UseServiceOrdersResult {
   const [selectedStatus, setSelectedStatus] = useState<ServiceOrderTab>('all');
   const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const PAGE_SIZE = 10;
 
   const userId = getUserId();
 
-  const fetchData = useCallback(async (status?: ServiceOrderTab) => {
+  const fetchData = useCallback(async (status?: ServiceOrderTab, pageNum: number = 1) => {
     if (!userId) {
       setError('User not found');
       setLoading(false);
@@ -56,18 +64,18 @@ export function useServiceOrders(): UseServiceOrdersResult {
       setLoading(true);
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
-      const data = await fetchServiceOrders(userId, apiStatuses);
+      const { orders, total: fetchedTotal } = await fetchServiceOrders(userId, apiStatuses, pageNum, PAGE_SIZE);
       // Defensive: only keep RENT_SERVICE orders. If BE ever returns RENT_COSTUME
       // from this endpoint, filter it out to prevent cross-contamination.
-      const serviceOrders = data.filter((o) => o.orderType === 'RENT_SERVICE');
-      serviceOrders.forEach((order) => {
+      const serviceOrdersList = orders.filter((o) => o.orderType === 'RENT_SERVICE');
+      serviceOrdersList.forEach((order) => {
         console.log('[ORDER DEBUG]', {
           id: order.id,
           type: order.orderType,
           status: order.status,
         });
       });
-      const unexpected = data.filter((o) => o.orderType !== 'RENT_SERVICE');
+      const unexpected = orders.filter((o) => o.orderType !== 'RENT_SERVICE');
       if (unexpected.length > 0) {
         console.warn(
           '[useServiceOrders] BE returned',
@@ -76,7 +84,8 @@ export function useServiceOrders(): UseServiceOrdersResult {
           unexpected.map((o) => ({ id: o.id, type: o.orderType }))
         );
       }
-      setServiceOrders(serviceOrders);
+      setServiceOrders(serviceOrdersList);
+      setTotal(fetchedTotal);
     } catch (err) {
       console.error('[useServiceOrders] Failed to fetch service orders:', err);
       setError('Failed to load service orders');
@@ -86,8 +95,8 @@ export function useServiceOrders(): UseServiceOrdersResult {
   }, [userId]);
 
   useEffect(() => {
-    fetchData();
-  }, [fetchData]);
+    fetchData(selectedStatus, page);
+  }, [fetchData, selectedStatus, page]);
 
   // Filter orders based on selected status (server-side filter applied, client-side for counts)
   const filteredOrders = useMemo(() => {
@@ -116,13 +125,14 @@ export function useServiceOrders(): UseServiceOrdersResult {
   }, [serviceOrders]);
 
   const handleSetStatus = useCallback((status: ServiceOrderTab) => {
+    setPage(1);
     setSelectedStatus(status);
-    fetchData(status);
+    fetchData(status, 1);
   }, [fetchData]);
 
   const refetch = useCallback(async () => {
-    await fetchData(selectedStatus);
-  }, [fetchData, selectedStatus]);
+    await fetchData(selectedStatus, page);
+  }, [fetchData, selectedStatus, page]);
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = `${window.location.origin}/payment/result`;
@@ -176,5 +186,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
     confirmAndPay,
     payingOrderId,
     payOnly,
+    page,
+    setPage,
+    pageSize: PAGE_SIZE,
+    total,
   };
 }
