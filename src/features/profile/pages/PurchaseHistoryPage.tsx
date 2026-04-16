@@ -256,7 +256,7 @@ export default function PurchaseHistoryPage() {
     setDisputeModalOpen(true)
   }
 
-  const handleDisputeSubmit = async (payload: { reason: string; files: string[] }) => {
+  const handleDisputeSubmit = async (payload: { reason: string; files: File[] }) => {
     if (!disputeOrderId) return
     const success = await createDispute(disputeOrderId, payload)
     if (success) {
@@ -302,6 +302,7 @@ export default function PurchaseHistoryPage() {
       PREPARING: VI.profile.orders.tabWaitShipping,
       SHIPPING_OUT: VI.profile.orders.statusShippingOut,
       DELIVERING_OUT: VI.profile.orders.statusDeliveringOut,
+      DELIVERY_OUT: VI.profile.orders.statusDeliveryOut,
       IN_USE: VI.profile.orders.tabInUse,
       SHIPPING_BACK: VI.profile.orders.statusShippingBack,
       RETURNED: VI.profile.orders.tabCompleted,
@@ -310,8 +311,11 @@ export default function PurchaseHistoryPage() {
     }[order.status] || order.status
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
+    const isDeliveryOut = order.status === 'DELIVERY_OUT'
     const isInUse = order.status === 'IN_USE'
-    const canCreateDispute = isInUse || order.status === 'DELIVERY_OUT'
+    const isShippingBack = order.status === 'SHIPPING_BACK'
+
+    console.log('[ORDER ACTION]', order.id, order.status)
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
     const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
@@ -378,32 +382,78 @@ export default function PurchaseHistoryPage() {
             >
               {VI.order.actions.viewDetail}
             </button>
+
+            {/* DELIVERY_OUT: receive + dispute */}
+            {isDeliveryOut && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmDelivery(order.id)}
+                  disabled={confirmingDeliveryId === order.id}
+                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                >
+                  {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCreateDispute(order.id)}
+                  disabled={disputingOrderId === order.id}
+                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
+                </button>
+              </>
+            )}
+
             {isDeliveringOut && (
-              <button
-                type="button"
-                onClick={() => handleConfirmDelivery(order.id)}
-                disabled={confirmingDeliveryId === order.id}
-                className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-              >
-                {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleConfirmDelivery(order.id)}
+                  disabled={confirmingDeliveryId === order.id}
+                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                >
+                  {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCreateDispute(order.id)}
+                  disabled={disputingOrderId === order.id}
+                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
+                </button>
+              </>
             )}
             {isInUse && (
-              <button
-                type="button"
-                onClick={() => handleReturnOrder(order.id)}
-                disabled={returningOrderId === order.id}
-                className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
-              >
-                {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
-              </button>
+              <>
+                <button
+                  type="button"
+                  onClick={() => handleReturnOrder(order.id)}
+                  disabled={returningOrderId === order.id}
+                  className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                >
+                  {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleCreateDispute(order.id)}
+                  disabled={disputingOrderId === order.id}
+                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                >
+                  <Flag className="h-3.5 w-3.5" />
+                  {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
+                </button>
+              </>
             )}
-            {canCreateDispute && (
+            {isShippingBack && (
               <button
                 type="button"
                 onClick={() => handleCreateDispute(order.id)}
                 disabled={disputingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg bg-red-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-red-600 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
               >
                 <Flag className="h-3.5 w-3.5" />
                 {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
