@@ -1065,6 +1065,7 @@ export const VI = {
     // Top-up form
     topUpTitle: "Nạp tiền vào ví",
     topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
+    topUpSuccessResume: "Nạp tiền thành công! Bạn có thể tiếp tục thanh toán.",
     paymentMethodLabel: "Phương thức thanh toán",
     momo: "MoMo",
     momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",

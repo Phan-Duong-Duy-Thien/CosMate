@@ -34,9 +34,14 @@ export async function fetchWalletTransactions(
  * Top up wallet using MoMo payment
  * @param userId - Current user ID
  * @param amount - Amount to top up (in VND)
+ * @param redirectUrl - Optional URL to redirect back after payment (appended as query param)
  */
-export async function topUpWithMomo(userId: number, amount: number): Promise<void> {
-  const returnUrl = PAYMENT_RETURN_URLS.MOMO
+export async function topUpWithMomo(userId: number, amount: number, redirectUrl?: string): Promise<void> {
+  let returnUrl = PAYMENT_RETURN_URLS.MOMO
+  if (redirectUrl) {
+    const separator = returnUrl.includes('?') ? '&' : '?'
+    returnUrl += `${separator}redirect=${encodeURIComponent(redirectUrl)}`
+  }
   const response = await walletApi.createMomoTopUp(userId, amount, returnUrl)
 
   if (response.code === 0 && response.result?.paymentUrl) {
@@ -50,9 +55,14 @@ export async function topUpWithMomo(userId: number, amount: number): Promise<voi
  * Top up wallet using VNPAY payment
  * @param userId - Current user ID
  * @param amount - Amount to top up (in VND)
+ * @param redirectUrl - Optional URL to redirect back after payment (appended as query param)
  */
-export async function topUpWithVnpay(userId: number, amount: number): Promise<void> {
-  const returnUrl = PAYMENT_RETURN_URLS.VNPAY
+export async function topUpWithVnpay(userId: number, amount: number, redirectUrl?: string): Promise<void> {
+  let returnUrl = PAYMENT_RETURN_URLS.VNPAY
+  if (redirectUrl) {
+    const separator = returnUrl.includes('?') ? '&' : '?'
+    returnUrl += `${separator}redirect=${encodeURIComponent(redirectUrl)}`
+  }
   const response = await walletApi.createVnpayTopUp(userId, amount, returnUrl)
 
   if (response.code === 0 && response.result?.paymentUrl) {

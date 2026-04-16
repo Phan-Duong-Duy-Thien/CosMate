@@ -20,7 +20,7 @@ interface UseWalletTopUpResult {
   setPaymentMethod: (method: PaymentMethod | null) => void
 
   // Actions
-  handleSubmit: () => Promise<void>
+  handleSubmit: (redirectUrl?: string) => Promise<void>
 }
 
 export function useWalletTopUp(): UseWalletTopUpResult {
@@ -29,7 +29,7 @@ export function useWalletTopUp(): UseWalletTopUpResult {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (redirectUrl?: string) => {
     // Validate amount
     const numAmount = parseFloat(amount)
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
@@ -55,9 +55,9 @@ export function useWalletTopUp(): UseWalletTopUpResult {
 
     try {
       if (paymentMethod === "MOMO") {
-        await walletService.topUpWithMomo(userId, numAmount)
+        await walletService.topUpWithMomo(userId, numAmount, redirectUrl)
       } else {
-        await walletService.topUpWithVnpay(userId, numAmount)
+        await walletService.topUpWithVnpay(userId, numAmount, redirectUrl)
       }
     } catch (err) {
       console.error("Top-up failed:", err)

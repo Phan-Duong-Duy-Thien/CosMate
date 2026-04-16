@@ -3,8 +3,10 @@ import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
 import { VI } from "@/shared/i18n/vi"
 import { useWalletTopUp, type PaymentMethod } from "../hooks/useWalletTopUp"
+import { useSearchParams } from "react-router-dom"
 
 export default function WalletTopUpPage() {
+  const [searchParams] = useSearchParams()
   const {
     amount,
     paymentMethod,
@@ -13,6 +15,8 @@ export default function WalletTopUpPage() {
     setPaymentMethod,
     handleSubmit,
   } = useWalletTopUp()
+
+  const redirectUrl = searchParams.get("redirect") || undefined
 
   const isSubmitDisabled = loading || !amount || !paymentMethod
 
@@ -110,7 +114,7 @@ export default function WalletTopUpPage() {
                 <Button
                   type="button"
                   disabled={isSubmitDisabled}
-                  onClick={handleSubmit}
+                  onClick={() => handleSubmit(redirectUrl)}
                   className="min-w-32"
                 >
                   {loading ? VI.wallet.processing : VI.wallet.submit}
