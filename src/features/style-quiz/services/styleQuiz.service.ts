@@ -3,6 +3,7 @@ import axios from "axios"
 import axiosInstance from "@/services/axiosInstance"
 import type {
   ApiResponse,
+  CustomAnswerRequest,
   RecommendationRequestPayload,
   SearchResponseItem,
   Stage1Question,
@@ -21,6 +22,14 @@ export async function getStage2Survey(archetypeId: string): Promise<Stage2Questi
 
 export async function getSurveyEnd(): Promise<Stage1Question[]> {
   const response = await axiosInstance.get<ApiResponse<Stage1Question[]>>("/api/search/survey-end")
+  return response.data?.result ?? []
+}
+
+export async function analyzeCustomAnswers(payload: CustomAnswerRequest[]): Promise<Array<{ E: number; A: number; O: number }>> {
+  const response = await axiosInstance.post<ApiResponse<Array<{ E: number; A: number; O: number }>>>(
+    "/api/search/analyze-custom-answers",
+    payload
+  )
   return response.data?.result ?? []
 }
 

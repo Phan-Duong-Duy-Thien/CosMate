@@ -28,6 +28,18 @@ export interface Option {
   metadata?: string
 }
 
+export interface CustomAnswerRequest {
+  stage: 1 | 2
+  questionId: string
+  answer: string
+}
+
+export interface CustomAnswerScore {
+  E: number
+  A: number
+  O: number
+}
+
 export interface Stage1Question {
   question_id: string
   question: string

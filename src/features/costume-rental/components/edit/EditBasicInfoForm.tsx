@@ -16,6 +16,7 @@ import { InboxOutlined }from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { UpdateCostumeBasicInput, CostumeSizeOption, Costume } from '../../types'
 import { VI } from '@/shared/i18n/vi'
+import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -67,16 +68,21 @@ export default function EditBasicInfoForm({
       .map((f: UploadFile) => f.originFileObj)
       .filter((f): f is File => f !== undefined)
 
-    await onSubmit({
-      name: values.name,
-      description: values.description,
-      size: values.size,
-      numberOfItems: values.numberOfItems,
-      pricePerDay: values.pricePerDay,
-      rentDiscount: values.rentDiscount,
-      depositAmount: values.depositAmount,
-      imageFiles: rawFiles.length > 0 ? rawFiles : undefined,
-    })
+    try {
+      await onSubmit({
+        name: values.name,
+        description: values.description,
+        size: values.size,
+        numberOfItems: values.numberOfItems,
+        pricePerDay: values.pricePerDay,
+        rentDiscount: values.rentDiscount,
+        depositAmount: values.depositAmount,
+        imageFiles: rawFiles.length > 0 ? rawFiles : undefined,
+      })
+    } catch (error) {
+      applyFormValidationErrors(form, error)
+      throw error
+    }
   }
 
   return (
@@ -100,13 +106,13 @@ export default function EditBasicInfoForm({
       <Form.Item
         label="Tên trang phục"
         name="name"
-        rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }]}
+        rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }, { max: 120, message: 'Tên trang phục không vượt quá 120 ký tự' }]}
       >
-        <Input placeholder="Nhập tên trang phục" />
+        <Input placeholder="Nhập tên trang phục" maxLength={120} />
       </Form.Item>
 
       <Form.Item label="Mô tả" name="description">
-        <TextArea rows={3}placeholder="Mô tả trang phục" />
+        <TextArea rows={3} placeholder="Mô tả trang phục" />
       </Form.Item>
 
       <Form.Item

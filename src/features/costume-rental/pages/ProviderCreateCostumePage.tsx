@@ -43,7 +43,7 @@ export default function ProviderCreateCostumePage() {
       await wizard.handlePhase2Submit()
       notification.success({
         message: 'Tạo trang phục thành công!',
-        description: 'Trang phục đã được lưu cùng toàn bộ thông tin bổ sung.',
+        description: 'Trang phục đã được lưu. Hệ thống đang định hình trang phục cho việc search hình ảnh.',
       })
       navigate('/provider-rental/costumes')
     } catch {

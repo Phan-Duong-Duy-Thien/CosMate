@@ -40,6 +40,10 @@ import StaffProfilePage from "@/features/staff-booking/pages/StaffProfilePage"
 import AdminHomePage from "@/features/admin/pages/AdminHomePage"
 import AdminUsersPage from "@/features/admin/pages/AdminUsersPage"
 import AdminMenusPage from "@/features/admin/pages/AdminMenusPage"
+import AdminProvidersPage from "@/features/admin/pages/AdminProvidersPage"
+import AdminCostumesPage from "@/features/admin/pages/AdminCostumesPage"
+import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
+import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -99,16 +103,20 @@ export default function AppRoutes() {
       </Route>
 
       {/* Admin Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, 'ADMIN', 'SUPERADMIN', '1', '2', 1, 2] as any} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.ADMIN, 'ADMIN', 'SUPERADMIN', '1', '2', 1, 2] as any} /> }>
         <Route element={<AdminLayout />}> 
           <Route path="/admin" element={<AdminHomePage />} />
           <Route path="/admin/users" element={<AdminUsersPage />}/>
           <Route path="/admin/menus" element={<AdminMenusPage />}/>
+          <Route path="/admin/providers" element={<AdminProvidersPage />} />
+          <Route path="/admin/costumes" element={<AdminCostumesPage />} />
+          <Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <Route path="/admin/reports" element={<AdminReportsPage />} />
         </Route>
       </Route>
 
       {/* Provider Rental Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}> 
         <Route path="/provider-rental" element={<ProviderHomePage />} />
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
@@ -121,7 +129,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Provider Photograph Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_PHOTOGRAPH]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_PHOTOGRAPH]} />}> 
         <Route path="/provider-photograph" element={<PhotographHomePage />} />
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
@@ -133,7 +141,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Provider Event Staff Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_EVENT_STAFF]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_EVENT_STAFF]} />}> 
         <Route path="/provider-event-staff" element={<EventStaffHomePage />} />
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
@@ -145,7 +153,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Staff Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}>
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}> 
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />

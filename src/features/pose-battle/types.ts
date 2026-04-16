@@ -1,9 +1,16 @@
+export interface PoseScoringBreakdown {
+  pose: number
+  expression: number
+  costume: number
+}
+
 export interface PoseScoringResult {
   id: number
   score: number
   comment: string
   characterName?: string
   imageUrl?: string
+  breakdown?: PoseScoringBreakdown
 }
 
 export interface PoseHistoryItem {
@@ -14,6 +21,7 @@ export interface PoseHistoryItem {
   score: number
   createdAt: string
   comment: string
+  breakdown?: PoseScoringBreakdown
 }
 
 export interface PoseReferenceItem {

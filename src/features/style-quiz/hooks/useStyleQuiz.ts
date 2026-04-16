@@ -4,8 +4,8 @@ import { notification } from "antd"
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
 import { getBaseArchetypeAtCheckpoint, getFinalClassification } from "../quizAlgorithm"
-import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle } from "../services/styleQuiz.service"
-import type { SearchResponseItem, Stage1Question, Stage2Question } from "../types"
+import { analyzeCustomAnswers, getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle } from "../services/styleQuiz.service"
+import type { CustomAnswerRequest, SearchResponseItem, Stage1Question, Stage2Question } from "../types"
 
 type QuizScreen = "quiz" | "checkpoint" | "loading" | "result"
 type QuizPhase = "stage1" | "stage2"
@@ -23,6 +23,8 @@ interface QuizDraft {
   archetypeId: string
   stage1Answers: Record<string, number>
   stage2Answers: Record<string, number>
+  stage1CustomAnswers: Record<string, string>
+  stage2CustomAnswers: Record<string, string>
 }
 
 function resolveBudgetMetadata(metadata?: string): string {
@@ -52,6 +54,8 @@ function safeGetDraft(): QuizDraft | null {
       archetypeId: typeof parsed.archetypeId === "string" ? parsed.archetypeId : "",
       stage1Answers: parsed.stage1Answers && typeof parsed.stage1Answers === "object" ? parsed.stage1Answers : {},
       stage2Answers: parsed.stage2Answers && typeof parsed.stage2Answers === "object" ? parsed.stage2Answers : {},
+      stage1CustomAnswers: (parsed as any).stage1CustomAnswers && typeof (parsed as any).stage1CustomAnswers === "object" ? (parsed as any).stage1CustomAnswers : {},
+      stage2CustomAnswers: (parsed as any).stage2CustomAnswers && typeof (parsed as any).stage2CustomAnswers === "object" ? (parsed as any).stage2CustomAnswers : {},
     }
   } catch {
     return null
@@ -77,26 +81,22 @@ function clearDraft() {
 export function useStyleQuiz() {
   const [screen, setScreen] = useState<QuizScreen>("quiz")
   const [phase, setPhase] = useState<QuizPhase>("stage1")
-
   const [stage1Questions, setStage1Questions] = useState<Stage1Question[]>([])
   const [stage2Questions, setStage2Questions] = useState<Stage2Question[]>([])
-
   const [stage1Answers, setStage1Answers] = useState<Record<string, number>>({})
   const [stage2Answers, setStage2Answers] = useState<Record<string, number>>({})
-
+  const [stage1CustomAnswers, setStage1CustomAnswers] = useState<Record<string, string>>({})
+  const [stage2CustomAnswers, setStage2CustomAnswers] = useState<Record<string, string>>({})
   const [currentIndex, setCurrentIndex] = useState(0)
   const [E, setE] = useState(0)
   const [A, setA] = useState(0)
   const [O, setO] = useState(0)
-
   const [archetypeId, setArchetypeId] = useState("")
   const [subTypeId, setSubTypeId] = useState("")
-
   const [loading, setLoading] = useState(false)
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [results, setResults] = useState<SearchResponseItem[]>([])
   const [error, setError] = useState<string | null>(null)
-
   const [pendingDraft, setPendingDraft] = useState<QuizDraft | null>(null)
   const [showResumeModal, setShowResumeModal] = useState(false)
   const [draftCheckDone, setDraftCheckDone] = useState(false)
@@ -107,7 +107,11 @@ export function useStyleQuiz() {
     setCurrentIndex(0)
     setStage1Answers({})
     setStage2Answers({})
+    setStage1CustomAnswers({})
+    setStage2CustomAnswers({})
     setStage2Questions([])
+    setStage1CustomAnswers({})
+    setStage2CustomAnswers({})
     setResults([])
     setError(null)
     setE(0)
@@ -182,8 +186,10 @@ export function useStyleQuiz() {
       archetypeId,
       stage1Answers,
       stage2Answers,
+      stage1CustomAnswers,
+      stage2CustomAnswers,
     })
-  }, [draftCheckDone, surveyLoading, screen, showResumeModal, phase, currentIndex, globalQuestionIndex, E, A, O, archetypeId, stage1Answers, stage2Answers])
+  }, [draftCheckDone, surveyLoading, screen, showResumeModal, phase, currentIndex, globalQuestionIndex, E, A, O, archetypeId, stage1Answers, stage2Answers, stage1CustomAnswers, stage2CustomAnswers])
 
   const selectedOptionIndex = useMemo(() => {
     if (phase === "stage1") {
@@ -202,16 +208,14 @@ export function useStyleQuiz() {
   }, [globalQuestionIndex, totalQuestions])
 
   const archetypeProfile = useMemo(() => {
-    return (
-      ARCHETYPE_PROFILES[archetypeId] ?? {
-        id: archetypeId,
-        name: archetypeId || "Archetype",
-        coreDesire: "",
-        clothing_style: "",
-        color_palette: ["#FBCFE8", "#F9A8D4", "#F472B6"],
-        famousCharacters: [],
-      }
-    )
+    return ARCHETYPE_PROFILES[archetypeId] ?? {
+      id: archetypeId,
+      name: archetypeId || "Archetype",
+      coreDesire: "",
+      clothing_style: "",
+      color_palette: ["#FBCFE8", "#F9A8D4", "#F472B6"],
+      famousCharacters: [],
+    }
   }, [archetypeId])
 
   const checkpointMessage = useMemo(() => {
@@ -232,6 +236,19 @@ export function useStyleQuiz() {
     setStage2Answers((prev) => ({ ...prev, [questionId]: optionIndex }))
   }
 
+  const setCustomAnswer = (value: string) => {
+    const question = currentQuestions[currentIndex]
+    if (!question) return
+    const questionId = question.question_id ?? `${phase}-${currentIndex}`
+    if (phase === "stage1") setStage1CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
+    else setStage2CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
+  }
+
+  const currentCustomAnswer = useMemo(() => {
+    const questionId = currentQuestion?.question_id ?? ""
+    return phase === "stage1" ? stage1CustomAnswers[questionId] ?? "" : stage2CustomAnswers[questionId] ?? ""
+  }, [phase, currentQuestion?.question_id, stage1CustomAnswers, stage2CustomAnswers])
+
   const applyCurrentAnswerToScore = (): { E: number; A: number; O: number; budgetMetadata?: string } | null => {
     const question = currentQuestions[currentIndex]
     if (!question) return null
@@ -250,18 +267,21 @@ export function useStyleQuiz() {
     }
   }
 
+  const buildCustomAnswerPayload = (stage: QuizPhase): CustomAnswerRequest[] => {
+    const stageNum = stage === "stage1" ? 1 : 2
+    const answerMap = stage === "stage1" ? stage1CustomAnswers : stage2CustomAnswers
+    return Object.entries(answerMap)
+      .filter(([, answer]) => answer.trim().length > 0)
+      .map(([questionId, answer]) => ({ stage: stageNum, questionId, answer: answer.trim() }))
+  }
+
   const runRecommend = async (finalArchetypeId: string, finalSubtypeId: string, budgetMetadata: string) => {
     setScreen("loading")
     setLoading(true)
     setError(null)
 
     try {
-      const recommendItems = await recommendByStyle({
-        archetypeId: finalArchetypeId,
-        subTypeId: finalSubtypeId,
-        budgetMetadata,
-      })
-
+      const recommendItems = await recommendByStyle({ archetypeId: finalArchetypeId, subTypeId: finalSubtypeId, budgetMetadata })
       setArchetypeId(finalArchetypeId)
       setSubTypeId(finalSubtypeId)
       setResults(recommendItems)
@@ -285,20 +305,31 @@ export function useStyleQuiz() {
     const nextE = E + scoreDelta.E
     const nextA = A + scoreDelta.A
     const nextO = O + scoreDelta.O
-
     setE(nextE)
     setA(nextA)
     setO(nextO)
 
     if (phase === "stage1") {
       const stage1Total = Math.min(stage1Questions.length, 8)
-
       if (currentIndex < stage1Total - 1) {
         setCurrentIndex((prev) => prev + 1)
         return
       }
 
-      const baseArchetypeId = getBaseArchetypeAtCheckpoint({ E: nextE, A: nextA, O: nextO })
+      const customScores = await analyzeCustomAnswers(buildCustomAnswerPayload("stage1"))
+      const extra = customScores.reduce((acc, item) => ({
+        E: acc.E + (item.E ?? 0),
+        A: acc.A + (item.A ?? 0),
+        O: acc.O + (item.O ?? 0),
+      }), { E: 0, A: 0, O: 0 })
+
+      const finalE = nextE + extra.E
+      const finalA = nextA + extra.A
+      const finalO = nextO + extra.O
+      setE(finalE)
+      setA(finalA)
+      setO(finalO)
+      const baseArchetypeId = getBaseArchetypeAtCheckpoint({ E: finalE, A: finalA, O: finalO })
       setArchetypeId(baseArchetypeId)
       setScreen("checkpoint")
       return
@@ -309,9 +340,22 @@ export function useStyleQuiz() {
       return
     }
 
-    const finalClassification = getFinalClassification({ E: nextE, A: nextA, O: nextO })
-    const budgetMetadata = resolveBudgetMetadata(scoreDelta.budgetMetadata)
+    const customScores = await analyzeCustomAnswers(buildCustomAnswerPayload("stage2"))
+    const extra = customScores.reduce((acc, item) => ({
+      E: acc.E + (item.E ?? 0),
+      A: acc.A + (item.A ?? 0),
+      O: acc.O + (item.O ?? 0),
+    }), { E: 0, A: 0, O: 0 })
 
+    const finalE = nextE + extra.E
+    const finalA = nextA + extra.A
+    const finalO = nextO + extra.O
+    setE(finalE)
+    setA(finalA)
+    setO(finalO)
+
+    const finalClassification = getFinalClassification({ E: finalE, A: finalA, O: finalO })
+    const budgetMetadata = resolveBudgetMetadata(scoreDelta.budgetMetadata)
     await runRecommend(finalClassification.archetypeId, finalClassification.subTypeId, budgetMetadata)
   }
 
@@ -322,7 +366,6 @@ export function useStyleQuiz() {
 
   const continueDeepAnalysis = async () => {
     if (!archetypeId) return
-
     setSurveyLoading(true)
     setError(null)
 
@@ -352,6 +395,8 @@ export function useStyleQuiz() {
 
     setStage1Answers(pendingDraft.stage1Answers)
     setStage2Answers(pendingDraft.stage2Answers)
+    setStage1CustomAnswers(pendingDraft.stage1CustomAnswers ?? {})
+    setStage2CustomAnswers(pendingDraft.stage2CustomAnswers ?? {})
     setPhase(pendingDraft.phase)
     setScreen(pendingDraft.screen)
     setCurrentIndex(pendingDraft.currentIndex)
@@ -392,6 +437,7 @@ export function useStyleQuiz() {
     globalQuestionIndex,
     currentQuestion,
     selectedOptionIndex,
+    currentCustomAnswer,
     progressPercent,
     surveyLoading,
     loading,
@@ -403,6 +449,7 @@ export function useStyleQuiz() {
     checkpointMessage,
     showResumeModal,
     selectAnswer,
+    setCustomAnswer,
     next,
     viewResultNow,
     continueDeepAnalysis,

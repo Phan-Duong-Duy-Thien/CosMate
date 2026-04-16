@@ -1,15 +1,4 @@
-/**
- * EditCostumeModal
- *
- * Modal with 2 tabs:
- *   A) Basic Info  – EditBasicInfoForm
- *   B) Phụ phí & Gói thuê – FeesTab
- *
- * UI-only orchestrator. Receives all state/handlers from useEditCostumeModal hook.
- * Never calls API directly.
- */
-
-import { Modal, Tabs, Spin } from 'antd'
+import { Modal, Tabs, Spin, Input } from 'antd'
 import type { Costume, UpdateCostumeBasicInput, SurchargeUpdateInput, RentalOptionUpdateInput, SurchargeInput, RentalOptionInput, AccessoryInput, AccessoryUpdateInput } from '../../types'
 import type { CostumeImage } from '../../api/costumeImages.api'
 import EditBasicInfoForm from './EditBasicInfoForm'
@@ -40,7 +29,10 @@ interface Props {
   setCreateAccessoryModalOpen: (open: boolean) => void
   onCreateAccessory: (values: AccessoryInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
-  // Images tab
+  onGenerateDescription: () => void
+  isGeneratingDescription: boolean
+  descriptionPrompt: string
+  setDescriptionPrompt: (value: string) => void
   mainImages: CostumeImage[]
   detailImages: CostumeImage[]
   imagesLoading: boolean
@@ -77,6 +69,10 @@ export default function EditCostumeModal({
   setCreateAccessoryModalOpen,
   onCreateAccessory,
   onUpdateAccessory,
+  onGenerateDescription,
+  isGeneratingDescription,
+  descriptionPrompt,
+  setDescriptionPrompt,
   mainImages,
   detailImages,
   imagesLoading,
@@ -95,12 +91,36 @@ export default function EditCostumeModal({
           key: 'basic',
           label: VI.costumeRental.editCostume.basicInfoTab,
           children: (
-            <EditBasicInfoForm
-              initialValues={detail}
-              onSubmit={onSubmitBasicInfo}
-              loading={basicSubmitting}
-              providerIdMissing={providerId === null}
-            />
+            <div className="space-y-4">
+              <EditBasicInfoForm
+                initialValues={detail}
+                onSubmit={onSubmitBasicInfo}
+                loading={basicSubmitting}
+                providerIdMissing={providerId === null}
+              />
+              <div className="rounded-xl border border-pink-100 bg-pink-50/40 p-4 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-700">AI tạo mô tả cho trang phục</p>
+                    <p className="text-xs text-slate-500">Nhập prompt tuỳ chỉnh rồi bấm tạo mô tả. Có thể dùng lại cho việc cập nhật.</p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={onGenerateDescription}
+                    disabled={isGeneratingDescription}
+                    className="rounded-xl bg-pink-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isGeneratingDescription ? 'Đang tạo...' : 'AI tự viết mô tả'}
+                  </button>
+                </div>
+                <Input.TextArea
+                  rows={3}
+                  value={descriptionPrompt}
+                  onChange={(e) => setDescriptionPrompt(e.target.value)}
+                  placeholder="Ví dụ: viết ngắn gọn, sang trọng, nhấn mạnh chất liệu, vibe anime, phù hợp thuê cosplay..."
+                />
+              </div>
+            </div>
           ),
         },
         {

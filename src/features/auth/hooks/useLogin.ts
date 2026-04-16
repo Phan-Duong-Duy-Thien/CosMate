@@ -6,13 +6,15 @@ import { loginWithGoogle } from "@/services/authService"
 import type { LoginFormValues } from "../types"
 import { login } from "../api/auth.api"
 import { saveAuth, getRoles } from "../services/tokenStorage"
+import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
+import type { FormInstance } from "antd"
 
 export function useLogin() {
   const [submitting, setSubmitting] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
   const [formError, setFormError] = useState("")
 
-  const handleEmailLogin = useCallback(async (values: LoginFormValues): Promise<string[] | null> => {
+  const handleEmailLogin = useCallback(async (values: LoginFormValues, form?: FormInstance<LoginFormValues>): Promise<string[] | null> => {
     setSubmitting(true)
     setFormError("")
 
@@ -48,6 +50,12 @@ export function useLogin() {
       return roles
     } catch (error: any) {
       console.error("❌ Login error:", error)
+      const fieldErrors = extractFieldErrors(error)
+      if (fieldErrors && form) {
+        applyFieldErrors(form, fieldErrors)
+        setFormError("")
+        return null
+      }
       const errorMsg = error.response?.data?.message || VI.auth.login.messages.invalidCredentials
       setFormError(errorMsg)
       return null

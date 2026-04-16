@@ -1,4 +1,4 @@
-import { useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode, isValidElement } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
@@ -27,6 +27,11 @@ import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
 const { Header, Sider, Content } = Layout;
+
+type LucideComponentLike = LucideIcon & {
+  displayName?: string;
+  name?: string;
+};
 
 export type DashboardSidebarItem = {
   key: string;
@@ -67,7 +72,6 @@ export function DashboardLayout({
   const { openChat } = useChatPopup();
 
   const mapToAntdMenuItems = (items: DashboardSidebarItem[]): MenuProps['items'] => {
-    // Map Lucide icon names to Ant Design icons for the collapsed sidebar
     const lucideToAntd: Record<string, React.ReactNode> = {
       LayoutDashboard: <LayoutOutlined />,
       Package: <AppstoreOutlined />,
@@ -82,21 +86,25 @@ export function DashboardLayout({
       MessageCircle: <MessageOutlined />,
     };
 
-    return items.map((item) => {
-      let iconNode: React.ReactNode;
-      if (item.icon) {
-        // Always render Lucide icon as JSX element, then map to Ant Design equivalent
-        const IconComponent = typeof item.icon === 'function' ? item.icon : null;
-        const renderedIcon = IconComponent ? <IconComponent size={16} /> : item.icon;
-        if (IconComponent) {
-          const iconName = IconComponent.displayName || (IconComponent as any).name;
-          iconNode = lucideToAntd[iconName] ?? renderedIcon;
-        } else {
-          iconNode = renderedIcon;
-        }
-      } else {
-        iconNode = undefined;
+    const resolveIcon = (icon?: DashboardSidebarItem['icon']): React.ReactNode => {
+      if (!icon) return undefined;
+      if (isValidElement(icon)) return icon;
+
+      if (typeof icon === 'function') {
+        const IconComponent = icon as LucideComponentLike;
+        const iconName = IconComponent.displayName || IconComponent.name;
+        return lucideToAntd[iconName] ?? <IconComponent size={16} />;
       }
+
+      if (typeof icon === 'object' && icon !== null && 'type' in (icon as object)) {
+        return undefined;
+      }
+
+      return undefined;
+    };
+
+    return items.map((item) => {
+      const iconNode = resolveIcon(item.icon);
 
       if (item.children && item.children.length > 0) {
         return {

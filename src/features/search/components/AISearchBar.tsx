@@ -24,13 +24,13 @@ const promptSuggestions = [
 ]
 
 export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
-  const { executeSearch, isLoading } = useAISearch()
+  const { executeSearch, isLoading, fallbackUsed } = useAISearch()
 
   const [keyword, setKeyword] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [uploadList, setUploadList] = useState<UploadFile[]>([])
 
-  const hasEnoughInput = Boolean(selectedFile)
+  const hasEnoughInput = Boolean(selectedFile || keyword.trim())
 
   const previewUrl = useMemo(() => {
     const file = uploadList[0]?.originFileObj
@@ -46,29 +46,27 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
   const handleUploadChange: UploadProps["onChange"] = useCallback((info: Parameters<NonNullable<UploadProps["onChange"]>>[0]) => {
     const normalized = info.fileList.slice(-1)
     setUploadList(normalized)
-
     const latestFile = normalized[0]?.originFileObj
     setSelectedFile(latestFile ?? null)
   }, [])
 
   const handleSubmit = async () => {
-    if (!selectedFile) {
+    if (!hasEnoughInput) {
       notification.warning({
-        message: "Bạn chưa thêm ảnh mẫu cosplay.",
-        description: "Hãy tải 1 ảnh để AI nhận diện style chuẩn hơn nhé!",
+        message: "Vui lòng nhập text hoặc tải ảnh để tìm kiếm.",
       })
       return
     }
 
     const result = await executeSearch({
-      files: [selectedFile],
+      files: selectedFile ? [selectedFile] : [],
       text: keyword.trim(),
     })
 
     if (result) {
       onSearchCompleted?.(result)
       notification.success({
-        message: `Bé Mèo AI đã tìm thấy ${result.length} trang phục phù hợp!`,
+        message: fallbackUsed ? "Đã hiển thị kết quả tìm kiếm thông thường." : `Đã tìm thấy ${result.length} trang phục phù hợp!`,
       })
     }
   }
@@ -87,10 +85,10 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
 
           <div>
             <h3 className="text-xl font-extrabold tracking-tight text-pink-700 md:text-2xl">
-              Tìm trang phục cosplay bằng ảnh + AI siêu nhanh
+              Tìm trang phục cosplay bằng ảnh + text đồng thời
             </h3>
             <p className="mt-1 text-sm text-pink-900/75">
-              Up ảnh mẫu của bạn, có thể thêm mô tả nếu muốn. AI sẽ gợi ý để bạn chốt đồ nhanh hơn.
+              Bạn có thể upload ảnh, nhập mô tả, hoặc dùng cả hai để AI tìm chính xác hơn.
             </p>
           </div>
 

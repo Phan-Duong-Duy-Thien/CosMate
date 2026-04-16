@@ -12,6 +12,7 @@ import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
 import { VI } from '@/shared/i18n/vi'
+import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -39,6 +40,7 @@ interface Props {
 export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
+  const [customPrompt, setCustomPrompt] = useState('')
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -72,7 +74,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files)
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, customPrompt)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
@@ -80,8 +82,10 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
       }
     } catch (err: unknown) {
-      const errMsg = err instanceof Error ? err.message : 'Không thể tạo mô tả bằng AI.'
-      message.error(errMsg)
+      if (!applyFormValidationErrors(form, err)) {
+        const errMsg = err instanceof Error ? err.message : 'Không thể tạo mô tả bằng AI.'
+        message.error(errMsg)
+      }
     } finally {
       setIsAiGenerating(false)
     }
@@ -129,23 +133,23 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       >
         {error && (
           <Form.Item>
-            <Alert type="error" title={error} showIcon />
+            <Alert type="error" message={error} showIcon />
           </Form.Item>
         )}
 
         <Form.Item
           label="Tên trang phục"
           name="name"
-          rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }]}
+          rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }, { max: 120, message: 'Tên trang phục không vượt quá 120 ký tự' }]}
         >
-          <Input placeholder="Nhập tên trang phục" />
+          <Input placeholder="Nhập tên trang phục" maxLength={120} />
         </Form.Item>
 
         <Form.Item
           label={(
             <div className="flex items-center gap-2">
               <span>Mô tả</span>
-              <Tooltip title="AI tạo mô tả từ tên + ảnh. Cần nhập tên và tải ít nhất 1 ảnh trước khi bấm.">
+              <Tooltip title="AI tạo mô tả từ tên + ảnh + prompt tuỳ chọn. Cần nhập tên và tải ít nhất 1 ảnh trước khi bấm.">
                 <Button
                   type="link"
                   size="small"
@@ -163,6 +167,16 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           name="description"
         >
           <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" />
+        </Form.Item>
+
+        <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt">
+          <TextArea
+            rows={3}
+            autoSize={{ minRows: 2, maxRows: 6 }}
+            placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..."
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+          />
         </Form.Item>
 
         <Form.Item

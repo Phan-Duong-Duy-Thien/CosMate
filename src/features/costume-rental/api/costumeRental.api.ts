@@ -100,10 +100,14 @@ export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
 export async function generateCostumeDescriptionByAI(
   name: string,
   imageFiles: File[],
+  customPrompt?: string,
 ): Promise<string> {
   const form = new FormData()
   if (name?.trim()) {
     form.append('name', name.trim())
+  }
+  if (customPrompt?.trim()) {
+    form.append('customPrompt', customPrompt.trim())
   }
   imageFiles.forEach((file) => form.append('files', file))
 

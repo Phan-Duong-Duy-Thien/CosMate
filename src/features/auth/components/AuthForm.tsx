@@ -7,7 +7,7 @@ import { ConfirmButton } from "./ConfirmButton"
 
 type AuthFormProps<TValues extends object> = {
   form: FormInstance<TValues>
-  onFinish: (values: TValues) => void | Promise<void>
+  onFinish: (values: TValues, form: FormInstance<TValues>) => void | Promise<void>
   submitLabel: string
   submitting: boolean
   children: ReactNode
@@ -23,7 +23,7 @@ export function AuthForm<TValues extends object>({
   formError,
 }: AuthFormProps<TValues>) {
   return (
-    <Form form={form} layout="vertical" onFinish={onFinish} className="space-y-4">
+    <Form form={form} layout="vertical" onFinish={(values) => onFinish(values, form)} className="space-y-4">
       {formError ? (
         <AlertMessage type="error" message={formError} />
       ) : null}

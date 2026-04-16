@@ -6,13 +6,15 @@ import type { UserRole } from "@/types/auth"
 import { VI } from "@/shared/i18n/vi"
 import type { RegisterFormValues } from "../types"
 import { register } from "../api/auth.api"
+import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
+import type { FormInstance } from "antd"
 
 export function useRegister(role: UserRole) {
   const [submitting, setSubmitting] = useState(false)
   const [formError, setFormError] = useState("")
   const navigate = useNavigate()
 
-  const handleRegister = useCallback(async (values: RegisterFormValues) => {
+  const handleRegister = useCallback(async (values: RegisterFormValues, form?: FormInstance<RegisterFormValues>) => {
     setSubmitting(true)
     setFormError("")
     
@@ -47,7 +49,13 @@ export function useRegister(role: UserRole) {
       navigate("/login")
     } catch (error) {
       console.error("❌ Registration error:", error)
-      setFormError(VI.auth.register.messages.unableToRegister)
+      const fieldErrors = extractFieldErrors(error)
+      if (fieldErrors && form) {
+        applyFieldErrors(form, fieldErrors)
+        setFormError("")
+      } else {
+        setFormError(VI.auth.register.messages.unableToRegister)
+      }
     } finally {
       setSubmitting(false)
     }

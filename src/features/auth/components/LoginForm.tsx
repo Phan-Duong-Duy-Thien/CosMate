@@ -6,7 +6,7 @@ import { AuthForm } from "./AuthForm"
 import { VI } from "@/shared/i18n/vi"
 
 type LoginFormProps = {
-  onSubmit: (values: LoginFormValues) => void | Promise<void>
+  onSubmit: (values: LoginFormValues, form: ReturnType<typeof Form.useForm<LoginFormValues>>[0]) => void | Promise<void>
   submitting: boolean
   formError?: string
 }
