@@ -109,10 +109,10 @@ export async function uploadProviderAvatar(userId: number, file: File): Promise<
  *
  * Uses PUT /api/providers/{providerId}/cover-image which accepts a `coverImage` field.
  */
-export async function uploadProviderCoverImageSvc(userId: number, file: File): Promise<void> {
+export async function uploadProviderCoverImageSvc(providerId: number, file: File): Promise<void> {
   const formData = new FormData();
   formData.append('coverImage', file);
-  await axiosInstance.put(`/api/providers/${userId}/cover-image`, formData, {
+  await axiosInstance.put(`/api/providers/${providerId}/cover-image`, formData, {
     headers: { 'Content-Type': 'multipart/form-data' },
   });
 }

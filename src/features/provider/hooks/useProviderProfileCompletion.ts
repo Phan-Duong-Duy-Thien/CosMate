@@ -192,7 +192,7 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
         bankAccountNumber: formData.bankAccountNumber,
         bankName: formData.bankName,
       };
-      await saveProviderProfile(userId, payload);
+      await saveProviderProfile(providerId, payload);
       message.success('Hồ sơ đã được cập nhật thành công!');
       return true;
     } catch (err) {
@@ -222,12 +222,12 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
   }, [userId, providerId]);
 
   const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
-    if (!userId) {
-      message.error('Không tìm thấy thông tin người dùng');
+    if (!providerId) {
+      message.error('Không tìm thấy thông tin nhà cung cấp');
       return;
     }
     try {
-      await uploadProviderCoverImageSvc(userId, file);
+      await uploadProviderCoverImageSvc(providerId, file);
       message.success('Ảnh bìa đã được cập nhật');
       // refetch provider to update profile data
       const updated = await getProviderByUserId(userId);
@@ -236,7 +236,7 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
       console.error('[useProviderProfileCompletion] upload cover image error:', err);
       message.error('Tải ảnh bìa thất bại');
     }
-  }, [userId]);
+  }, [userId, providerId]);
 
   return {
     addresses,
