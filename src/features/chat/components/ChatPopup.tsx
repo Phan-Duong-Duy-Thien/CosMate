@@ -15,6 +15,7 @@ import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { cn } from "@/lib/utils"
 import type { ChatMessage, ChatRoomListItem } from "../types"
+import cosmateLogo from "@/assets/logo.png"
 
 interface ActiveRoom {
   roomId: number
@@ -159,13 +160,13 @@ export function ChatPopup() {
 
   return (
     // Outer: fixed position, full height, ROW layout (sidebar | chat)
-    <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[380px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[460px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
       {/* ── LEFT SIDEBAR (fixed width, full height, scrollable list) ── */}
-      <div className="flex h-full w-[112px] shrink-0 flex-col border-r border-slate-100">
+      <div className="flex h-full w-[130px] shrink-0 flex-col border-r border-slate-100">
         {/* Header */}
-        <div className="flex h-12 shrink-0 items-center justify-center border-b border-slate-100">
-          <p className="truncate px-1 text-xs font-semibold text-slate-500">Messages</p>
+        <div className="flex h-12 shrink-0 items-center justify-center border-b border-slate-100 p-2">
+          <img src={cosmateLogo} alt="Cosmate" className="h-7 w-auto object-contain" />
         </div>
         {/* Room list — scrollable */}
         <div className="flex-1 overflow-y-auto">
@@ -216,9 +217,9 @@ export function ChatPopup() {
                 )}
               />
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-semibold text-slate-800">{displayName}</p>
-              <p className="text-xs text-slate-400">{isConnected ? "Online" : "Offline"}</p>
+            <div className="min-w-0 flex flex-col justify-start pt-0.5">
+              <p className="truncate text-sm font-semibold leading-tight text-slate-800">{displayName}</p>
+              <p className="text-xs leading-tight text-slate-400">{isConnected ? "Online" : "Offline"}</p>
             </div>
           </div>
           <button

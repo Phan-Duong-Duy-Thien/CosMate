@@ -14,6 +14,7 @@ import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
 import { useReviewPermission } from "../hooks/useReviewPermission"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
+import { useStartChat } from "@/features/chat/hooks/useStartChat"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -54,6 +55,9 @@ export default function CostumeDetailPage() {
   // Fetch provider info
   const { provider, loading: providerLoading } = useProviderInfo(costume?.providerId)
 
+  // Start chat
+  const { startChat } = useStartChat()
+
   // Review permission and submission
   const { submit: submitReview, loading: reviewSubmitting } = useCreateReview()
   const { canReview, orderId, loading: reviewPermissionLoading } = useReviewPermission(
@@ -82,9 +86,9 @@ export default function CostumeDetailPage() {
   }
 
   // Handlers for shop actions
-  const handleChat = () => {
-    if (provider?.id) {
-      navigate(`/chat?partnerId=${provider.id}`)
+  const handleChat = async () => {
+    if (provider?.userId) {
+      await startChat(provider.userId, provider.shopName)
     }
   }
 
