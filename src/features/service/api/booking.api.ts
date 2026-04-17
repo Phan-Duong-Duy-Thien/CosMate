@@ -60,8 +60,37 @@ export interface ApiResponse<T> {
  * Fetches service orders for the current user (cosplayer side).
  * @param userId - the cosplayer's user ID
  * @param statuses - optional comma-separated list of statuses to filter by
+ * @param page - Page number (1-based), default 1
+ * @param size - Page size, default 10
  */
 export async function getServiceOrdersByCosplayer(
+  userId: number,
+  statuses?: string,
+  page: number = 1,
+  size: number = 10
+): Promise<{ orders: ServiceOrder[]; total: number; isPaginated: boolean }> {
+  const response = await axiosInstance.get<ApiResponse<ServiceOrder[] | { content: ServiceOrder[]; totalElements: number }>>(
+    `/api/service-orders/cosplayer/${userId}`,
+    {
+      params: statuses ? { statuses, page, size } : { page, size },
+    }
+  );
+  const result = response.data.result;
+  if (Array.isArray(result)) {
+    return { orders: result, total: result.length, isPaginated: false };
+  }
+  return {
+    orders: result.content,
+    total: result.totalElements,
+    isPaginated: true,
+  };
+}
+
+/**
+ * Fetch all service orders for a user (client-side pagination).
+ * Use this when BE does NOT support pagination.
+ */
+export async function getAllServiceOrdersByCosplayer(
   userId: number,
   statuses?: string
 ): Promise<ServiceOrder[]> {

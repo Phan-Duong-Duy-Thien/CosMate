@@ -123,6 +123,10 @@ export default function PurchaseHistoryPage() {
     returningOrderId,
     refetch: costumeRefetch,
     costumeImageMap,
+    page: costumePage,
+    setPage: setCostumePage,
+    pageSize: costumePageSize,
+    total: costumeTotal,
   } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
   const {
@@ -137,6 +141,10 @@ export default function PurchaseHistoryPage() {
     confirmAndPay,
     payingOrderId,
     payOnly,
+    page: servicePage,
+    setPage: setServicePage,
+    pageSize: servicePageSize,
+    total: serviceTotal,
   } = useServiceOrders()
 
   // ── Review modal state ─────────────────────────────────────────────────────
@@ -630,6 +638,77 @@ export default function PurchaseHistoryPage() {
     </div>
   )
 
+  // ── Pagination helper ────────────────────────────────────────────────────────
+  const renderPagination = (
+    currentPage: number,
+    pageSize: number,
+    total: number,
+    onPageChange: (page: number) => void,
+    label: string
+  ) => {
+    const totalPages = Math.ceil(total / pageSize)
+    if (totalPages <= 1) return null
+
+    const pages: (number | '...')[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (currentPage > 3) pages.push('...')
+      const start = Math.max(2, currentPage - 1)
+      const end = Math.min(totalPages - 1, currentPage + 1)
+      for (let i = start; i <= end; i++) pages.push(i)
+      if (currentPage < totalPages - 2) pages.push('...')
+      pages.push(totalPages)
+    }
+
+    return (
+      <div className="mt-6 flex flex-col items-center gap-2">
+        <p className="text-sm text-slate-500">
+          {label} {VI.profile.orders.paginationShow}{' '}
+          <span className="font-medium text-slate-700">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, total)}</span>{' '}
+          {VI.profile.orders.paginationOf} <span className="font-medium text-slate-700">{total}</span>
+        </p>
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={currentPage === 1}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+          >
+            ‹
+          </button>
+          {pages.map((p, i) =>
+            p === '...' ? (
+              <span key={`ellipsis-${i}`} className="flex h-8 w-8 items-center justify-center text-sm text-slate-400">…</span>
+            ) : (
+              <button
+                key={p}
+                type="button"
+                onClick={() => onPageChange(p)}
+                className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border text-sm transition-colors ${
+                  p === currentPage
+                    ? 'border-purple-600 bg-purple-600 text-white'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                }`}
+              >
+                {p}
+              </button>
+            )
+          )}
+          <button
+            type="button"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={currentPage === totalPages}
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+          >
+            ›
+          </button>
+        </div>
+      </div>
+    )
+  }
+
   // ── Content renderer ─────────────────────────────────────────────────────────
   const renderContent = (
     isLoading: boolean,
@@ -727,6 +806,15 @@ export default function PurchaseHistoryPage() {
                   filteredOrders
                 )}
               </div>
+
+              {/* Pagination */}
+              {renderPagination(
+                costumePage,
+                costumePageSize,
+                costumeTotal,
+                setCostumePage,
+                VI.profile.orders.paginationCostume
+              )}
             </>
           )}
 
@@ -762,6 +850,15 @@ export default function PurchaseHistoryPage() {
                   serviceFilteredOrders
                 )}
               </div>
+
+              {/* Pagination */}
+              {renderPagination(
+                servicePage,
+                servicePageSize,
+                serviceTotal,
+                setServicePage,
+                VI.profile.serviceOrders.paginationService
+              )}
             </>
           )}
         </Card>
