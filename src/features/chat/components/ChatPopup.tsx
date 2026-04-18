@@ -42,6 +42,34 @@ function formatMessageTime(isoString: string): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
+function formatDateSeparator(isoString: string): string {
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return ""
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+
+  if (isSameDay(date, today)) return "Hôm nay"
+  if (isSameDay(date, yesterday)) return "Hôm qua"
+
+  const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"]
+  const dayName = days[date.getDay()]
+  const day = date.getDate()
+  const month = date.getMonth() + 1
+  return `${dayName}, ${day} tháng ${month}`
+}
+
+function getDateKey(isoString: string): string {
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return ""
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
 export function ChatPopup() {
   const {
     isOpen,
@@ -428,37 +456,60 @@ export function ChatPopup() {
             <div className="flex h-full flex-col overflow-y-auto px-3 py-2">
               {/* Messages anchored to bottom */}
               <div className="mt-auto flex flex-col gap-2">
-                {validMessages.map((msg) => {
-                  const isMine = currentUserId !== null ? msg.senderId === currentUserId : false
-                  const time = formatMessageTime(msg.createdAt)
-                  return (
-                    <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm",
-                          isMine
-                            ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
-                            : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
-                        )}
-                      >
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                        {time && (
-                          <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
-                            {time}
-                          </p>
-                        )}
+                {(() => {
+                  const elements: React.ReactNode[] = []
+                  let lastDateKey: string | null = null
+
+                  validMessages.forEach((msg) => {
+                    const dateKey = getDateKey(msg.createdAt)
+
+                    // Insert date separator when date changes
+                    if (dateKey !== lastDateKey) {
+                      elements.push(
+                        <div key={`sep-${dateKey}`} className="my-3 flex items-center gap-3">
+                          <div className="h-px flex-1 bg-slate-200" />
+                          <span className="shrink-0 text-[10px] font-medium text-slate-400">
+                            {formatDateSeparator(msg.createdAt)}
+                          </span>
+                          <div className="h-px flex-1 bg-slate-200" />
+                        </div>
+                      )
+                      lastDateKey = dateKey
+                    }
+
+                    const isMine = currentUserId !== null ? msg.senderId === currentUserId : false
+                    const time = formatMessageTime(msg.createdAt)
+                    elements.push(
+                      <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
+                        <div
+                          className={cn(
+                            "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                            isMine
+                              ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
+                              : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
+                          )}
+                        >
+                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                          {time && (
+                            <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
+                              {time}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+
+                  return elements
+                })()}
                 <div ref={bottomRef} />
               </div>
             </div>
           )}
         </div>
 
-        {/* Footer input — fixed height, always visible */}
-        <div className="flex h-[60px] shrink-0 items-start gap-2 border-t border-slate-200 bg-white px-3 py-2">
+        {/* Footer input — flex-1 height, grows with content */}
+        <div className="flex min-h-15 shrink-0 items-end gap-2 border-t border-slate-200 bg-white px-3 py-2">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -466,8 +517,9 @@ export function ChatPopup() {
             placeholder={activeRoom ? "Type a message..." : "Select a room"}
             disabled={!activeRoom || !isConnected}
             rows={1}
+            style={{ resize: "none" }}
             className={cn(
-              "flex-1 resize-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400",
+              "max-h-24 flex-1 resize-none overflow-hidden rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "focus:border-pink-300 focus:bg-pink-50/50"
             )}
