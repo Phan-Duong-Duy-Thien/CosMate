@@ -170,12 +170,13 @@ export function useProviderOrders() {
   const shipOrder = async (
     orderId: number,
     trackingCode: string,
+    shippingCarrierName: string,
     notes: string[],
     images: File[]
   ) => {
     setShippingOrderId(orderId);
     try {
-      await shipProviderOrder(orderId, trackingCode, notes, images);
+      await shipProviderOrder(orderId, trackingCode, shippingCarrierName, notes, images);
       await refetch();
       return true;
     } catch {

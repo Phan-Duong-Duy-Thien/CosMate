@@ -102,6 +102,7 @@ export const VI = {
       continueWithGoogle: "Tiếp tục với Google",
       continueWithFacebook: "Tiếp tục với Facebook",
       continueWithEmail: "Hoặc tiếp tục với email",
+      other: "Khác",
     },
 
     status: {
@@ -754,11 +755,23 @@ export const VI = {
         title: "Gửi hàng",
         trackingCode: "Mã vận đơn",
         trackingCodePlaceholder: "Nhập mã vận đơn",
+        carrierName: "Đơn vị vận chuyển",
+        selectCarrier: "Chọn đơn vị vận chuyển",
+        carrierNameOther: "Tên đơn vị vận chuyển khác",
+        carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
+        uploadText: "Click or drag files to upload",
+        uploadHint: "Hỗ trợ nhiều hình ảnh",
+        imagePrefix: "Hình ảnh",
         noteLabel: "Ghi chú",
         notePlaceholder: "Nhập ghi chú cho hình ảnh này",
         submit: "Gửi hàng",
         cancel: "Hủy",
+      },
+      validation: {
+        trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
         prepareSuccess: "Xác nhận chuẩn bị đơn thuê thành công",
@@ -769,12 +782,6 @@ export const VI = {
         shipFailed: "Không thể gửi hàng",
         completeSuccess: "Hoàn tất đơn thuê thành công",
         completeFailed: "Không thể hoàn tất đơn thuê",
-      },
-      validation: {
-        trackingRequired: "Vui lòng nhập mã vận đơn",
-        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
-        noteRequired: "Vui lòng nhập ghi chú cho tất cả hình ảnh",
-        noteImageMismatch: "Số lượng ghi chú không khớp với số lượng hình ảnh",
       },
     },
 

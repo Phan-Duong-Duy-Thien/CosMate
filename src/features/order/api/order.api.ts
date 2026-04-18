@@ -184,6 +184,7 @@ export async function prepareOrder(orderId: number): Promise<OrderItem> {
 export async function shipOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ): Promise<ShipOrderResult> {
@@ -195,11 +196,13 @@ export async function shipOrder(
   });
 
   const response = await axiosInstance.post<ApiResponse<ShipOrderResult>>(
-    `/api/orders/${orderId}/ship?trackingCode=${encodeURIComponent(trackingCode)}`,
+    `/api/orders/${orderId}/ship`,
     formData,
     {
       params: {
-        notes: notes,
+        trackingCode,
+        shippingCarrierName: shippingCarrierName || undefined,
+        notes,
       },
       headers: {
         'Content-Type': 'multipart/form-data',

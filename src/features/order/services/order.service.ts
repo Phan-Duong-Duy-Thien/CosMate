@@ -142,10 +142,11 @@ export async function deliverOutProviderOrder(orderId: number) {
 export async function shipProviderOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ) {
-  return orderApi.shipOrder(orderId, trackingCode, notes, images);
+  return orderApi.shipOrder(orderId, trackingCode, shippingCarrierName, notes, images);
 }
 
 /**

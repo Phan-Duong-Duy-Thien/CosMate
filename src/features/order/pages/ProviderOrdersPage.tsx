@@ -162,10 +162,10 @@ export default function ProviderOrdersPage() {
   };
 
   // Handle ship submit
-  const handleShipSubmit = async (data: { trackingCode: string; notes: string[]; images: File[] }) => {
+  const handleShipSubmit = async (data: { trackingCode: string; shippingCarrierName: string; notes: string[]; images: File[] }) => {
     if (!shipOrderId) return;
 
-    const success = await shipOrder(shipOrderId, data.trackingCode, data.notes, data.images);
+    const success = await shipOrder(shipOrderId, data.trackingCode, data.shippingCarrierName, data.notes, data.images);
     if (success) {
       message.success(VI.provider.orders.toast.shipSuccess);
       setShipModalOpen(false);
