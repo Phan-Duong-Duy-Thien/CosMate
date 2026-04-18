@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
-import { message, Tooltip } from "antd"
+import { message, Tooltip, Modal } from "antd"
 import { MessageOutlined } from "@ant-design/icons"
 import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
@@ -13,6 +13,7 @@ import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
+import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
@@ -154,6 +155,11 @@ export default function PurchaseHistoryPage() {
 
   const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
   const { createDispute, disputingOrderId } = useCreateDispute()
+  const { cancelOrder, cancellingOrderId } = useCancelOrder()
+
+  // ── Cancel modal state ───────────────────────────────────────────────────────
+  const [cancelModalOpen, setCancelModalOpen] = useState(false)
+  const [cancelOrderId, setCancelOrderId] = useState<number | null>(null)
 
   // ── Confirm delivery modal state ────────────────────────────────────────────
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
@@ -278,6 +284,24 @@ export default function PurchaseHistoryPage() {
     }
   }
 
+  const handleCancelOrder = (orderId: number) => {
+    setCancelOrderId(orderId)
+    setCancelModalOpen(true)
+  }
+
+  const handleCancelSubmit = async () => {
+    if (!cancelOrderId) return
+    const success = await cancelOrder(cancelOrderId)
+    if (success) {
+      message.success(VI.profile.orders.toastCancelSuccess)
+      setCancelModalOpen(false)
+      setCancelOrderId(null)
+      costumeRefetch()
+    } else {
+      message.error(VI.profile.orders.toastCancelFailed)
+    }
+  }
+
   const handleReviewOrder = (orderId: number, cosplayerId: number) => {
     setReviewOrderId(orderId)
     setReviewCosplayerId(cosplayerId)
@@ -307,6 +331,7 @@ export default function PurchaseHistoryPage() {
   // ── Costume order card renderer ─────────────────────────────────────────────
   const renderOrderItem = (order: (typeof filteredOrders)[number]) => {
     const statusLabel = {
+      UNPAID: VI.profile.orders.statusUnpaid,
       PAID: VI.profile.orders.tabWaitConfirm,
       PREPARING: VI.profile.orders.tabWaitShipping,
       SHIPPING_OUT: VI.profile.orders.statusShippingOut,
@@ -319,10 +344,27 @@ export default function PurchaseHistoryPage() {
       CANCELLED: VI.profile.orders.tabCancelled,
     }[order.status] || order.status
 
+    const statusBadgeColor: Record<string, string> = {
+      UNPAID: 'bg-orange-100 text-orange-700',
+      PAID: 'bg-blue-100 text-blue-700',
+      PREPARING: 'bg-purple-100 text-purple-700',
+      SHIPPING_OUT: 'bg-cyan-100 text-cyan-700',
+      DELIVERING_OUT: 'bg-cyan-100 text-cyan-700',
+      DELIVERY_OUT: 'bg-cyan-100 text-cyan-700',
+      IN_USE: 'bg-purple-100 text-purple-700',
+      SHIPPING_BACK: 'bg-orange-100 text-orange-700',
+      RETURNED: 'bg-green-100 text-green-700',
+      COMPLETED: 'bg-green-100 text-green-700',
+      CANCELLED: 'bg-slate-200 text-slate-600',
+    }
+    const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
+
+    const isUnpaid = order.status === 'UNPAID'
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isDeliveryOut = order.status === 'DELIVERY_OUT'
     const isInUse = order.status === 'IN_USE'
     const isShippingBack = order.status === 'SHIPPING_BACK'
+    const isCancellable = order.status === 'UNPAID' || order.status === 'PAID'
 
     console.log('[ORDER ACTION]', order.id, order.status)
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
@@ -361,7 +403,7 @@ export default function PurchaseHistoryPage() {
                 {VI.profile.orders.orderTitle} {orderCode}
               </p>
             </div>
-            <span className="ml-2 shrink-0 rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-700">
+            <span className={`ml-2 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}>
               {statusLabel}
             </span>
           </div>
@@ -391,6 +433,19 @@ export default function PurchaseHistoryPage() {
             >
               {VI.order.actions.viewDetail}
             </button>
+
+            {/* UNPAID: cancel */}
+            {isCancellable && (
+              <button
+                type="button"
+                onClick={() => handleCancelOrder(order.id)}
+                disabled={cancellingOrderId === order.id}
+                className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+              >
+                <Ban className="h-3.5 w-3.5" />
+                {cancellingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionCancel}
+              </button>
+            )}
 
             {/* DELIVERY_OUT: receive + dispute */}
             {isDeliveryOut && (
@@ -920,6 +975,23 @@ export default function PurchaseHistoryPage() {
         }}
         onSubmit={handleDisputeSubmit}
       />
+
+      <Modal
+        open={cancelModalOpen}
+        title={VI.profile.orders.cancelModal.title}
+        okText={VI.common.actions.confirm}
+        cancelText={VI.common.actions.cancel}
+        okButtonProps={{ danger: true, loading: cancellingOrderId !== null }}
+        onOk={handleCancelSubmit}
+        onCancel={() => {
+          setCancelModalOpen(false)
+          setCancelOrderId(null)
+        }}
+      >
+        <p style={{ color: '#6b7280' }}>
+          {VI.profile.orders.cancelModal.message}
+        </p>
+      </Modal>
 
       <ServicePaymentModal
         open={paymentModalOpen}

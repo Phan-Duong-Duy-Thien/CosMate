@@ -142,10 +142,11 @@ export async function deliverOutProviderOrder(orderId: number) {
 export async function shipProviderOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ) {
-  return orderApi.shipOrder(orderId, trackingCode, notes, images);
+  return orderApi.shipOrder(orderId, trackingCode, shippingCarrierName, notes, images);
 }
 
 /**
@@ -179,6 +180,15 @@ export async function fetchOrderDetail(orderId: number): Promise<OrderDetail> {
  */
 export async function completeProviderOrder(orderId: number) {
   return orderApi.completeOrder(orderId);
+}
+
+/**
+ * Cancel an order (update status to CANCELLED)
+ * NOTE: API response does NOT return updated order — caller must refetch after success.
+ * @param orderId - The order ID
+ */
+export async function cancelOrder(orderId: number) {
+  return orderApi.cancelOrder(orderId);
 }
 
 /**

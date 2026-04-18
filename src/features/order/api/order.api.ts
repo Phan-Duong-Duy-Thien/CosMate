@@ -184,6 +184,7 @@ export async function prepareOrder(orderId: number): Promise<OrderItem> {
 export async function shipOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ): Promise<ShipOrderResult> {
@@ -195,11 +196,13 @@ export async function shipOrder(
   });
 
   const response = await axiosInstance.post<ApiResponse<ShipOrderResult>>(
-    `/api/orders/${orderId}/ship?trackingCode=${encodeURIComponent(trackingCode)}`,
+    `/api/orders/${orderId}/ship`,
     formData,
     {
       params: {
-        notes: notes,
+        trackingCode,
+        shippingCarrierName: shippingCarrierName || undefined,
+        notes,
       },
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -277,6 +280,18 @@ export async function getOrderById(orderId: number): Promise<OrderDetail> {
 export async function completeOrder(orderId: number): Promise<OrderItem> {
   const response = await axiosInstance.post<ApiResponse<OrderItem>>(
     `/api/orders/${orderId}/complete`
+  );
+  return response.data.result;
+}
+
+/**
+ * Cancel an order (update status to CANCELLED)
+ * NOTE: API response does NOT return updated order — caller must refetch after success.
+ * @param orderId - The order ID
+ */
+export async function cancelOrder(orderId: number): Promise<void> {
+  const response = await axiosInstance.post<ApiResponse<string>>(
+    `/api/orders/${orderId}/cancel`
   );
   return response.data.result;
 }

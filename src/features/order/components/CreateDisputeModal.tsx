@@ -54,18 +54,13 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
     multiple: true,
     fileList,
     onChange: handleFileChange,
-    beforeUpload: () => {
-      // Prevent default upload - we upload manually in handleSubmit
-      return false;
-    },
+    beforeUpload: () => false,
     listType: 'picture-card',
     accept: 'image/*',
-    disabled: uploadingImages,
   };
 
   // Get upload button text
   const getUploadButtonText = () => {
-    if (uploadingImages) return VI.dispute.uploadingImages;
     if (fileList.length >= 3) return VI.dispute.maxImagesReached;
     return VI.dispute.uploadImages;
   };
@@ -89,7 +84,7 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
   };
 
   // Compute submit button state
-  const isSubmitDisabled = loading || uploadingImages || !isReasonValid;
+  const isSubmitDisabled = loading || !isReasonValid;
 
   return (
     <Modal
@@ -97,18 +92,18 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
       open={open}
       onCancel={onCancel}
       footer={[
-        <Button key="cancel" onClick={onCancel} disabled={loading || uploadingImages}>
+        <Button key="cancel" onClick={onCancel} disabled={loading}>
           {VI.common.actions.cancel}
         </Button>,
         <Button
           key="submit"
           type="primary"
           danger
-          loading={loading || uploadingImages}
+          loading={loading}
           disabled={isSubmitDisabled}
           onClick={handleSubmit}
         >
-          {uploadingImages ? VI.dispute.uploadingImages : VI.dispute.submit}
+          {VI.dispute.submit}
         </Button>,
       ]}
       width={520}
@@ -144,13 +139,11 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
 
           <Dragger {...uploadProps}>
             <p className="ant-upload-drag-icon">
-              {uploadingImages ? <LoadingOutlined /> : <InboxOutlined />}
+              <InboxOutlined />
             </p>
             <p className="ant-upload-text">{getUploadButtonText()}</p>
             <p className="ant-upload-hint">
-              {uploadingImages
-                ? VI.dispute.uploadingImages
-                : `${VI.dispute.imagesHint} (${fileList.length}/3)`}
+              {`${VI.dispute.imagesHint} (${fileList.length}/3)`}
             </p>
           </Dragger>
 

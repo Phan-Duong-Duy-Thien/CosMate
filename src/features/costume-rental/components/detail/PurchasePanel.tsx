@@ -33,7 +33,11 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
-  const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
+  const minDate = (() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 3)
+    return d.toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
+  })()
   const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
@@ -94,18 +98,23 @@ export const PurchasePanel = ({
 
         <div>
           <p className="font-semibold text-slate-700">Thời gian thuê</p>
+          <p className="mt-1 text-xs text-red-500">
+            Lưu ý: Thời gian bắt đầu thuê phải ít nhất <strong>3 ngày</strong> sau tính từ thời điểm hiện tại.
+          </p>
           <div className="mt-1.5 grid gap-2 sm:grid-cols-2">
-            <input
-              type="date"
-              value={startDate}
-              min={today}
-              disabled={isRented}
-              onChange={(e) => onStartDateChange(e.target.value)}
-              className={cn(
-                "h-10 rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200",
-                isRented ? "cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200" : "border-slate-200"
-              )}
-            />
+            <div className="space-y-1">
+              <input
+                type="date"
+                value={startDate}
+                min={minDate}
+                disabled={isRented}
+                onChange={(e) => onStartDateChange(e.target.value)}
+                className={cn(
+                  "h-10 w-full rounded-full border px-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200",
+                  isRented ? "cursor-not-allowed bg-slate-100 text-slate-400 border-slate-200" : "border-slate-200"
+                )}
+              />
+            </div>
             <input
               type="number"
               min={1}
@@ -118,7 +127,9 @@ export const PurchasePanel = ({
               )}
             />
           </div>
-          <p className="mt-1 text-xs text-slate-400">Thời gian bắt đầu thuê tính từ lúc giao thành công.</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Cần đặt trước tối thiểu <strong>3 ngày</strong> để shop chuẩn bị &amp; đơn vị vận chuyển giao hàng.
+          </p>
         </div>
 
         {hasAccessories && (

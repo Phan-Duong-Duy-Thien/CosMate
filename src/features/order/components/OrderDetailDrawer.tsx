@@ -66,16 +66,16 @@ const getStatusLabel = (status: OrderStatus): string => {
 
 const getStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
-    UNPAID: 'default',
-    PAID: 'orange',
-    PREPARING: 'blue',
+    UNPAID: 'orange',
+    PAID: 'blue',
+    PREPARING: 'purple',
     SHIPPING_OUT: 'cyan',
-    DELIVERING_OUT: 'purple',
+    DELIVERING_OUT: 'cyan',
     IN_USE: 'purple',
     SHIPPING_BACK: 'volcano',
     RETURNED: 'green',
     COMPLETED: 'green',
-    CANCELLED: 'red',
+    CANCELLED: 'default',
     DISPUTE: 'magenta',
     EXTENDING: 'gold',
   };
@@ -395,7 +395,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose }: OrderDe
     <Drawer
       title={VI.order.detail.title}
       placement="right"
-      width={600}
+      size="default"
       open={open}
       onClose={onClose}
     >

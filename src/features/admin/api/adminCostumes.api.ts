@@ -2,9 +2,31 @@ import axiosInstance from '@/services/axiosInstance';
 
 const unwrap = <T,>(data: any): T => data?.result ?? data?.content ?? data;
 
-export async function getCostumes() {
-  const response = await axiosInstance.get('/api/costumes');
-  return unwrap<any[]>(response.data);
+interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+}
+
+interface GetCostumesOptions {
+  search?: string;
+  status?: string | null;
+}
+
+export async function getCostumes(
+  page = 1,
+  pageSize = 10,
+  options?: GetCostumesOptions
+): Promise<PaginatedResponse<any>> {
+  const params: Record<string, any> = { page, pageSize };
+  if (options?.search) params.search = options.search;
+  if (options?.status) params.status = options.status;
+
+  const response = await axiosInstance.get('/api/costumes', { params });
+  const data = unwrap<any>(response.data);
+  return {
+    content: Array.isArray(data) ? data : (data?.content ?? []),
+    totalElements: data?.totalElements ?? (Array.isArray(data) ? data.length : 0),
+  };
 }
 
 export async function getCostumeById(id: number) {

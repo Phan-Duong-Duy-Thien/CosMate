@@ -102,6 +102,7 @@ export const VI = {
       continueWithGoogle: "Tiếp tục với Google",
       continueWithFacebook: "Tiếp tục với Facebook",
       continueWithEmail: "Hoặc tiếp tục với email",
+      other: "Khác",
     },
 
     status: {
@@ -267,6 +268,52 @@ export const VI = {
         noPermission: "Không có quyền thực hiện hành động này",
         cannotManageSelf: "Bạn không thể thao tác với chính mình.",
         cannotManageAdmin: "Bạn không thể thao tác với tài khoản quản trị (ADMIN/SUPERADMIN).",
+      },
+    },
+
+    costumes: {
+      pageTitle: "Quản lý trang phục",
+
+      columns: {
+        id: "ID",
+        name: "Tên trang phục",
+        provider: "Nhà cung cấp",
+        pricePerDay: "Giá / ngày",
+        status: "Trạng thái",
+        actions: "Hành động",
+      },
+
+      toolbar: {
+        search: "Tìm kiếm theo tên, nhà cung cấp...",
+        filterStatus: "Lọc theo trạng thái",
+        refresh: "Làm mới",
+        createCostume: "Tạo trang phục",
+      },
+
+      actions: {
+        viewDetail: "Xem chi tiết",
+        toggleStatus: "Đổi trạng thái",
+        delete: "Xóa",
+      },
+
+      detail: {
+        title: "Chi tiết trang phục",
+        basicInfo: "Thông tin cơ bản",
+        pricingInfo: "Thông tin giá",
+        noData: "—",
+      },
+
+      confirm: {
+        deleteTitle: "Xác nhận xóa trang phục",
+        deleteMessage: "Bạn có chắc chắn muốn xóa trang phục này? Hành động này không thể hoàn tác.",
+        ok: "Xác nhận",
+        cancel: "Hủy",
+      },
+
+      messages: {
+        deleteSuccess: "Đã xóa trang phục thành công",
+        statusUpdatedSuccess: "Cập nhật trạng thái thành công",
+        fetchError: "Không thể tải danh sách trang phục",
       },
     },
   },
@@ -708,11 +755,23 @@ export const VI = {
         title: "Gửi hàng",
         trackingCode: "Mã vận đơn",
         trackingCodePlaceholder: "Nhập mã vận đơn",
+        carrierName: "Đơn vị vận chuyển",
+        selectCarrier: "Chọn đơn vị vận chuyển",
+        carrierNameOther: "Tên đơn vị vận chuyển khác",
+        carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
+        uploadText: "Click or drag files to upload",
+        uploadHint: "Hỗ trợ nhiều hình ảnh",
+        imagePrefix: "Hình ảnh",
         noteLabel: "Ghi chú",
         notePlaceholder: "Nhập ghi chú cho hình ảnh này",
         submit: "Gửi hàng",
         cancel: "Hủy",
+      },
+      validation: {
+        trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
         prepareSuccess: "Xác nhận chuẩn bị đơn thuê thành công",
@@ -723,12 +782,6 @@ export const VI = {
         shipFailed: "Không thể gửi hàng",
         completeSuccess: "Hoàn tất đơn thuê thành công",
         completeFailed: "Không thể hoàn tất đơn thuê",
-      },
-      validation: {
-        trackingRequired: "Vui lòng nhập mã vận đơn",
-        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
-        noteRequired: "Vui lòng nhập ghi chú cho tất cả hình ảnh",
-        noteImageMismatch: "Số lượng ghi chú không khớp với số lượng hình ảnh",
       },
     },
 
@@ -909,6 +962,7 @@ export const VI = {
       statusDeliveringOut: "Chờ nhận",
       statusDeliveryOut: "Giao đến",
       statusShippingBack: "Đang trả hàng",
+      statusUnpaid: "Chưa thanh toán",
       // Card display
       orderTitle: "Đơn hàng",
       cardCostumeName: "Trang phục",
@@ -952,6 +1006,13 @@ export const VI = {
       toastReviewFailed: "Không thể gửi đánh giá",
       toastDisputeSuccess: "Đã gửi khiếu nại thành công",
       toastDisputeFailed: "Gửi khiếu nại thất bại",
+      actionCancel: "Hủy đơn",
+      toastCancelSuccess: "Hủy đơn thành công",
+      toastCancelFailed: "Không thể hủy đơn",
+      cancelModal: {
+        title: "Xác nhận hủy đơn",
+        message: "Bạn có chắc muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
+      },
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },

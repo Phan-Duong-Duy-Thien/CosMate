@@ -24,9 +24,18 @@ export async function getDashboardSummary() {
   return unwrap<AdminDashboardSummary>(response.data);
 }
 
-export async function getAuditLogs() {
-  const response = await axiosInstance.get('/api/v1/admin/audit-logs');
-  return unwrap<any[]>(response.data);
+interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+}
+
+export async function getAuditLogs(page = 1, pageSize = 10): Promise<PaginatedResponse<any>> {
+  const response = await axiosInstance.get('/api/v1/admin/audit-logs', { params: { page, pageSize } });
+  const data = unwrap<any>(response.data);
+  return {
+    content: Array.isArray(data) ? data : (data?.content ?? []),
+    totalElements: data?.totalElements ?? (Array.isArray(data) ? data.length : 0),
+  };
 }
 
 export async function getRevenueReport() {

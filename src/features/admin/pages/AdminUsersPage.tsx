@@ -394,8 +394,6 @@ export default function AdminUsersPage() {
           dataSource={users}
           rowKey="id"
           loading={isLoading}
-          scroll={{ y: 'calc(100vh - 300px)' }} 
-          
           pagination={{
             current: page,
             pageSize: pageSize,
@@ -412,7 +410,7 @@ export default function AdminUsersPage() {
             onClick: () => handleViewDetail(user),
             style: { cursor: 'pointer' },
           })}
-          rowClassName="admin-user-row"
+          rowClassName={() => 'admin-user-row'}
         />
 
         {/* Detail Modal */}

@@ -2,9 +2,24 @@ import axiosInstance from '@/services/axiosInstance';
 
 const unwrap = <T,>(data: any): T => data?.result ?? data?.content ?? data;
 
-export async function getOrders() {
-  const response = await axiosInstance.get('/api/orders');
-  return unwrap<any[]>(response.data);
+interface PaginatedResponse<T> {
+  content: T[];
+  totalElements: number;
+}
+
+export async function getOrders(
+  page = 1,
+  pageSize = 10,
+  _options?: GetOrdersOptions
+): Promise<PaginatedResponse<any>> {
+  // Note: BE does not support server-side filter by status/search yet
+  // AdminOrdersPage fetches full list and applies client-side filter instead
+  const response = await axiosInstance.get('/api/orders', { params: { page, pageSize } });
+  const data = unwrap<any>(response.data);
+  return {
+    content: Array.isArray(data) ? data : (data?.content ?? []),
+    totalElements: data?.totalElements ?? (Array.isArray(data) ? data.length : 0),
+  };
 }
 
 export async function getOrderById(id: number) {
