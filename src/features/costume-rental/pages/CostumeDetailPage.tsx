@@ -81,19 +81,6 @@ export default function CostumeDetailPage() {
     }
   }
 
-  // Handlers for shop actions
-  const handleChat = () => {
-    if (provider?.id) {
-      navigate(`/chat?partnerId=${provider.id}`)
-    }
-  }
-
-  const handleViewShop = () => {
-    if (provider?.id) {
-      navigate(`/shop/${provider.id}`)
-    }
-  }
-
   const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
     if (!currentUserId || !orderId) {
       alert("Bạn cần đăng nhập để gửi đánh giá")
@@ -303,8 +290,6 @@ export default function CostumeDetailPage() {
           <div className="mt-5">
             <ProviderShopCard
               provider={provider}
-              onChat={handleChat}
-              onViewShop={handleViewShop}
             />
           </div>
         )}
