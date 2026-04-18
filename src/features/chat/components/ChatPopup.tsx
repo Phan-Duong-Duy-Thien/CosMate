@@ -216,7 +216,7 @@ export function ChatPopup() {
       {/* ── LEFT SIDEBAR (fixed width, full height, scrollable list) ── */}
       <div className="flex h-full w-[140px] shrink-0 flex-col border-r border-slate-100">
         {/* Header: logo + search */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-slate-100 px-2">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 px-2">
           <img src={cosmateLogo} alt="Cosmate" className="h-6 w-auto object-contain" />
           <button
             type="button"

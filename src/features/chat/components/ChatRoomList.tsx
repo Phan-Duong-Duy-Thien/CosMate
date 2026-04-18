@@ -47,10 +47,10 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
                 <img
                   src={room.partnerAvatar || undefined}
                   alt={room.partnerName || "Partner"}
-                  className="h-10 w-10 rounded-full object-cover"
+                  className="h-8 w-8 rounded-full object-cover"
                 />
               ) : (
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-xs font-semibold text-pink-600">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-[10px] font-semibold text-pink-600">
                   {computeInitials(room.partnerName)}
                 </div>
               )}
