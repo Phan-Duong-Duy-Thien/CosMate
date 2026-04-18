@@ -33,7 +33,11 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
-  const today = new Date().toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
+  const minDate = (() => {
+    const d = new Date()
+    d.setDate(d.getDate() + 3)
+    return d.toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
+  })()
   const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
@@ -98,7 +102,7 @@ export const PurchasePanel = ({
             <input
               type="date"
               value={startDate}
-              min={today}
+              min={minDate}
               disabled={isRented}
               onChange={(e) => onStartDateChange(e.target.value)}
               className={cn(
@@ -118,7 +122,9 @@ export const PurchasePanel = ({
               )}
             />
           </div>
-          <p className="mt-1 text-xs text-slate-400">Thời gian bắt đầu thuê tính từ lúc giao thành công.</p>
+          <p className="mt-1 text-xs text-slate-400">
+            Cần đặt trước tối thiểu <strong>3 ngày</strong> để shop chuẩn bị &amp; đơn vị vận chuyển giao hàng.
+          </p>
         </div>
 
         {hasAccessories && (

@@ -152,6 +152,18 @@ export default function CostumeDetailPage() {
       return
     }
 
+    // Validate startDate is at least 3 days from today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const minDate = new Date(today)
+    minDate.setDate(minDate.getDate() + 3)
+    const selected = new Date(startDate)
+    selected.setHours(0, 0, 0, 0)
+    if (selected < minDate) {
+      setValidationError('Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.')
+      return
+    }
+
     // Clear validation error
     setValidationError(null)
 

@@ -343,6 +343,7 @@ export default function ProviderMessagesPage() {
               label={VI.booking.create.bookingDate}
               name="bookingDate"
               rules={[{ required: true, message: VI.booking.create.bookingDate }]}
+              extra="Không thể đặt lịch cho ngày trong quá khứ"
             >
               <DatePicker
                 className="w-full"
@@ -350,6 +351,8 @@ export default function ProviderMessagesPage() {
                 value={bookingDate}
                 onChange={(date) => setBookingDate(date)}
                 format="DD/MM/YYYY"
+                disabledDate={(current) => current && current < dayjs().startOf('day')}
+                placeholder="Chọn ngày đặt lịch"
               />
             </Form.Item>
 

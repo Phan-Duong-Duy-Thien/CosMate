@@ -7,21 +7,14 @@ interface PaginatedResponse<T> {
   totalElements: number;
 }
 
-interface GetOrdersOptions {
-  search?: string;
-  status?: string | null;
-}
-
 export async function getOrders(
   page = 1,
   pageSize = 10,
-  options?: GetOrdersOptions
+  _options?: GetOrdersOptions
 ): Promise<PaginatedResponse<any>> {
-  const params: Record<string, any> = { page, pageSize };
-  if (options?.search) params.search = options.search;
-  if (options?.status) params.status = options.status;
-
-  const response = await axiosInstance.get('/api/orders', { params });
+  // Note: BE does not support server-side filter by status/search yet
+  // AdminOrdersPage fetches full list and applies client-side filter instead
+  const response = await axiosInstance.get('/api/orders', { params: { page, pageSize } });
   const data = unwrap<any>(response.data);
   return {
     content: Array.isArray(data) ? data : (data?.content ?? []),
