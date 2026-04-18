@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Send, MessageCircle } from "lucide-react"
+import { X, Send, MessageCircle, Search, User } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms } from "../hooks/useChatRooms"
 import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
@@ -13,6 +13,10 @@ import {
 } from "../services/chatSocket.service"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
+import { useUserSearch } from "../hooks/useUserSearch"
+import type { SearchUserResult } from "../services/user.service"
+import { getOrCreateChatRoomService } from "../services/chat.service"
+import { message } from "antd"
 import { cn } from "@/lib/utils"
 import type { ChatMessage, ChatRoomListItem } from "../types"
 import cosmateLogo from "@/assets/logo.png"
@@ -49,6 +53,11 @@ export function ChatPopup() {
   const { rooms, loading: roomsLoading } = useChatRooms()
   const currentUserId = getUserId()
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
+
+  // ── Search state ──
+  const [searchMode, setSearchMode] = useState(false)
+  const [searchKeyword, setSearchKeyword] = useState("")
+  const { users, loading: searchLoading } = useUserSearch(searchKeyword)
 
   // Refetch unread count when popup opens
   useEffect(() => {
@@ -144,12 +153,54 @@ export function ChatPopup() {
   }
 
   const handleSelectRoom = (room: ChatRoomListItem) => {
+    setSearchMode(false)
+    setSearchKeyword("")
     setActiveRoom({
       roomId: room.roomId,
       partnerId: room.partnerId,
       partnerName: room.partnerName,
       partnerAvatar: room.partnerAvatar,
     })
+  }
+
+  const handleSelectUser = async (user: SearchUserResult) => {
+    console.log("[SELECT USER]", user)
+    if (!currentUserId) {
+      message.warning("Please log in to start chatting")
+      return
+    }
+
+    // 1. Check if room already exists with this user
+    const existingRoom = rooms.find((r) =>
+      r.partnerId === user.id
+    )
+
+    if (existingRoom) {
+      setSearchMode(false)
+      setSearchKeyword("")
+      setActiveRoom({
+        roomId: existingRoom.roomId,
+        partnerId: existingRoom.partnerId,
+        partnerName: existingRoom.partnerName,
+        partnerAvatar: existingRoom.partnerAvatar,
+      })
+      return
+    }
+
+    // 2. Create new room
+    try {
+      const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
+      setSearchMode(false)
+      setSearchKeyword("")
+      setActiveRoom({
+        roomId: newRoom.id,
+        partnerId: user.id,
+        partnerName: user.fullName,
+        partnerAvatar: user.avatarUrl,
+      })
+    } catch (err) {
+      message.error("Failed to start chat")
+    }
   }
 
   if (!isOpen) return null
@@ -163,14 +214,116 @@ export function ChatPopup() {
     <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[460px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
 
       {/* ── LEFT SIDEBAR (fixed width, full height, scrollable list) ── */}
-      <div className="flex h-full w-[130px] shrink-0 flex-col border-r border-slate-100">
-        {/* Header */}
-        <div className="flex h-12 shrink-0 items-center justify-center border-b border-slate-100 p-2">
-          <img src={cosmateLogo} alt="Cosmate" className="h-7 w-auto object-contain" />
+      <div className="flex h-full w-[140px] shrink-0 flex-col border-r border-slate-100">
+        {/* Header: logo + search */}
+        <div className="flex h-12 shrink-0 items-center justify-between border-b border-slate-100 px-2">
+          <img src={cosmateLogo} alt="Cosmate" className="h-6 w-auto object-contain" />
+          <button
+            type="button"
+            onClick={() => {
+              setSearchMode(true)
+              setSearchKeyword("")
+            }}
+            className={cn(
+              "flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors",
+              searchMode
+                ? "bg-pink-100 text-pink-500"
+                : "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            )}
+            aria-label="Search users"
+          >
+            <Search className="h-3.5 w-3.5" />
+          </button>
         </div>
-        {/* Room list — scrollable */}
+
+        {/* Search input — only shown in search mode */}
+        {searchMode && (
+          <div className="shrink-0 border-b border-slate-100 p-2">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
+              <input
+                autoFocus
+                type="text"
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                placeholder="Search users..."
+                className="h-8 w-full rounded-full border border-slate-200 bg-slate-50 pl-7 pr-3 text-xs text-slate-700 placeholder:text-slate-400 focus:border-pink-300 focus:bg-white focus:outline-none"
+              />
+              {searchKeyword && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchKeyword("")
+                  }}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Body — scrollable */}
         <div className="flex-1 overflow-y-auto">
-          {roomsLoading ? (
+          {/* Search results */}
+          {searchMode ? (
+            searchLoading ? (
+              <div className="flex flex-col gap-2 p-2">
+                {[1, 2, 3].map((i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 animate-pulse" />
+                    <div className="flex-1 space-y-1">
+                      <div className="h-3 w-full rounded bg-slate-100 animate-pulse" />
+                      <div className="h-2 w-1/2 rounded bg-slate-100 animate-pulse" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : users.length > 0 ? (
+              <div className="flex w-full flex-col gap-0.5 p-1.5">
+                {users.map((user) => (
+                  <button
+                    key={user.id}
+                    type="button"
+                    onClick={() => handleSelectUser(user)}
+                    className="group relative flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors hover:bg-pink-50"
+                  >
+                    {/* Avatar with hover tooltip */}
+                    <div className="relative">
+                      {user.avatarUrl ? (
+                        <img
+                          src={user.avatarUrl}
+                          alt={user.fullName}
+                          className="h-8 w-8 shrink-0 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-[10px] font-semibold text-pink-600">
+                          {computeInitials(user.fullName)}
+                        </div>
+                      )}
+                      {/* Tooltip */}
+                      <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-xs text-slate-700 shadow-lg opacity-0 shadow-xl transition-opacity group-hover:opacity-100">
+                        <span className="block font-medium">{user.fullName}</span>
+                        <span className="block text-slate-400">@{user.username}</span>
+                        <div className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-full rotate-45 border-b border-r border-slate-100 bg-white" />
+                      </div>
+                    </div>
+                    {/* Name + role */}
+                    <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">
+                      <span className="truncate text-xs font-medium text-slate-700">{user.fullName}</span>
+                      <span className="truncate text-[10px] text-slate-400">{user.role}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : searchKeyword.trim() ? (
+              <div className="flex flex-col items-center justify-center gap-2 p-4 text-slate-400">
+                <User className="h-6 w-6 text-slate-300" />
+                <p className="text-xs">No users found</p>
+              </div>
+            ) : null
+          ) : roomsLoading ? (
             <div className="flex flex-col gap-2 p-2">
               {Array.from({ length: 5 }).map((_, i) => (
                 <div key={i} className="flex items-center gap-2">
@@ -190,6 +343,23 @@ export function ChatPopup() {
             />
           )}
         </div>
+
+        {/* Search mode exit hint */}
+        {searchMode && (
+          <div className="shrink-0 border-t border-slate-100 p-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSearchMode(false)
+                setSearchKeyword("")
+              }}
+              className="flex w-full items-center justify-center gap-1 rounded-lg py-1 text-xs text-slate-400 hover:bg-slate-50 hover:text-slate-600"
+            >
+              <X className="h-3 w-3" />
+              Exit search
+            </button>
+          </div>
+        )}
       </div>
 
       {/* ── RIGHT CHAT AREA (fills remaining width) ── */}
@@ -217,9 +387,8 @@ export function ChatPopup() {
                 )}
               />
             </div>
-            <div className="min-w-0 flex flex-col justify-start pt-0.5">
+            <div className="min-w-0 flex items-center">
               <p className="truncate text-sm font-semibold leading-tight text-slate-800">{displayName}</p>
-              <p className="text-xs leading-tight text-slate-400">{isConnected ? "Online" : "Offline"}</p>
             </div>
           </div>
           <button

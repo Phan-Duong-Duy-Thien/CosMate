@@ -37,7 +37,7 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
             type="button"
             onClick={() => onSelectRoom(room)}
             className={cn(
-              "flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors overflow-hidden",
+              "group/sidebar-btn flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors overflow-hidden",
               isActive ? "bg-pink-50" : "hover:bg-slate-50"
             )}
           >
@@ -54,6 +54,11 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
                   {computeInitials(room.partnerName)}
                 </div>
               )}
+              {/* Hover tooltip — shows when ANY part of the button is hovered */}
+              <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-xs text-slate-700 shadow-lg opacity-0 shadow-xl transition-opacity group-hover/sidebar-btn:opacity-100">
+                <span className="block font-medium">{room.partnerName || "Unknown"}</span>
+                <div className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-full rotate-45 border-b border-r border-slate-100 bg-white" />
+              </div>
             </div>
 
             {/* Text — w-0 min-w-0 forces flex item to shrink, enabling truncate */}

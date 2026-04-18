@@ -161,7 +161,6 @@ export function ProviderChatPanel() {
             </div>
             <div className="min-w-0">
               <p className="truncate text-sm font-semibold text-slate-800">{displayName}</p>
-              <p className="text-xs text-slate-400">{isConnected ? "Online" : "Offline"}</p>
             </div>
           </div>
         </div>

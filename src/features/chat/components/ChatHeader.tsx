@@ -1,4 +1,3 @@
-import { WifiOff } from "lucide-react"
 import { cn } from "@/lib/utils"
 import type { ChatPartner } from "../types"
 
@@ -48,23 +47,10 @@ export function ChatHeader({ partner, loading, isConnected = true }: ChatHeaderP
             )} />
           </div>
 
-          {/* Name & status */}
+          {/* Name */}
           <div className="min-w-0">
             <p className="truncate font-semibold text-slate-800">
               {partner.fullName}
-            </p>
-            <p className="flex items-center gap-1 text-xs text-slate-500">
-              {isConnected ? (
-                <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-green-400" />
-                  Online
-                </>
-              ) : (
-                <>
-                  <WifiOff className="h-3 w-3" />
-                  <span>Offline</span>
-                </>
-              )}
             </p>
           </div>
         </div>
