@@ -962,6 +962,7 @@ export const VI = {
       statusDeliveringOut: "Chờ nhận",
       statusDeliveryOut: "Giao đến",
       statusShippingBack: "Đang trả hàng",
+      statusUnpaid: "Chưa thanh toán",
       // Card display
       orderTitle: "Đơn hàng",
       cardCostumeName: "Trang phục",
@@ -1005,6 +1006,13 @@ export const VI = {
       toastReviewFailed: "Không thể gửi đánh giá",
       toastDisputeSuccess: "Đã gửi khiếu nại thành công",
       toastDisputeFailed: "Gửi khiếu nại thất bại",
+      actionCancel: "Hủy đơn",
+      toastCancelSuccess: "Hủy đơn thành công",
+      toastCancelFailed: "Không thể hủy đơn",
+      cancelModal: {
+        title: "Xác nhận hủy đơn",
+        message: "Bạn có chắc muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
+      },
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },

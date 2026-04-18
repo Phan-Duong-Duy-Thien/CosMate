@@ -285,6 +285,18 @@ export async function completeOrder(orderId: number): Promise<OrderItem> {
 }
 
 /**
+ * Cancel an order (update status to CANCELLED)
+ * NOTE: API response does NOT return updated order — caller must refetch after success.
+ * @param orderId - The order ID
+ */
+export async function cancelOrder(orderId: number): Promise<void> {
+  const response = await axiosInstance.post<ApiResponse<string>>(
+    `/api/orders/${orderId}/cancel`
+  );
+  return response.data.result;
+}
+
+/**
  * Return an order (update status to SHIPPING_BACK)
  * @param orderId - The order ID
  * @param trackingCode - The tracking code for return shipment
