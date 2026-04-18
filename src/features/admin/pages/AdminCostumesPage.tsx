@@ -1,81 +1,289 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Button, Card, Descriptions, Drawer, Input, Result, Space, Table, Tag, Typography, message } from 'antd';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Button, Input, Space, Table, Tag, Tooltip, Drawer, Descriptions, Select } from 'antd';
 import type { TableProps } from 'antd';
-import { ReloadOutlined, EyeOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  ReloadOutlined,
+  EyeOutlined,
+} from '@ant-design/icons';
 import { getCostumes } from '../api/adminCostumes.api';
+import { VI } from '@/shared/i18n/vi';
+import { getCostumeStatusTagProps } from '../utils/costumeStatus';
 
 interface CostumeRow {
   id: number;
   name?: string;
   providerName?: string;
+  providerId?: number;
   status?: string;
   pricePerDay?: number;
+  depositAmount?: number;
+  imageUrls?: string[];
+  description?: string;
+  category?: string;
+  createdAt?: string;
 }
 
 export default function AdminCostumesPage() {
-  const [search, setSearch] = useState('');
-  const [selected, setSelected] = useState<CostumeRow | null>(null);
-  const [open, setOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<CostumeRow[]>([]);
+  const [total, setTotal] = useState(0);
 
-  const fetchCostumes = async () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedCostume, setSelectedCostume] = useState<CostumeRow | null>(null);
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const fetchCostumes = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getCostumes();
-      setRows(Array.isArray(data) ? data : []);
+      const { content, totalElements } = await getCostumes(page, pageSize, {
+        search: searchText,
+        status: statusFilter,
+      });
+      setRows(content);
+      setTotal(totalElements);
     } catch {
-      message.error('Không thể tải danh sách costume');
+      // silent
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, pageSize, searchText, statusFilter]);
 
   useEffect(() => {
     fetchCostumes();
-  }, []);
+  }, [fetchCostumes]);
 
-  const filtered = useMemo(
-    () => rows.filter((r) => `${r.name ?? ''} ${r.providerName ?? ''}`.toLowerCase().includes(search.toLowerCase())),
-    [rows, search]
+  const allStatuses = useMemo(
+    () => Array.from(new Set(rows.map((r) => r.status).filter(Boolean))).sort(),
+    [rows]
   );
 
+  const handleViewDetail = (costume: CostumeRow) => {
+    setSelectedCostume(costume);
+    setDrawerOpen(true);
+  };
+
+  const formatCurrency = (amount: number | undefined): string => {
+    if (amount == null) return '—';
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+  };
+
   const columns: TableProps<CostumeRow>['columns'] = [
-    { title: 'ID', dataIndex: 'id', width: 80 },
-    { title: 'Tên', dataIndex: 'name' },
-    { title: 'Provider', dataIndex: 'providerName' },
-    { title: 'Giá / ngày', dataIndex: 'pricePerDay' },
-    { title: 'Trạng thái', dataIndex: 'status', render: (v) => <Tag>{v ?? '—'}</Tag> },
-    { title: 'Hành động', render: (_, r) => <Button icon={<EyeOutlined />} onClick={() => { setSelected(r); setOpen(true); }}>Chi tiết</Button> },
+    {
+      title: VI.admin.costumes.columns.id,
+      dataIndex: 'id',
+      key: 'id',
+      width: 70,
+      align: 'center',
+    },
+    {
+      title: VI.admin.costumes.columns.name,
+      dataIndex: 'name',
+      key: 'name',
+      width: 260,
+      render: (name: string | undefined) => (
+        <span style={{ fontWeight: 600, color: '#1f2937' }}>{name ?? '—'}</span>
+      ),
+    },
+    {
+      title: VI.admin.costumes.columns.provider,
+      dataIndex: 'providerName',
+      key: 'providerName',
+      width: 200,
+      render: (v: string | undefined) => (
+        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>
+          {v ?? '—'}
+        </span>
+      ),
+    },
+    {
+      title: VI.admin.costumes.columns.pricePerDay,
+      dataIndex: 'pricePerDay',
+      key: 'pricePerDay',
+      width: 140,
+      align: 'right',
+      render: (v: number | undefined) => (
+        <span style={{ color: '#7c3aed', fontWeight: 600 }}>{formatCurrency(v)}</span>
+      ),
+    },
+    {
+      title: VI.admin.costumes.columns.status,
+      dataIndex: 'status',
+      key: 'status',
+      width: 140,
+      align: 'center',
+      render: (status: string | undefined) => {
+        if (!status) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        const { color, label } = getCostumeStatusTagProps(status);
+        return <Tag color={color} style={{ margin: 0 }}>{label}</Tag>;
+      },
+    },
+    {
+      title: VI.admin.costumes.columns.actions,
+      key: 'actions',
+      width: 100,
+      align: 'center',
+      render: (_, costume) => (
+        <Space size={8} onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={VI.admin.costumes.actions.viewDetail}>
+            <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(costume)} />
+          </Tooltip>
+        </Space>
+      ),
+    },
   ];
 
   return (
-    <div className="space-y-4">
-      <Card bordered={false} style={{ borderRadius: 16 }}>
-        <div className="flex gap-2 flex-wrap justify-between items-center">
-          <div>
-            <Typography.Title level={4} style={{ marginBottom: 0 }}>Quản lý trang phục</Typography.Title>
-            <Typography.Text type="secondary">Giám sát toàn bộ trang phục đang hiển thị trên hệ thống.</Typography.Text>
+    <>
+      <style>{`
+        .admin-user-row:hover {
+          background-color: #f5f5f5 !important;
+        }
+      `}</style>
+
+      <div className="w-full h-full">
+        {/* Toolbar */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
+          {/* TẦNG 1: Tìm kiếm + nút bấm */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
+            <Input
+              placeholder={VI.admin.costumes.toolbar.search}
+              prefix={<SearchOutlined />}
+              value={searchText}
+              onChange={(e) => {
+                setSearchText(e.target.value);
+                setPage(1);
+              }}
+              style={{ width: 320, maxWidth: '100%' }}
+              allowClear
+            />
+
+            <Space wrap>
+              <Button icon={<ReloadOutlined />} onClick={fetchCostumes} loading={loading}>
+                {VI.admin.costumes.toolbar.refresh}
+              </Button>
+            </Space>
           </div>
-          <Space>
-            <Input placeholder="Tìm trang phục" value={search} onChange={(e) => setSearch(e.target.value)} style={{ width: 320 }} />
-            <Button icon={<ReloadOutlined />} onClick={fetchCostumes} loading={loading}>Làm mới</Button>
-          </Space>
+
+          {/* TẦNG 2: Bộ lọc */}
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+            <Select
+              placeholder={VI.admin.costumes.toolbar.filterStatus || 'Lọc theo trạng thái'}
+              value={statusFilter || undefined}
+              onChange={(val) => {
+                setStatusFilter(val ?? null);
+                setPage(1);
+              }}
+              style={{ width: 180 }}
+              options={allStatuses.map((s) => {
+                const { label } = getCostumeStatusTagProps(s);
+                return { label, value: s };
+              })}
+              allowClear
+            />
+          </div>
         </div>
-      </Card>
 
-      <Table rowKey="id" columns={columns} dataSource={filtered} loading={loading} />
-      {!loading && filtered.length === 0 && <Result status="404" title="Không có costume" subTitle="Danh sách costume đang trống hoặc chưa tải được dữ liệu." />}
+        {/* Table */}
+        <Table<CostumeRow>
+          columns={columns}
+          dataSource={rows}
+          rowKey="id"
+          loading={loading}
+          pagination={{
+            current: page,
+            pageSize,
+            total,
+            showTotal: (t) => `Tổng ${t} trang phục`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (newPage, newPageSize) => {
+              setPage(newPage);
+              setPageSize(newPageSize);
+            },
+          }}
+          onRow={(costume) => ({
+            onClick: () => handleViewDetail(costume),
+            style: { cursor: 'pointer' },
+          })}
+          rowClassName={() => 'admin-user-row'}
+        />
 
-      <Drawer open={open} onClose={() => setOpen(false)} title="Chi tiết costume" width={560}>
-        <Descriptions bordered column={1}>
-          <Descriptions.Item label="ID">{selected?.id}</Descriptions.Item>
-          <Descriptions.Item label="Tên">{selected?.name ?? '—'}</Descriptions.Item>
-          <Descriptions.Item label="Provider">{selected?.providerName ?? '—'}</Descriptions.Item>
-          <Descriptions.Item label="Giá / ngày">{selected?.pricePerDay ?? '—'}</Descriptions.Item>
-          <Descriptions.Item label="Trạng thái">{selected?.status ?? '—'}</Descriptions.Item>
-        </Descriptions>
-      </Drawer>
-    </div>
+        {/* Detail Drawer */}
+        <Drawer
+          open={drawerOpen}
+          onClose={() => {
+            setDrawerOpen(false);
+            setSelectedCostume(null);
+          }}
+          title={VI.admin.costumes.detail.title}
+          styles={{ body: { paddingBottom: 24 } }}
+          destroyOnClose
+        >
+          {selectedCostume && (
+            <>
+              <div style={{ marginBottom: 12 }}>
+                <span style={{ color: '#9ca3af', fontSize: 13 }}>#{selectedCostume.id}</span>
+                <Tag
+                  color={getCostumeStatusTagProps(selectedCostume.status).color}
+                  style={{ marginLeft: 8 }}
+                >
+                  {getCostumeStatusTagProps(selectedCostume.status).label}
+                </Tag>
+              </div>
+
+              <Descriptions bordered column={1} size="small">
+                <Descriptions.Item label={VI.admin.costumes.columns.name}>
+                  {selectedCostume.name ?? '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label={VI.admin.costumes.columns.provider}>
+                  {selectedCostume.providerName ?? '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label={VI.admin.costumes.columns.pricePerDay}>
+                  {formatCurrency(selectedCostume.pricePerDay)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Tiền cọc">
+                  {formatCurrency(selectedCostume.depositAmount)}
+                </Descriptions.Item>
+                <Descriptions.Item label="Mô tả">
+                  {selectedCostume.description ?? '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Ngày tạo">
+                  {selectedCostume.createdAt
+                    ? new Date(selectedCostume.createdAt).toLocaleDateString('vi-VN')
+                    : '—'}
+                </Descriptions.Item>
+              </Descriptions>
+
+              {selectedCostume.imageUrls && selectedCostume.imageUrls.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <p style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>Hình ảnh</p>
+                  <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                    {selectedCostume.imageUrls.slice(0, 4).map((url, i) => (
+                      <img
+                        key={i}
+                        src={url}
+                        alt={`Thumbnail ${i + 1}`}
+                        style={{
+                          width: 80,
+                          height: 80,
+                          objectFit: 'cover',
+                          borderRadius: 8,
+                          border: '1px solid #e5e7eb',
+                        }}
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </Drawer>
+      </div>
+    </>
   );
 }

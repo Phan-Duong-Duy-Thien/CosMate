@@ -269,6 +269,52 @@ export const VI = {
         cannotManageAdmin: "Bạn không thể thao tác với tài khoản quản trị (ADMIN/SUPERADMIN).",
       },
     },
+
+    costumes: {
+      pageTitle: "Quản lý trang phục",
+
+      columns: {
+        id: "ID",
+        name: "Tên trang phục",
+        provider: "Nhà cung cấp",
+        pricePerDay: "Giá / ngày",
+        status: "Trạng thái",
+        actions: "Hành động",
+      },
+
+      toolbar: {
+        search: "Tìm kiếm theo tên, nhà cung cấp...",
+        filterStatus: "Lọc theo trạng thái",
+        refresh: "Làm mới",
+        createCostume: "Tạo trang phục",
+      },
+
+      actions: {
+        viewDetail: "Xem chi tiết",
+        toggleStatus: "Đổi trạng thái",
+        delete: "Xóa",
+      },
+
+      detail: {
+        title: "Chi tiết trang phục",
+        basicInfo: "Thông tin cơ bản",
+        pricingInfo: "Thông tin giá",
+        noData: "—",
+      },
+
+      confirm: {
+        deleteTitle: "Xác nhận xóa trang phục",
+        deleteMessage: "Bạn có chắc chắn muốn xóa trang phục này? Hành động này không thể hoàn tác.",
+        ok: "Xác nhận",
+        cancel: "Hủy",
+      },
+
+      messages: {
+        deleteSuccess: "Đã xóa trang phục thành công",
+        statusUpdatedSuccess: "Cập nhật trạng thái thành công",
+        fetchError: "Không thể tải danh sách trang phục",
+      },
+    },
   },
 
   /**
