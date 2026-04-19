@@ -5,13 +5,14 @@
  * Calls onSubmit with validated values – never calls API directly.
  */
 
-import { useMemo, useState } from 'react'
-import { Alert, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
+import { useEffect, useMemo, useState } from 'react'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
 import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
+import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -21,12 +22,20 @@ const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
 interface FormValues {
   name: string
   description: string
+  characterIds: number[]
   size: CostumeSizeOption
   numberOfItems: number
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
   imageFiles: { fileList: UploadFile[] }
+}
+
+interface CharacterOption {
+  id: number
+  name: string
+  anime: string
+  imageUrl?: string
 }
 
 interface Props {
@@ -39,6 +48,8 @@ interface Props {
 export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
+  const [characters, setCharacters] = useState<CharacterOption[]>([])
+  const [isCharactersLoading, setIsCharactersLoading] = useState(false)
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -48,6 +59,49 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     const hasImages = (watchedImages?.fileList?.length ?? 0) > 0
     return hasName && hasImages
   }, [watchedImages, watchedName])
+
+  const characterOptions = useMemo(
+    () =>
+      characters.map((character) => ({
+        value: character.id,
+        title: `${character.name} ${character.anime}`.trim(),
+        label: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Avatar
+              shape="square"
+              size={36}
+              src={character.imageUrl}
+              alt={character.name}
+              style={{ objectFit: 'cover', flexShrink: 0 }}
+            >
+              {character.name?.slice(0, 1)}
+            </Avatar>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{character.name}</div>
+              <div style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.45)' }}>{character.anime}</div>
+            </div>
+          </div>
+        ),
+      })),
+    [characters],
+  )
+
+  useEffect(() => {
+    const fetchCharacters = async () => {
+      setIsCharactersLoading(true)
+      try {
+        const data = await getCharacters()
+        setCharacters(Array.isArray(data) ? data : [])
+      } catch (err) {
+        console.error('Failed to fetch characters', err)
+        message.error('Không thể tải danh sách nhân vật.')
+      } finally {
+        setIsCharactersLoading(false)
+      }
+    }
+
+    void fetchCharacters()
+  }, [])
 
   const extractFilesFromForm = (values?: FormValues): File[] => {
     const raw = values?.imageFiles?.fileList ?? []
@@ -95,6 +149,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     await onSubmit({
       name: values.name,
       description: values.description,
+      characterIds: values.characterIds ?? [],
       size: values.size,
       numberOfItems: values.numberOfItems,
       pricePerDay: values.pricePerDay,
@@ -108,15 +163,16 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     <Form
       form={form}
       layout="vertical"
+      initialValues={{ characterIds: [] }}
       onFinish={handleFinish}
       disabled={disabled || loading}
       style={{ maxWidth: 640 }}
     >
-        {error && (
-          <Form.Item>
-            <Alert type="error" message={error} showIcon />
-          </Form.Item>
-        )}
+      {error && (
+        <Form.Item>
+          <Alert type="error" message={error} showIcon />
+        </Form.Item>
+      )}
 
         <Form.Item
           label="Tên trang phục"
@@ -124,6 +180,26 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }, { max: 120, message: 'Tên trang phục không vượt quá 120 ký tự' }]}
         >
           <Input placeholder="Nhập tên trang phục" maxLength={120} />
+        </Form.Item>
+
+        <Form.Item
+          label="Nhân vật Anime / Game"
+          name="characterIds"
+        >
+          <Select
+            mode="multiple"
+            showSearch
+            allowClear
+            placeholder="Chọn nhân vật"
+            loading={isCharactersLoading}
+            optionFilterProp="title"
+            filterOption={(input, option) => {
+              const keyword = input.toLowerCase().trim()
+              if (!keyword) return true
+              return String(option?.title ?? '').toLowerCase().includes(keyword)
+            }}
+            options={characterOptions}
+          />
         </Form.Item>
 
         <Card size="small" title="✨ AI Hỗ trợ viết mô tả" style={{ marginBottom: 16, background: '#fafcff', borderColor: '#d9e8ff' }}>

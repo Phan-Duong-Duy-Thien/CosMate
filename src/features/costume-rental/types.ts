@@ -121,8 +121,8 @@ export interface CreateCostumeBasicPayload {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
-  rentDiscount?: number
   providerId: number
+  characterIds: number[]
   imageFiles: File[]
 }
 
@@ -218,7 +218,6 @@ export interface UpdateCostumeBasicInput {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
-  rentDiscount?: number
   imageFiles?: File[]
 }
 

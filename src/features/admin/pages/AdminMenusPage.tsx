@@ -12,6 +12,7 @@ const routeOptions = [
     { label: '/admin/costumes (Quản lý Trang phục)', value: '/admin/costumes' },
     { label: '/admin/orders (Quản lý Đơn hàng)', value: '/admin/orders' },
     { label: '/admin/reports (Báo cáo)', value: '/admin/reports' },
+    { label: '/admin/characters (Quản lý Nhân vật)', value: '/admin/characters' },
     { label: '/admin/audit-logs (Nhật ký hệ thống)', value: '/admin/audit-logs' },
     { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' },
   ]},
