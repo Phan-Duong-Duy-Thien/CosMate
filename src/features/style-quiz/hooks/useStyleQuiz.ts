@@ -3,9 +3,8 @@ import { notification } from "antd"
 
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
-import { getBaseArchetypeAtCheckpoint, getFinalClassification } from "../quizAlgorithm"
-import { analyzeCustomAnswers, getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle } from "../services/styleQuiz.service"
-import type { CustomAnswerRequest, SearchResponseItem, Stage1Question, Stage2Question } from "../types"
+import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz } from "../services/styleQuiz.service"
+import type { SearchResponseItem, Stage1Question, Stage2Question, SubmitQuizCustomAnswer, SubmitQuizPayload, SubmitQuizStaticAnswer } from "../types"
 
 type QuizScreen = "quiz" | "checkpoint" | "loading" | "result"
 type QuizPhase = "stage1" | "stage2"
@@ -110,8 +109,6 @@ export function useStyleQuiz() {
     setStage1CustomAnswers({})
     setStage2CustomAnswers({})
     setStage2Questions([])
-    setStage1CustomAnswers({})
-    setStage2CustomAnswers({})
     setResults([])
     setError(null)
     setE(0)
@@ -124,13 +121,10 @@ export function useStyleQuiz() {
   useEffect(() => {
     const foundDraft = safeGetDraft()
     if (foundDraft) {
-      const isFreshStartDraft =
-        foundDraft.phase === "stage1" &&
-        foundDraft.currentIndex === 0 &&
-        Object.keys(foundDraft.stage1Answers).length === 0 &&
-        Object.keys(foundDraft.stage2Answers).length === 0
+      const isFreshStartDraft = foundDraft.phase === "stage1" && foundDraft.currentIndex === 0
+      const shouldShowResumeModal = !isFreshStartDraft && (foundDraft.currentIndex > 0 || foundDraft.phase === "stage2")
 
-      if (!isFreshStartDraft) {
+      if (shouldShowResumeModal) {
         setPendingDraft(foundDraft)
         setShowResumeModal(true)
       } else {
@@ -204,7 +198,7 @@ export function useStyleQuiz() {
 
   const progressPercent = useMemo(() => {
     if (!totalQuestions) return 0
-    return Math.round((globalQuestionIndex / totalQuestions) * 100)
+    return Math.round(((globalQuestionIndex - 1) / totalQuestions) * 100)
   }, [globalQuestionIndex, totalQuestions])
 
   const archetypeProfile = useMemo(() => {
@@ -228,20 +222,36 @@ export function useStyleQuiz() {
     if (!question) return
 
     if (phase === "stage1") {
-      setStage1Answers((prev) => ({ ...prev, [question.question_id as string]: optionIndex }))
+      const questionId = question.question_id as string
+      setStage1Answers((prev) => ({ ...prev, [questionId]: optionIndex }))
+      setStage1CustomAnswers((prev) => ({ ...prev, [questionId]: "" }))
       return
     }
 
     const questionId = question.question_id ?? `stage2-${currentIndex}`
     setStage2Answers((prev) => ({ ...prev, [questionId]: optionIndex }))
+    setStage2CustomAnswers((prev) => ({ ...prev, [questionId]: "" }))
   }
 
   const setCustomAnswer = (value: string) => {
     const question = currentQuestions[currentIndex]
     if (!question) return
     const questionId = question.question_id ?? `${phase}-${currentIndex}`
-    if (phase === "stage1") setStage1CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
-    else setStage2CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
+    if (phase === "stage1") {
+      setStage1CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
+      setStage1Answers((prev) => {
+        const next = { ...prev }
+        delete next[questionId]
+        return next
+      })
+    } else {
+      setStage2CustomAnswers((prev) => ({ ...prev, [questionId]: value }))
+      setStage2Answers((prev) => {
+        const next = { ...prev }
+        delete next[questionId]
+        return next
+      })
+    }
   }
 
   const currentCustomAnswer = useMemo(() => {
@@ -267,12 +277,56 @@ export function useStyleQuiz() {
     }
   }
 
-  const buildCustomAnswerPayload = (stage: QuizPhase): CustomAnswerRequest[] => {
-    const stageNum = stage === "stage1" ? 1 : 2
-    const answerMap = stage === "stage1" ? stage1CustomAnswers : stage2CustomAnswers
-    return Object.entries(answerMap)
-      .filter(([, answer]) => answer.trim().length > 0)
-      .map(([questionId, answer]) => ({ stage: stageNum, questionId, answer: answer.trim() }))
+  const buildSubmitQuizPayload = (): SubmitQuizPayload => {
+    const staticAnswers: SubmitQuizStaticAnswer[] = []
+    const customAnswers: SubmitQuizCustomAnswer[] = []
+
+    stage1Questions.slice(0, 8).forEach((question) => {
+      const selectedIdx = stage1Answers[question.question_id]
+      if (selectedIdx !== undefined) {
+        const option = question.options[selectedIdx]
+        staticAnswers.push({
+          questionId: question.question_id,
+          scoreE: option?.scores?.E ?? 0,
+          scoreA: option?.scores?.A ?? 0,
+          scoreO: option?.scores?.O ?? 0,
+        })
+      }
+
+      const customAnswer = stage1CustomAnswers[question.question_id]?.trim()
+      if (customAnswer) {
+        customAnswers.push({
+          questionId: question.question_id,
+          questionContext: question.question,
+          userAnswer: customAnswer,
+        })
+      }
+    })
+
+    stage2Questions.slice(0, 7).forEach((question, index) => {
+      const questionId = question.question_id ?? `stage2-${index}`
+      const selectedIdx = stage2Answers[questionId]
+      if (selectedIdx !== undefined) {
+        const option = question.options[selectedIdx]
+        staticAnswers.push({
+          questionId,
+          scoreE: option?.scores?.E ?? 0,
+          scoreA: option?.scores?.A ?? 0,
+          scoreO: option?.scores?.O ?? 0,
+        })
+      }
+
+      const customAnswer = stage2CustomAnswers[questionId]?.trim()
+      if (customAnswer) {
+        customAnswers.push({
+          questionId,
+          questionContext: question.question,
+          userAnswer: customAnswer,
+        })
+      }
+    })
+
+    return { staticAnswers, customAnswers }
   }
 
   const runRecommend = async (finalArchetypeId: string, finalSubtypeId: string, budgetMetadata: string) => {
@@ -299,12 +353,30 @@ export function useStyleQuiz() {
   }
 
   const next = async () => {
-    const scoreDelta = applyCurrentAnswerToScore()
-    if (!scoreDelta) return
+    const question = currentQuestions[currentIndex]
+    if (!question) return
 
-    const nextE = E + scoreDelta.E
-    const nextA = A + scoreDelta.A
-    const nextO = O + scoreDelta.O
+    const selectedIdx = selectedOptionIndex
+    const customAnswer = currentCustomAnswer.trim()
+    const hasSelectedRadio = selectedIdx !== undefined
+    const hasCustomAnswer = customAnswer.length > 0
+
+    if (!hasSelectedRadio && !hasCustomAnswer) return
+
+    let nextE = E
+    let nextA = A
+    let nextO = O
+    let budgetMetadata: string | undefined
+
+    if (hasSelectedRadio) {
+      const scoreDelta = applyCurrentAnswerToScore()
+      if (!scoreDelta) return
+      nextE += scoreDelta.E
+      nextA += scoreDelta.A
+      nextO += scoreDelta.O
+      budgetMetadata = scoreDelta.budgetMetadata
+    }
+
     setE(nextE)
     setA(nextA)
     setO(nextO)
@@ -316,22 +388,19 @@ export function useStyleQuiz() {
         return
       }
 
-      const customScores = await analyzeCustomAnswers(buildCustomAnswerPayload("stage1"))
-      const extra = customScores.reduce((acc, item) => ({
-        E: acc.E + (item.E ?? 0),
-        A: acc.A + (item.A ?? 0),
-        O: acc.O + (item.O ?? 0),
-      }), { E: 0, A: 0, O: 0 })
-
-      const finalE = nextE + extra.E
-      const finalA = nextA + extra.A
-      const finalO = nextO + extra.O
-      setE(finalE)
-      setA(finalA)
-      setO(finalO)
-      const baseArchetypeId = getBaseArchetypeAtCheckpoint({ E: finalE, A: finalA, O: finalO })
-      setArchetypeId(baseArchetypeId)
-      setScreen("checkpoint")
+      setScreen("loading")
+      setLoading(true)
+      try {
+        const finalArchetypeId = await submitStyleQuiz(buildSubmitQuizPayload())
+        setArchetypeId(finalArchetypeId)
+        setScreen("checkpoint")
+      } catch (err) {
+        const msg = mapQuizError(err)
+        setError(msg)
+        notification.error({ description: msg })
+      } finally {
+        setLoading(false)
+      }
       return
     }
 
@@ -340,28 +409,39 @@ export function useStyleQuiz() {
       return
     }
 
-    const customScores = await analyzeCustomAnswers(buildCustomAnswerPayload("stage2"))
-    const extra = customScores.reduce((acc, item) => ({
-      E: acc.E + (item.E ?? 0),
-      A: acc.A + (item.A ?? 0),
-      O: acc.O + (item.O ?? 0),
-    }), { E: 0, A: 0, O: 0 })
+    const payload = buildSubmitQuizPayload()
+    setScreen("loading")
+    setLoading(true)
 
-    const finalE = nextE + extra.E
-    const finalA = nextA + extra.A
-    const finalO = nextO + extra.O
-    setE(finalE)
-    setA(finalA)
-    setO(finalO)
-
-    const finalClassification = getFinalClassification({ E: finalE, A: finalA, O: finalO })
-    const budgetMetadata = resolveBudgetMetadata(scoreDelta.budgetMetadata)
-    await runRecommend(finalClassification.archetypeId, finalClassification.subTypeId, budgetMetadata)
+    try {
+      const finalArchetypeId = await submitStyleQuiz(payload)
+      setArchetypeId(finalArchetypeId)
+      const resolvedBudgetMetadata = resolveBudgetMetadata(budgetMetadata)
+      await runRecommend(finalArchetypeId, "", resolvedBudgetMetadata)
+    } catch (err) {
+      const msg = mapQuizError(err)
+      setError(msg)
+      notification.error({ description: msg })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const viewResultNow = async () => {
-    const finalClassification = getFinalClassification({ E, A, O })
-    await runRecommend(finalClassification.archetypeId, finalClassification.subTypeId, "mid_budget")
+    if (!archetypeId) return
+    setScreen("loading")
+    setLoading(true)
+    setError(null)
+
+    try {
+      await runRecommend(archetypeId, "", "mid_budget")
+    } catch (err) {
+      const msg = mapQuizError(err)
+      setError(msg)
+      notification.error({ description: msg })
+    } finally {
+      setLoading(false)
+    }
   }
 
   const continueDeepAnalysis = async () => {
@@ -370,7 +450,7 @@ export function useStyleQuiz() {
     setError(null)
 
     try {
-      const stage2Data = await getStage2Survey(archetypeId)
+      const stage2Data = await getStage2Survey()
       const source = stage2Data.length ? stage2Data : FALLBACK_STAGE2_QUESTIONS
       setStage2Questions(source.slice(0, 7))
       setPhase("stage2")
@@ -408,7 +488,7 @@ export function useStyleQuiz() {
     if (pendingDraft.phase === "stage2" && pendingDraft.archetypeId) {
       setSurveyLoading(true)
       try {
-        const stage2Data = await getStage2Survey(pendingDraft.archetypeId)
+        const stage2Data = await getStage2Survey()
         const source = stage2Data.length ? stage2Data : FALLBACK_STAGE2_QUESTIONS
         setStage2Questions(source.slice(0, 7))
       } catch {

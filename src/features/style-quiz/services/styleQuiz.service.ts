@@ -8,6 +8,7 @@ import type {
   SearchResponseItem,
   Stage1Question,
   Stage2Question,
+  SubmitQuizPayload,
 } from "../types"
 
 export async function getStage1Survey(): Promise<Stage1Question[]> {
@@ -15,8 +16,8 @@ export async function getStage1Survey(): Promise<Stage1Question[]> {
   return response.data?.result ?? []
 }
 
-export async function getStage2Survey(archetypeId: string): Promise<Stage2Question[]> {
-  const response = await axiosInstance.get<ApiResponse<Stage2Question[]>>(`/api/search/stage-2/${archetypeId}`)
+export async function getStage2Survey(): Promise<Stage2Question[]> {
+  const response = await axiosInstance.get<ApiResponse<Stage2Question[]>>("/api/search/stage-2")
   return response.data?.result ?? []
 }
 
@@ -33,11 +34,13 @@ export async function analyzeCustomAnswers(payload: CustomAnswerRequest[]): Prom
   return response.data?.result ?? []
 }
 
+export async function submitStyleQuiz(payload: SubmitQuizPayload): Promise<string> {
+  const response = await axiosInstance.post<ApiResponse<string>>("/api/search/submit-quiz", payload)
+  return response.data?.result ?? ""
+}
+
 export async function recommendByStyle(payload: RecommendationRequestPayload): Promise<SearchResponseItem[]> {
-  const response = await axiosInstance.post<ApiResponse<SearchResponseItem[]>>(
-    "/api/search/recommend",
-    payload
-  )
+  const response = await axiosInstance.post<ApiResponse<SearchResponseItem[]>>("/api/search/recommend", payload)
   return response.data?.result ?? []
 }
 

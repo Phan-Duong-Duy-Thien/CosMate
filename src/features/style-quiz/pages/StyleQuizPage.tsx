@@ -112,7 +112,7 @@ export default function StyleQuizPage() {
           </div>
 
           <div className="flex justify-center">
-            <button type="button" onClick={quiz.next} disabled={quiz.selectedOptionIndex === undefined} className="group relative h-11 rounded-2xl border border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 px-6 text-sm font-normal text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100 hover:shadow-[0_12px_24px_rgba(236,72,153,0.14)] disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" onClick={quiz.next} disabled={quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()} className="group relative h-11 rounded-2xl border border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 px-6 text-sm font-normal text-slate-800 shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100 hover:shadow-[0_12px_24px_rgba(236,72,153,0.14)] disabled:cursor-not-allowed disabled:opacity-50">
               <span aria-hidden="true" className="pointer-events-none absolute right-2 top-1 text-xs text-pink-500/80 transition-all duration-300 group-hover:scale-110 group-hover:text-pink-600">✦</span>
               Tiếp theo
             </button>

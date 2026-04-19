@@ -40,6 +40,29 @@ export interface CustomAnswerScore {
   O: number
 }
 
+export interface SubmitQuizStaticAnswer {
+  questionId: string
+  scoreE: number
+  scoreA: number
+  scoreO: number
+}
+
+export interface SubmitQuizCustomAnswer {
+  questionId: string
+  questionContext: string
+  userAnswer: string
+}
+
+export interface SubmitQuizPayload {
+  staticAnswers: SubmitQuizStaticAnswer[]
+  customAnswers: SubmitQuizCustomAnswer[]
+}
+
+export interface SubmitQuizResponse {
+  archetypeId: string
+  subTypeId?: string
+}
+
 export interface Stage1Question {
   question_id: string
   question: string
