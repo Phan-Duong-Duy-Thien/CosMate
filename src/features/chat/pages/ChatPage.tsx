@@ -15,7 +15,7 @@ import {
   sendChatMessage,
   disconnectChatSocket,
 } from "../services/chatSocket.service"
-import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import type { ChatPartner, ChatMessage } from "../types"
 
@@ -62,9 +62,10 @@ export default function ChatPage() {
   const partnerLoading = false
 
   // ── Message store (single source of truth) ──────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
   // Load history from REST API
@@ -125,7 +126,52 @@ export default function ChatPage() {
 
   const handleSend = (content: string) => {
     if (!content.trim() || resolvedRoomId === null || currentUserIdNum === null) return
-    sendChatMessage({ roomId: resolvedRoomId, senderId: currentUserIdNum, content: content.trim() })
+
+    const trimmed = content.trim()
+    if (!trimmed) {
+      console.error("[SEND TEXT] Message content is empty")
+      return
+    }
+
+    console.log("[SEND TEXT]", trimmed)
+    sendChatMessage({ roomId: resolvedRoomId, senderId: currentUserIdNum, content: trimmed, messageType: 'TEXT' })
+  }
+
+  const handleSendImage = async (file: File) => {
+    if (resolvedRoomId === null || currentUserIdNum === null) return
+
+    const objectUrl = URL.createObjectURL(file)
+    const tempId = addOptimisticMessage({
+      roomId: resolvedRoomId,
+      senderId: currentUserIdNum,
+      content: objectUrl,
+      messageType: "IMAGE",
+      createdAt: new Date().toISOString(),
+      isRead: true,
+    })
+
+    setIsUploading(true)
+    try {
+      const url = await uploadImageService(resolvedRoomId, file)
+      URL.revokeObjectURL(objectUrl)
+
+      console.log("[UPLOAD IMAGE RESULT]", url)
+
+      if (!url) {
+        console.error("[SEND IMAGE] No image URL returned")
+        removeOptimisticMessage(tempId)
+        return
+      }
+
+      console.log("[SEND IMAGE MESSAGE]", { roomId: resolvedRoomId, content: url, messageType: 'IMAGE' })
+      sendChatMessage({ roomId: resolvedRoomId, senderId: currentUserIdNum, content: url, messageType: "IMAGE" })
+      removeOptimisticMessage(tempId)
+    } catch {
+      URL.revokeObjectURL(objectUrl)
+      removeOptimisticMessage(tempId)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const isInChat = resolvedRoomId !== null
@@ -229,7 +275,9 @@ export default function ChatPage() {
             value={inputValue}
             onChange={setInputValue}
             onSend={handleSend}
+            onSendImage={handleSendImage}
             disabled={!isConnected || roomLoading}
+            isUploading={isUploading}
           />
         )}
       </div>

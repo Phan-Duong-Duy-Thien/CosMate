@@ -50,3 +50,20 @@ export async function markRoomAsRead(roomId: number, currentUserId: number): Pro
     { params: { currentUserId } }
   )
 }
+
+export async function uploadImage(roomId: number, file: File): Promise<string> {
+  const formData = new FormData()
+  formData.append("file", file)
+
+  const response = await axiosInstance.post<ApiWrapper<string>>(
+    "/api/chat/upload-image",
+    formData,
+    {
+      params: { roomId },
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    }
+  )
+  return response.data.result
+}

@@ -1,18 +1,23 @@
 import { useState, useRef } from "react"
-import { Send } from "lucide-react"
+import { Send, Image } from "lucide-react"
 import { Button } from "@/shared/components/Button"
 import { cn } from "@/lib/utils"
+
+const MAX_IMAGE_SIZE = 5 * 1024 * 1024 // 5MB
 
 interface ChatFooterInputProps {
   value: string
   onChange: (value: string) => void
   onSend: (content: string) => void
+  onSendImage?: (file: File) => Promise<void>
   disabled?: boolean
+  isUploading?: boolean
 }
 
-export function ChatFooterInput({ value, onChange, onSend, disabled }: ChatFooterInputProps) {
+export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled, isUploading }: ChatFooterInputProps) {
   const [focused, setFocused] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   const autoResize = () => {
     const ta = textareaRef.current
@@ -42,7 +47,29 @@ export function ChatFooterInput({ value, onChange, onSend, disabled }: ChatFoote
     }
   }
 
+  const handleImageSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    console.log("[SEND IMAGE]", file)
+
+    if (!file.type.startsWith("image/")) {
+      return
+    }
+    if (file.size > MAX_IMAGE_SIZE) {
+      return
+    }
+
+    if (onSendImage) {
+      await onSendImage(file)
+    }
+
+    // Reset input
+    e.target.value = ""
+  }
+
   const canSend = value.trim().length > 0 && !disabled
+  const canSendImage = onSendImage && !disabled && !isUploading
 
   return (
     <div className={cn(
@@ -69,6 +96,33 @@ export function ChatFooterInput({ value, onChange, onSend, disabled }: ChatFoote
             style={{ maxHeight: "120px" }}
           />
         </div>
+
+        {onSendImage && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={handleImageSelect}
+            />
+            <Button
+              size="md"
+              variant={canSendImage ? "ghost" : "ghost"}
+              onClick={() => fileInputRef.current?.click()}
+              disabled={!canSendImage}
+              className={cn(
+                "shrink-0 rounded-full p-0! transition-all",
+                canSendImage
+                  ? "h-10 w-10 text-slate-500 hover:bg-slate-100 active:scale-95"
+                  : "h-10 w-10 text-slate-300"
+              )}
+              aria-label="Send image"
+            >
+              <Image className="h-4 w-4" />
+            </Button>
+          </>
+        )}
 
         <Button
           size="md"

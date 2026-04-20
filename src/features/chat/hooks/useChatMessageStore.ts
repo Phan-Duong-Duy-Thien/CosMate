@@ -11,6 +11,7 @@ import type { ChatMessage } from "../types"
  *  Flow:
  *    history load  → setMessages()        (replaces entire list, sorted ascending)
  *    websocket msg  → mergeServerMessage() (dedup by id + append, sorted ascending)
+ *    optimistic msg  → addOptimisticMessage() (preview before server confirms)
  *
  *  Sort key: createdAt (ISO string), ascending (oldest first → newest last).
  *  Deduplication: if a message with the same positive id is already in the list,
@@ -42,6 +43,7 @@ export function useChatMessageStore(initialMessages: ChatMessage[] = []) {
   // ── Merge server message ───────────────────────────────────────────────────
   // Append + dedup by positive id.  If server sends null createdAt, fall back
   // to client receive time so the message still renders.
+  // Also removes any optimistic placeholder with matching tempId.
   const mergeServerMessage = useCallback((msg: ChatMessage) => {
     if (!stateRef.current) return
 
@@ -49,6 +51,12 @@ export function useChatMessageStore(initialMessages: ChatMessage[] = []) {
     const enrichedMsg = !msg.createdAt
       ? { ...msg, createdAt: new Date().toISOString() }
       : msg
+
+    // Ensure content is never null/undefined to avoid crashes
+    if (enrichedMsg.content == null) {
+      console.warn("[useChatMessageStore] Skipping message with null content:", msg)
+      return
+    }
 
     console.log("[useChatMessageStore] mergeServerMessage called:", {
       id: msg.id,
@@ -60,21 +68,54 @@ export function useChatMessageStore(initialMessages: ChatMessage[] = []) {
 
     const prev = stateRef.current.messages
 
+    // Remove optimistic placeholder BEFORE dedup check. Match by negative id so
+    // we remove exactly the placeholder we added (not any message with same content).
+    const filteredPrev = prev.filter((m) => m.id >= 0 || m.senderId !== enrichedMsg.senderId || m.content !== enrichedMsg.content)
+
     // Skip if a message with the same positive id is already in the list
     // (prevents double-render when multiple subscribers receive the same broadcast).
-    // Only dedup positive ids — id=0 or negative ids are real messages from the server
-    // that must not be dropped (they may be pre-existing history or server-assigned ids).
-    if (msg.id > 0 && prev.some((m) => m.id === msg.id)) {
+    if (msg.id > 0 && filteredPrev.some((m) => m.id === msg.id)) {
       console.log("[useChatMessageStore] skipped duplicate id:", msg.id)
       return
     }
 
-    stateRef.current.messages = [...prev, enrichedMsg].sort(sortByCreatedAt)
+    // Only skip IMAGE messages with null/placeholder content that were sent
+    // BEFORE the server confirmed with a real id (id > 0).  Once server confirms,
+    // we always render it — even if another IMAGE with the same URL arrives later.
+    if (
+      msg.id > 0 &&
+      (msg.messageType === "IMAGE" || (enrichedMsg.content ?? "").startsWith("http")) &&
+      filteredPrev.some((m) => m.senderId === enrichedMsg.senderId && m.content === enrichedMsg.content && m.id > 0)
+    ) {
+      console.log("[useChatMessageStore] skipped duplicate IMAGE with real server id:", msg.content)
+      return
+    }
+
+    stateRef.current.messages = [...filteredPrev, enrichedMsg].sort(sortByCreatedAt)
     console.log("[useChatMessageStore] messages updated:", {
       before: prev.length,
       after: stateRef.current.messages.length,
       newMsg: { id: enrichedMsg.id, createdAt: enrichedMsg.createdAt },
     })
+    bump()
+  }, [bump])
+
+  // ── Add optimistic preview ─────────────────────────────────────────────────
+  // Stable module-level counter — NOT inside useCallback so it persists stably.
+  const tempIdRef = useRef(-1)
+  const addOptimisticMessage = useCallback((msg: Omit<ChatMessage, "id">): number => {
+    if (!stateRef.current) return 0
+    const tempId = tempIdRef.current--
+    const optimisticMsg: ChatMessage = { ...msg, id: tempId }
+    stateRef.current.messages = [...stateRef.current.messages, optimisticMsg].sort(sortByCreatedAt)
+    bump()
+    return tempId
+  }, [bump])
+
+  // ── Remove optimistic preview by tempId ───────────────────────────────────
+  const removeOptimisticMessage = useCallback((tempId: number) => {
+    if (!stateRef.current) return
+    stateRef.current.messages = stateRef.current.messages.filter((m) => m.id !== tempId)
     bump()
   }, [bump])
 
@@ -88,7 +129,7 @@ export function useChatMessageStore(initialMessages: ChatMessage[] = []) {
   // Expose a stable reference to the current messages array
   const messages = stateRef.current.messages
 
-  return { messages, setMessages, mergeServerMessage, clearMessages }
+  return { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage }
 }
 
 // ── Sort helper ─────────────────────────────────────────────────────────────

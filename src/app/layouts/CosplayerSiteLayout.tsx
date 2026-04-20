@@ -82,17 +82,29 @@ export default function CosplayerSiteLayout() {
   const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
   React.useEffect(() => {
-    if (loggedIn) {
-      const roles = getRoles() as import("@/types/auth").UserRole[]
-      if (roles.length > 0) {
-        const correctPath = getRedirectPath(roles)
-        if (correctPath !== "/") {
-          console.log("[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:", correctPath)
-          navigate(correctPath, { replace: true })
-        }
-      }
-    }
-  }, [loggedIn, navigate])
+    if (!loggedIn) return
+
+    const roles = getRoles() as import("@/types/auth").UserRole[]
+    if (roles.length === 0) return
+
+    const correctPath = getRedirectPath(roles)
+    if (correctPath === "/") return
+
+    // Allow non-cosplayer users to browse costume/service pages without redirecting
+    const publicBrowsePaths = [
+      "/costumes",
+      "/photographers",
+      "/staffs",
+      "/service",
+      "/staff/",
+      "/photographer/",
+    ]
+    const isPublicBrowsePath = publicBrowsePaths.some((p) => location.pathname.startsWith(p))
+    if (isPublicBrowsePath) return
+
+    console.log("[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:", correctPath)
+    navigate(correctPath, { replace: true })
+  }, [loggedIn, navigate, location.pathname])
 
   React.useEffect(() => {
     const fetchProfile = async () => {

@@ -20,11 +20,13 @@ export interface ChatPartner {
   avatarUrl: string;
 }
 
+export type MessageType = 'TEXT' | 'IMAGE'
+
 export interface ChatMessage {
   id: number;
   roomId: number;
   senderId: number;
-  messageType: string;
+  messageType: MessageType;
   content: string;
   createdAt: string;
   isRead: boolean;
@@ -34,4 +36,5 @@ export interface SendMessagePayload {
   roomId: number;
   senderId: number;
   content: string;
+  messageType?: MessageType;
 }
