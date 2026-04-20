@@ -72,6 +72,7 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
   }
 
   return (
+    <>
     <div className="relative overflow-hidden rounded-3xl border border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 p-4 shadow-[0_12px_32px_rgba(236,72,153,0.15)] md:p-5">
       <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-pink-200/30 blur-2xl" />
       <div className="pointer-events-none absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-rose-200/40 blur-2xl" />
@@ -184,7 +185,8 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
         </div>
       </div>
 
-      {isLoading && <AILoadingMascot />}
+      {isLoading && <AILoadingMascot type="search" />}
     </div>
+    </>
   )
 }

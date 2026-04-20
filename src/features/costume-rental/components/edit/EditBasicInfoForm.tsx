@@ -11,17 +11,17 @@
  */
 
 import { useEffect } from 'react'
-import { Button, Form, Input, InputNumber, Select, Upload, Alert } from 'antd'
-import { InboxOutlined }from '@ant-design/icons'
+import { Alert, Button, Form, Input, InputNumber, Select, Upload } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { UpdateCostumeBasicInput, CostumeSizeOption, Costume } from '../../types'
 import { VI } from '@/shared/i18n/vi'
-import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 
 const { Dragger } = Upload
 const { TextArea } = Input
 
 const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
+const MODERATION_ERROR_MESSAGE = 'Ảnh của bạn vi phạm tiêu chuẩn cộng đồng, xin hãy dùng ảnh khác'
 
 interface FormValues {
   name: string
@@ -42,6 +42,7 @@ interface Props {
   providerIdMissing?: boolean
 }
 
+
 export default function EditBasicInfoForm({
   initialValues,
   onSubmit,
@@ -49,6 +50,7 @@ export default function EditBasicInfoForm({
   providerIdMissing,
 }: Props) {
   const [form] = Form.useForm<FormValues>()
+  const [moderationError, setModerationError] = useState<string | null>(null)
 
   // Prefill whenever the detail changes (e.g. after a successful save)
   useEffect(() => {
@@ -68,6 +70,8 @@ export default function EditBasicInfoForm({
       .map((f: UploadFile) => f.originFileObj)
       .filter((f): f is File => f !== undefined)
 
+    setModerationError(null)
+
     try {
       await onSubmit({
         name: values.name,
@@ -79,8 +83,19 @@ export default function EditBasicInfoForm({
         depositAmount: values.depositAmount,
         imageFiles: rawFiles.length > 0 ? rawFiles : undefined,
       })
-    } catch (error) {
-      applyFormValidationErrors(form, error)
+    } catch (error: unknown) {
+      const handled = applyFormValidationErrors(form, error)
+      const errMessage = error instanceof Error ? error.message : ''
+      if (
+        !handled &&
+        (errMessage.includes('vi phạm tiêu chuẩn cộng đồng') ||
+          errMessage.includes('Read timed out') ||
+          errMessage.includes('Lỗi kiểm duyệt ảnh'))
+      ) {
+        setModerationError(MODERATION_ERROR_MESSAGE)
+        message.error(MODERATION_ERROR_MESSAGE)
+        return
+      }
       throw error
     }
   }
@@ -99,6 +114,20 @@ export default function EditBasicInfoForm({
             type="error"
             message="Không tìm thấy providerId. Vui lòng đăng xuất và đăng nhập lại."
             showIcon
+          />
+        </Form.Item>
+      )}
+
+      {moderationError && (
+        <Form.Item>
+          <Alert
+            type="error"
+            showIcon={false}
+            description={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span>{MODERATION_ERROR_MESSAGE}</span>
+              </div>
+            }
           />
         </Form.Item>
       )}

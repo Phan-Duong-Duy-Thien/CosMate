@@ -2,7 +2,7 @@ import { Alert, Input, Modal, Progress, Select, Spin, Tooltip } from "antd"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import quizMascotVideo from "@/assets/video-mascot-quiz.mov"
+import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import ResultCostumeGrid from "../components/ResultCostumeGrid"
 import { useStyleQuiz } from "../hooks/useStyleQuiz"
 
@@ -134,14 +134,7 @@ export default function StyleQuizPage() {
         </div>
       )}
 
-      {quiz.screen === "loading" && (
-        <div className="rounded-3xl border border-pink-200 bg-white p-8 text-center shadow-sm">
-          <div className="mx-auto flex h-56 w-full max-w-md items-center justify-center rounded-[2rem] bg-white p-4">
-            <video src={quizMascotVideo} autoPlay loop muted playsInline className="h-full w-full object-contain mix-blend-multiply" />
-          </div>
-          <p className="mt-4 text-sm font-medium text-pink-600">Đang tìm nhân vật phù hợp với phong cách của bạn...</p>
-        </div>
-      )}
+      {quiz.screen === "loading" && <AILoadingMascot type="quiz" />}
 
       {quiz.screen === "result" && quiz.results.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">

@@ -3,9 +3,9 @@ import { Empty, Input, Modal, Pagination, Popconfirm, Spin, Tag, Upload } from "
 import type { UploadProps } from "antd"
 import { ClockCircleOutlined, DeleteOutlined, EditOutlined, EyeOutlined, UploadOutlined } from "@ant-design/icons"
 
-import poseLoadingVideo from "@/assets/video-mascot-pose.mp4"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
+import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 import type { PoseHistoryItem } from "../types"
@@ -119,9 +119,9 @@ export default function PoseBattlePage() {
             </Upload>
           </div>
 
-          <div className="mt-2 overflow-hidden rounded-2xl border border-dashed border-violet-300 bg-violet-50">
+          <div className="mt-2 flex items-center justify-center rounded-2xl border border-dashed border-violet-300 bg-violet-50 p-2">
             {referenceImage ? (
-              <img src={referenceImage} alt="Reference pose" className="h-60 w-full bg-slate-50 object-contain" />
+              <img src={referenceImage} alt="Reference pose" className="block h-auto max-h-[60vh] w-auto max-w-full rounded-xl object-contain" />
             ) : (
               <div className="flex h-60 items-center justify-center text-sm text-slate-500">
                 Upload ảnh nhân vật gốc để AI đối chiếu
@@ -157,9 +157,9 @@ export default function PoseBattlePage() {
             </Upload>
           </div>
 
-          <div className="mt-2 overflow-hidden rounded-2xl border border-dashed border-pink-300 bg-pink-50">
+          <div className="mt-2 flex items-center justify-center rounded-2xl border border-dashed border-pink-300 bg-pink-50 p-2">
             {previewUrl ? (
-              <img src={previewUrl} alt="User pose preview" className="h-60 w-full bg-slate-50 object-contain" />
+              <img src={previewUrl} alt="User pose preview" className="block h-auto max-h-[60vh] w-auto max-w-full rounded-xl object-contain" />
             ) : (
               <div className="flex h-60 items-center justify-center text-sm text-slate-500">Chưa có ảnh để chấm điểm</div>
             )}
@@ -288,24 +288,7 @@ export default function PoseBattlePage() {
         )}
       </Card>
 
-      {loading && (
-        <div className="fixed inset-0 z-[21000] flex items-center justify-center bg-black/65 p-4">
-          <div className="w-full max-w-md rounded-3xl border border-pink-100 bg-white p-5 text-center shadow-2xl">
-            <div className="mx-auto flex h-64 w-full max-w-sm items-center justify-center rounded-2xl bg-white p-3">
-              <video
-                src={poseLoadingVideo}
-                autoPlay
-                loop
-                muted
-                playsInline
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <p className="mt-3 text-sm font-semibold text-pink-700">AI đang chấm điểm pose của bạn...</p>
-            <p className="mt-1 text-xs text-slate-500">Quá trình này có thể mất khoảng 30-120 giây, vui lòng đợi.</p>
-          </div>
-        </div>
-      )}
+      {loading && <AILoadingMascot type="pose" />}
 
       {result && <PoseResultOverlay result={result} onClose={closeResult} />}
 

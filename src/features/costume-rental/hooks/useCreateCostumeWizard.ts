@@ -7,6 +7,7 @@
 
 import { useState } from 'react'
 import { message } from 'antd'
+import axios from 'axios'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
 import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
@@ -85,14 +86,24 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
 
-
       setCostumeId(result.id)
       setNumberOfItems(values.numberOfItems)
       setPhase(2)
-    }catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
-      setPhase1Error(msg)
-    }finally {
+    } catch (err: unknown) {
+      const rawMessage = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
+      const responseMessage = axios.isAxiosError(err)
+        ? ((err.response?.data as { message?: string } | undefined)?.message ?? '')
+        : ''
+      const combinedMessage = `${rawMessage} ${responseMessage}`.trim()
+      const normalized =
+        combinedMessage.includes('vi phạm tiêu chuẩn cộng đồng') ||
+        combinedMessage.includes('Read timed out') ||
+        combinedMessage.includes('Lỗi kiểm duyệt ảnh')
+          ? 'Ảnh của bạn vi phạm tiêu chuẩn cộng đồng, xin hãy dùng ảnh khác'
+          : rawMessage
+      setPhase1Error(normalized)
+      throw new Error(normalized)
+    } finally {
       setIsPhase1Loading(false)
     }
   }
