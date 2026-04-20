@@ -7,9 +7,16 @@
  */
 
 import { useState } from 'react';
-import { Table, Tabs, Button, Tag, Space, message, Input } from 'antd';
+import { Table, Tabs, Tag, Tooltip, message, Input } from 'antd';
 import type { TableProps } from 'antd';
-import { CheckCircleOutlined, SearchOutlined, CarOutlined, SendOutlined, EyeOutlined, FlagOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  CheckCircleOutlined,
+  CarOutlined,
+  SendOutlined,
+  EyeOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '@/features/provider/constants/sidebar';
@@ -211,86 +218,68 @@ export default function ProviderOrdersPage() {
     {
       title: VI.provider.orders.table.action,
       key: 'action',
-      width: 300,
+      width: 220,
+      align: 'center',
       render: (_: unknown, record: OrderItem) => (
-        <Space size="small">
-          <Button
-            size="small"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              setSelectedOrderId(record.id);
-              setDetailDrawerOpen(true);
-            }}
-          >
-            {VI.order.actions.viewDetail}
-          </Button>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={VI.order.actions.viewDetail}>
+            <EyeOutlined
+              onClick={() => {
+                setSelectedOrderId(record.id);
+                setDetailDrawerOpen(true);
+              }}
+              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+            />
+          </Tooltip>
           {record.status === 'PAID' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<CheckCircleOutlined />}
-              loading={preparingOrderId === record.id}
-              onClick={() => handlePrepare(record.id)}
-            >
-              {VI.provider.orders.actions.prepare}
-            </Button>
+            <Tooltip title={VI.provider.orders.actions.prepare}>
+              <CheckCircleOutlined
+                onClick={() => handlePrepare(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: preparingOrderId === record.id ? 0.5 : 1 }}
+              />
+            </Tooltip>
           )}
           {record.status === 'PREPARING' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<SendOutlined />}
-              loading={shippingOrderId === record.id}
-              onClick={() => handleShip(record.id)}
-            >
-              {VI.provider.orders.actions.ship}
-            </Button>
+            <Tooltip title={VI.provider.orders.actions.ship}>
+              <SendOutlined
+                onClick={() => handleShip(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: shippingOrderId === record.id ? 0.5 : 1 }}
+              />
+            </Tooltip>
           )}
           {record.status === 'SHIPPING_OUT' && (
-            <Button
-              type="primary"
-              size="small"
-              icon={<CarOutlined />}
-              loading={deliveringOutOrderId === record.id}
-              onClick={() => handleDeliverOut(record.id)}
-            >
-              {VI.provider.orders.actions.deliverOut}
-            </Button>
+            <Tooltip title={VI.provider.orders.actions.deliverOut}>
+              <CarOutlined
+                onClick={() => handleDeliverOut(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: deliveringOutOrderId === record.id ? 0.5 : 1 }}
+              />
+            </Tooltip>
           )}
-          {(record.status === 'DELIVERY_OUT') && (
-            <Button
-              danger
-              size="small"
-              icon={<FlagOutlined />}
-              loading={disputingOrderId === record.id}
-              onClick={() => handleDispute(record.id)}
-            >
-              {VI.dispute.button}
-            </Button>
+          {record.status === 'DELIVERY_OUT' && (
+            <Tooltip title={VI.dispute.button}>
+              <FlagOutlined
+                onClick={() => handleDispute(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
+              />
+            </Tooltip>
           )}
           {record.status === 'SHIPPING_BACK' && (
             <>
-              <Button
-                type="primary"
-                size="small"
-                icon={<FlagOutlined />}
-                loading={completingOrderId === record.id}
-                onClick={() => handleComplete(record.id)}
-              >
-                {VI.provider.orders.actions.complete}
-              </Button>
-              <Button
-                danger
-                size="small"
-                icon={<FlagOutlined />}
-                loading={disputingOrderId === record.id}
-                onClick={() => handleDispute(record.id)}
-              >
-                {VI.dispute.button}
-              </Button>
+              <Tooltip title={VI.provider.orders.actions.complete}>
+                <CheckCircleOutlined
+                  onClick={() => handleComplete(record.id)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a', opacity: completingOrderId === record.id ? 0.5 : 1 }}
+                />
+              </Tooltip>
+              <Tooltip title={VI.dispute.button}>
+                <FlagOutlined
+                  onClick={() => handleDispute(record.id)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
+                />
+              </Tooltip>
             </>
           )}
-        </Space>
+        </div>
       ),
     },
   ];

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Input, Space, Table, Tag, Tooltip, Drawer, Descriptions, Select } from 'antd';
+import { Input, Space, Table, Tag, Tooltip, Drawer, Descriptions, Select } from 'antd';
 import type { TableProps } from 'antd';
 import {
   SearchOutlined,
@@ -125,14 +125,17 @@ export default function AdminCostumesPage() {
     {
       title: VI.admin.costumes.columns.actions,
       key: 'actions',
-      width: 100,
+      width: 60,
       align: 'center',
       render: (_, costume) => (
-        <Space size={8} onClick={(e) => e.stopPropagation()}>
+        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
           <Tooltip title={VI.admin.costumes.actions.viewDetail}>
-            <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(costume)} />
+            <EyeOutlined
+              onClick={() => handleViewDetail(costume)}
+              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+            />
           </Tooltip>
-        </Space>
+        </div>
       ),
     },
   ];

@@ -67,7 +67,10 @@
       "Bash(grep -v \"//\")",
       "Bash(cat .env)",
       "Bash(cat .env.local)",
-      "Bash(cat .env.development)"
+      "Bash(cat .env.development)",
+      "Bash(ls /workspace)",
+      "Read(//workspace/**)",
+      "Bash(npx eslint *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Duy Thien"

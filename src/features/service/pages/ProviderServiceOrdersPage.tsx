@@ -7,7 +7,7 @@
  * Data flow: Page → hook → service → API → axiosInstance
  */
 import { useState } from 'react';
-import { Spin, Tooltip, Button, Modal } from 'antd';
+import { Spin, Tooltip as RCTooltip, Modal } from 'antd';
 import { CalendarClock, PackageCheck, Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -17,7 +17,7 @@ import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
 import type { ServiceOrder } from '../api/booking.api';
-import { ORDER_STATUS, ORDER_STATUS_UI, URGENT_STATUSES, type OrderStatusValue } from '@/constants/orderStatus';
+import { ORDER_STATUS_UI, URGENT_STATUSES, type OrderStatusValue } from '@/constants/orderStatus';
 
 // ─── Sidebar / Layout Helpers ─────────────────────────────────────────────────
 
@@ -134,40 +134,67 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
           <div className="ml-2 flex flex-col items-end gap-1">
             <StatusBadge status={order.status} />
             {canSetWaiting && (
-              <Button
-                size="small"
-                type="default"
-                loading={isActionLoading}
-                onClick={() => onSetWaiting(order.id)}
-                icon={<Clock size={12} />}
-                className="flex items-center gap-1 text-xs"
-              >
-                {VI.profile.serviceOrders.setWaiting}
-              </Button>
+              <RCTooltip title={VI.profile.serviceOrders.setWaiting}>
+                <span
+                  onClick={() => !isActionLoading && onSetWaiting(order.id)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    background: '#f0f0f0',
+                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
+                    opacity: isActionLoading ? 0.5 : 1,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <Clock size={14} style={{ color: '#1890ff' }} />
+                </span>
+              </RCTooltip>
             )}
             {canStartService && (
-              <Button
-                size="small"
-                type="primary"
-                loading={isActionLoading}
-                onClick={() => onStartService(order.id)}
-                icon={<PlayCircle size={12} />}
-                className="flex items-center gap-1 text-xs"
-              >
-                {VI.profile.serviceOrders.startService}
-              </Button>
+              <RCTooltip title={VI.profile.serviceOrders.startService}>
+                <span
+                  onClick={() => !isActionLoading && onStartService(order.id)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    background: '#1890ff',
+                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
+                    opacity: isActionLoading ? 0.5 : 1,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <PlayCircle size={14} style={{ color: '#fff' }} />
+                </span>
+              </RCTooltip>
             )}
             {canCompleteService && (
-              <Button
-                size="small"
-                type="primary"
-                loading={isActionLoading}
-                onClick={() => onCompleteService(order.id)}
-                icon={<CheckCircle size={12} />}
-                className="flex items-center gap-1 text-xs"
-              >
-                {VI.profile.serviceOrders.completeService}
-              </Button>
+              <RCTooltip title={VI.profile.serviceOrders.completeService}>
+                <span
+                  onClick={() => !isActionLoading && onCompleteService(order.id)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: 28,
+                    height: 28,
+                    borderRadius: 6,
+                    background: '#52c41a',
+                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
+                    opacity: isActionLoading ? 0.5 : 1,
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  <CheckCircle size={14} style={{ color: '#fff' }} />
+                </span>
+              </RCTooltip>
             )}
           </div>
         </div>
@@ -220,7 +247,6 @@ export default function ProviderServiceOrdersPage() {
     orders,
     loading,
     error,
-    refetch,
     selectedStatus,
     setStatus,
     setWaitingStatus,
