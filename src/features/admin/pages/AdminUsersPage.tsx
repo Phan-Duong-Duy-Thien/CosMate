@@ -260,7 +260,7 @@ export default function AdminUsersPage() {
     {
       title: VI.admin.users.columns.actions,
       key: 'actions',
-      width: 140,
+      width: 120,
       align: 'center',
       render: (_, user) => {
         const statusNorm = normalizeStatus(user.status);
@@ -275,32 +275,42 @@ export default function AdminUsersPage() {
         });
 
         return (
-          <Space size={8} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
             <Tooltip title={VI.admin.users.actions.viewDetail}>
-              <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(user)} />
-            </Tooltip>
-            
-            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
-              <Button 
-                type="text" 
-                icon={userIsLocked ? <UnlockOutlined /> : <LockOutlined />} 
-                onClick={() => handleLockToggle(user)} 
-                disabled={!permission.allowed || actionLoadingId === user.id}
-                style={{ color: userIsLocked ? '#52c41a' : '#faad14' }}
+              <EyeOutlined
+                onClick={() => handleViewDetail(user)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
               />
             </Tooltip>
 
-            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
-              <Button 
-                type="text" 
-                danger={!userIsBanned}
-                icon={userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />} 
-                onClick={() => handleBanToggle(user)} 
-                disabled={!permission.allowed || actionLoadingId === user.id}
-                style={userIsBanned ? { color: '#52c41a' } : undefined}
-              />
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
+              <span
+                onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleLockToggle(user)}
+                style={{
+                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
+                  fontSize: 16,
+                  color: userIsLocked ? '#52c41a' : '#faad14',
+                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
+                }}
+              >
+                {userIsLocked ? <UnlockOutlined /> : <LockOutlined />}
+              </span>
             </Tooltip>
-          </Space>
+
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
+              <span
+                onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleBanToggle(user)}
+                style={{
+                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
+                  fontSize: 16,
+                  color: userIsBanned ? '#52c41a' : '#ff4d4f',
+                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
+                }}
+              >
+                {userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />}
+              </span>
+            </Tooltip>
+          </div>
         );
       },
     },
