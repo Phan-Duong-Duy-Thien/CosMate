@@ -41,6 +41,7 @@ export interface ServiceOrderBooking {
 export interface ServiceOrder {
   id: number;
   cosplayerId: number;
+  cosplayerName?: string;
   providerId: number;
   orderType: string;
   status: string;

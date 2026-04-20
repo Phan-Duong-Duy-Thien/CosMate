@@ -10,6 +10,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { getCostumes } from '../api/costume.api'
+import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
@@ -39,7 +40,10 @@ function computePriceRange(costume: Costume): { priceMin: number; priceMax: numb
   return { priceMin: minK, priceMax: maxK }
 }
 
-export function mapCostumeToItem(costume: Costume): CostumeItem {
+export function mapCostumeToItem(
+  costume: Costume,
+  shopName: string
+): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
   const { priceMin, priceMax } = computePriceRange(costume)
@@ -52,7 +56,7 @@ export function mapCostumeToItem(costume: Costume): CostumeItem {
     seriesName: '',
     seriesType: 'anime',
     shopId: String(costume.providerId),
-    shopName: '—',
+    shopName,
     tags: [],
     isAdult18: false,
     bestSeller: costume.status !== 'RENTED',
@@ -101,8 +105,25 @@ export function usePublicCostumes() {
       // Call real API
       const costumes = await getCostumes()
       const visibleCostumes = costumes.filter((c) => c.status !== 'DELETED')
+
+      // Batch fetch shop names — deduplicate providerIds, fetch in parallel
+      const uniqueProviderIds = [...new Set(visibleCostumes.map((c) => c.providerId))]
+      const providerResults = await Promise.all(
+        uniqueProviderIds.map((id) => getProviderById(id).catch(() => null))
+      )
+      const providerMap = Object.fromEntries(
+        providerResults
+          .filter((p): p is NonNullable<typeof p> => p !== null)
+          .map((p) => [p.id, p.shopName ?? '—'])
+      )
+
       // Mock rentalsCount for testing (API chua tra ve truong nay)
-      const mapped = visibleCostumes.map((c) => mapCostumeToItem({ ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) }))
+      const mapped = visibleCostumes.map((c) =>
+        mapCostumeToItem(
+          { ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) },
+          providerMap[c.providerId] ?? '—'
+        )
+      )
       setItems(mapped)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Khong the tai danh sach trang phuc.')

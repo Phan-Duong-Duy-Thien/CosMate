@@ -172,9 +172,9 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
           </div>
         </div>
 
-        {/* Middle row: cosplayer id + created date */}
+        {/* Middle row: cosplayer name + created date */}
         <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-          <span>Cosplayer ID: {order.cosplayerId}</span>
+          <span>{order.cosplayerName ?? `Cosplayer ID: ${order.cosplayerId}`}</span>
           <span>{formatDate(order.createdAt)}</span>
         </div>
 

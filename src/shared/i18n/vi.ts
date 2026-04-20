@@ -1200,6 +1200,31 @@ export const VI = {
     actions: {
       viewDetail: "Xem chi tiết",
     },
+    extend: {
+      title: "Gia hạn thuê",
+      subtitle: "Chọn số ngày muốn gia hạn và phương thức thanh toán.",
+      extendDaysLabel: "Số ngày gia hạn",
+      daysSuffix: "ngày",
+      minDaysError: "Vui lòng nhập ít nhất 1 ngày.",
+      paymentMethodLabel: "Phương thức thanh toán",
+      btnConfirm: "Xác nhận gia hạn",
+      btnProcessing: "Đang xử lý...",
+      extendHistory: "Lịch sử gia hạn",
+      createdAt: "Thời gian",
+      oldReturnDate: "Ngày trả cũ",
+      newReturnDate: "Ngày trả mới",
+      extendDays: "Số ngày",
+      extendPrice: "Phí gia hạn",
+      paymentStatus: "Thanh toán",
+      viewDetail: "Chi tiết",
+      payNow: "Thanh toán ngay",
+      empty: "Chưa có lịch sử gia hạn.",
+      paymentStatusLabels: {
+        PAID: "Đã TT",
+        PENDING: "Chờ TT",
+        FAILED: "Thất bại",
+      },
+    },
   },
 
   /**

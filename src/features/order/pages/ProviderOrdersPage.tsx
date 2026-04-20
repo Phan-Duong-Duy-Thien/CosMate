@@ -257,7 +257,7 @@ export default function ProviderOrdersPage() {
               {VI.provider.orders.actions.deliverOut}
             </Button>
           )}
-          {(record.status === 'DELIVERY_OUT' || record.status === 'IN_USE') && (
+          {(record.status === 'DELIVERY_OUT') && (
             <Button
               danger
               size="small"

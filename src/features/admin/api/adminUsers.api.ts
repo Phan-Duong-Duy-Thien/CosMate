@@ -27,6 +27,20 @@ export async function getUserProfile(userId: number): Promise<ApiResponse<AdminU
 }
 
 /**
+ * Fetch user profile by ID, returns null on error (safe for batch use)
+ */
+export async function getUserById(userId: number): Promise<AdminUserProfile | null> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<AdminUserProfile>>(
+      `/api/users/${userId}/profile`
+    );
+    return response.data.code === 0 ? response.data.result : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * Ban a user by ID
  */
 export async function banUser(id: number): Promise<ApiResponseVoid> {

@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchProviderOrders, prepareProviderOrder, deliverOutProviderOrder, shipProviderOrder, completeProviderOrder } from '../services/order.service';
 import { getAuth } from '@/features/auth/services/tokenStorage';
+import { getUserById } from '@/features/admin/api/adminUsers.api';
 import type { OrderItem, OrderStatus } from '../types';
 
 // Fixed status tabs configuration
@@ -76,13 +77,25 @@ export function useProviderOrders() {
       // appear here — they have their own API and page. Filter to prevent cross-type
       // contamination if BE ever returns both types from this endpoint.
       const costumeOrders = result.filter((o) => o.orderType === 'RENT_COSTUME');
-      costumeOrders.forEach((order) => {
-        console.log('[ORDER DEBUG]', {
-          id: order.id,
-          type: order.orderType,
-          status: order.status,
+
+      // Batch resolve missing cosplayerName from cosplayerId
+      const ordersNeedingName = costumeOrders.filter((o) => !o.cosplayerName);
+      if (ordersNeedingName.length > 0) {
+        const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
+        const userResults = await Promise.all(
+          uniqueCosplayerIds.map((id) => getUserById(id).catch(() => null))
+        );
+        const cosplayerMap = Object.fromEntries(
+          userResults
+            .filter((u): u is NonNullable<typeof u> => u !== null)
+            .map((u) => [u.id, u.fullName ?? '—'])
+        );
+        costumeOrders.forEach((order) => {
+          if (!order.cosplayerName) {
+            order.cosplayerName = cosplayerMap[order.cosplayerId] ?? order.cosplayerName;
+          }
         });
-      });
+      }
       const unexpected = result.filter((o) => o.orderType !== 'RENT_COSTUME');
       if (unexpected.length > 0) {
         console.warn(
