@@ -9,6 +9,9 @@ import type { SearchResponseItem, Stage1Question, Stage2Question, SubmitQuizCust
 type QuizScreen = "quiz" | "checkpoint" | "loading" | "result"
 type QuizPhase = "stage1" | "stage2"
 
+// Thêm hàm helper này ở phía trên hoặc bên trong hook useStyleQuiz
+const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
 const QUIZ_DRAFT_KEY = "cosmate_quiz_draft"
 
 interface QuizDraft {
@@ -390,9 +393,18 @@ export function useStyleQuiz() {
 
       setScreen("loading")
       setLoading(true)
+      const startTime = Date.now(); // 1. Bắt đầu bấm giờ ngay khi bật loading
+
       try {
         const finalArchetypeId = await submitStyleQuiz(buildSubmitQuizPayload())
         setArchetypeId(finalArchetypeId)
+
+        // 2. CHẶN LẠI: API chạy nhanh quá thì ép nó chờ cho đủ 800ms
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 1000) {
+          await wait(1000 - elapsed); 
+        }
+
         setScreen("checkpoint")
       } catch (err) {
         const msg = mapQuizError(err)
@@ -448,6 +460,8 @@ export function useStyleQuiz() {
     if (!archetypeId) return
     setSurveyLoading(true)
     setError(null)
+    
+    const startTime = Date.now(); // 1. Bắt đầu tính giờ ngay khi hiện màn hình tải
 
     try {
       const stage2Data = await getStage2Survey()
@@ -456,6 +470,13 @@ export function useStyleQuiz() {
       setPhase("stage2")
       setCurrentIndex(0)
       setScreen("quiz")
+
+      // 2. Chặn lại chờ cho đủ 800ms để bé Mèo kịp nhún nhảy
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 800) {
+        await wait(800 - elapsed); 
+      }
+
     } catch {
       setStage2Questions(FALLBACK_STAGE2_QUESTIONS)
       setPhase("stage2")
@@ -484,13 +505,22 @@ export function useStyleQuiz() {
     setA(pendingDraft.A)
     setO(pendingDraft.O)
     setArchetypeId(pendingDraft.archetypeId)
-
+    
     if (pendingDraft.phase === "stage2" && pendingDraft.archetypeId) {
       setSurveyLoading(true)
+      const startTime = Date.now(); // Bắt đầu tính giờ
+
       try {
         const stage2Data = await getStage2Survey()
         const source = stage2Data.length ? stage2Data : FALLBACK_STAGE2_QUESTIONS
         setStage2Questions(source.slice(0, 7))
+
+        // Kiểm tra xem nãy giờ API chạy mất bao lâu
+        const elapsed = Date.now() - startTime;
+        if (elapsed < 800) {
+          await wait(800 - elapsed); // Chạy nhanh quá thì ép nó chờ cho đủ 800ms (0.8 giây)
+        }
+
       } catch {
         setStage2Questions(FALLBACK_STAGE2_QUESTIONS)
       } finally {
