@@ -71,7 +71,7 @@ import { ProviderPhotographWalletLayout } from "@/features/provider/pages/Provid
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
-import DisputeListPage from "@/features/staff/pages/DisputeListPage"
+import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
 export default function AppRoutes() {
   return (
@@ -181,7 +181,7 @@ export default function AppRoutes() {
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
-          <Route path="/staff/disputes" element={<DisputeListPage />} />
+          <Route path="/staff/disputes" element={<DisputeManagementPage />} />
         </Route>
       </Route>
 
