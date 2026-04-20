@@ -548,11 +548,9 @@ export function ChatPopup() {
                           </p>
                         )}
                       </div>
-                    )
-                  })
-
-                  return elements
-                })()}
+                    </div>
+                  )}
+                )}
                 <div ref={bottomRef} />
               </div>
             </div>
