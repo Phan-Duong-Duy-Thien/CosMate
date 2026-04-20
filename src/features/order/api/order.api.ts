@@ -334,3 +334,81 @@ export async function returnOrder(
 }
 
 // createDispute moved to dispute.api.ts
+
+// Extend order detail response
+export interface ExtendOrderResponse {
+  id: number;
+  paymentUrl: string | null;
+  status: string;
+}
+
+/**
+ * Extend rental duration for an order detail in IN_USE status.
+ * @param orderId - The order ID
+ * @param detailId - The order detail ID
+ * @param payload - { extendDays, paymentMethod, returnUrl, payNow }
+ * @returns Extended order with optional paymentUrl (MoMo/VNPay) or null (WALLET)
+ */
+export async function extendOrderDetail(
+  orderId: number,
+  detailId: number,
+  payload: {
+    extendDays: number;
+    paymentMethod: string;
+    returnUrl: string;
+    payNow: boolean;
+  }
+): Promise<ExtendOrderResponse> {
+  const response = await axiosInstance.post<ApiResponse<ExtendOrderResponse>>(
+    `/api/orders/${orderId}/details/${detailId}/extend`,
+    payload
+  );
+  return response.data.result;
+}
+
+// ─── Extend History ───────────────────────────────────────────────────────────
+
+/** Payment status for an extend transaction */
+export type ExtendPaymentStatus = 'PAID' | 'PENDING' | 'FAILED';
+
+/** Extend list item */
+export interface OrderExtend {
+  id: number;
+  extendDays: number;
+  extendPrice: number;
+  paymentStatus: ExtendPaymentStatus;
+  createdAt: string;
+}
+
+/** Full extend detail */
+export interface OrderExtendDetail extends OrderExtend {
+  oldReturnDate: string;
+  newReturnDate: string;
+  paymentUrl: string | null;
+}
+
+/**
+ * Get list of extend transactions for an order.
+ * GET /api/orders/{orderId}/extends
+ */
+export async function getOrderExtends(orderId: number): Promise<OrderExtend[]> {
+  const response = await axiosInstance.get<ApiResponse<OrderExtend[]>>(
+    `/api/orders/${orderId}/extends`
+  );
+  return response.data.result;
+}
+
+/**
+ * Get full detail of a single extend transaction.
+ * GET /api/orders/{orderId}/details/{detailId}/extend/{extendId}
+ */
+export async function getExtendDetail(
+  orderId: number,
+  detailId: number,
+  extendId: number
+): Promise<OrderExtendDetail> {
+  const response = await axiosInstance.get<ApiResponse<OrderExtendDetail>>(
+    `/api/orders/${orderId}/details/${detailId}/extend/${extendId}`
+  );
+  return response.data.result;
+}

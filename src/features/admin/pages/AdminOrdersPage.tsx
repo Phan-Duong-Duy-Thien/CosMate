@@ -3,12 +3,14 @@ import { Button, Card, Descriptions, Drawer, Input, Result, Select, Space, Table
 import type { TableProps } from 'antd';
 import { ReloadOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
 import { getOrders } from '../api/adminOrders.api';
+import { getUserById } from '../api/adminUsers.api';
 import { COSTUME_ORDER_STATUS_UI, getCostumeOrderStatusProps } from '../utils/orderStatus';
 
 interface OrderRow {
   id: number;
   code?: string;
   userName?: string;
+  cosplayerName?: string;
   providerName?: string;
   status?: string;
   total?: number;
@@ -32,7 +34,28 @@ export default function AdminOrdersPage() {
   const fetchOrders = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getOrders(1, 9999); // fetch all for client-side filter
+      const data = await getOrders(1, 9999);
+
+      // Batch resolve missing cosplayerName from cosplayerId
+      const rowsNeedingName = data.content.filter((r: OrderRow) => !r.cosplayerName && (r as any).cosplayerId);
+      if (rowsNeedingName.length > 0) {
+        const uniqueIds = [...new Set(rowsNeedingName.map((r: OrderRow) => (r as any).cosplayerId))];
+        const userResults = await Promise.all(
+          uniqueIds.map((id: number) => getUserById(id).catch(() => null))
+        );
+        const cosplayerMap = Object.fromEntries(
+          userResults
+            .filter((u): u is NonNullable<typeof u> => u !== null)
+            .map((u) => [u.id, u.fullName ?? '—'])
+        );
+        data.content = data.content.map((r: OrderRow) => {
+          if (!r.cosplayerName && (r as any).cosplayerId) {
+            return { ...r, cosplayerName: cosplayerMap[(r as any).cosplayerId] ?? r.cosplayerName };
+          }
+          return r;
+        });
+      }
+
       setAllRows(data.content);
       setTotal(data.totalElements);
     } catch {
@@ -53,7 +76,7 @@ export default function AdminOrdersPage() {
       const q = search.trim().toLowerCase();
       rows = rows.filter(
         (r) =>
-          `${r.code ?? ''} ${r.userName ?? ''} ${r.providerName ?? ''} ${r.id ?? ''}`
+          `${r.code ?? ''} ${r.userName ?? ''} ${r.cosplayerName ?? ''} ${r.providerName ?? ''} ${r.id ?? ''}`
             .toLowerCase()
             .includes(q)
       );
@@ -100,6 +123,14 @@ export default function AdminOrdersPage() {
       title: 'Khách',
       dataIndex: 'userName',
       key: 'userName',
+      render: (v: string | undefined) => (
+        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+      ),
+    },
+    {
+      title: 'Cosplayer',
+      dataIndex: 'cosplayerName',
+      key: 'cosplayerName',
       render: (v: string | undefined) => (
         <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
@@ -260,6 +291,7 @@ export default function AdminOrdersPage() {
               <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
               <Descriptions.Item label="Mã đơn">{selected.code ?? '—'}</Descriptions.Item>
               <Descriptions.Item label="Khách">{selected.userName ?? '—'}</Descriptions.Item>
+              <Descriptions.Item label="Cosplayer">{selected.cosplayerName ?? '—'}</Descriptions.Item>
               <Descriptions.Item label="Provider">{selected.providerName ?? '—'}</Descriptions.Item>
               <Descriptions.Item label="Tổng">{formatCurrency(selected.total)}</Descriptions.Item>
               <Descriptions.Item label="Trạng thái">

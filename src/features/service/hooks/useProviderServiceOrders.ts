@@ -12,6 +12,7 @@ import { message } from 'antd';
 import { setWaitingStatus, fetchProviderServiceOrders, startService } from '../services/serviceOrder.service';
 import { completeService } from '../services/serviceOrder.service';
 import type { ServiceOrder } from '../api/booking.api';
+import { getUserById } from '@/features/admin/api/adminUsers.api';
 
 export type ProviderServiceOrderTab =
   | 'all'
@@ -52,7 +53,28 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       setLoading(true);
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
-      const data = await fetchProviderServiceOrders(apiStatuses);
+      let data = await fetchProviderServiceOrders(apiStatuses);
+
+      // Batch resolve missing cosplayerName from cosplayerId
+      const ordersNeedingName = data.filter((o) => !o.cosplayerName);
+      if (ordersNeedingName.length > 0) {
+        const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
+        const userResults = await Promise.all(
+          uniqueCosplayerIds.map((id) => getUserById(id).catch(() => null))
+        );
+        const cosplayerMap = Object.fromEntries(
+          userResults
+            .filter((u): u is NonNullable<typeof u> => u !== null)
+            .map((u) => [u.id, u.fullName ?? '—'])
+        );
+        data = data.map((order) => {
+          if (!order.cosplayerName) {
+            return { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName };
+          }
+          return order;
+        });
+      }
+
       const sorted = [...data].sort(
         (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       );

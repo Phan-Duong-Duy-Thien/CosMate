@@ -11,9 +11,11 @@ import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
 import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
+import { ExtendRentalModal } from "@/features/order/components/ExtendRentalModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
 import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
+import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
@@ -156,6 +158,11 @@ export default function PurchaseHistoryPage() {
   const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
   const { createDispute, disputingOrderId } = useCreateDispute()
   const { cancelOrder, cancellingOrderId } = useCancelOrder()
+  const { extendOrder, isExtending, getDetailIdFromOrder } = useExtendOrder()
+
+  // ── Extend modal state ───────────────────────────────────────────────────────
+  const [extendModalOpen, setExtendModalOpen] = useState(false)
+  const [extendOrderId, setExtendOrderId] = useState<number | null>(null)
 
   // ── Cancel modal state ───────────────────────────────────────────────────────
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
@@ -503,12 +510,15 @@ export default function PurchaseHistoryPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCreateDispute(order.id)}
-                  disabled={disputingOrderId === order.id}
-                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  onClick={() => {
+                    setExtendOrderId(order.id)
+                    setExtendModalOpen(true)
+                  }}
+                  disabled={isExtending}
+                  className="flex items-center gap-1 rounded-lg bg-purple-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-600 disabled:opacity-50"
                 >
-                  <Flag className="h-3.5 w-3.5" />
-                  {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  {VI.provider.orders.tabs.extending}
                 </button>
               </>
             )}
@@ -1007,6 +1017,26 @@ export default function PurchaseHistoryPage() {
               )?.totalAmount)
             : undefined
         }
+      />
+      <ExtendRentalModal
+        open={extendModalOpen}
+        onClose={() => {
+          setExtendModalOpen(false)
+          setExtendOrderId(null)
+        }}
+        onConfirm={async (extendDays: number, paymentMethod: PaymentMethod) => {
+          if (!extendOrderId) return
+          const detailId = await getDetailIdFromOrder(extendOrderId)
+          if (!detailId) {
+            message.error('Không tìm thấy thông tin đơn hàng.')
+            return
+          }
+          await extendOrder(extendOrderId, detailId, { extendDays, paymentMethod, payNow: true })
+          setExtendModalOpen(false)
+          setExtendOrderId(null)
+          costumeRefetch()
+        }}
+        loading={isExtending}
       />
     </section>
   )

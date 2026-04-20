@@ -43,6 +43,34 @@ function formatMessageTime(isoString: string): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
 }
 
+function formatDateSeparator(isoString: string): string {
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return ""
+  const today = new Date()
+  const yesterday = new Date()
+  yesterday.setDate(today.getDate() - 1)
+
+  const isSameDay = (d1: Date, d2: Date) =>
+    d1.getFullYear() === d2.getFullYear() &&
+    d1.getMonth() === d2.getMonth() &&
+    d1.getDate() === d2.getDate()
+
+  if (isSameDay(date, today)) return "Hôm nay"
+  if (isSameDay(date, yesterday)) return "Hôm qua"
+
+  const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"]
+  const dayName = days[date.getDay()]
+  const day = date.getDate()
+  const month = date.getMonth() + 1
+  return `${dayName}, ${day} tháng ${month}`
+}
+
+function getDateKey(isoString: string): string {
+  const date = new Date(isoString)
+  if (isNaN(date.getTime())) return ""
+  return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
+}
+
 export function ChatPopup() {
   const {
     isOpen,
@@ -270,7 +298,7 @@ export function ChatPopup() {
       {/* ── LEFT SIDEBAR (fixed width, full height, scrollable list) ── */}
       <div className="flex h-full w-[140px] shrink-0 flex-col border-r border-slate-100">
         {/* Header: logo + search */}
-        <div className="flex h-12 shrink-0 items-center justify-between border-b border-slate-100 px-2">
+        <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 px-2">
           <img src={cosmateLogo} alt="Cosmate" className="h-6 w-auto object-contain" />
           <button
             type="button"
@@ -520,9 +548,11 @@ export function ChatPopup() {
                           </p>
                         )}
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })
+
+                  return elements
+                })()}
                 <div ref={bottomRef} />
               </div>
             </div>
@@ -563,8 +593,9 @@ export function ChatPopup() {
             placeholder={activeRoom ? "Type a message..." : "Select a room"}
             disabled={!activeRoom || !isConnected}
             rows={1}
+            style={{ resize: "none" }}
             className={cn(
-              "flex-1 resize-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400",
+              "max-h-24 flex-1 resize-none overflow-hidden rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400",
               "disabled:cursor-not-allowed disabled:opacity-50",
               "focus:border-pink-300 focus:bg-pink-50/50"
             )}
