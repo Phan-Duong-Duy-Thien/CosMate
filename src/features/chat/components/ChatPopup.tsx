@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from "react"
-import { X, Send, MessageCircle, Search, User } from "lucide-react"
+import { X, Send, MessageCircle, Search, User, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatRoomList } from "./ChatRoomList"
 import {
@@ -18,6 +18,7 @@ import type { SearchUserResult } from "../services/user.service"
 import { getOrCreateChatRoomService } from "../services/chat.service"
 import { message } from "antd"
 import { cn } from "@/lib/utils"
+import { resolveImageUrl } from "@/constants/images"
 import type { ChatMessage, ChatRoomListItem } from "../types"
 import cosmateLogo from "@/assets/logo.png"
 
@@ -79,10 +80,12 @@ export function ChatPopup() {
     }
   }, [initialRoomId, initialPartnerId, initialPartnerName])
 
-  const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
+  const [isUploading, setIsUploading] = useState(false)
   const [inputValue, setInputValue] = useState("")
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
 
@@ -141,8 +144,59 @@ export function ChatPopup() {
     if (!inputValue.trim() || activeRoom === null) return
     const senderId = getUserId()
     if (senderId === null) return
-    sendChatMessage({ roomId: activeRoom.roomId, senderId, content: inputValue.trim() })
+
+    const content = inputValue.trim()
+    if (!content) {
+      console.error("[SEND TEXT] Message content is empty")
+      return
+    }
+
+    console.log("[SEND TEXT]", content)
+    sendChatMessage({ roomId: activeRoom.roomId, senderId, content, messageType: 'TEXT' })
     setInputValue("")
+  }
+
+  const handleSendImage = async (file: File) => {
+    if (activeRoom === null) return
+    const senderId = getUserId()
+    if (senderId === null) return
+
+    console.log("[SEND IMAGE]", file)
+
+    if (!file.type.startsWith("image/")) return
+    if (file.size > 5 * 1024 * 1024) return
+
+    setIsUploading(true)
+    try {
+      const objectUrl = URL.createObjectURL(file)
+      const tempId = addOptimisticMessage({
+        roomId: activeRoom.roomId,
+        senderId,
+        content: objectUrl,
+        messageType: "IMAGE",
+        createdAt: new Date().toISOString(),
+        isRead: true,
+      })
+
+      const url = await uploadImageService(activeRoom.roomId, file)
+      URL.revokeObjectURL(objectUrl)
+
+      console.log("[UPLOAD IMAGE RESULT]", url)
+
+      if (!url) {
+        console.error("[SEND IMAGE] No image URL returned")
+        removeOptimisticMessage(tempId)
+        return
+      }
+
+      console.log("[SEND IMAGE MESSAGE]", { roomId: activeRoom.roomId, content: url, messageType: 'IMAGE' })
+      sendChatMessage({ roomId: activeRoom.roomId, senderId, content: url, messageType: "IMAGE" })
+      removeOptimisticMessage(tempId)
+    } catch {
+      message.error("Failed to upload image")
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -435,13 +489,31 @@ export function ChatPopup() {
                     <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
                       <div
                         className={cn(
-                          "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm",
+                          "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
                           isMine
-                            ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
-                            : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
+                            ? "rounded-br-sm"
+                            : "rounded-bl-sm"
                         )}
+                        style={isMine ? { background: "linear-gradient(135deg, #f472b6, #ec4899)" } : {}}
                       >
-                        <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                        {(msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http")) ? (() => {
+                          const imgSrc = resolveImageUrl(msg.content ?? "")
+                          console.log("[ChatPopup] IMAGE:", { content: msg.content, resolved: imgSrc })
+                          return (
+                            <img
+                              src={imgSrc}
+                              alt="Shared image"
+                              className="block max-w-full cursor-pointer object-cover"
+                              style={{ maxHeight: "250px", maxWidth: "200px" }}
+                              onError={(e) => {
+                                console.error("[ChatPopup] Image load failed:", imgSrc)
+                                e.currentTarget.style.display = "none"
+                              }}
+                            />
+                          )
+                        })() : (
+                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
+                        )}
                         {time && (
                           <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
                             {time}
@@ -459,6 +531,31 @@ export function ChatPopup() {
 
         {/* Footer input — fixed height, always visible */}
         <div className="flex h-[60px] shrink-0 items-start gap-2 border-t border-slate-200 bg-white px-3 py-2">
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => {
+              const file = e.target.files?.[0]
+              if (file) handleSendImage(file)
+              e.target.value = ""
+            }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={!activeRoom || !isConnected || isUploading}
+            className={cn(
+              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+              activeRoom && isConnected && !isUploading
+                ? "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                : "text-slate-300"
+            )}
+            aria-label="Attach image"
+          >
+            <Image className="h-4 w-4" />
+          </button>
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}

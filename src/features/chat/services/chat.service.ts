@@ -1,4 +1,4 @@
-import { getOrCreateChatRoom, getChatPartner, getChatMessages, getUserChatRooms, getUnreadCount, markRoomAsRead } from "../api/chat.api"
+import { getOrCreateChatRoom, getChatPartner, getChatMessages, getUserChatRooms, getUnreadCount, markRoomAsRead, uploadImage } from "../api/chat.api"
 import type { ChatRoom, ChatPartner, ChatMessage, ChatRoomListItem } from "../types"
 
 export async function getOrCreateChatRoomService(user1Id: number, user2Id: number): Promise<ChatRoom> {
@@ -33,4 +33,9 @@ export async function getUnreadCountService(userId: number): Promise<number> {
 export async function markRoomAsReadService(roomId: number, currentUserId: number): Promise<void> {
   console.log("[chat.service] markRoomAsRead:", roomId, currentUserId)
   return markRoomAsRead(roomId, currentUserId)
+}
+
+export async function uploadImageService(roomId: number, file: File): Promise<string> {
+  console.log("[chat.service] uploadImage:", roomId, file)
+  return uploadImage(roomId, file)
 }
