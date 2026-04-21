@@ -215,59 +215,61 @@ export default function PoseBattlePage() {
                       />
                     </div>
 
-                    <div className="space-y-2 p-3">
+                    <div className="space-y-1.5 p-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-base font-bold text-pink-700">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-base font-bold text-pink-700">
                             {item.characterName?.trim() ? item.characterName : "Nhân vật ẩn danh"}
                           </p>
                         </div>
 
-                        <span className="rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
+                        <span className="shrink-0 rounded-full border border-pink-200 bg-pink-50 px-2.5 py-1 text-xs font-semibold text-pink-700">
                           Điểm: {item.score}
                         </span>
                       </div>
 
-                      <p className="line-clamp-2 text-xs text-slate-700">{cleanAiComment(item.comment)}</p>
+                      <p className="line-clamp-2 text-xs leading-5 text-slate-700">{cleanAiComment(item.comment)}</p>
 
-                      <p className="flex items-center gap-1 text-xs text-slate-500">
-                        <ClockCircleOutlined /> {formatDateTime(item.createdAt)}
-                      </p>
+                      <div className="flex items-center justify-between gap-2 pt-0.5">
+                        <p className="flex items-center gap-1 text-xs text-slate-500">
+                          <ClockCircleOutlined /> {formatDateTime(item.createdAt)}
+                        </p>
 
-                      <div className="flex items-center justify-end gap-2 pt-1">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async (event) => {
-                            event.stopPropagation()
-                            const nextName = window.prompt("Nhập tên nhân vật mới", item.characterName ?? "")
-                            if (nextName === null) return
-                            await renameHistoryItem(item.id, nextName.trim())
-                          }}
-                        >
-                          <EditOutlined />
-                          Sửa
-                        </Button>
-
-                        <Popconfirm
-                          title="Bạn có chắc chắn muốn xóa lịch sử này không? Không thể hoàn tác."
-                          okText="Xóa"
-                          cancelText="Hủy"
-                          onConfirm={async (event) => {
-                            event?.stopPropagation()
-                            await removeHistoryItem(item.id)
-                          }}
-                        >
+                        <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
                             size="sm"
-                            className="border-rose-200 text-rose-600 hover:bg-rose-50"
-                            onClick={(event) => event.stopPropagation()}
+                            onClick={async (event) => {
+                              event.stopPropagation()
+                              const nextName = window.prompt("Nhập tên nhân vật mới", item.characterName ?? "")
+                              if (nextName === null) return
+                              await renameHistoryItem(item.id, nextName.trim())
+                            }}
                           >
-                            <DeleteOutlined />
-                            Xóa
+                            <EditOutlined />
+                            Sửa
                           </Button>
-                        </Popconfirm>
+
+                          <Popconfirm
+                            title="Bạn có chắc chắn muốn xóa lịch sử này không? Không thể hoàn tác."
+                            okText="Xóa"
+                            cancelText="Hủy"
+                            onConfirm={async (event) => {
+                              event?.stopPropagation()
+                              await removeHistoryItem(item.id)
+                            }}
+                          >
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="border-rose-200 text-rose-600 hover:bg-rose-50"
+                              onClick={(event) => event.stopPropagation()}
+                            >
+                              <DeleteOutlined />
+                              Xóa
+                            </Button>
+                          </Popconfirm>
+                        </div>
                       </div>
                     </div>
                   </Card>
