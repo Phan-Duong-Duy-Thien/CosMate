@@ -7,7 +7,7 @@
  * Data flow: Page → hook → service → API → axiosInstance
  */
 import { useState } from 'react';
-import { Spin, Tooltip as RCTooltip, Modal } from 'antd';
+import { Spin, Tooltip, Modal } from 'antd';
 import { CalendarClock, PackageCheck, Clock, PlayCircle, CheckCircle } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -134,7 +134,7 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
           <div className="ml-2 flex flex-col items-end gap-1">
             <StatusBadge status={order.status} />
             {canSetWaiting && (
-              <RCTooltip title={VI.profile.serviceOrders.setWaiting}>
+              <Tooltip title={VI.profile.serviceOrders.setWaiting}>
                 <span
                   onClick={() => !isActionLoading && onSetWaiting(order.id)}
                   style={{
@@ -152,10 +152,10 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
                 >
                   <Clock size={14} style={{ color: '#1890ff' }} />
                 </span>
-              </RCTooltip>
+              </Tooltip>
             )}
             {canStartService && (
-              <RCTooltip title={VI.profile.serviceOrders.startService}>
+              <Tooltip title={VI.profile.serviceOrders.startService}>
                 <span
                   onClick={() => !isActionLoading && onStartService(order.id)}
                   style={{
@@ -173,10 +173,10 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
                 >
                   <PlayCircle size={14} style={{ color: '#fff' }} />
                 </span>
-              </RCTooltip>
+              </Tooltip>
             )}
             {canCompleteService && (
-              <RCTooltip title={VI.profile.serviceOrders.completeService}>
+              <Tooltip title={VI.profile.serviceOrders.completeService}>
                 <span
                   onClick={() => !isActionLoading && onCompleteService(order.id)}
                   style={{
@@ -194,7 +194,7 @@ function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteSe
                 >
                   <CheckCircle size={14} style={{ color: '#fff' }} />
                 </span>
-              </RCTooltip>
+              </Tooltip>
             )}
           </div>
         </div>
