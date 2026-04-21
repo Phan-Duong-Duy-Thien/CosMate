@@ -9,7 +9,6 @@ import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
@@ -136,13 +135,13 @@ export function ChatPopup() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
+    const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
-      disconnectChatSocket()
+      release()
     }
   }, [])
 

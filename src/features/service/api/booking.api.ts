@@ -151,9 +151,20 @@ export async function payServiceOrder(
   paymentMethod: PaymentMethod,
   returnUrl: string
 ): Promise<string> {
-  console.log('[booking.api] payServiceOrder → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
+  // ── Debug: log exact payload sent to BE ────────────────────────────────
+  console.log('SERVICE PAY PAYLOAD:', {
+    id: orderId,
+    paymentMethod,
+    returnUrl,
+  });
+
+  const baseUrl = axiosInstance.defaults.baseURL || '';
+  const endpoint = `/api/service-orders/${orderId}/pay`;
+  const finalUrl = `${baseUrl}${endpoint}?paymentMethod=${encodeURIComponent(paymentMethod)}&returnUrl=${encodeURIComponent(returnUrl)}`;
+  console.log('FINAL REQUEST URL:', finalUrl);
+
   const response = await axiosInstance.post<ApiResponse<{ paymentUrl: string }>>(
-    `/api/service-orders/${orderId}/pay`,
+    endpoint,
     null,
     {
       params: { paymentMethod, returnUrl },

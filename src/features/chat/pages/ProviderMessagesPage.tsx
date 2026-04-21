@@ -13,7 +13,6 @@ import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from "@/features/provider/constants/sidebar"
 import { useLocation } from "react-router-dom"
@@ -93,8 +92,8 @@ export default function ProviderMessagesPage() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
-    return () => disconnectChatSocket()
+    const release = connectChatSocket(() => setIsConnected(true))
+    return () => release()
   }, [])
 
   // Subscribe to room channel
