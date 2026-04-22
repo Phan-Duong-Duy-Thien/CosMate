@@ -1,10 +1,10 @@
 /**
- * useDisputes Hook (Staff Layer)
- * Delegates to the dispute feature hook
+ * useDisputes Hook
+ * Fetches dispute list with optional filtering
  */
 import { useState, useCallback, useEffect } from 'react';
 import * as disputeService from '../services/dispute.service';
-import type { Dispute, GetDisputesParams } from '@/features/dispute/types/dispute.type';
+import type { Dispute, GetDisputesParams } from '../types/dispute.type';
 
 interface UseDisputesResult {
   disputes: Dispute[];

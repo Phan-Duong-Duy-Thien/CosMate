@@ -204,10 +204,15 @@ export function DashboardLayout({
       setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
     } else if (path === '/staff') {
       setItems([{ label: VI.staff.layout.title, to: '/staff' }]);
-    } else if (path.startsWith('/staff/')) {
+    } else if (path === '/staff/withdraw') {
       setItems([
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.withdraw.title },
+      ]);
+    } else if (path === '/staff/disputes') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.disputes.title },
       ]);
     }
   }, [location.pathname, setItems]);

@@ -10,11 +10,12 @@
  * Never calls API directly.
  */
 
-import { useEffect } from 'react'
-import { Alert, Button, Form, Input, InputNumber, Select, Upload } from 'antd'
+import { useEffect, useState } from 'react'
+import { Alert, Button, Form, Input, InputNumber, Select, Upload, message } from 'antd'
 import { InboxOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { UpdateCostumeBasicInput, CostumeSizeOption, Costume } from '../../types'
+import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { VI } from '@/shared/i18n/vi'
 
 const { Dragger } = Upload

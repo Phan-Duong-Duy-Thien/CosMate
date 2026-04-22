@@ -31,6 +31,7 @@ export default function CheckoutReviewPage() {
     setPolicyAccepted,
     setPaymentMethod,
     submitOrder,
+    navigateToTopUp,
   } = useCheckoutReview(navigate);
 
   // Helper to format currency
@@ -410,7 +411,7 @@ export default function CheckoutReviewPage() {
                               variant="default"
                               size="sm"
                               className="rounded-full bg-amber-500 hover:bg-amber-600 text-white border-0"
-                              onClick={() => navigate('/profile/wallet/topup?redirect=/rent/checkout')}
+                              onClick={navigateToTopUp}
                             >
                               {VI.wallet.checkoutValidation.topUpCta}
                             </Button>

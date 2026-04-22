@@ -56,6 +56,22 @@ export default function PaymentResultPage() {
   const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
   const redirectUrl = searchParams.get('redirect') || null;
 
+  // ── Debug guard: detect misconfigured returnUrl ──────────────────────────
+  // If raw gateway params (partnerCode for MOMO, vnp_TmnCode for VNPay) are
+  // present, it means the payment gateway redirected directly to FE instead
+  // of going through the BE callback endpoint. This is a returnUrl bug.
+  React.useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('partnerCode') || params.has('vnp_TmnCode')) {
+      console.error(
+        '[PaymentResultPage] ⚠️ BUG DETECTED: Payment gateway returned directly to FE.',
+        'This means returnUrl was set to the FE page instead of the BE callback endpoint.',
+        'The BE never received the payment confirmation → order status is NOT updated.',
+        'URL:', window.location.href
+      );
+    }
+  }, []);
+
   // Authoritative status for costume orders (orderType = RENT_COSTUME)
   const costumeVerification = usePaymentVerification(rawOrderId);
   // Authoritative status for service orders (orderType = RENT_SERVICE)

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react"
 import {
   connectChatSocket,
-  disconnectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
 } from "../services/chatSocket.service"
@@ -25,13 +24,13 @@ export function useChatSocket(
 
   // ── Connect socket on mount, disconnect on unmount ───────────────────────
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
+    const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
-      disconnectChatSocket()
+      release()
       setIsConnected(false)
     }
   }, [])

@@ -1,7 +1,9 @@
-import * as disputeApi from '@/features/order/api/dispute.api';
-import type { Dispute, GetDisputesParams } from '@/features/order/api/dispute.api';
+/**
+ * Dispute Service (Staff Layer)
+ * Delegates to the dispute feature module
+ */
+import * as disputeService from '@/features/dispute/services/dispute.service';
 
-export async function getDisputes(params?: GetDisputesParams): Promise<Dispute[]> {
-  const response = await disputeApi.getDisputes(params);
-  return response;
+export async function getDisputes(params?: { status?: string; userId?: number }) {
+  return disputeService.getDisputes(params);
 }
