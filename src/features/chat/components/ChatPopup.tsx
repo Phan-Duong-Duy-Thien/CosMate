@@ -9,7 +9,6 @@ import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
@@ -136,13 +135,13 @@ export function ChatPopup() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
+    const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
-      disconnectChatSocket()
+      release()
     }
   }, [])
 
@@ -174,12 +173,7 @@ export function ChatPopup() {
     if (senderId === null) return
 
     const content = inputValue.trim()
-    if (!content) {
-      console.error("[SEND TEXT] Message content is empty")
-      return
-    }
-
-    console.log("[SEND TEXT]", content)
+    if (!content) return
     sendChatMessage({ roomId: activeRoom.roomId, senderId, content, messageType: 'TEXT' })
     setInputValue("")
   }
@@ -188,8 +182,6 @@ export function ChatPopup() {
     if (activeRoom === null) return
     const senderId = getUserId()
     if (senderId === null) return
-
-    console.log("[SEND IMAGE]", file)
 
     if (!file.type.startsWith("image/")) return
     if (file.size > 5 * 1024 * 1024) return
@@ -209,15 +201,11 @@ export function ChatPopup() {
       const url = await uploadImageService(activeRoom.roomId, file)
       URL.revokeObjectURL(objectUrl)
 
-      console.log("[UPLOAD IMAGE RESULT]", url)
-
       if (!url) {
-        console.error("[SEND IMAGE] No image URL returned")
         removeOptimisticMessage(tempId)
         return
       }
 
-      console.log("[SEND IMAGE MESSAGE]", { roomId: activeRoom.roomId, content: url, messageType: 'IMAGE' })
       sendChatMessage({ roomId: activeRoom.roomId, senderId, content: url, messageType: "IMAGE" })
       removeOptimisticMessage(tempId)
     } catch {
@@ -246,7 +234,6 @@ export function ChatPopup() {
   }
 
   const handleSelectUser = async (user: SearchUserResult) => {
-    console.log("[SELECT USER]", user)
     if (!currentUserId) {
       message.warning("Please log in to start chatting")
       return
@@ -510,47 +497,59 @@ export function ChatPopup() {
             <div className="flex h-full flex-col overflow-y-auto px-3 py-2">
               {/* Messages anchored to bottom */}
               <div className="mt-auto flex flex-col gap-2">
-                {validMessages.map((msg) => {
+                {validMessages.map((msg, idx) => {
                   const isMine = currentUserId !== null ? msg.senderId === currentUserId : false
                   const time = formatMessageTime(msg.createdAt)
+                  const dateKey = getDateKey(msg.createdAt)
+                  const prevDateKey = idx > 0 ? getDateKey(validMessages[idx - 1].createdAt) : null
+                  const showDateSeparator = idx === 0 || dateKey !== prevDateKey
                   return (
-                    <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
-                      <div
-                        className={cn(
-                          "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
-                          isMine
-                            ? "rounded-br-sm"
-                            : "rounded-bl-sm"
-                        )}
-                        style={isMine ? { background: "linear-gradient(135deg, #f472b6, #ec4899)" } : {}}
-                      >
-                        {(msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http")) ? (() => {
-                          const imgSrc = resolveImageUrl(msg.content ?? "")
-                          console.log("[ChatPopup] IMAGE:", { content: msg.content, resolved: imgSrc })
-                          return (
-                            <img
-                              src={imgSrc}
-                              alt="Shared image"
-                              className="block max-w-full cursor-pointer object-cover"
-                              style={{ maxHeight: "250px", maxWidth: "200px" }}
-                              onError={(e) => {
-                                console.error("[ChatPopup] Image load failed:", imgSrc)
-                                e.currentTarget.style.display = "none"
-                              }}
-                            />
-                          )
-                        })() : (
-                          <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-                        )}
-                        {time && (
-                          <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
-                            {time}
-                          </p>
-                        )}
+                    <>
+                      {showDateSeparator && (
+                        <div key={`date-${dateKey}`} className="flex items-center gap-2 my-3">
+                          <div className="h-px flex-1 bg-slate-200" />
+                          <span className="text-[10px] text-slate-400 font-medium px-2 whitespace-nowrap">
+                            {formatDateSeparator(msg.createdAt)}
+                          </span>
+                          <div className="h-px flex-1 bg-slate-200" />
+                        </div>
+                      )}
+                      <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
+                        <div
+                          className={cn(
+                            "max-w-[80%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
+                            isMine
+                              ? "rounded-br-sm"
+                              : "rounded-bl-sm"
+                          )}
+                          style={isMine ? { background: "linear-gradient(135deg, #f472b6, #ec4899)" } : {}}
+                        >
+                          {(msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http")) ? (() => {
+                            const imgSrc = resolveImageUrl(msg.content ?? "")
+                            return (
+                              <img
+                                src={imgSrc}
+                                alt="Shared image"
+                                className="block max-w-full cursor-pointer object-cover"
+                                style={{ maxHeight: "250px", maxWidth: "200px" }}
+                                onError={(e) => {
+                                  e.currentTarget.style.display = "none"
+                                }}
+                              />
+                            )
+                          })() : (
+                            <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                          )}
+                          {time && (
+                            <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
+                              {time}
+                            </p>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                )}
+                    </>
+                  )
+                })}
                 <div ref={bottomRef} />
               </div>
             </div>

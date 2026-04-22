@@ -6,6 +6,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { fetchServiceOrders, confirmServiceOrder, payServiceOrderFn } from '@/features/service/services/booking.service';
 import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
+import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
 
 export type ServiceOrderTab = 'all' | 'UNCONFIRM' | 'UNPAID' | 'PAID' | 'WAITING_SERVICE_DATE' | 'IN_SERVICE' | 'COMPLETED' | 'DISPUTE' | 'CANCELLED';
 
@@ -135,7 +136,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
   }, [fetchData, selectedStatus, page]);
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
-    const returnUrl = `${window.location.origin}/payment/result`;
+    // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.
+    // Using FE URL here would bypass BE → order stays UNPAID.
+    const returnUrl = getReturnUrl(paymentMethod);
     console.log('[useServiceOrders] confirmAndPay → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setConfirmingOrderId(orderId);
     try {
@@ -155,7 +158,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
   }, []);
 
   const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
-    const returnUrl = `${window.location.origin}/payment/result`;
+    // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.
+    // Using FE URL here would bypass BE → order stays UNPAID.
+    const returnUrl = getReturnUrl(paymentMethod);
     console.log('[useServiceOrders] payOnly → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setPayingOrderId(orderId);
     try {

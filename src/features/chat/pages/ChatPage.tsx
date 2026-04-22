@@ -13,7 +13,6 @@ import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
@@ -87,13 +86,13 @@ export default function ChatPage() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
+    const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
-      disconnectChatSocket()
+      release()
     }
   }, [])
 
