@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { X, Send, MessageCircle, Search, User, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms } from "../hooks/useChatRooms"
@@ -79,7 +79,14 @@ export function ChatPopup() {
     closeChat,
   } = useChatPopup()
   const { rooms, loading: roomsLoading } = useChatRooms()
-  const currentUserId = getUserId()
+  const [currentUserId, setCurrentUserId] = useState<number | null>(getUserId())
+
+  // Keep currentUserId in sync with auth changes (login/logout)
+  useEffect(() => {
+    const handleAuthChange = () => setCurrentUserId(getUserId())
+    window.addEventListener("auth:changed", handleAuthChange)
+    return () => window.removeEventListener("auth:changed", handleAuthChange)
+  }, [])
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Search state ──
@@ -133,8 +140,9 @@ export function ChatPopup() {
     markRoomAsReadService(activeRoom.roomId, currentUserId).then(refetchUnread)
   }, [activeRoom?.roomId, currentUserId, refetchUnread])
 
-  // Connect socket
+  // Connect socket — re-run when user logs in / out
   useEffect(() => {
+    if (currentUserId === null) return          // not logged in yet
     const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
@@ -142,8 +150,9 @@ export function ChatPopup() {
         unsubscribeRef.current = null
       }
       release()
+      setIsConnected(false)
     }
-  }, [])
+  }, [currentUserId])
 
   // Subscribe to room channel
   useEffect(() => {

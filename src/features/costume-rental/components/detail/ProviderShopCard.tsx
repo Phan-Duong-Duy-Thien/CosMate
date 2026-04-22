@@ -14,9 +14,10 @@ interface ProviderShopCardProps {
     verified: boolean
     bio?: string | null
   }
+  onViewShop: () => void
 }
 
-export function ProviderShopCard({ provider }: ProviderShopCardProps) {
+export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps) {
   const { startChat, loading: chatLoading } = useStartChat()
   const stats = getMockRentalCount(String(provider.id))
   const rating = stats.rating
@@ -59,7 +60,7 @@ export function ProviderShopCard({ provider }: ProviderShopCardProps) {
           variant="outline"
           size="sm"
           className="rounded-full border-pink-100 text-slate-600 hover:border-pink-300 hover:bg-pink-50"
-          disabled
+          onClick={onViewShop}
         >
           <Eye className="mr-1 h-4 w-4" />
           {VI.costumeRental.detail.viewShop}

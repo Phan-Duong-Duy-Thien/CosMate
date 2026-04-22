@@ -19,7 +19,7 @@ export default function PhotographersListingPage() {
                 animate={{ opacity: 1, x: 0 }}
                 className="text-4xl font-bold text-[#4A3B6B] mb-2"
               >
-                Tìm Kiếm Tầm Nhìn
+               Tìm kiếm Photographer
               </motion.h1>
               <motion.p
                 initial={{ opacity: 0, x: -20 }}
@@ -31,7 +31,7 @@ export default function PhotographersListingPage() {
               </motion.p>
             </div>
             <div className="text-sm font-medium text-gray-400">
-              Hiển thị <span className="text-[#4A3B6B] font-bold">{providers.length}</span> nhiếp ảnh gia
+              Tổng cộng <span className="text-[#4A3B6B] font-bold">{providers.length}</span> nhiếp ảnh gia
             </div>
           </div>
 

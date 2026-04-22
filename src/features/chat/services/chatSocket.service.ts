@@ -12,10 +12,11 @@ let connectionCallbacks: Array<() => void> = []
 let connectionListeners: Set<(connected: boolean) => void> = new Set()
 let reconnectAttempts = 0
 const MAX_RECONNECT_ATTEMPTS = 3
-// Module-level flag to prevent multiple concurrent connect attempts
+
+// Module-level flags to prevent race conditions
 let isConnecting = false
-// Tracks whether an async deactivate() is currently in-flight
 let isDisconnecting = false
+
 // Tracks how many consumers currently hold the connection.
 // Only actually disconnect when the last consumer releases.
 let refCount = 0

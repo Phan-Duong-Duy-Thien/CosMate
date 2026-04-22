@@ -305,9 +305,7 @@ export default function CostumeDetailPage() {
         {/* Shop Info Card */}
         {provider && (
           <div className="mt-5">
-            <ProviderShopCard
-              provider={provider}
-            />
+            <ProviderShopCard provider={provider} onViewShop={handleViewShop} />
           </div>
         )}
 

@@ -196,10 +196,6 @@ export const PurchasePanel = ({
           {isRented ? VI.costumeRental.detail.rentedButton : VI.costumeRental.rentNow}
         </Button>
       </div>
-
-      <p className={cn("text-xs text-slate-400", isRented && "opacity-50")}>
-        Bằng việc tiếp tục, bạn đồng ý điều khoản nền tảng &amp; điều khoện shop.
-      </p>
     </div>
   )
 }
