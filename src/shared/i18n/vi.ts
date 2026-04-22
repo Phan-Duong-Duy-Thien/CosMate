@@ -343,7 +343,7 @@ export const VI = {
       validation: {
         emailRequired: "Email hoặc tên người dùng là bắt buộc.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự bao gồm ít nhất 1 chữ cái và 1 số.",
       },
 
       messages: {
@@ -468,7 +468,7 @@ export const VI = {
         phoneRequired: "Số điện thoại là bắt buộc.",
         phoneInvalid: "Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự, ít nhất 1 chữ cái và 1 số.",
         confirmPasswordRequired: "Vui lòng xác nhận mật khẩu.",
         passwordMismatch: "Mật khẩu không khớp.",
       },
