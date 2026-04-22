@@ -13,7 +13,7 @@ interface UseResolveDisputeResult {
   resolveDispute: (id: number, data: ResolveDisputePayload) => Promise<boolean>;
 }
 
-export function useResolveDispute(onSuccess?: () => void): UseResolveDisputeResult {
+export function useResolveDispute(): UseResolveDisputeResult {
   const [resolvingId, setResolvingId] = useState<number | null>(null);
 
   const resolveDispute = useCallback(
@@ -22,7 +22,6 @@ export function useResolveDispute(onSuccess?: () => void): UseResolveDisputeResu
       try {
         await disputeService.resolveDispute(id, data);
         message.success(VI.dispute.resolveSuccess);
-        onSuccess?.();
         return true;
       } catch {
         message.error(VI.dispute.resolveError);
@@ -31,7 +30,7 @@ export function useResolveDispute(onSuccess?: () => void): UseResolveDisputeResu
         setResolvingId(null);
       }
     },
-    [onSuccess]
+    []
   );
 
   return { resolvingId, resolveDispute };

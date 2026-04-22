@@ -29,7 +29,7 @@ export function useDisputes(params?: GetDisputesParams): UseDisputesResult {
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(params)]);
+  }, [params?.status, params?.userId]);
 
   useEffect(() => {
     void refetch();

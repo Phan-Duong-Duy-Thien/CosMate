@@ -62,7 +62,7 @@ function getStatusBadge(status: string) {
   }
 }
 
-function DisputeDetailModal({ dispute, open, onClose }: { dispute: Dispute | null; open: boolean; onClose: () => void }) {
+function DisputeDetailModal({ dispute, open, onClose, onResolve }: { dispute: Dispute | null; open: boolean; onClose: () => void; onResolve: (dispute: Dispute) => void }) {
   if (!dispute) return null;
 
   const canResolve = dispute.status === 'PENDING' || dispute.status === 'OPEN';
@@ -82,6 +82,7 @@ function DisputeDetailModal({ dispute, open, onClose }: { dispute: Dispute | nul
             type="primary"
             danger
             icon={<ShieldCheck size={14} />}
+            onClick={() => dispute && onResolve(dispute)}
           >
             {VI.dispute.resolveAction}
           </Button>
@@ -197,12 +198,7 @@ export default function DisputeManagementPage() {
 
   const params = filter === 'ALL' ? undefined : { status: filter };
   const { disputes, loading, error, refetch } = useDisputes(params);
-  const { resolvingId, resolveDispute } = useResolveDispute({
-    onSuccess: () => {
-      setResolveModalOpen(false);
-      void refetch();
-    },
-  });
+  const { resolvingId, resolveDispute } = useResolveDispute();
 
   const openDetail = (dispute: Dispute) => {
     setSelectedDispute(dispute);
@@ -220,12 +216,10 @@ export default function DisputeManagementPage() {
     const success = await resolveDispute(selectedDispute.id, data);
     if (success) {
       setResolveModalOpen(false);
+      setSelectedDispute(null);
       void refetch();
     }
   };
-
-  // Merge resolved dispute back into the list locally
-  const resolvedDispute = resolvingId === null && selectedDispute ? selectedDispute : null;
 
   return (
     <div className="space-y-6">
@@ -251,6 +245,7 @@ export default function DisputeManagementPage() {
         dispute={selectedDispute}
         open={detailModalOpen}
         onClose={() => setDetailModalOpen(false)}
+        onResolve={openResolveModal}
       />
 
       {/* Resolve Modal */}
