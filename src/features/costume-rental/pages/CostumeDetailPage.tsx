@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
+import { Card } from "@/components/ui/card"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
@@ -127,6 +128,11 @@ export default function CostumeDetailPage() {
       ])
     }
   }, [costume, setItems])
+
+  const characterRows = React.useMemo(
+    () => (costume?.characters ?? []).filter((c) => c.name?.trim() || c.anime?.trim()),
+    [costume],
+  )
 
   // Convert date string to YYYY-MM-DD for storage
   // The backend appends T00:00:00 at submission time (order.service.ts)
@@ -311,6 +317,26 @@ export default function CostumeDetailPage() {
 
         {/* Product Info Sections */}
         <div className="mt-5 space-y-5">
+          {characterRows.length > 0 && (
+            <div>
+              <div className="inline-block rounded-lg border-2 border-pink-200 px-4 py-1.5">
+                <h3 className="text-sm font-semibold text-slate-800">
+                  {VI.costumeRental.charactersHeading}
+                </h3>
+              </div>
+              <Card className="mt-2 rounded-xl border border-pink-100 bg-white p-4">
+                <ul className="list-inside list-disc space-y-1 text-sm text-slate-700">
+                  {characterRows.map((c) => {
+                    const name = c.name?.trim() ?? ""
+                    const anime = c.anime?.trim() ?? ""
+                    const line =
+                      name && anime ? `${name} (${anime})` : name || anime
+                    return <li key={c.id}>{line}</li>
+                  })}
+                </ul>
+              </Card>
+            </div>
+          )}
           <ProductInfoSections
             details={[
               { label: VI.costumeRental.costumeName, value: costume.name },

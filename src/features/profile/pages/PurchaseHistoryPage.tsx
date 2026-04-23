@@ -349,6 +349,7 @@ export default function PurchaseHistoryPage() {
       RETURNED: VI.profile.orders.tabCompleted,
       COMPLETED: VI.profile.orders.tabCompleted,
       CANCELLED: VI.profile.orders.tabCancelled,
+      DISPUTE: VI.profile.orders.tabDispute,
     }[order.status] || order.status
 
     const statusBadgeColor: Record<string, string> = {

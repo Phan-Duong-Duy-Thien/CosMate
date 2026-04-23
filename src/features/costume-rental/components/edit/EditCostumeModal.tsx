@@ -129,9 +129,10 @@ export default function EditCostumeModal({
           children: (
             <FeesTab
               surcharges={detail.surcharges ?? []}
-              rentalOptions={detail.rentalOptions ?? []}
+              rentalOptions={[]}
               accessories={detail.accessories ?? []}
               numberOfItems={detail.numberOfItems ?? 1}
+              hideRentalOptions
               onUpdateSurcharge={onUpdateSurcharge}
               onUpdateRentalOption={onUpdateRentalOption}
               onUpdateAccessory={onUpdateAccessory}

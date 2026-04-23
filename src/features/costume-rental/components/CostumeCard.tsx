@@ -2,6 +2,7 @@ import { Heart, Image as ImageIcon, Star } from "lucide-react"
 import { Tag } from "antd"
 
 import type { CostumeItem } from "../types"
+import { VI } from "@/shared/i18n/vi"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
@@ -20,6 +21,13 @@ export const CostumeCard = ({
   const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
   const costumeId = Number(costume.id)
   const liked = isInWishlist(costumeId)
+  const displayName = costume.name?.trim() || "-"
+  const displayCharacterName =
+    costume.characterName?.trim() && costume.characterName !== "—"
+      ? costume.characterName
+      : "-"
+  const displayShopName = costume.shopName?.trim() || "-"
+  const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
 
   const handleToggleWishlist = () => {
     if (liked) {
@@ -43,7 +51,7 @@ export const CostumeCard = ({
           onViewDetail(costume.id)
         }
       }}
-      className="group overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group flex h-full flex-col overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
     >
       <div className="relative">
         <img
@@ -98,24 +106,36 @@ export const CostumeCard = ({
           {costume.images.length} ảnh
         </div>
       </div>
-      <div className="space-y-2 p-3">
+      <div className="flex min-h-[196px] flex-1 flex-col gap-2 p-3">
         <div className="flex items-center gap-2 text-sm text-slate-600">
           <Star className="h-4 w-4 text-yellow-400" />
           {costume.rating.toFixed(1)}
         </div>
-        <h3 className="line-clamp-2 text-sm font-semibold text-slate-800">
-          {costume.name}
+        <h3 className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-800">
+          {displayName}
         </h3>
-        <p className="text-xs text-slate-500">Nhân vật: {costume.characterName}</p>
-        <p className="text-xs text-slate-500">Shop: {costume.shopName}</p>
-        <div className="text-base font-semibold text-pink-600">
-          {costume.priceMin}k – {costume.priceMax}k
-          <span className="text-xs font-normal text-slate-400">/ngày</span>
+        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
+          {displayCharacterName}
+        </p>
+        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
+          {VI.costumeRental.listShopLabel}: {displayShopName}
+        </p>
+        <div className="min-h-7 text-sm font-semibold leading-tight text-pink-600">
+          {hasPrice ? (
+            <>
+              <span className="whitespace-nowrap">
+                {costume.priceMin.toLocaleString("vi-VN")} VND – {costume.priceMax.toLocaleString("vi-VN")} VND
+              </span>
+              <span className="ml-1 text-[11px] font-normal text-slate-400">/ngày</span>
+            </>
+          ) : (
+            "-"
+          )}
         </div>
         <Button
           variant="soft"
           size="sm"
-          className="w-full"
+          className="mt-auto w-full"
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)

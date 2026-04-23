@@ -974,6 +974,7 @@ export const VI = {
       tabShippingBack: "Đang trả hàng",
       tabCompleted: "Hoàn thành",
       tabCancelled: "Đã hủy",
+      tabDispute: "Tranh chấp",
       empty: "Không có đơn hàng nào",
       loadError: "Không thể tải danh sách đơn hàng",
       // Status labels for list
@@ -1263,6 +1264,12 @@ export const VI = {
     viewDetails: "Xem chi tiết",
     viewDetail: "Xem chi tiết",
     costumeName: "Tên trang phục",
+    /** Costume list: line under title — e.g. Name (từ Series) */
+    characterFromWork: "từ",
+    /** Costume detail: heading above character list */
+    charactersHeading: "Nhân vật",
+    /** Costume list card — shop line */
+    listShopLabel: "Shop",
     description: "Mô tả",
     rentPurpose: "Mục đích thuê",
     numberOfItems: "Số lượng món",

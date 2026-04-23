@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { getAllCostumes } from '../api/costumeRental.api'
 import type { Costume } from '../types'
+import { formatFirstCharacterListLine } from './usePublicCostumes'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -50,7 +51,7 @@ export function useProviderCostumesForShop(
           .map((c) => ({
             id: String(c.id),
             name: c.name ?? '',
-            characterName: '—',
+            characterName: formatFirstCharacterListLine(c) || '—',
             imageUrl: resolveImageUrl(c.imageUrls?.[0] ?? ''),
             pricePerDay: c.pricePerDay ?? 0,
             rentalCount: c.rentalsCount ?? 0,

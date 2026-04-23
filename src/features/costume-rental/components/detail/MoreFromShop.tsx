@@ -79,8 +79,9 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
         <p className="line-clamp-2 text-sm font-semibold text-slate-800">{item.name}</p>
         <p className="text-xs text-slate-500">{item.characterName}</p>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-pink-600">
-            {item.pricePerDay.toLocaleString("vi-VN")} VNĐ<span className="text-xs font-normal text-slate-500">/ngày</span>
+          <p className="text-xs font-semibold leading-tight text-pink-600">
+            <span className="whitespace-nowrap">{item.pricePerDay.toLocaleString("vi-VN")} VND</span>
+            <span className="ml-1 text-[11px] font-normal text-slate-500">/ngày</span>
           </p>
           {item.brandName && (
             <span className="rounded bg-pink-100 px-1.5 py-0.5 text-[10px] text-pink-600">

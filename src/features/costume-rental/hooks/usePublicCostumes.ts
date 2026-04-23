@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { getCostumes } from '../api/costume.api'
 import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
+import { VI } from '@/shared/i18n/vi'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -35,9 +36,20 @@ function computePriceRange(costume: Costume): { priceMin: number; priceMax: numb
       : 0
   const minTotal = 1 * baseDaily + deposit + optionAvg
   const maxTotal = 3 * baseDaily + deposit + optionAvg
-  const minK = roundToNearest10k(minTotal) / 1000
-  const maxK = roundToNearest10k(maxTotal) / 1000
-  return { priceMin: minK, priceMax: maxK }
+  const minVnd = roundToNearest10k(minTotal)
+  const maxVnd = roundToNearest10k(maxTotal)
+  return { priceMin: minVnd, priceMax: maxVnd }
+}
+
+/** First linked character for list cards: "Name (từ Anime)"; empty if none */
+export function formatFirstCharacterListLine(costume: Pick<Costume, 'characters'>): string {
+  const chars = costume.characters ?? []
+  if (!chars.length) return ''
+  const first = chars[0]
+  const name = (first?.name ?? '').trim()
+  const anime = (first?.anime ?? '').trim()
+  if (name && anime) return `${name} (${VI.costumeRental.characterFromWork} ${anime})`
+  return name || anime
 }
 
 export function mapCostumeToItem(
@@ -52,7 +64,7 @@ export function mapCostumeToItem(
     id: String(costume.id),
     name: costume.name ?? '',
     description: costume.description ?? '',
-    characterName: '—',
+    characterName: formatFirstCharacterListLine(costume) || '—',
     seriesName: '',
     seriesType: 'anime',
     shopId: String(costume.providerId),

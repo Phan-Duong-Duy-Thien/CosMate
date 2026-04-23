@@ -241,6 +241,8 @@ export default function ProviderCostumeListPage() {
     title: 'Tên trang phục',
     dataIndex: 'name',
     key: 'name',
+    width: 240,
+    ellipsis: true,
   },
   {
     title: 'Kích cỡ',
@@ -249,7 +251,7 @@ export default function ProviderCostumeListPage() {
       width: 90,
     },
     {
-      title: 'Số lượng',
+      title: 'Số lượng vật phẩm',
       dataIndex: 'numberOfItems',
       key: 'numberOfItems',
       width: 100,

@@ -26,6 +26,10 @@ interface FormValues {
   description: string
   characterIds: number[]
   size: CostumeSizeOption
+  heightMin?: number
+  heightMax?: number
+  weightMin?: number
+  weightMax?: number
   numberOfItems: number
   pricePerDay: number
   rentDiscount: number
@@ -141,20 +145,36 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
   const handleFinish = async (values: FormValues) => {
     const rawFiles = extractFilesFromForm(values)
+    const rangeValues = values as FormValues & {
+      heightMin?: number
+      heightMax?: number
+      weightMin?: number
+      weightMax?: number
+    }
+    const hasFullRange =
+      Number.isFinite(rangeValues.heightMin) &&
+      Number.isFinite(rangeValues.heightMax) &&
+      Number.isFinite(rangeValues.weightMin) &&
+      Number.isFinite(rangeValues.weightMax)
+    const sizeString = hasFullRange
+      ? `${values.size} (${rangeValues.heightMin}-${rangeValues.heightMax}cm, ${rangeValues.weightMin}-${rangeValues.weightMax}kg)`
+      : values.size
     setModerationError(null)
 
     try {
-      await onSubmit({
+      const submitPayload = {
         name: values.name,
         description: values.description,
         characterIds: values.characterIds ?? [],
-        size: values.size,
+        size: sizeString as CreateCostumeBasicPayload['size'],
         numberOfItems: values.numberOfItems,
         pricePerDay: values.pricePerDay,
         rentDiscount: values.rentDiscount,
         depositAmount: values.depositAmount,
         imageFiles: rawFiles,
-      })
+        rentalOptions: null,
+      }
+      await onSubmit(submitPayload)
     } catch (err: unknown) {
       const errMessage = err instanceof Error ? err.message : ''
       if (errMessage.includes('vi phạm tiêu chuẩn cộng đồng') || errMessage.includes('Read timed out') || errMessage.includes('Lỗi kiểm duyệt ảnh')) {
@@ -242,8 +262,34 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </Select>
         </Form.Item>
 
-        <Form.Item label="Số lượng" name="numberOfItems">
-          <InputNumber min={1} style={{ width: '100%' }} placeholder="Số lượng" />
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item label="Chiều cao tối thiểu (cm)" name="heightMin">
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Chiều cao tối đa (cm)" name="heightMax">
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Row gutter={12}>
+          <Col span={12}>
+            <Form.Item label="Cân nặng tối thiểu (kg)" name="weightMin">
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="Cân nặng tối đa (kg)" name="weightMax">
+              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
+            </Form.Item>
+          </Col>
+        </Row>
+
+        <Form.Item label="Số lượng vật phẩm (bao gồm tất cả vật phẩm và trang phục)" name="numberOfItems">
+          <InputNumber min={1} style={{ width: '100%' }} placeholder="Số lượng vật phẩm" />
         </Form.Item>
 
         <Form.Item label="Giá thuê / ngày (VNĐ)" name="pricePerDay" rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}>

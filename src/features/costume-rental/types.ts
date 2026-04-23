@@ -172,6 +172,13 @@ export interface CostumeRentalOption {
   description: string
 }
 
+/** Linked character / work (series) from costume API */
+export interface CostumeCharacter {
+  id: number
+  name: string
+  anime: string
+}
+
 /**
  * Full Costume model returned by:
  *   GET /api/costumes/provider/{providerId}  (list item)
@@ -194,6 +201,8 @@ export interface Costume {
   accessories: CostumeAccessory[]
   rentalOptions: CostumeRentalOption[]
   rentalsCount?: number
+  /** Optional; when present, list UI shows first entry; detail shows full list */
+  characters?: CostumeCharacter[]
 }
 
 /**
