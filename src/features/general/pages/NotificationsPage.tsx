@@ -1,6 +1,7 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
 import { Spin } from "antd"
+import { DeleteOutlined } from "@ant-design/icons"
 import { Bell, ArrowLeft } from "lucide-react"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
 import { Button } from "@/shared/components/Button"
@@ -44,7 +45,7 @@ function getTypeColor(type: string): string {
 
 export default function NotificationsPage() {
   const navigate = useNavigate()
-  const { notifications, loading, refetch, markNotificationRead, markAllRead } = useNotifications()
+  const { notifications, loading, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
   const loggedIn = isAuthenticated()
 
   if (!loggedIn) {
@@ -148,6 +149,18 @@ export default function NotificationsPage() {
                         {getTypeLabel(n.type)}
                       </span>
                       <span className="text-[10px] text-slate-400">{formatSendAt(n.sendAt)}</span>
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          if (!window.confirm("Xóa thông báo này?")) return
+                          void deleteNotification(n.id)
+                        }}
+                        className="ml-auto rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500"
+                        aria-label="Xóa thông báo"
+                      >
+                        <DeleteOutlined />
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -21,6 +21,7 @@ import {
   Youtube,
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip } from "antd"
+import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
@@ -77,7 +78,7 @@ export default function CosplayerSiteLayout() {
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
   const userId = getUserId()
   const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
@@ -323,12 +324,35 @@ export default function CosplayerSiteLayout() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
                   {n.header}
                 </p>
                 <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {n.content}
                 </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Xóa thông báo"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      if (!window.confirm("Xóa thông báo này?")) return
+                      void deleteNotification(n.id)
+                    }}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      color: "#94a3b8",
+                      cursor: "pointer",
+                      padding: 2,
+                      lineHeight: 1,
+                    }}
+                  >
+                    <DeleteOutlined />
+                  </button>
+                </div>
               </div>
             ))}
           </>
