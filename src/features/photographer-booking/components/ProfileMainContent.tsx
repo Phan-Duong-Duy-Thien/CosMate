@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
 import { Spin } from 'antd';
@@ -6,6 +6,21 @@ import { Star, Clock, CheckCircle2, ChevronRight, Camera, ShieldCheck, MapPin, I
 import type { PortfolioImage } from '../types';
 import { usePublicProviderServices } from '@/features/service/hooks/usePublicProviderServices';
 import type { ServiceItem } from '@/features/service/types';
+import { usePhotographerPublicReviews } from '../hooks/usePhotographerPublicReviews';
+
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+function resolveMediaUrl(url: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  return `${API_BASE}${url}`;
+}
+
+function formatReviewDate(iso: string): string {
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return '';
+  return d.toLocaleDateString('vi-VN', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 interface ProfileMainContentProps {
   portfolioItems: PortfolioImage[];
@@ -15,10 +30,27 @@ interface ProfileMainContentProps {
 export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfolioItems, providerId }) => {
   const navigate = useNavigate();
   const { services: apiServices, loading: servicesLoading, error: servicesError } = usePublicProviderServices(providerId);
+  const { reviews: providerReviews, loading: reviewsLoading, error: reviewsError } =
+    usePhotographerPublicReviews(providerId);
   // Mặc định tab đầu tiên được chọn
   const [activeTab, setActiveTab] = useState('Gói dịch vụ');
 
   const tabs = ['Gói dịch vụ', 'Đánh giá', 'Điều khoản'];
+
+  const reviewStats = useMemo(() => {
+    const n = providerReviews.length;
+    if (n === 0) {
+      return { avg: 0, total: 0, dist: { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 } as Record<number, number> };
+    }
+    const sum = providerReviews.reduce((s, r) => s + (r.rating ?? 0), 0);
+    const avg = Math.round((sum / n) * 10) / 10;
+    const dist: Record<number, number> = { 5: 0, 4: 0, 3: 0, 2: 0, 1: 0 };
+    for (const r of providerReviews) {
+      const k = Math.min(5, Math.max(1, Math.round(Number(r.rating))));
+      dist[k] = (dist[k] ?? 0) + 1;
+    }
+    return { avg, total: n, dist };
+  }, [providerReviews]);
 
   const formatPrice = (item: ServiceItem): string => {
     if (item.minPrice != null && item.maxPrice != null && item.minPrice > 0 && item.maxPrice > 0) {
@@ -40,25 +72,6 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
       state: { providerType: 'photographer', providerId },
     });
   };
-
-  const reviews = [
-    {
-      id: 1,
-      user: 'Sakura Haruno',
-      avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150',
-      rating: 5,
-      date: '2 tuần trước',
-      comment: 'Dũng chụp siêu có tâm! Anh ấy thực sự hiểu style "anime" mà mình muốn. Ánh sáng đánh rất đẹp và Dũng hướng dẫn pose dáng nhiệt tình dù đây là lần đầu mình đi chụp.',
-    },
-    {
-      id: 2,
-      user: 'Kenji Sato',
-      avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=150',
-      rating: 5,
-      date: '1 tháng trước',
-      comment: 'Nhiếp ảnh gia đỉnh nhất mình từng làm việc cho bộ ảnh Cyberpunk. Kỹ năng hậu kỳ (edit) quá xuất sắc. Rất đáng tiền, mọi người nên book nhé!',
-    }
-  ];
 
   return (
     <div className="flex-1 min-w-0">
@@ -206,52 +219,99 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
           {/* TAB 3: ĐÁNH GIÁ */}
           {activeTab === 'Đánh giá' && (
             <div className="space-y-6">
-              <div className="bg-[#F5F1FF] rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 mb-8">
-                <div className="text-center">
-                  <div className="text-5xl font-black text-[#4A3B6B] mb-1">4.9</div>
-                  <div className="flex justify-center mb-2">
-                    {[1, 2, 3, 4, 5].map((s) => (
-                      <Star key={s} className={`w-4 h-4 ${s <= 4 ? 'fill-[#FFD700] text-[#FFD700]' : 'text-[#D7D0E5]'}`} />
-                    ))}
-                  </div>
-                  <p className="text-[10px] uppercase font-bold text-[#A090C5]">Dựa trên 150 đánh giá</p>
+              {reviewsLoading && (
+                <div className="flex justify-center py-16">
+                  <Spin size="large" />
                 </div>
-                <div className="flex-1 space-y-2 w-full">
-                  {[5, 4, 3, 2, 1].map((rating) => (
-                    <div key={rating} className="flex items-center gap-4">
-                      <span className="text-xs font-bold text-[#4A3B6B] w-3">{rating}</span>
-                      <div className="flex-1 h-2 bg-[#E0D7FF] rounded-full overflow-hidden">
-                        <div 
-                          className="h-full bg-[#B59DFF]" 
-                          style={{ width: `${rating === 5 ? 90 : rating === 4 ? 8 : 2}%` }}
-                        />
+              )}
+              {!reviewsLoading && reviewsError && (
+                <div className="rounded-3xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
+                  {reviewsError}
+                </div>
+              )}
+              {!reviewsLoading && !reviewsError && providerReviews.length === 0 && (
+                <div className="rounded-3xl border border-[#F0E6FF] bg-white p-10 text-center text-sm text-[#A090C5]">
+                  Chưa có đánh giá nào cho nhiếp ảnh gia này.
+                </div>
+              )}
+              {!reviewsLoading && !reviewsError && providerReviews.length > 0 && (
+                <>
+                  <div className="bg-[#F5F1FF] rounded-3xl p-8 flex flex-col md:flex-row items-center gap-8 mb-8">
+                    <div className="text-center">
+                      <div className="text-5xl font-black text-[#4A3B6B] mb-1">{reviewStats.avg.toFixed(1)}</div>
+                      <div className="flex justify-center mb-2">
+                        {[1, 2, 3, 4, 5].map((s) => (
+                          <Star
+                            key={s}
+                            className={`w-4 h-4 ${
+                              s <= Math.round(reviewStats.avg) ? 'fill-[#FFD700] text-[#FFD700]' : 'text-[#D7D0E5]'
+                            }`}
+                          />
+                        ))}
                       </div>
+                      <p className="text-[10px] uppercase font-bold text-[#A090C5]">
+                        Dựa trên {reviewStats.total} đánh giá
+                      </p>
                     </div>
-                  ))}
-                </div>
-              </div>
+                    <div className="flex-1 space-y-2 w-full">
+                      {[5, 4, 3, 2, 1].map((rating) => {
+                        const count = reviewStats.dist[rating] ?? 0;
+                        const pct =
+                          reviewStats.total > 0 ? Math.round((count / reviewStats.total) * 100) : 0;
+                        return (
+                          <div key={rating} className="flex items-center gap-4">
+                            <span className="text-xs font-bold text-[#4A3B6B] w-3">{rating}</span>
+                            <div className="flex-1 h-2 bg-[#E0D7FF] rounded-full overflow-hidden">
+                              <div className="h-full bg-[#B59DFF]" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
 
-              {reviews.map((review) => (
-                <div key={review.id} className="bg-white border border-[#F0E6FF] rounded-3xl p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div className="flex items-center gap-4">
-                      <img src={review.avatar} alt={review.user} className="w-12 h-12 rounded-full object-cover" />
-                      <div>
-                        <h4 className="font-bold text-[#4A3B6B]">{review.user}</h4>
-                        <div className="flex gap-0.5">
-                          {[1, 2, 3, 4, 5].map((s) => (
-                            <Star key={s} className={`w-3 h-3 ${s <= review.rating ? 'fill-[#FFD700] text-[#FFD700]' : 'text-[#D7D0E5]'}`} />
+                  {providerReviews.map((review) => (
+                    <div key={review.id} className="bg-white border border-[#F0E6FF] rounded-3xl p-6">
+                      <div className="flex justify-between items-start mb-4">
+                        <div className="flex items-center gap-4">
+                          <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[#F5F1FF] text-sm font-bold text-[#8E7AB5]">
+                            C
+                          </div>
+                          <div>
+                            <h4 className="font-bold text-[#4A3B6B]">Cosplayer</h4>
+                            <div className="flex gap-0.5">
+                              {[1, 2, 3, 4, 5].map((s) => (
+                                <Star
+                                  key={s}
+                                  className={`w-3 h-3 ${
+                                    s <= review.rating ? 'fill-[#FFD700] text-[#FFD700]' : 'text-[#D7D0E5]'
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-[#A090C5] font-medium">
+                          {formatReviewDate(review.createdAt)}
+                        </span>
+                      </div>
+                      <p className="text-[#6B5A94] text-sm leading-relaxed whitespace-pre-wrap">{review.comment}</p>
+                      {review.images && review.images.length > 0 && (
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          {review.images.map((img) => (
+                            <img
+                              key={img.id}
+                              src={resolveMediaUrl(img.url)}
+                              alt=""
+                              className="h-20 w-20 rounded-lg object-cover border border-[#F0E6FF]"
+                            />
                           ))}
                         </div>
-                      </div>
+                      )}
                     </div>
-                    <span className="text-xs text-[#A090C5] font-medium">{review.date}</span>
-                  </div>
-                  <p className="text-[#6B5A94] text-sm leading-relaxed">
-                    "{review.comment}"
-                  </p>
-                </div>
-              ))}
+                  ))}
+                </>
+              )}
             </div>
           )}
         </motion.div>

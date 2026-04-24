@@ -330,6 +330,7 @@ export default function PurchaseHistoryPage() {
       setReviewOrderId(null)
       setReviewCosplayerId(null)
       costumeRefetch()
+      void serviceRefetch()
     } else {
       message.error(VI.profile.orders.toastReviewFailed)
     }
@@ -577,6 +578,7 @@ export default function PurchaseHistoryPage() {
     const isUnpaid = order.status === 'UNPAID'
     const isConfirmProcessing = confirmingOrderId === order.id
     const isPayProcessing = payingOrderId === order.id
+    const isServiceCompleted = order.status === 'COMPLETED'
 
     return (
       <div
@@ -648,6 +650,19 @@ export default function PurchaseHistoryPage() {
                   : isUnconfirm
                     ? VI.profile.serviceOrders.btnConfirmAndPay
                     : VI.profile.serviceOrders.btnPayNow}
+              </button>
+            </div>
+          )}
+
+          {isServiceCompleted && order.cosplayerId != null && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
+                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+              >
+                <Star className="h-3.5 w-3.5" />
+                {VI.profile.orders.actionReview}
               </button>
             </div>
           )}
