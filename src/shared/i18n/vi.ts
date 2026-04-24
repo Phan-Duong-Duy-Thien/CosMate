@@ -1533,6 +1533,12 @@ export const VI = {
       messages: {
         loadError: "Không thể tải danh sách dịch vụ.",
         refresh: "Làm mới",
+        deleteSuccess: "Đã xóa dịch vụ!",
+        deleteError: "Không thể xóa dịch vụ. Vui lòng thử lại.",
+      },
+      delete: {
+        confirmTitle: "Xóa dịch vụ này?",
+        confirmDescription: "Hành động này không thể hoàn tác.",
       },
       detail: {
         title: "Chi tiết dịch vụ",

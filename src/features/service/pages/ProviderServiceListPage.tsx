@@ -6,8 +6,9 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Tag, Typography, Button, Spin, Image, Card, Modal, Tooltip as RCTooltip } from 'antd';
-import { ReloadOutlined, PlusOutlined, EyeOutlined, EditOutlined } from '@ant-design/icons';
+import type { TableProps } from 'antd';
+import { Table, Tag, Typography, Button, Spin, Image, Card, Modal, Tooltip as RCTooltip, Popconfirm } from 'antd';
+import { ReloadOutlined, PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { CreateServiceForm } from '../components/CreateServiceForm';
 import { ServiceDetailModal } from '../components/ServiceDetailModal';
@@ -95,7 +96,7 @@ export default function ProviderServiceListPage() {
   } = useProviderGate();
 
   const { profile } = useProviderVerification();
-  const { services, loading, refetch } = useProviderServices(profile?.id ?? 0);
+  const { services, loading, refetch, deletingId, removeService } = useProviderServices(profile?.id ?? 0);
   const { serviceDetail, loading: viewLoading, error: viewError, open: openView, close: closeView } = useViewService();
 
   const sidebarItems = deriveSidebarItems();
@@ -166,7 +167,7 @@ export default function ProviderServiceListPage() {
     {
       title: VI.service.list.table.actions,
       key: 'actions',
-      width: 80,
+      width: 120,
       align: 'center',
       render: (_, record) => (
         <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
@@ -188,6 +189,18 @@ export default function ProviderServiceListPage() {
               style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a' }}
             />
           </RCTooltip>
+          <Popconfirm
+            title={VI.service.list.delete.confirmTitle}
+            description={VI.service.list.delete.confirmDescription}
+            okText={VI.common.actions.delete}
+            cancelText={VI.common.actions.cancel}
+            okButtonProps={{ danger: true, loading: deletingId === record.id }}
+            onConfirm={() => void removeService(record.id)}
+          >
+            <RCTooltip title={VI.common.actions.delete}>
+              <DeleteOutlined style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f' }} />
+            </RCTooltip>
+          </Popconfirm>
         </div>
       ),
     },

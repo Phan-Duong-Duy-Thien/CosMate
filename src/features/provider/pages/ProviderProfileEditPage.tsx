@@ -5,21 +5,40 @@
  * Form is pre-filled with current data. Saves via PUT /api/providers/{id}.
  */
 import { useLocation } from 'react-router-dom';
-import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio } from 'antd';
+import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
 import { useProviderProfileEdit } from '../hooks/useProviderProfileEdit';
+import { useState } from 'react';
+import type { UpsertUserAddressPayload, UserAddress } from '@/features/profile/types';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
 export default function ProviderProfileEditPage() {
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
+  const [addressForm] = Form.useForm<UpsertUserAddressPayload>();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, addresses, loading, saving, error, formData, updateField, save, refetch, uploadAvatar, uploadCoverImage } =
+  const {
+    profile,
+    addresses,
+    loading,
+    saving,
+    error,
+    formData,
+    updateField,
+    save,
+    uploadAvatar,
+    uploadCoverImage,
+    addressSaving,
+    updateAddress,
+    removeAddress,
+  } =
     useProviderProfileEdit();
 
   const isPhotograph = location.pathname.startsWith('/provider-photograph');
@@ -48,6 +67,44 @@ export default function ProviderProfileEditPage() {
     const ok = await save();
     if (ok) {
       navigate(settingsPath);
+    }
+  };
+
+  const handleOpenEditAddress = (address: UserAddress) => {
+    setEditingAddress(address);
+    addressForm.setFieldsValue({
+      name: address.name,
+      phone: address.phone,
+      city: address.city,
+      district: address.district,
+      address: address.address,
+      addressName: '',
+    });
+    setIsAddressModalOpen(true);
+  };
+
+  const handleSubmitAddress = async () => {
+    if (!editingAddress) return;
+    const values = await addressForm.validateFields();
+    const ok = await updateAddress(editingAddress.id, {
+      name: values.name.trim(),
+      phone: values.phone.trim(),
+      city: values.city.trim(),
+      district: values.district.trim(),
+      address: values.address.trim(),
+      addressName: values.addressName?.trim() ?? '',
+    });
+    if (!ok) return;
+    setIsAddressModalOpen(false);
+    setEditingAddress(null);
+    addressForm.resetFields();
+  };
+
+  const handleDeleteAddress = async (addressId: number) => {
+    const ok = await removeAddress(addressId);
+    if (!ok) return;
+    if (formData.shopAddressId === addressId) {
+      updateField('shopAddressId', null);
     }
   };
 
@@ -144,6 +201,22 @@ export default function ProviderProfileEditPage() {
                               <Text type="secondary" style={{ fontSize: 12 }}>
                                 {addr.phone}
                               </Text>
+                              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <Button size="small" onClick={() => handleOpenEditAddress(addr)}>
+                                  Sửa
+                                </Button>
+                                <Popconfirm
+                                  title="Xóa địa chỉ này?"
+                                  okText="Xóa"
+                                  cancelText="Hủy"
+                                  okButtonProps={{ danger: true }}
+                                  onConfirm={() => void handleDeleteAddress(addr.id)}
+                                >
+                                  <Button size="small" danger loading={addressSaving}>
+                                    Xóa
+                                  </Button>
+                                </Popconfirm>
+                              </div>
                             </div>
                           </Radio>
                         </Card>
@@ -385,6 +458,48 @@ export default function ProviderProfileEditPage() {
           </div>
         </Card>
       )}
+
+      <Modal
+        open={isAddressModalOpen}
+        title="Cập nhật địa chỉ"
+        okText="Lưu địa chỉ"
+        cancelText="Hủy"
+        onCancel={() => {
+          setIsAddressModalOpen(false);
+          setEditingAddress(null);
+          addressForm.resetFields();
+        }}
+        confirmLoading={addressSaving}
+        onOk={() => void handleSubmitAddress()}
+      >
+        <Form form={addressForm} layout="vertical">
+          <Form.Item name="name" label="Người nhận" rules={[{ required: true, message: 'Vui lòng nhập tên người nhận' }]}>
+            <Input placeholder="Người nhận" />
+          </Form.Item>
+          <Form.Item
+            name="phone"
+            label="Số điện thoại"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điện thoại' },
+              { pattern: /^\+?[0-9]{9,15}$/, message: 'Số điện thoại không hợp lệ' },
+            ]}
+          >
+            <Input placeholder="Số điện thoại" />
+          </Form.Item>
+          <Form.Item name="city" label="Tỉnh/Thành phố" rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}>
+            <Input placeholder="VD: TP.HCM" />
+          </Form.Item>
+          <Form.Item name="district" label="Quận/Huyện" rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}>
+            <Input placeholder="VD: Quận 1" />
+          </Form.Item>
+          <Form.Item name="address" label="Địa chỉ chi tiết" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}>
+            <Input placeholder="Số nhà, đường..." />
+          </Form.Item>
+          <Form.Item name="addressName" label="Tên địa chỉ">
+            <Input placeholder="VD: Nhà riêng" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </DashboardLayout>
   );
 }

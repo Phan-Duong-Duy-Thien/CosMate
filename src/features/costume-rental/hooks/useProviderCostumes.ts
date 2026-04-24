@@ -11,7 +11,7 @@
 
 import { useState, useEffect, useCallback, useRef }from 'react'
 import { message }from 'antd'
-import { getCostumesByProvider, getCostumeById } from '../api/costumeRental.api'
+import { getCostumesByProvider, getCostumeById, deleteCostume } from '../api/costumeRental.api'
 import type { Costume, CostumeStatus } from '../types'
 import { getUserId } from '@/features/auth/services/tokenStorage'
 import { getProviderByUserId } from '@/features/provider/api/provider.api'
@@ -56,6 +56,7 @@ export function useProviderCostumes() {
   const detailRequestIdRef = useRef(0)
 
   const [providerId, setProviderId] = useState<number | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   /**
    * Fetch the provider's costume list.
@@ -132,6 +133,28 @@ export function useProviderCostumes() {
     setDetailLoading(false)
   }, [])
 
+  const removeCostume = useCallback(
+    async (costumeId: number): Promise<boolean> => {
+      try {
+        setDeletingId(costumeId)
+        await deleteCostume(costumeId)
+        message.success('Đã xóa trang phục')
+        if (selectedCostume?.id === costumeId) {
+          closeDetail()
+        }
+        await fetchCostumes()
+        return true
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : 'Không thể xóa trang phục.'
+        message.error(msg)
+        return false
+      } finally {
+        setDeletingId(null)
+      }
+    },
+    [fetchCostumes, selectedCostume?.id, closeDetail],
+  )
+
   return {
     // List
     costumes,
@@ -157,5 +180,8 @@ export function useProviderCostumes() {
     detailLoading,
     openDetail,
     closeDetail,
+
+    deletingId,
+    removeCostume,
   }
 }
