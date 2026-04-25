@@ -32,6 +32,7 @@ export interface UseServiceOrdersResult {
   selectedStatus: ServiceOrderTab;
   setStatus: (status: ServiceOrderTab) => void;
   confirmingOrderId: number | null;
+  payingOrderId: number | null;
   confirmAndPay: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
   payOnly: (orderId: number, paymentMethod: PaymentMethod) => Promise<string | null>;
   /** Pagination */
@@ -50,6 +51,17 @@ export function useServiceOrders(): UseServiceOrdersResult {
   const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
+  const [counts, setCounts] = useState<ServiceOrderCounts>({
+    all: 0,
+    UNCONFIRM: 0,
+    UNPAID: 0,
+    PAID: 0,
+    WAITING_SERVICE_DATE: 0,
+    IN_SERVICE: 0,
+    COMPLETED: 0,
+    DISPUTE: 0,
+    CANCELLED: 0,
+  });
   const PAGE_SIZE = 10;
 
   const userId = getUserId();
@@ -107,23 +119,42 @@ export function useServiceOrders(): UseServiceOrdersResult {
     return serviceOrders.filter((order) => order.status === selectedStatus);
   }, [serviceOrders, selectedStatus]);
 
-  // Calculate counts for each status tab
-  const counts = useMemo(() => {
-    const countByStatus = (status: string) =>
-      serviceOrders.filter((order) => order.status === status).length;
+  const fetchCounts = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const statuses: ServiceOrderTab[] = [
+        'UNCONFIRM',
+        'UNPAID',
+        'PAID',
+        'WAITING_SERVICE_DATE',
+        'IN_SERVICE',
+        'COMPLETED',
+        'DISPUTE',
+        'CANCELLED',
+      ];
+      const [allRes, ...statusRes] = await Promise.all([
+        fetchServiceOrders(userId, undefined, 1, 1),
+        ...statuses.map((status) => fetchServiceOrders(userId, status, 1, 1)),
+      ]);
+      setCounts({
+        all: allRes.total,
+        UNCONFIRM: statusRes[0]?.total ?? 0,
+        UNPAID: statusRes[1]?.total ?? 0,
+        PAID: statusRes[2]?.total ?? 0,
+        WAITING_SERVICE_DATE: statusRes[3]?.total ?? 0,
+        IN_SERVICE: statusRes[4]?.total ?? 0,
+        COMPLETED: statusRes[5]?.total ?? 0,
+        DISPUTE: statusRes[6]?.total ?? 0,
+        CANCELLED: statusRes[7]?.total ?? 0,
+      });
+    } catch (err) {
+      console.warn('[useServiceOrders] Failed to fetch counts:', err);
+    }
+  }, [userId]);
 
-    return {
-      all: serviceOrders.length,
-      UNCONFIRM: countByStatus('UNCONFIRM'),
-      UNPAID: countByStatus('UNPAID'),
-      PAID: countByStatus('PAID'),
-      WAITING_SERVICE_DATE: countByStatus('WAITING_SERVICE_DATE'),
-      IN_SERVICE: countByStatus('IN_SERVICE'),
-      COMPLETED: countByStatus('COMPLETED'),
-      DISPUTE: countByStatus('DISPUTE'),
-      CANCELLED: countByStatus('CANCELLED'),
-    };
-  }, [serviceOrders]);
+  useEffect(() => {
+    fetchCounts();
+  }, [fetchCounts]);
 
   const handleSetStatus = useCallback((status: ServiceOrderTab) => {
     setPage(1);
@@ -133,7 +164,8 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const refetch = useCallback(async () => {
     await fetchData(selectedStatus, page);
-  }, [fetchData, selectedStatus, page]);
+    await fetchCounts();
+  }, [fetchData, selectedStatus, page, fetchCounts]);
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.

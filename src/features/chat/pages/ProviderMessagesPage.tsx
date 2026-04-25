@@ -4,7 +4,7 @@ import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatRoomList } from "../components/ChatRoomList"
 import { ChatMessageList } from "../components/ChatMessageList"
@@ -16,7 +16,7 @@ import {
 } from "../services/chatSocket.service"
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from "@/features/provider/constants/sidebar"
 import { useLocation } from "react-router-dom"
-import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { useCreateServiceBooking } from "@/features/service/hooks/useCreateServiceBooking"
 import { useProviderServices } from "@/features/service/hooks/useProviderServices"
@@ -26,6 +26,7 @@ import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
+import { ROLE } from "@/types/auth"
 
 function mapSidebar(items: typeof providerSidebarItems): DashboardSidebarItem[] {
   return items.map((item) => {
@@ -43,6 +44,7 @@ export default function ProviderMessagesPage() {
   const location = useLocation()
   const [activeRoom, setActiveRoom] = useState<ChatRoomListItem | null>(null)
   const [inputValue, setInputValue] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null)
   const [bookingDate, setBookingDate] = useState<dayjs.Dayjs | null>(null)
@@ -68,7 +70,14 @@ export default function ProviderMessagesPage() {
   const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
 
   // ── Message store (single source of truth) ────────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const {
+    messages,
+    setMessages,
+    mergeServerMessage,
+    clearMessages,
+    addOptimisticMessage,
+    removeOptimisticMessage,
+  } = useChatMessageStore()
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
@@ -127,6 +136,44 @@ export default function ProviderMessagesPage() {
     setInputValue("")
   }
 
+  const handleSendImage = async (file: File) => {
+    if (activeRoom?.roomId == null || currentUserId == null) return
+    if (!file.type.startsWith("image/")) return
+    if (file.size > 5 * 1024 * 1024) return
+
+    const objectUrl = URL.createObjectURL(file)
+    const tempId = addOptimisticMessage({
+      roomId: activeRoom.roomId,
+      senderId: currentUserId,
+      content: objectUrl,
+      messageType: "IMAGE",
+      createdAt: new Date().toISOString(),
+      isRead: true,
+    })
+
+    setIsUploading(true)
+    try {
+      const url = await uploadImageService(activeRoom.roomId, file)
+      URL.revokeObjectURL(objectUrl)
+      if (!url) {
+        removeOptimisticMessage(tempId)
+        return
+      }
+      sendChatMessage({
+        roomId: activeRoom.roomId,
+        senderId: currentUserId,
+        content: url,
+        messageType: "IMAGE",
+      })
+      removeOptimisticMessage(tempId)
+    } catch {
+      URL.revokeObjectURL(objectUrl)
+      removeOptimisticMessage(tempId)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
   const handleOpenBookingModal = () => {
     setSelectedServiceId(null)
     setBookingDate(null)
@@ -166,6 +213,8 @@ export default function ProviderMessagesPage() {
   }
 
   const canBooking = activeRoom != null && provider != null
+  const roles = getRoles()
+  const canCreateBooking = canBooking && !roles.includes(ROLE.PROVIDER_RENTAL)
 
   return (
     <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
@@ -244,7 +293,7 @@ export default function ProviderMessagesPage() {
             </div>
 
             {/* Create Booking button — only shown when a room is active */}
-            {canBooking && (
+            {canCreateBooking && (
               <button
                 type="button"
                 onClick={handleOpenBookingModal}
@@ -286,6 +335,8 @@ export default function ProviderMessagesPage() {
               value={inputValue}
               onChange={setInputValue}
               onSend={handleSend}
+              onSendImage={handleSendImage}
+              isUploading={isUploading}
               disabled={!isConnected}
             />
           )}

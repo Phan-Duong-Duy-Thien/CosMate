@@ -13,6 +13,7 @@ import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
 import { ExtendRentalModal } from "@/features/order/components/ExtendRentalModal"
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
+import { getReviewByOrderId, type ReviewItem } from "@/features/costume-rental/api/review.api"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
 import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
 import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
@@ -154,6 +155,7 @@ export default function PurchaseHistoryPage() {
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [reviewOrderId, setReviewOrderId] = useState<number | null>(null)
   const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
+  const [existingReview, setExistingReview] = useState<ReviewItem | null>(null)
 
   const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
   const { createDispute, disputingOrderId } = useCreateDispute()
@@ -181,6 +183,8 @@ export default function PurchaseHistoryPage() {
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
   // Cross-type contamination guard: track which order type is being viewed
   const [detailOrderType, setDetailOrderType] = useState<string>('RENT_COSTUME')
+  const [serviceDetailModalOpen, setServiceDetailModalOpen] = useState(false)
+  const [serviceDetailOrder, setServiceDetailOrder] = useState<ServiceOrder | null>(null)
 
   // ── Payment modal state ──────────────────────────────────────────────────────
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
@@ -309,7 +313,9 @@ export default function PurchaseHistoryPage() {
     }
   }
 
-  const handleReviewOrder = (orderId: number, cosplayerId: number) => {
+  const handleReviewOrder = async (orderId: number, cosplayerId: number) => {
+    const found = await getReviewByOrderId(orderId)
+    setExistingReview(found)
     setReviewOrderId(orderId)
     setReviewCosplayerId(cosplayerId)
     setReviewModalOpen(true)
@@ -329,6 +335,7 @@ export default function PurchaseHistoryPage() {
       setReviewModalOpen(false)
       setReviewOrderId(null)
       setReviewCosplayerId(null)
+      setExistingReview(null)
       costumeRefetch()
       void serviceRefetch()
     } else {
@@ -574,6 +581,17 @@ export default function PurchaseHistoryPage() {
   const renderServiceOrderItem = (order: ServiceOrder) => {
     const statusLabel = SERVICE_TAB_LABELS[order.status as ServiceOrderTab] || order.status
     const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
+    const statusBadgeColor: Record<string, string> = {
+      UNCONFIRM: 'bg-orange-100 text-orange-700',
+      UNPAID: 'bg-orange-100 text-orange-700',
+      PAID: 'bg-blue-100 text-blue-700',
+      WAITING_SERVICE_DATE: 'bg-purple-100 text-purple-700',
+      IN_SERVICE: 'bg-cyan-100 text-cyan-700',
+      COMPLETED: 'bg-green-100 text-green-700',
+      DISPUTE: 'bg-red-100 text-red-700',
+      CANCELLED: 'bg-slate-200 text-slate-600',
+    }
+    const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
     const isUnconfirm = order.status === 'UNCONFIRM'
     const isUnpaid = order.status === 'UNPAID'
     const isConfirmProcessing = confirmingOrderId === order.id
@@ -602,7 +620,7 @@ export default function PurchaseHistoryPage() {
                 {orderCode}
               </p>
             </div>
-            <span className="ml-2 shrink-0 rounded-full bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-700">
+            <span className={`ml-2 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}>
               {statusLabel}
             </span>
           </div>
@@ -633,9 +651,20 @@ export default function PurchaseHistoryPage() {
             )}
           </div>
 
-          {/* CTA: Confirm & Pay / Pay Now */}
-          {(isUnconfirm || isUnpaid) && (
-            <div className="mt-2">
+          {/* Bottom row: CTA buttons */}
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                setServiceDetailOrder(order)
+                setServiceDetailModalOpen(true)
+              }}
+              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+            >
+              {VI.order.actions.viewDetail}
+            </button>
+
+            {(isUnconfirm || isUnpaid) && (
               <button
                 type="button"
                 disabled={isConfirmProcessing || isPayProcessing}
@@ -651,11 +680,9 @@ export default function PurchaseHistoryPage() {
                     ? VI.profile.serviceOrders.btnConfirmAndPay
                     : VI.profile.serviceOrders.btnPayNow}
               </button>
-            </div>
-          )}
+            )}
 
-          {isServiceCompleted && order.cosplayerId != null && (
-            <div className="mt-2 flex flex-wrap gap-2">
+            {isServiceCompleted && order.cosplayerId != null && (
               <button
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
@@ -664,15 +691,26 @@ export default function PurchaseHistoryPage() {
                 <Star className="h-3.5 w-3.5" />
                 {VI.profile.orders.actionReview}
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
-        {/* Right: Total amount */}
+        {/* Right: Total amount + Chat */}
         <div className="flex flex-col items-end justify-between text-right">
           <span className="text-base font-bold text-purple-600">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
+          {order.providerId && (
+            <Tooltip title={VI.profile.serviceOrders.chatTooltip}>
+              <button
+                type="button"
+                onClick={() => navigate(`/messages?target=${order.providerId}`)}
+                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
+              >
+                <MessageOutlined className="text-lg" />
+              </button>
+            </Tooltip>
+          )}
         </div>
       </div>
     )
@@ -978,6 +1016,69 @@ export default function PurchaseHistoryPage() {
         }}
       />
 
+      <Modal
+        open={serviceDetailModalOpen}
+        title={VI.profile.serviceOrders.orderTitle}
+        onCancel={() => {
+          setServiceDetailModalOpen(false)
+          setServiceDetailOrder(null)
+        }}
+        footer={null}
+        width={720}
+      >
+        {serviceDetailOrder && (
+          <div className="space-y-4">
+            <div className="rounded-xl bg-slate-50 p-4">
+              <div className="grid grid-cols-1 gap-2 text-sm text-slate-600 md:grid-cols-2">
+                <p>
+                  <span className="font-medium text-slate-700">{VI.profile.serviceOrders.orderCodePrefix}:</span>{" "}
+                  {String(serviceDetailOrder.id).padStart(4, '0')}
+                </p>
+                <p>
+                  <span className="font-medium text-slate-700">{VI.profile.orders.cardTotal}:</span>{" "}
+                  {serviceDetailOrder.totalAmount.toLocaleString('vi-VN')} ₫
+                </p>
+                <p>
+                  <span className="font-medium text-slate-700">Trạng thái:</span>{" "}
+                  {SERVICE_TAB_LABELS[serviceDetailOrder.status as ServiceOrderTab] || serviceDetailOrder.status}
+                </p>
+                <p>
+                  <span className="font-medium text-slate-700">Ngày tạo đơn:</span>{" "}
+                  {formatDate(serviceDetailOrder.createdAt)}
+                </p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-2 text-sm font-semibold text-slate-800">
+                {VI.profile.serviceOrders.cardBookings}
+              </h3>
+              <div className="space-y-2">
+                {serviceDetailOrder.bookings.map((booking) => (
+                  <div
+                    key={booking.id}
+                    className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600"
+                  >
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <span className="font-medium text-slate-700">
+                        {formatDate(booking.bookingDate)}
+                      </span>
+                      <span>{booking.timeSlot}</span>
+                      <span>
+                        {booking.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}
+                      </span>
+                      <span>
+                        {booking.rentSlotAmount} {VI.profile.serviceOrders.cardSlotAmount}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
+
       <ReviewModal
         open={reviewModalOpen}
         orderId={reviewOrderId || 0}
@@ -987,7 +1088,9 @@ export default function PurchaseHistoryPage() {
           setReviewModalOpen(false)
           setReviewOrderId(null)
           setReviewCosplayerId(null)
+          setExistingReview(null)
         }}
+        existingReview={existingReview}
         onSubmit={handleReviewSubmit}
       />
 

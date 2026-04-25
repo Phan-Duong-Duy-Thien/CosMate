@@ -1,6 +1,6 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import { Spin } from "antd"
+import { Modal, Spin } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
 import { Bell, ArrowLeft } from "lucide-react"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
@@ -153,8 +153,13 @@ export default function NotificationsPage() {
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation()
-                          if (!window.confirm("Xóa thông báo này?")) return
-                          void deleteNotification(n.id)
+                          Modal.confirm({
+                            title: "Xóa thông báo này?",
+                            okText: VI.common.actions.delete,
+                            cancelText: VI.common.actions.cancel,
+                            okButtonProps: { danger: true },
+                            onOk: () => void deleteNotification(n.id),
+                          })
                         }}
                         className="ml-auto rounded-full p-1 text-slate-400 transition-colors hover:bg-slate-100 hover:text-red-500"
                         aria-label="Xóa thông báo"

@@ -20,7 +20,7 @@ import {
   UserRound,
   Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip } from "antd"
+import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
@@ -338,8 +338,13 @@ export default function CosplayerSiteLayout() {
                     aria-label="Xóa thông báo"
                     onClick={(e) => {
                       e.stopPropagation()
-                      if (!window.confirm("Xóa thông báo này?")) return
-                      void deleteNotification(n.id)
+                      Modal.confirm({
+                        title: "Xóa thông báo này?",
+                        okText: VI.common.actions.delete,
+                        cancelText: VI.common.actions.cancel,
+                        okButtonProps: { danger: true },
+                        onOk: () => void deleteNotification(n.id),
+                      })
                     }}
                     style={{
                       border: "none",

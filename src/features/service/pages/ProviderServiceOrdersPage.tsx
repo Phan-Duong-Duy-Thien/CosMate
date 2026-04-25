@@ -7,8 +7,9 @@
  * Data flow: Page → hook → service → API → axiosInstance
  */
 import { useState } from 'react';
-import { Spin, Tooltip, Modal } from 'antd';
-import { CalendarClock, PackageCheck, Clock, PlayCircle, CheckCircle } from 'lucide-react';
+import { Table, Tabs, Tag, Tooltip, Modal, Input } from 'antd';
+import type { TableProps } from 'antd';
+import { SearchOutlined, EyeOutlined, ClockCircleOutlined, PlayCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
@@ -17,7 +18,7 @@ import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
 import type { ServiceOrder } from '../api/booking.api';
-import { ORDER_STATUS_UI, URGENT_STATUSES, type OrderStatusValue } from '@/constants/orderStatus';
+import { ORDER_STATUS_UI, type OrderStatusValue } from '@/constants/orderStatus';
 
 // ─── Sidebar / Layout Helpers ─────────────────────────────────────────────────
 
@@ -37,7 +38,7 @@ function deriveBrandName(): string {
   return roles.includes(ROLE.PROVIDER_PHOTOGRAPH) ? 'CosMate Photographer' : 'CosMate Event Staff';
 }
 
-// ─── Status Tabs (driven by centralized config) ──────────────────────────────
+// ─── Status Tabs ───────────────────────────────────────────────────────────────
 
 const STATUS_TABS: Array<{ key: ProviderServiceOrderTab; label: string }> = [
   { key: 'all', label: VI.profile.orders.tabAll },
@@ -72,174 +73,6 @@ function formatCurrency(amount: number): string {
   }).format(amount);
 }
 
-// ─── Status Badge ─────────────────────────────────────────────────────────────
-
-interface StatusBadgeProps {
-  status: string;
-}
-
-function StatusBadge({ status }: StatusBadgeProps) {
-  const uiConfig = ORDER_STATUS_UI[status as OrderStatusValue];
-
-  return (
-    <span
-      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-        uiConfig?.badgeClass ?? 'bg-slate-100 text-slate-600'
-      }`}
-    >
-      {uiConfig?.label ?? status}
-    </span>
-  );
-}
-
-// ─── Order Card ────────────────────────────────────────────────────────────────
-
-interface OrderCardProps {
-  order: ServiceOrder;
-  isUrgent: boolean;
-  onSetWaiting: (orderId: number) => void;
-  onStartService: (orderId: number) => void;
-  onCompleteService: (orderId: number) => void;
-  isActionLoading: boolean;
-}
-
-function OrderCard({ order, isUrgent, onSetWaiting, onStartService, onCompleteService, isActionLoading }: OrderCardProps) {
-  const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`;
-  const uiConfig = ORDER_STATUS_UI[order.status as OrderStatusValue];
-  const canSetWaiting = uiConfig?.actions.includes('SET_WAITING');
-  const canStartService = uiConfig?.actions.includes('START_SERVICE');
-  const canCompleteService = uiConfig?.actions.includes('COMPLETE_SERVICE');
-
-  return (
-    <div
-      className={`flex gap-4 rounded-xl border bg-white p-4 transition-shadow hover:shadow-md ${
-        isUrgent ? 'border-orange-300 ring-1 ring-orange-100' : 'border-slate-200'
-      }`}
-    >
-      {/* Left: Icon */}
-      <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-purple-50">
-        <CalendarClock className="h-10 w-10 text-purple-400" />
-      </div>
-
-      {/* Middle: Info */}
-      <div className="flex flex-1 flex-col justify-between">
-        {/* Top row */}
-        <div className="flex items-start justify-between">
-          <div className="min-w-0 flex-1">
-            <h3 className="truncate font-semibold text-slate-900">
-              {VI.profile.serviceOrders.orderTitle}
-            </h3>
-            <p className="mt-0.5 text-sm font-medium text-slate-500">{orderCode}</p>
-          </div>
-          <div className="ml-2 flex flex-col items-end gap-1">
-            <StatusBadge status={order.status} />
-            {canSetWaiting && (
-              <Tooltip title={VI.profile.serviceOrders.setWaiting}>
-                <span
-                  onClick={() => !isActionLoading && onSetWaiting(order.id)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    background: '#f0f0f0',
-                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
-                    opacity: isActionLoading ? 0.5 : 1,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <Clock size={14} style={{ color: '#1890ff' }} />
-                </span>
-              </Tooltip>
-            )}
-            {canStartService && (
-              <Tooltip title={VI.profile.serviceOrders.startService}>
-                <span
-                  onClick={() => !isActionLoading && onStartService(order.id)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    background: '#1890ff',
-                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
-                    opacity: isActionLoading ? 0.5 : 1,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <PlayCircle size={14} style={{ color: '#fff' }} />
-                </span>
-              </Tooltip>
-            )}
-            {canCompleteService && (
-              <Tooltip title={VI.profile.serviceOrders.completeService}>
-                <span
-                  onClick={() => !isActionLoading && onCompleteService(order.id)}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    width: 28,
-                    height: 28,
-                    borderRadius: 6,
-                    background: '#52c41a',
-                    cursor: isActionLoading ? 'not-allowed' : 'pointer',
-                    opacity: isActionLoading ? 0.5 : 1,
-                    transition: 'all 0.15s',
-                  }}
-                >
-                  <CheckCircle size={14} style={{ color: '#fff' }} />
-                </span>
-              </Tooltip>
-            )}
-          </div>
-        </div>
-
-        {/* Middle row: cosplayer name + created date */}
-        <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-          <span>{order.cosplayerName ?? `Cosplayer ID: ${order.cosplayerId}`}</span>
-          <span>{formatDate(order.createdAt)}</span>
-        </div>
-
-        {/* Bookings summary */}
-        <div className="mt-2 flex flex-col gap-1">
-          {order.bookings.slice(0, 3).map((booking) => (
-            <div
-              key={booking.id}
-              className="flex flex-wrap items-center gap-x-3 text-xs text-slate-600"
-            >
-              <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-700">
-                {formatDate(booking.bookingDate)}
-              </span>
-              <span>{booking.timeSlot}</span>
-              <span>{booking.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}</span>
-              <span className="text-slate-400">
-                {VI.profile.serviceOrders.cardSlotAmount}: {booking.rentSlotAmount}
-              </span>
-            </div>
-          ))}
-          {order.bookings.length > 3 && (
-            <span className="text-xs text-slate-400">
-              +{order.bookings.length - 3} {VI.profile.serviceOrders.cardMoreBookings}
-            </span>
-          )}
-        </div>
-      </div>
-
-      {/* Right: Total amount */}
-      <div className="flex flex-col items-end justify-between text-right">
-        <span className="text-base font-bold text-purple-600">
-          {formatCurrency(order.totalAmount)}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function ProviderServiceOrdersPage() {
@@ -253,7 +86,13 @@ export default function ProviderServiceOrdersPage() {
     startService,
     completeService,
     loadingAction,
+    tabCounts,
   } = useProviderServiceOrders();
+  const [searchTerm, setSearchTerm] = useState('');
+  const [detailModal, setDetailModal] = useState<{ open: boolean; order: ServiceOrder | null }>({
+    open: false,
+    order: null,
+  });
 
   const [confirmModal, setConfirmModal] = useState<{ open: boolean; orderId: number | null; type: 'setWaiting' | 'startService' | 'completeService' }>({
     open: false,
@@ -264,15 +103,15 @@ export default function ProviderServiceOrdersPage() {
   const sidebarItems: DashboardSidebarItem[] = deriveSidebarItems();
   const brandName = deriveBrandName();
 
-  // Calculate counts for each status
-  const counts = STATUS_TABS.reduce<Record<string, number>>((acc, tab) => {
-    if (tab.key === 'all') {
-      acc[tab.key] = orders.length;
-    } else {
-      acc[tab.key] = orders.filter((o) => o.status === tab.key).length;
-    }
-    return acc;
-  }, {});
+  const filteredBySearch = orders.filter((order) => {
+    const q = searchTerm.trim().toLowerCase();
+    if (!q) return true;
+    return (
+      String(order.id).includes(q) ||
+      (order.cosplayerName ?? '').toLowerCase().includes(q) ||
+      String(order.cosplayerId).includes(q)
+    );
+  });
 
   const handleSetWaitingClick = (orderId: number) => {
     setConfirmModal({ open: true, orderId, type: 'setWaiting' });
@@ -302,6 +141,119 @@ export default function ProviderServiceOrdersPage() {
   const handleCancelConfirm = () => {
     setConfirmModal({ open: false, orderId: null, type: 'setWaiting' });
   };
+
+  const columns: TableProps<ServiceOrder>['columns'] = [
+    {
+      title: VI.provider.orders.table.orderId,
+      dataIndex: 'id',
+      key: 'id',
+      width: 90,
+      render: (id: number) => `#${id}`,
+    },
+    {
+      title: VI.provider.orders.table.cosplayer,
+      key: 'cosplayer',
+      render: (_, record) => record.cosplayerName ?? `ID: ${record.cosplayerId}`,
+    },
+    {
+      title: VI.profile.serviceOrders.cardBookings,
+      key: 'bookings',
+      render: (_, record) => record.bookings.length,
+      width: 110,
+    },
+    {
+      title: VI.provider.orders.table.total,
+      dataIndex: 'totalAmount',
+      key: 'totalAmount',
+      render: (amount: number) => formatCurrency(amount),
+      width: 160,
+    },
+    {
+      title: VI.provider.orders.table.createdAt,
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      render: (date: string) => formatDate(date),
+      width: 160,
+    },
+    {
+      title: VI.provider.orders.table.status,
+      dataIndex: 'status',
+      key: 'status',
+      width: 160,
+      render: (status: string) => {
+        const uiConfig = ORDER_STATUS_UI[status as OrderStatusValue];
+        return <Tag className={uiConfig?.badgeClass}>{uiConfig?.label ?? status}</Tag>;
+      },
+    },
+    {
+      title: VI.provider.orders.table.action,
+      key: 'action',
+      width: 200,
+      align: 'center',
+      render: (_, record) => {
+        const uiConfig = ORDER_STATUS_UI[record.status as OrderStatusValue];
+        const canSetWaiting = uiConfig?.actions.includes('SET_WAITING');
+        const canStartService = uiConfig?.actions.includes('START_SERVICE');
+        const canCompleteService = uiConfig?.actions.includes('COMPLETE_SERVICE');
+        return (
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+            <Tooltip title={VI.order.actions.viewDetail}>
+              <EyeOutlined
+                onClick={() => setDetailModal({ open: true, order: record })}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              />
+            </Tooltip>
+            {canSetWaiting && (
+              <Tooltip title={VI.profile.serviceOrders.setWaiting}>
+                <ClockCircleOutlined
+                  onClick={() => handleSetWaitingClick(record.id)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                />
+              </Tooltip>
+            )}
+            {canStartService && (
+              <Tooltip title={VI.profile.serviceOrders.startService}>
+                <PlayCircleOutlined
+                  onClick={() => handleStartServiceClick(record.id)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                />
+              </Tooltip>
+            )}
+            {canCompleteService && (
+              <Tooltip title={VI.profile.serviceOrders.completeService}>
+                <CheckCircleOutlined
+                  onClick={() => handleCompleteServiceClick(record.id)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                />
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    },
+  ];
+
+  const tabItems = STATUS_TABS.map((tab) => ({
+    key: tab.key,
+    label: (
+      <span>
+        {tab.label}
+        <span style={{ marginLeft: 4, opacity: 0.6 }}>
+          ({tabCounts[tab.key] ?? 0})
+        </span>
+      </span>
+    ),
+    children: (
+      <Table<ServiceOrder>
+        dataSource={filteredBySearch}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: VI.common.status.noData }}
+      />
+    ),
+  }));
 
   return (
     <>
@@ -347,75 +299,50 @@ export default function ProviderServiceOrdersPage() {
           </div>
         )}
 
-        {/* Sticky status filter bar */}
-        <div className="sticky top-0 z-10 mb-4 bg-white/95 py-3 backdrop-blur-sm">
-          <div className="flex flex-wrap gap-2">
-            {STATUS_TABS.map((tab) => {
-              const isActive = selectedStatus === tab.key;
-              const count = counts[tab.key] ?? 0;
-              const isUrgent = URGENT_STATUSES.has(tab.key as OrderStatusValue) && count > 0;
-
-              return (
-                <Tooltip key={tab.key} title={tab.label} placement="top">
-                  <button
-                    type="button"
-                    onClick={() => setStatus(tab.key)}
-                    className={`relative flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-all ${
-                      isActive
-                        ? 'bg-purple-600 text-white shadow-sm'
-                        : isUrgent
-                          ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
-                    }`}
-                  >
-                    {tab.label}
-                    {count > 0 && (
-                      <span
-                        className={`flex h-5 min-w-[20px] items-center justify-center rounded-full px-1.5 text-xs font-bold leading-none ${
-                          isActive
-                            ? 'bg-white text-purple-600'
-                            : 'bg-purple-600 text-white'
-                        }`}
-                      >
-                        {count > 99 ? '99+' : count}
-                      </span>
-                    )}
-                  </button>
-                </Tooltip>
-              );
-            })}
-          </div>
+        <div style={{ marginBottom: 16 }}>
+          <Input.Search
+            placeholder={VI.provider.orders.searchPlaceholder}
+            allowClear
+            enterButton={<SearchOutlined />}
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            onSearch={setSearchTerm}
+            style={{ maxWidth: 400 }}
+          />
         </div>
+        <Tabs
+          activeKey={selectedStatus}
+          onChange={(key) => setStatus(key as ProviderServiceOrderTab)}
+          items={tabItems}
+        />
+      </DashboardLayout>
 
-        {/* Orders list */}
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <Spin size="large" />
-            <span className="ml-3 text-slate-500">{VI.common.status.loading}</span>
-          </div>
-        ) : orders.length === 0 ? (
-          <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-12 text-center">
-            <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
-            <p className="mt-3 text-sm text-slate-500">
-              {VI.profile.serviceOrders.empty}
-            </p>
-          </div>
-        ) : (
+      <Modal
+        open={detailModal.open}
+        title={VI.profile.serviceOrders.orderTitle}
+        onCancel={() => setDetailModal({ open: false, order: null })}
+        footer={null}
+        width={680}
+      >
+        {detailModal.order && (
           <div className="space-y-3">
-            {orders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                isUrgent={URGENT_STATUSES.has(order.status as OrderStatusValue)}
-                onSetWaiting={handleSetWaitingClick}
-                onStartService={handleStartServiceClick}
-                onCompleteService={handleCompleteServiceClick}
-                isActionLoading={loadingAction === order.id}
-              />
-            ))}
+            <p><strong>{VI.provider.orders.table.orderId}:</strong> #{detailModal.order.id}</p>
+            <p><strong>{VI.provider.orders.table.cosplayer}:</strong> {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}</p>
+            <p><strong>{VI.provider.orders.table.total}:</strong> {formatCurrency(detailModal.order.totalAmount)}</p>
+            <p><strong>{VI.provider.orders.table.createdAt}:</strong> {formatDate(detailModal.order.createdAt)}</p>
+            <div>
+              <strong>{VI.profile.serviceOrders.cardBookings}:</strong>
+              <ul style={{ marginTop: 8, paddingLeft: 18 }}>
+                {detailModal.order.bookings.map((b) => (
+                  <li key={b.id}>
+                    {formatDate(b.bookingDate)} - {b.timeSlot} - {b.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
         )}
-      </DashboardLayout>
+      </Modal>
     </>
   );
 }

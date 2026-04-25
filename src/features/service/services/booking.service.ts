@@ -58,7 +58,7 @@ export async function payServiceOrderFn(
   orderId: number,
   paymentMethod: PaymentMethod,
   returnUrl: string
-): Promise<string> {
+): Promise<string | null> {
   console.log('[booking.service] payServiceOrderFn → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
   const result = await apiPayServiceOrder(orderId, paymentMethod, returnUrl);
   console.log('[booking.service] payServiceOrderFn ← paymentUrl:', result);

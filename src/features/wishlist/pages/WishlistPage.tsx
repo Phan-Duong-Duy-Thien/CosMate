@@ -33,15 +33,50 @@ function WishlistItemCard({
       imageUrls: string[]
       pricePerDay: number
       [key: string]: unknown
-    }
+    } | null
   }
   onViewDetail: (costumeId: number) => void
   onRemove: (wishlistId: number) => void
   isRemoving: boolean
 }) {
   const costume = item.costume
-  const firstImage = resolveImageUrl(costume.imageUrls?.[0] || '')
-  const displayPrice = costume.pricePerDay ? Number(costume.pricePerDay) : 0
+  const firstImage = resolveImageUrl(costume?.imageUrls?.[0] || '')
+  const displayPrice = costume?.pricePerDay ? Number(costume.pricePerDay) : 0
+  const costumeName = costume?.name || `Trang phục #${item.costumeId}`
+
+  // Backend can return wishlist item with deleted/missing costume.
+  if (!costume) {
+    return (
+      <Card className="group relative overflow-hidden border-slate-100 bg-white shadow-sm">
+        <button
+          type="button"
+          aria-label="Xóa khỏi danh sách yêu thích"
+          disabled={isRemoving}
+          className={cn(
+            'absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-slate-400 shadow-sm transition-all duration-200 hover:bg-white hover:text-pink-500 hover:shadow-md',
+            isRemoving && 'opacity-50'
+          )}
+          onClick={(e) => {
+            e.stopPropagation()
+            onRemove(item.id)
+          }}
+        >
+          {isRemoving ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Trash2 className="h-4 w-4" />
+          )}
+        </button>
+        <div className="flex h-56 w-full items-center justify-center bg-slate-100">
+          <ImageIcon className="h-12 w-12 text-slate-300" />
+        </div>
+        <div className="space-y-2.5 p-4">
+          <h3 className="line-clamp-2 text-sm font-semibold text-slate-700">{costumeName}</h3>
+          <p className="text-xs text-slate-400">Trang phục không còn khả dụng.</p>
+        </div>
+      </Card>
+    )
+  }
 
   return (
     <Card className="group relative overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
@@ -71,7 +106,7 @@ function WishlistItemCard({
         {firstImage ? (
           <img
             src={firstImage}
-            alt={costume.name || VI.common.toast.error}
+            alt={costumeName}
             className="h-56 w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
             onClick={() => onViewDetail(costume.id)}
           />
@@ -95,7 +130,7 @@ function WishlistItemCard({
           className="line-clamp-2 cursor-pointer text-sm font-semibold text-slate-800 transition-colors hover:text-pink-600"
           onClick={() => onViewDetail(costume.id)}
         >
-          {costume.name || VI.common.status.error}
+          {costumeName}
         </h3>
         <div className="flex items-baseline gap-1.5">
           <span className="text-lg font-bold text-pink-600">
