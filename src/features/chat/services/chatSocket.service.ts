@@ -1,17 +1,16 @@
-import { Client, IMessage } from "@stomp/stompjs"
+import { Client } from "@stomp/stompjs"
+import type { IMessage } from "@stomp/stompjs"
 import SockJS from "sockjs-client"
 import { getAuth } from "@/features/auth/services/tokenStorage"
 import type { SendMessagePayload, ChatMessage } from "../types"
 
-const WS_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+const WS_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/+$/, "")
 const WS_ENDPOINT = `${WS_BASE_URL}/ws`
 const SEND_DESTINATION = "/app/chat.sendMessage"
 
 let stompClient: Client | null = null
 let connectionCallbacks: Array<() => void> = []
-let connectionListeners: Set<(connected: boolean) => void> = new Set()
-let reconnectAttempts = 0
-const MAX_RECONNECT_ATTEMPTS = 3
+const connectionListeners: Set<(connected: boolean) => void> = new Set()
 
 // Module-level flags to prevent race conditions
 let isConnecting = false
@@ -78,18 +77,20 @@ export function connectChatSocket(onConnected?: () => void): () => void {
     return () => {}
   }
 
+  const encodedToken = encodeURIComponent(token)
+  const wsUrlWithToken = `${WS_ENDPOINT}?token=${encodedToken}&access_token=${encodedToken}`
+
   console.log("WS INIT", { token: token.slice(0, 20) + "...", wsEndpoint: WS_ENDPOINT })
 
   isConnecting = true
   stompClient = new Client({
-    webSocketFactory: () => new SockJS(WS_ENDPOINT),
+    webSocketFactory: () => new SockJS(wsUrlWithToken),
     connectHeaders: {
       Authorization: `Bearer ${token}`,
     },
     onConnect: () => {
       console.log("WS CONNECTED")
       isConnecting = false
-      reconnectAttempts = 0
       connectionCallbacks.forEach((cb) => cb())
       connectionCallbacks = []
       connectionListeners.forEach((cb) => cb(true))
@@ -107,7 +108,6 @@ export function connectChatSocket(onConnected?: () => void): () => void {
       isConnecting = false
     },
     reconnectDelay: 5000,
-    maxReconnectAttempts: MAX_RECONNECT_ATTEMPTS,
   })
 
   console.log("WS CONNECT — activating STOMP client")
