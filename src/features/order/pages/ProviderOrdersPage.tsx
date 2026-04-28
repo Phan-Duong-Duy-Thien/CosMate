@@ -150,7 +150,10 @@ export default function ProviderOrdersPage() {
   };
 
   // Handle dispute
-  const handleDispute = (orderId: number) => {
+  const handleDispute = (orderId: number, status: string) => {
+    if (status !== 'SHIPPING_BACK') {
+      return;
+    }
     setDisputeOrderId(orderId);
     setDisputeModalOpen(true);
   };
@@ -255,14 +258,6 @@ export default function ProviderOrdersPage() {
               />
             </Tooltip>
           )}
-          {record.status === 'DELIVERY_OUT' && (
-            <Tooltip title={VI.dispute.button}>
-              <FlagOutlined
-                onClick={() => handleDispute(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
-              />
-            </Tooltip>
-          )}
           {record.status === 'SHIPPING_BACK' && (
             <>
               <Tooltip title={VI.provider.orders.actions.complete}>
@@ -273,7 +268,7 @@ export default function ProviderOrdersPage() {
               </Tooltip>
               <Tooltip title={VI.dispute.button}>
                 <FlagOutlined
-                  onClick={() => handleDispute(record.id)}
+                  onClick={() => handleDispute(record.id, record.status)}
                   style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>

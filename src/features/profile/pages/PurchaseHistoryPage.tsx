@@ -277,7 +277,10 @@ export default function PurchaseHistoryPage() {
     }
   }
 
-  const handleCreateDispute = (orderId: number) => {
+  const handleCreateDispute = (orderId: number, status: string) => {
+    if (status !== 'DELIVERING_OUT') {
+      return
+    }
     setDisputeOrderId(orderId)
     setDisputeModalOpen(true)
   }
@@ -377,9 +380,7 @@ export default function PurchaseHistoryPage() {
 
     const isUnpaid = order.status === 'UNPAID'
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
-    const isDeliveryOut = order.status === 'DELIVERY_OUT'
     const isInUse = order.status === 'IN_USE'
-    const isShippingBack = order.status === 'SHIPPING_BACK'
     const isCancellable = order.status === 'UNPAID' || order.status === 'PAID'
 
     console.log('[ORDER ACTION]', order.id, order.status)
@@ -463,8 +464,8 @@ export default function PurchaseHistoryPage() {
               </button>
             )}
 
-            {/* DELIVERY_OUT: receive + dispute */}
-            {isDeliveryOut && (
+            {/* DELIVERING_OUT: receive + dispute */}
+            {isDeliveringOut && (
               <>
                 <button
                   type="button"
@@ -476,7 +477,7 @@ export default function PurchaseHistoryPage() {
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleCreateDispute(order.id)}
+                  onClick={() => handleCreateDispute(order.id, order.status)}
                   disabled={disputingOrderId === order.id}
                   className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                 >
@@ -495,15 +496,6 @@ export default function PurchaseHistoryPage() {
                   className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                 >
                   {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleCreateDispute(order.id)}
-                  disabled={disputingOrderId === order.id}
-                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-                >
-                  <Flag className="h-3.5 w-3.5" />
-                  {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
                 </button>
               </>
             )}
@@ -530,17 +522,6 @@ export default function PurchaseHistoryPage() {
                   {VI.provider.orders.tabs.extending}
                 </button>
               </>
-            )}
-            {isShippingBack && (
-              <button
-                type="button"
-                onClick={() => handleCreateDispute(order.id)}
-                disabled={disputingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
-              >
-                <Flag className="h-3.5 w-3.5" />
-                {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
-              </button>
             )}
             {isCompleted && (
               <button

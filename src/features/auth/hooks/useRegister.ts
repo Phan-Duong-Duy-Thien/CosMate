@@ -7,6 +7,7 @@ import { VI } from "@/shared/i18n/vi"
 import type { RegisterFormValues } from "../types"
 import { register } from "../api/auth.api"
 import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
+import { extractApiErrorMessage } from "@/shared/utils/apiError"
 import type { FormInstance } from "antd"
 
 export function useRegister(role: UserRole) {
@@ -54,7 +55,7 @@ export function useRegister(role: UserRole) {
         applyFieldErrors(form, fieldErrors)
         setFormError("")
       } else {
-        setFormError(VI.auth.register.messages.unableToRegister)
+        setFormError(extractApiErrorMessage(error, VI.auth.register.messages.unableToRegister))
       }
     } finally {
       setSubmitting(false)
