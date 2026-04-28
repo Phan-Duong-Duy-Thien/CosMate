@@ -1,8 +1,7 @@
-import { Heart, Image as ImageIcon, Star } from "lucide-react"
+import { Heart, Image as ImageIcon } from "lucide-react"
 import { Tag } from "antd"
 
 import type { CostumeItem } from "../types"
-import { VI } from "@/shared/i18n/vi"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
@@ -22,10 +21,6 @@ export const CostumeCard = ({
   const costumeId = Number(costume.id)
   const liked = isInWishlist(costumeId)
   const displayName = costume.name?.trim() || "-"
-  const displayCharacterName =
-    costume.characterName?.trim() && costume.characterName !== "—"
-      ? costume.characterName
-      : "-"
   const displayShopName = costume.shopName?.trim() || "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
 
@@ -61,22 +56,16 @@ export const CostumeCard = ({
           className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
+          <Badge
+            className={cn(
+              "rounded-full px-3 py-1 text-xs font-semibold text-white",
+              costume.isAvailable ? "bg-emerald-600" : "bg-slate-700"
+            )}
+          >
+            {costume.isAvailable ? "Có sẵn" : "Đã thuê"}
+          </Badge>
           {costume.isAdult18 && (
             <Badge className="bg-pink-500 text-white">18+</Badge>
-          )}
-          {costume.bestSeller && (
-            <Badge className="bg-amber-100 text-amber-700">Bán chạy</Badge>
-          )}
-          {costume.rentalsCount > 0 && (
-            <Badge className="inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold bg-amber-100 text-amber-700">
-              {costume.rentalsCount} lượt thuê
-            </Badge>
-          )}
-          {costume.hasAccessories && (
-            <Badge className="bg-violet-100 text-violet-700">
-              Có phụ kiện
-              {costume.accessoryCount ? ` (${costume.accessoryCount})` : ""}
-            </Badge>
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
@@ -107,24 +96,23 @@ export const CostumeCard = ({
         </div>
       </div>
       <div className="flex min-h-[196px] flex-1 flex-col gap-2 p-3">
-        <div className="flex items-center gap-2 text-sm text-slate-600">
-          <Star className="h-4 w-4 text-yellow-400" />
-          {costume.rating.toFixed(1)}
-        </div>
+        <p className="line-clamp-1 text-xs text-slate-600">
+          {displayShopName}
+        </p>
         <h3 className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-800">
           {displayName}
         </h3>
         <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          {displayCharacterName}
+          Shop: {displayShopName}
         </p>
         <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          {VI.costumeRental.listShopLabel}: {displayShopName}
+          Nhân vật: {costume.characterName?.trim() || "-"}
         </p>
         <div className="min-h-7 text-sm font-semibold leading-tight text-pink-600">
           {hasPrice ? (
             <>
               <span className="whitespace-nowrap">
-                {costume.priceMin.toLocaleString("vi-VN")} VND – {costume.priceMax.toLocaleString("vi-VN")} VND
+                {costume.priceMin.toLocaleString("vi-VN")} VND
               </span>
               <span className="ml-1 text-[11px] font-normal text-slate-400">/ngày</span>
             </>
@@ -135,7 +123,7 @@ export const CostumeCard = ({
         <Button
           variant="soft"
           size="sm"
-          className="mt-auto w-full"
+          className="mt-auto w-full rounded-md bg-pink-50 text-slate-700 hover:bg-pink-100"
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)

@@ -7,6 +7,7 @@ import type { LoginFormValues } from "../types"
 import { login } from "../api/auth.api"
 import { saveAuth, getRoles } from "../services/tokenStorage"
 import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
+import { extractApiErrorMessage } from "@/shared/utils/apiError"
 import type { FormInstance } from "antd"
 
 export function useLogin() {
@@ -48,7 +49,7 @@ export function useLogin() {
       message.success(VI.auth.login.messages.loginSuccess)
 
       return roles
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Login error:", error)
       const fieldErrors = extractFieldErrors(error)
       if (fieldErrors && form) {
@@ -56,8 +57,7 @@ export function useLogin() {
         setFormError("")
         return null
       }
-      const errorMsg = error.response?.data?.message || VI.auth.login.messages.invalidCredentials
-      setFormError(errorMsg)
+      setFormError(extractApiErrorMessage(error, VI.auth.login.messages.invalidCredentials))
       return null
     } finally {
       setSubmitting(false)
@@ -92,10 +92,9 @@ export function useLogin() {
       message.success(VI.auth.login.messages.loginSuccess)
 
       return roles
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("❌ Google login error:", error)
-      const errorMsg = error.response?.data?.message || VI.auth.login.messages.loginFailed
-      setFormError(errorMsg)
+      setFormError(extractApiErrorMessage(error, VI.auth.login.messages.loginFailed))
       return null
     } finally {
       setGoogleLoading(false)
