@@ -9,7 +9,6 @@ import { useState, useCallback, useEffect } from 'react';
 import { message } from 'antd';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { saveProviderProfile, fetchUserAddresses, createUserAddressForShop, uploadProviderAvatar, uploadProviderCoverImageSvc } from '../services/provider.service';
-import { getProviderByUserId } from '../api/provider.api';
 import type { UserAddress } from '@/features/profile/api/userAddress.api';
 import type { UpdateProviderProfilePayload } from '../types';
 import type { Province, District } from '@/features/profile/types';
@@ -182,6 +181,10 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
   }, []);
 
   const submit = useCallback(async (shopAddressId: number): Promise<boolean> => {
+    if (!providerId) {
+      setSaveError('Không tìm thấy thông tin nhà cung cấp');
+      return false;
+    }
     setSaving(true);
     setSaveError(null);
     try {
@@ -202,7 +205,7 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
     } finally {
       setSaving(false);
     }
-  }, [userId, formData]);
+  }, [providerId, formData]);
 
   const uploadAvatar = useCallback(async (file: File): Promise<void> => {
     if (!providerId) {
@@ -212,9 +215,6 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
     try {
       await uploadProviderAvatar(userId, file);
       message.success('Avatar đã được cập nhật');
-      // refetch provider to update profile data
-      const updated = await getProviderByUserId(userId);
-      setProviderId(updated.id);
     } catch (err) {
       console.error('[useProviderProfileCompletion] upload avatar error:', err);
       message.error('Tải avatar thất bại');
@@ -229,9 +229,6 @@ export function useProviderProfileCompletion(): UseProviderProfileCompletionResu
     try {
       await uploadProviderCoverImageSvc(providerId, file);
       message.success('Ảnh bìa đã được cập nhật');
-      // refetch provider to update profile data
-      const updated = await getProviderByUserId(userId);
-      setProviderId(updated.id);
     } catch (err) {
       console.error('[useProviderProfileCompletion] upload cover image error:', err);
       message.error('Tải ảnh bìa thất bại');

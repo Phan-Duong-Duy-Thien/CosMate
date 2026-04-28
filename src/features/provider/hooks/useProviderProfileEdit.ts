@@ -14,7 +14,7 @@ import { getProviderByUserId, uploadProviderCoverImage } from '@/features/provid
 import { getUserAddresses } from '@/features/profile/api/userAddress.api';
 import { updateUserAddress, deleteUserAddress } from '@/features/profile/api/userAddress.api';
 import { updateProviderProfile } from '@/features/provider/api/provider.api';
-import { uploadAvatar } from '@/features/profile/services/userProfile.service';
+import { uploadAvatar as uploadUserAvatar } from '@/features/profile/services/userProfile.service';
 import type { ProviderProfile } from '@/features/provider/types';
 import type { UserAddress, UpsertUserAddressPayload } from '@/features/profile/types';
 
@@ -129,7 +129,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const uploadAvatar = useCallback(async (file: File): Promise<void> => {
     if (!profile) return;
     try {
-      await uploadAvatar(profile.userId, file);
+      await uploadUserAvatar(profile.userId, file);
       message.success('Avatar đã được cập nhật');
       await loadData();
     } catch (err) {
