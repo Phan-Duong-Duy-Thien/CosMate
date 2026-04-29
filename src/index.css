@@ -143,3 +143,12 @@
 
 /* Ant Design Message — use default animations, no custom overrides */
 
+@keyframes home-title-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-50% - 1rem));
+  }
+}
+

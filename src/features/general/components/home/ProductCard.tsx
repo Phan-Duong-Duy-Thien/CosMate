@@ -37,7 +37,7 @@ export const ProductCard = ({
         src={product.imageUrls[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
         alt={product.name}
         loading="lazy"
-        className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+        className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
       />
       {product.status === "RENTED" && (
         <Badge className="absolute left-3 top-3 bg-slate-700 text-white">Đã thuê</Badge>
@@ -67,8 +67,14 @@ export const ProductCard = ({
       <div className="text-xs text-slate-400">
         {VI.costumeRental.status}: {product.status}
       </div>
-      <h3 className="line-clamp-2 text-sm font-semibold text-slate-800">
-        {product.name}
+      <h3 className="overflow-hidden text-sm font-semibold text-slate-800" title={product.name}>
+        <span className="block truncate group-hover:hidden">{product.name}</span>
+        <span className="hidden group-hover:block">
+          <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
+            <span>{product.name}</span>
+            <span aria-hidden="true">{product.name}</span>
+          </span>
+        </span>
       </h3>
       <div className="text-base font-semibold text-pink-600">
         {product.pricePerDay.toLocaleString("vi-VN")} VNĐ
