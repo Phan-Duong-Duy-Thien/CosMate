@@ -6,9 +6,10 @@ import { ProductSection } from "../components/home/ProductSection"
 import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
 import { TagChips } from "../components/home/TagChips"
-import { bannerSlides, shops, tagList } from "../mocks/home.mock"
+import { bannerSlides, shops as mockShops, tagList } from "../mocks/home.mock"
 import type { BannerSlide, Product, TagKey, UIState } from "./home.types"
 import { useFeaturedCostumes } from "@/features/costume-rental/hooks/useFeaturedCostumes"
+import { useTrustedShops } from "../hooks/useTrustedShops"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
@@ -20,6 +21,7 @@ const HomePage = () => {
   const productSectionRef = React.useRef<HTMLDivElement>(null)
 
   const { items, isLoading, error } = useFeaturedCostumes()
+  const { shops: trustedShops, loading: shopsLoading, error: shopsError } = useTrustedShops()
 
   const filteredProducts = React.useMemo(() => {
     return items
@@ -33,6 +35,11 @@ const HomePage = () => {
         rentalsCount: costume.rentalsCount ?? 0,
       }))
   }, [items])
+
+  const displayShops = React.useMemo(
+    () => (trustedShops.length > 0 ? trustedShops : mockShops),
+    [trustedShops]
+  )
 
   React.useEffect(() => {
     const elements = Array.from(
@@ -124,7 +131,11 @@ const HomePage = () => {
               />
             )}
 
-            <ShopCarousel shops={shops} />
+            <ShopCarousel
+              shops={displayShops}
+              loading={shopsLoading}
+              error={shopsError}
+            />
           </div>
         </section>
       </main>

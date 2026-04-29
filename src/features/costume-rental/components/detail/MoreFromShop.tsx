@@ -73,10 +73,18 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
       <img
         src={item.imageUrl}
         alt={item.name}
-        className="h-40 w-full object-cover"
+        className="h-40 w-full object-cover object-top"
       />
       <div className="space-y-1 p-3">
-        <p className="line-clamp-2 text-sm font-semibold text-slate-800">{item.name}</p>
+        <p className="overflow-hidden text-sm font-semibold text-slate-800" title={item.name}>
+          <span className="block truncate group-hover:hidden">{item.name}</span>
+          <span className="hidden group-hover:block">
+            <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
+              <span>{item.name}</span>
+              <span aria-hidden="true">{item.name}</span>
+            </span>
+          </span>
+        </p>
         <p className="text-xs text-slate-500">{item.characterName}</p>
         <div className="flex items-center justify-between">
           <p className="text-xs font-semibold leading-tight text-pink-600">

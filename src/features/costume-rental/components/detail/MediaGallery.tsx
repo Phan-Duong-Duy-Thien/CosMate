@@ -57,7 +57,7 @@ export const MediaGallery = ({
 
   return (
     <div className="space-y-4">
-      <div className="relative overflow-hidden rounded-3xl border border-white/80 bg-white/80 shadow-sm">
+      <div className="relative overflow-hidden rounded-3xl border border-white bg-white shadow-sm">
         <div className="absolute left-4 top-4 flex flex-wrap gap-2">
           {isAdult18 && <Badge className="bg-pink-500 text-white">18+</Badge>}
           {bestSeller && (
@@ -97,18 +97,18 @@ export const MediaGallery = ({
           </button>
         )}
 
-        <div className="aspect-[4/5] w-full bg-slate-50">
+        <div className="aspect-[4/5] w-full bg-white">
           {activeItem?.type === "video" ? (
             <video
               controls
-              className="h-full w-full object-cover"
+              className="h-full w-full object-contain"
               src={activeItem.url}
             />
           ) : (
             <img
               src={activeItem?.url}
               alt="Costume preview"
-              className="h-full w-full object-cover transition-transform duration-500"
+              className="h-full w-full object-contain transition-transform duration-500"
             />
           )}
         </div>

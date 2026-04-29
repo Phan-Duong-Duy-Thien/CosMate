@@ -9,9 +9,11 @@ import { SectionHeader } from "@/shared/components/SectionHeader"
 
 interface ShopCarouselProps {
   shops: Shop[]
+  loading?: boolean
+  error?: string | null
 }
 
-export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
+export const ShopCarousel = ({ shops, loading = false, error = null }: ShopCarouselProps) => {
   const scrollRef = React.useRef<HTMLDivElement>(null)
 
   const handleScrollBy = (amount: number) => {
@@ -53,6 +55,16 @@ export const ShopCarousel = ({ shops }: ShopCarouselProps) => {
         <style>{`
           .scrollbar-hide::-webkit-scrollbar { display: none; }
         `}</style>
+        {loading && (
+          <Card className="min-w-[260px] border-slate-100 p-4 text-sm text-slate-500 shadow-sm">
+            Đang tải shop uy tín...
+          </Card>
+        )}
+        {!loading && error && (
+          <Card className="min-w-[260px] border-rose-100 p-4 text-sm text-rose-500 shadow-sm">
+            Không tải được shop thật, đang hiển thị dữ liệu dự phòng.
+          </Card>
+        )}
         {shops.map((shop) => (
           <Card
             key={shop.id}
