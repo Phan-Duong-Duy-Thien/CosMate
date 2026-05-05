@@ -54,7 +54,7 @@ export default function CostumeDetailPage() {
   const currentUserId = getUserId()
 
   // Fetch provider info
-  const { provider, loading: providerLoading } = useProviderInfo(costume?.providerId)
+  const { provider } = useProviderInfo(costume?.providerId)
 
   // Start chat
   const { startChat } = useStartChat()
@@ -226,11 +226,14 @@ export default function CostumeDetailPage() {
     setShowNoAddressModal(false)
   }
 
+  const pageShellClass =
+    "min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20"
+
   if (isLoading) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
-          <div className="rounded-2xl border border-dashed border-pink-200 bg-white/70 p-8 text-center text-sm text-slate-500">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6">
+          <div className="rounded-[1.2rem] border-[3px] border-indigo-950/20 bg-white/70 p-8 text-center text-sm text-slate-500">
             Đang tải chi tiết trang phục...
           </div>
         </div>
@@ -240,9 +243,9 @@ export default function CostumeDetailPage() {
 
   if (error) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
-          <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6">
+          <div className="rounded-[1.2rem] border-[3px] border-red-200 bg-red-50 p-6 text-center text-sm text-red-600">
             <p>{error}</p>
             <Button variant="soft" size="sm" className="mt-3 rounded-full" onClick={refetch}>
               Thử lại
@@ -255,9 +258,9 @@ export default function CostumeDetailPage() {
 
   if (!costume) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6 text-center">
-          <div className="rounded-2xl border border-pink-100 bg-white/80 p-6 text-sm text-slate-600">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6 text-center">
+          <div className="rounded-[1.2rem] border-[3px] border-indigo-950/20 bg-white/80 p-6 text-sm text-slate-600">
             Không tìm thấy trang phục bạn yêu cầu.
             <div className="mt-3">
               <Link to="/costumes" className="text-pink-600 underline">Quay lại danh sách</Link>
@@ -271,10 +274,10 @@ export default function CostumeDetailPage() {
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-5">
+    <section className={pageShellClass}>
+      <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-5">
 
-        <div className="mt-4 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <MediaGallery
             images={resolvedImages}
             isAdult18={false}
@@ -286,27 +289,29 @@ export default function CostumeDetailPage() {
             onToggleWishlist={handleToggleWishlist}
             wishlistLoading={wishlistToggling}
           />
-          <PurchasePanel
-            costume={costume}
-            days={days}
-            startDate={startDate}
-            selectedRentalOptionId={selectedRentalOptionId}
-            checkedOptionalIds={checkedOptionalIds}
-            quote={quote}
-            onDaysChange={setDays}
-            onStartDateChange={setStartDate}
-            onSelectRentalOption={setSelectedRentalOptionId}
-            onToggleOptionalAccessory={toggleOptionalAccessory}
-            onRentNow={handleRentNow}
-          />
-
-          {/* Validation Error */}
-          {validationError && (
-            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              {validationError}
-            </div>
-          )}
+          <div className="lg:sticky lg:top-[84px] lg:self-start">
+            <PurchasePanel
+              costume={costume}
+              days={days}
+              startDate={startDate}
+              selectedRentalOptionId={selectedRentalOptionId}
+              checkedOptionalIds={checkedOptionalIds}
+              quote={quote}
+              onDaysChange={setDays}
+              onStartDateChange={setStartDate}
+              onSelectRentalOption={setSelectedRentalOptionId}
+              onToggleOptionalAccessory={toggleOptionalAccessory}
+              onRentNow={handleRentNow}
+            />
+          </div>
         </div>
+
+        {/* Validation Error */}
+        {validationError && (
+          <div className="mt-3 rounded-xl border-[3px] border-red-200 bg-red-50/95 p-3 text-sm text-red-600 lg:ml-auto lg:w-[44%]">
+            {validationError}
+          </div>
+        )}
 
         {/* Shop Info Card */}
         {provider && (
@@ -404,39 +409,5 @@ export default function CostumeDetailPage() {
         )}
       </div>
     </section>
-  )
-}
-
-function ApiField({
-  label,
-  value,
-  fullWidth,
-  preWrap,
-}: {
-  label: string
-  value: string
-  fullWidth?: boolean
-  preWrap?: boolean
-}) {
-  return (
-    <div className={fullWidth ? "md:col-span-2" : undefined}>
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1 text-sm text-slate-700${preWrap ? " whitespace-pre-line" : ""}`}>{value}</p>
-    </div>
-  )
-}
-
-function ApiListSection({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-      <ul className="mt-2 space-y-2">{children}</ul>
-    </div>
   )
 }

@@ -26,17 +26,16 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
   return (
     <div className="space-y-4">
-      <div className="inline-block rounded-lg border-2 border-pink-200 bg-pink-50 px-3 py-1.5">
-        <h3 className="text-sm font-semibold text-slate-800 text-center">
+      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-200 to-violet-200 px-4 py-1.5 shadow-[4px_4px_0_0_rgba(30,27,75,0.35)]">
+        <h3 className="text-sm font-extrabold text-indigo-950 text-center">
           {VI.costumeRental.detail.reviewsTitle}
         </h3>
       </div>
 
-      {/* Rating Summary */}
-      <Card className="rounded-xl border border-pink-100 bg-white p-4">
+      <Card className="rounded-[1.2rem] border-[3px] border-indigo-950/20 bg-white p-4">
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <p className="text-2xl font-bold text-pink-600">{average.toFixed(1)}</p>
+            <p className="text-2xl font-extrabold text-pink-600">{average.toFixed(1)}</p>
             <div className="mt-1 flex text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -56,7 +55,7 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
       {loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="border-pink-100 bg-white p-4 animate-pulse">
+            <Card key={i} className="animate-pulse border-[3px] border-indigo-950/15 bg-white p-4">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-pink-100" />
                 <div className="flex-1 space-y-2 pt-1">
@@ -75,14 +74,14 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
       {/* Error State */}
       {!loading && error && (
-        <Card className="border-pink-100 bg-white p-4 text-center text-sm text-red-500">
+        <Card className="border-[3px] border-red-200 bg-white p-4 text-center text-sm text-red-500">
           {error}
         </Card>
       )}
 
       {/* Reviews List */}
       {!loading && !error && reviews.length === 0 && (
-        <Card className="border-pink-100 bg-white p-4 text-center text-sm text-slate-500">
+        <Card className="border-[3px] border-indigo-950/15 bg-white p-4 text-center text-sm text-slate-500">
           {VI.costumeRental.detail.noReviews}
         </Card>
       )}
@@ -100,10 +99,10 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
 function ReviewCard({ review }: { review: ReviewItem }) {
   return (
-    <Card className="border-pink-100 bg-white p-4">
+    <Card className="rounded-[1.1rem] border-[3px] border-indigo-950/15 bg-white p-4">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-100 text-sm font-semibold text-pink-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-indigo-950 bg-pink-100 text-sm font-semibold text-pink-600">
             U
           </div>
           <div>
