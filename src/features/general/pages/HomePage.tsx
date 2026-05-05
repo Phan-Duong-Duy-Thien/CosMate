@@ -81,9 +81,9 @@ const HomePage = () => {
   }
 
   return (
-    <div className="bg-transparent">
+    <div className="bg-gradient-to-b from-pink-50/40 via-white to-violet-50/25">
       <main
-        className="pb-12 [&_[data-reveal=true]]:translate-y-2 [&_[data-reveal=true]]:opacity-0 [&_[data-reveal=true]]:transition-all [&_[data-reveal=true]]:duration-200 [&_[data-reveal=true][data-visible=true]]:translate-y-0 [&_[data-reveal=true][data-visible=true]]:opacity-100 motion-reduce:[&_[data-reveal=true]]:translate-y-0 motion-reduce:[&_[data-reveal=true]]:opacity-100"
+        className="pb-14 [&_[data-reveal=true]]:translate-y-2 [&_[data-reveal=true]]:opacity-0 [&_[data-reveal=true]]:transition-all [&_[data-reveal=true]]:duration-300 [&_[data-reveal=true][data-visible=true]]:translate-y-0 [&_[data-reveal=true][data-visible=true]]:opacity-100 motion-reduce:[&_[data-reveal=true]]:translate-y-0 motion-reduce:[&_[data-reveal=true]]:opacity-100"
       >
         <HeroCarousel slides={bannerSlides} onCtaClick={handleCtaClick} />
         <QuizModal
@@ -96,7 +96,7 @@ const HomePage = () => {
             })
           }}
         />
-        <section className="relative left-1/2 right-1/2 mt-4 w-screen -translate-x-1/2 bg-transparent py-5 md:py-6">
+        <section className="relative left-1/2 right-1/2 mt-2 w-screen -translate-x-1/2 py-6 md:mt-4 md:py-8">
           <div className="mx-auto w-full max-w-screen-2xl px-4 md:px-6 xl:px-8">
             <TagChips
               tags={tagList}
@@ -154,12 +154,14 @@ const StatusCard = ({
   actionLabel?: string
   onAction?: () => void
 }) => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-6" data-reveal="true">
-    <div className="rounded-2xl border border-pink-100 bg-white p-6 text-center shadow-sm">
-      <h3 className="text-xl font-semibold text-slate-900">{title}</h3>
-      <p className="mt-2 text-sm text-slate-500">{description}</p>
+  <section className="mx-auto w-full max-w-screen-2xl pt-8" data-reveal="true">
+    <div className="rounded-2xl border border-pink-100/90 bg-white/90 p-8 text-center shadow-md shadow-pink-500/5 backdrop-blur-sm">
+      <h3 className="text-xl font-semibold tracking-tight text-slate-900">{title}</h3>
+      <p className="mx-auto mt-3 max-w-md text-sm leading-relaxed text-slate-600">
+        {description}
+      </p>
       {actionLabel && onAction && (
-        <Button className="mt-6" variant="soft" onClick={onAction}>
+        <Button className="mt-8" variant="soft" onClick={onAction}>
           {actionLabel}
         </Button>
       )}
@@ -168,16 +170,21 @@ const StatusCard = ({
 )
 
 const HomeSkeleton = () => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-6" data-reveal="true">
-    <div className="animate-pulse space-y-4">
-      <div className="h-7 w-64 rounded-full bg-pink-100" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
-        {Array.from({ length: 10 }).map((_, index) => (
-          <div
-            key={`skeleton-${index}`}
-            className="h-72 rounded-2xl bg-slate-100"
-          />
-        ))}
+  <section className="mx-auto w-full max-w-screen-2xl pt-8" data-reveal="true">
+    <div className="rounded-2xl border border-pink-50 bg-white/60 p-6 shadow-inner backdrop-blur-sm">
+      <div className="animate-pulse space-y-6">
+        <div className="flex flex-col gap-2">
+          <div className="h-5 w-48 rounded-full bg-pink-100" />
+          <div className="h-4 max-w-md rounded-full bg-slate-100" />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 lg:gap-5">
+          {Array.from({ length: 10 }).map((_, index) => (
+            <div
+              key={`skeleton-${index}`}
+              className="h-72 rounded-2xl bg-gradient-to-br from-slate-100 to-pink-50/40"
+            />
+          ))}
+        </div>
       </div>
     </div>
   </section>

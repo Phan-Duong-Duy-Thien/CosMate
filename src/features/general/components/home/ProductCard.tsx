@@ -14,6 +14,13 @@ interface ProductCardProps {
   onViewDetail: (productId: number) => void
 }
 
+const statusLabelVi: Record<string, string> = {
+  AVAILABLE: "Sẵn sàng cho thuê",
+  RENTED: "Đang được thuê",
+  MAINTENANCE: "Đang bảo trì",
+  UNAVAILABLE: "Tạm ngưng",
+}
+
 export const ProductCard = ({
   product,
   isWishlisted,
@@ -30,7 +37,7 @@ export const ProductCard = ({
         onViewDetail(product.id)
       }
     }}
-    className="group cursor-pointer overflow-hidden border-slate-100 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+    className="group cursor-pointer overflow-hidden border border-slate-100/90 bg-white shadow-sm ring-0 transition-all duration-300 hover:-translate-y-1 hover:border-pink-100 hover:shadow-xl hover:shadow-pink-500/10 hover:ring-1 hover:ring-pink-100"
   >
     <div className="relative">
       <img
@@ -46,7 +53,7 @@ export const ProductCard = ({
         type="button"
         aria-label={VI.general.home.featured.wishlist}
         className={cn(
-          "absolute right-3 top-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
+          "absolute right-3 top-3 rounded-full bg-white/95 p-2 text-slate-500 shadow-md backdrop-blur-sm transition hover:scale-105",
           isWishlisted && "text-pink-500"
         )}
         onClick={(event) => {
@@ -63,9 +70,9 @@ export const ProductCard = ({
         </div>
       )}
     </div>
-    <div className="space-y-2 p-3">
-      <div className="text-xs text-slate-400">
-        {VI.costumeRental.status}: {product.status}
+    <div className="space-y-2 p-3.5">
+      <div className="text-xs font-medium text-slate-500">
+        {statusLabelVi[product.status] ?? product.status}
       </div>
       <h3 className="overflow-hidden text-sm font-semibold text-slate-800" title={product.name}>
         <span className="block truncate group-hover:hidden">{product.name}</span>
