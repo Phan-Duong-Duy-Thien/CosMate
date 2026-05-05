@@ -20,6 +20,61 @@ interface ShipImage {
   confirm: boolean;
 }
 
+/**
+ * Raw API response shape from GET /api/orders/user/{userId} and /api/orders/provider/{providerId}
+ */
+interface RawOrderItem {
+  id: number;
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: string;
+  totalAmount: number;
+  totalDepositAmount: number;
+  createdAt: string;
+  updatedAt?: string;
+  cosplayerName?: string;
+  details: Array<{
+    id: number;
+    orderId: number;
+    costumeId: number;
+    size: string;
+    numberOfItems: number;
+    rentDay: number;
+    rentStart: string;
+    rentEnd: string;
+    returnDay: string | null;
+    depositAmount: number;
+    rentAmount: number;
+    surchargeAmount: number;
+    accessoriesAmount: number;
+    rentOptionAmount: number;
+    rentDiscount: number;
+  }>;
+}
+
+/** Map raw API order to OrderItem shape */
+function mapRawOrder(raw: RawOrderItem): OrderItem {
+  const detail = raw.details?.[0];
+  return {
+    id: raw.id,
+    orderType: raw.orderType,
+    status: raw.status as OrderItem['status'],
+    totalAmount: raw.totalAmount,
+    depositAmount: raw.totalDepositAmount,
+    rentDay: detail?.rentDay ?? 0,
+    rentStart: detail?.rentStart ?? '',
+    rentEnd: detail?.rentEnd ?? '',
+    costumeId: detail?.costumeId ?? 0,
+    costumeName: '', // populated by usePurchaseOrders batch-fetch
+    costumeImage: '',
+    cosplayerId: raw.cosplayerId,
+    cosplayerName: raw.cosplayerName ?? '',
+    createdAt: raw.createdAt,
+    updatedAt: raw.updatedAt ?? raw.createdAt,
+  };
+}
+
 interface ShipTracking {
   id: number;
   trackingCode: string;
@@ -56,22 +111,54 @@ export async function createOrder(
  * @returns List of orders for the provider
  */
 export async function getOrdersByProvider(providerId: number): Promise<OrderItem[]> {
-  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[]>>(
     `/api/orders/provider/${providerId}`
   );
-  return response.data.result;
+  return response.data.result.map(mapRawOrder);
 }
 
 /**
- * Get all orders for a user
+ * Get all orders for a user (paginated)
  * @param userId - The user ID
- * @returns List of orders for the user
+ * @param page - Page number (1-based), default 1
+ * @param size - Page size, default 10
+ * @returns Paginated orders response
  */
-export async function getOrdersByUserId(userId: number): Promise<OrderItem[]> {
-  const response = await axiosInstance.get<ApiResponse<OrderItem[]>>(
+export async function getOrdersByUserId(
+  userId: number,
+  page: number = 1,
+  size: number = 10
+): Promise<{ orders: OrderItem[]; total: number; isPaginated: boolean }> {
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[] | { content: RawOrderItem[]; totalElements: number }>>(
+    `/api/orders/user/${userId}`,
+    {
+      params: { page, size },
+    }
+  );
+  const result = response.data.result;
+  if (Array.isArray(result)) {
+    return {
+      orders: result.map(mapRawOrder),
+      total: result.length,
+      isPaginated: false,
+    };
+  }
+  return {
+    orders: result.content.map(mapRawOrder),
+    total: result.totalElements,
+    isPaginated: true,
+  };
+}
+
+/**
+ * Fetch all orders for a user (client-side pagination + filtering).
+ * Use this when BE does NOT support pagination — fetches everything client-side.
+ */
+export async function getAllOrdersByUserId(userId: number): Promise<OrderItem[]> {
+  const response = await axiosInstance.get<ApiResponse<RawOrderItem[]>>(
     `/api/orders/user/${userId}`
   );
-  return response.data.result;
+  return response.data.result.map(mapRawOrder);
 }
 
 /**
@@ -97,6 +184,7 @@ export async function prepareOrder(orderId: number): Promise<OrderItem> {
 export async function shipOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ): Promise<ShipOrderResult> {
@@ -108,11 +196,13 @@ export async function shipOrder(
   });
 
   const response = await axiosInstance.post<ApiResponse<ShipOrderResult>>(
-    `/api/orders/${orderId}/ship?trackingCode=${encodeURIComponent(trackingCode)}`,
+    `/api/orders/${orderId}/ship`,
     formData,
     {
       params: {
-        notes: notes,
+        trackingCode,
+        shippingCarrierName: shippingCarrierName || undefined,
+        notes,
       },
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -195,6 +285,18 @@ export async function completeOrder(orderId: number): Promise<OrderItem> {
 }
 
 /**
+ * Cancel an order (update status to CANCELLED)
+ * NOTE: API response does NOT return updated order — caller must refetch after success.
+ * @param orderId - The order ID
+ */
+export async function cancelOrder(orderId: number): Promise<void> {
+  const response = await axiosInstance.post<ApiResponse<string>>(
+    `/api/orders/${orderId}/cancel`
+  );
+  return response.data.result;
+}
+
+/**
  * Return an order (update status to SHIPPING_BACK)
  * @param orderId - The order ID
  * @param trackingCode - The tracking code for return shipment
@@ -231,19 +333,82 @@ export async function returnOrder(
   return response.data.result;
 }
 
+// createDispute moved to dispute.api.ts
+
+// Extend order detail response
+export interface ExtendOrderResponse {
+  id: number;
+  paymentUrl: string | null;
+  status: string;
+}
+
 /**
- * Create a dispute for an order
+ * Extend rental duration for an order detail in IN_USE status.
  * @param orderId - The order ID
- * @param reason - The dispute reason (raw string body)
+ * @param detailId - The order detail ID
+ * @param payload - { extendDays, paymentMethod, returnUrl, payNow }
+ * @returns Extended order with optional paymentUrl (MoMo/VNPay) or null (WALLET)
  */
-export async function createDispute(orderId: number, reason: string): Promise<void> {
-  await axiosInstance.post(
-    `/api/disputes?orderId=${orderId}`,
-    reason,
-    {
-      headers: {
-        'Content-Type': 'text/plain',
-      },
-    }
+export async function extendOrderDetail(
+  orderId: number,
+  detailId: number,
+  payload: {
+    extendDays: number;
+    paymentMethod: string;
+    returnUrl: string;
+    payNow: boolean;
+  }
+): Promise<ExtendOrderResponse> {
+  const response = await axiosInstance.post<ApiResponse<ExtendOrderResponse>>(
+    `/api/orders/${orderId}/details/${detailId}/extend`,
+    payload
   );
+  return response.data.result;
+}
+
+// ─── Extend History ───────────────────────────────────────────────────────────
+
+/** Payment status for an extend transaction */
+export type ExtendPaymentStatus = 'PAID' | 'PENDING' | 'FAILED';
+
+/** Extend list item */
+export interface OrderExtend {
+  id: number;
+  extendDays: number;
+  extendPrice: number;
+  paymentStatus: ExtendPaymentStatus;
+  createdAt: string;
+}
+
+/** Full extend detail */
+export interface OrderExtendDetail extends OrderExtend {
+  oldReturnDate: string;
+  newReturnDate: string;
+  paymentUrl: string | null;
+}
+
+/**
+ * Get list of extend transactions for an order.
+ * GET /api/orders/{orderId}/extends
+ */
+export async function getOrderExtends(orderId: number): Promise<OrderExtend[]> {
+  const response = await axiosInstance.get<ApiResponse<OrderExtend[]>>(
+    `/api/orders/${orderId}/extends`
+  );
+  return response.data.result;
+}
+
+/**
+ * Get full detail of a single extend transaction.
+ * GET /api/orders/{orderId}/details/{detailId}/extend/{extendId}
+ */
+export async function getExtendDetail(
+  orderId: number,
+  detailId: number,
+  extendId: number
+): Promise<OrderExtendDetail> {
+  const response = await axiosInstance.get<ApiResponse<OrderExtendDetail>>(
+    `/api/orders/${orderId}/details/${detailId}/extend/${extendId}`
+  );
+  return response.data.result;
 }

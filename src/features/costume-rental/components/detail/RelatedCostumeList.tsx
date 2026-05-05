@@ -39,7 +39,9 @@ export const RelatedCostumeList = ({ items, onSelect }: RelatedCostumeListProps)
             <p className="line-clamp-2 text-sm font-semibold text-slate-800">
               {item.name}
             </p>
-            <p className="text-xs text-slate-500">{item.priceMin}k / ngày</p>
+            <p className="text-[11px] font-medium text-slate-500">
+              {item.priceMin.toLocaleString("vi-VN")} VND / ngày
+            </p>
           </div>
         </Card>
       ))}

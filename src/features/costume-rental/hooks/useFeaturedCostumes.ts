@@ -14,7 +14,8 @@ export function useFeaturedCostumes() {
     setError(null)
     try {
       const costumes = await getCostumes()
-      const normalized = costumes.map((costume) => ({
+      const visibleCostumes = costumes.filter((costume) => costume.status !== 'DELETED')
+      const normalized = visibleCostumes.map((costume) => ({
         ...costume,
         imageUrls: (costume.imageUrls ?? []).map(resolveImageUrl),
       }))

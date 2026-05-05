@@ -4,6 +4,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { fetchProviderOrders, prepareProviderOrder, deliverOutProviderOrder, shipProviderOrder, completeProviderOrder } from '../services/order.service';
 import { getAuth } from '@/features/auth/services/tokenStorage';
+import { getUserById } from '@/features/admin/api/adminUsers.api';
 import type { OrderItem, OrderStatus } from '../types';
 
 // Fixed status tabs configuration
@@ -72,7 +73,39 @@ export function useProviderOrders() {
     setError(null);
     try {
       const result = await fetchProviderOrders(providerId);
-      setOrders(result);
+      // Defensive: only keep RENT_COSTUME orders. Service orders (RENT_SERVICE) should never
+      // appear here — they have their own API and page. Filter to prevent cross-type
+      // contamination if BE ever returns both types from this endpoint.
+      const costumeOrders = result.filter((o) => o.orderType === 'RENT_COSTUME');
+
+      // Batch resolve missing cosplayerName from cosplayerId
+      const ordersNeedingName = costumeOrders.filter((o) => !o.cosplayerName);
+      if (ordersNeedingName.length > 0) {
+        const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
+        const userResults = await Promise.all(
+          uniqueCosplayerIds.map((id) => getUserById(id).catch(() => null))
+        );
+        const cosplayerMap = Object.fromEntries(
+          userResults
+            .filter((u): u is NonNullable<typeof u> => u !== null)
+            .map((u) => [u.id, u.fullName ?? '—'])
+        );
+        costumeOrders.forEach((order) => {
+          if (!order.cosplayerName) {
+            order.cosplayerName = cosplayerMap[order.cosplayerId] ?? order.cosplayerName;
+          }
+        });
+      }
+      const unexpected = result.filter((o) => o.orderType !== 'RENT_COSTUME');
+      if (unexpected.length > 0) {
+        console.warn(
+          '[useProviderOrders] BE returned',
+          unexpected.length,
+          'non-RENT_COSTUME orders — filtered out:',
+          unexpected.map((o) => ({ id: o.id, type: o.orderType }))
+        );
+      }
+      setOrders(costumeOrders);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to fetch orders';
       setError(message);
@@ -150,12 +183,13 @@ export function useProviderOrders() {
   const shipOrder = async (
     orderId: number,
     trackingCode: string,
+    shippingCarrierName: string,
     notes: string[],
     images: File[]
   ) => {
     setShippingOrderId(orderId);
     try {
-      await shipProviderOrder(orderId, trackingCode, notes, images);
+      await shipProviderOrder(orderId, trackingCode, shippingCarrierName, notes, images);
       await refetch();
       return true;
     } catch {

@@ -64,7 +64,7 @@ export default function ProviderHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider">
+    <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       {/* Profile loading state */}
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>

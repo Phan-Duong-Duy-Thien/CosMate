@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import { StaffCard } from '@/features/staff-booking/components/StaffCard';
 import { ListingFilterBar } from '@/features/staff-booking/components/ListingFilterBar';
 import { Button } from '@/features/staff-booking/components/ui/button';
@@ -11,13 +10,6 @@ export default function StaffListingPage() {
   return (
     <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto py-12 px-6 lg:px-8 w-full">
-        {/* Breadcrumbs */}
-        <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-6 px-4" aria-label="Breadcrumb">
-          <Link to="/" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Dịch vụ</Link>
-          <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-          <span className="text-[#4A3B6B] font-bold" aria-current="page">Staffs</span>
-        </nav>
-
         {/* Header Section */}
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">

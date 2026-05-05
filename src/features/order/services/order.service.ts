@@ -3,8 +3,9 @@
  * Orchestrates order creation and data formatting
  */
 import * as orderApi from '../api/order.api';
+import { createDispute as disputeApi, type CreateDisputePayload } from '../api/dispute.api';
 import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod, OrderDetail } from '../types';
-import { clearDraft } from '../utils/rentalDraftStorage';
+import { clearDraft, clearCheckoutSelections } from '../utils/rentalDraftStorage';
 
 /**
  * Format date to ISO string with T separator
@@ -29,99 +30,69 @@ export async function createOrder(
   // Format rentStart to ISO with T separator
   const formattedRentStart = formatRentStartToISO(params.rentStart);
 
+  // returnUrl is only sent for external gateways (MOMO/VNPAY).
+  // For WALLET: BE processes internally — no returnUrl needed.
   const payload: CreateOrderPayload = {
     costumeId: params.costumeId,
     rentDay: params.rentDay,
     rentStart: formattedRentStart,
     paymentMethod: params.paymentMethod,
-    returnUrl: params.returnUrl,
     cosplayerAddressId: params.cosplayerAddressId,
     selectedAccessoryIds: params.selectedAccessoryIds,
     selectedRentalOptionId: params.selectedRentalOptionId,
   };
 
+  if (params.paymentMethod === 'MOMO' || params.paymentMethod === 'VNPAY') {
+    payload.returnUrl = params.returnUrl;
+  }
+
   return orderApi.createOrder(params.cosplayerId, payload);
 }
 
+export type OrderRedirectResult =
+  | { type: 'wallet'; orderId: number; status: 'success' | 'failed' }
+  | { type: 'gateway'; paymentUrl: string }
+  | { type: 'failed'; orderId: number };
+
 /**
- * Submit order and handle post-submit behavior
+ * Submit order and return navigation intent.
+ * Caller (hook/component) handles actual navigation via React Router navigate().
  *
  * Decision logic:
- * A) If paymentUrl is non-empty string: redirect to payment gateway
- * B) Else if paymentUrl is null AND status === "PAID" (WALLET): redirect to success page
- * C) Else: redirect to failed page
+ * A) paymentMethod === 'WALLET': BE processed internally → return wallet result
+ * B) paymentUrl is non-empty string (MoMo/VNPay): return gateway redirect
+ * C) Otherwise: return failed result
  */
 export async function submitOrderAndHandleResult(
   params: CreateOrderParams
-): Promise<{ redirected: boolean }> {
-  console.log('[DEBUG] === submitOrderAndHandleResult START ===');
-  console.log('[DEBUG] params:', params);
-
+): Promise<OrderRedirectResult> {
   let result: CreateOrderResponse;
 
   try {
-    console.log('[DEBUG] Calling createOrder API...');
     result = await createOrder(params);
-    console.log('[DEBUG] createOrder returned:', result);
-  } catch (error: unknown) {
-    console.error('[DEBUG] Error creating order:', error);
-    // Check if error has response data
-    if (error && typeof error === 'object' && 'response' in error) {
-      const axiosError = error as { response?: { data?: unknown } };
-      console.error('[DEBUG] Error response data:', axiosError.response?.data);
-    }
-    // Redirect to failed page on error
-    const failedUrl = `/payment/result?status=failed&orderId=unknown`;
-    window.location.href = failedUrl;
-    return { redirected: true };
+  } catch {
+    return { type: 'failed', orderId: 0 };
   }
 
-  // DEBUG: Log full API response
-  console.log('[DEBUG] Order API Response:', JSON.stringify(result, null, 2));
+  const orderId = result.id;
 
-  // API returns result directly, not wrapped in .result
-  const orderId = (result as unknown as { id?: number }).id;
-  const paymentUrl = (result as unknown as { paymentUrl?: string }).paymentUrl;
-  const status = (result as unknown as { status?: string }).status;
-
-  // DEBUG: Log decision variables
-  console.log('[DEBUG] orderId:', orderId);
-  console.log('[DEBUG] paymentUrl:', paymentUrl, '- type:', typeof paymentUrl);
-  console.log('[DEBUG] status:', status, '- type:', typeof status);
-  console.log('[DEBUG] Check: paymentUrl is truthy:', !!paymentUrl);
-  console.log('[DEBUG] Check: paymentUrl === null:', paymentUrl === null);
-  console.log('[DEBUG] Check: status === "PAID":', status === 'PAID');
-
-  // Case A: Redirect to payment gateway (MoMo/VNPAY)
-  if (paymentUrl) {
-    console.log('[DEBUG] Case A: Redirecting to payment gateway');
-    window.location.href = paymentUrl;
-    return { redirected: true };
-  }
-
-  // Case B: WALLET payment - check if already PAID
-  if (paymentUrl === null && status === 'PAID') {
-    // DEBUG
-    console.log('[DEBUG] Case B: WALLET payment - PAID');
-
-    // Clear rental draft on successful wallet payment
+  // WALLET: BE processes internally — FE must redirect manually with status/orderId.
+  // BE returns UNPAID because no external gateway redirect occurred.
+  // OrderId is trusted from the response regardless of status.
+  if (params.paymentMethod === 'WALLET') {
     clearDraft();
-
-    // Redirect to success page
-    const successUrl = `/payment/result?status=success&orderId=${orderId}`;
-    window.location.href = successUrl;
-    return { redirected: true };
+    clearCheckoutSelections();
+    return { type: 'wallet', orderId, status: 'success' };
   }
 
-  // Case C: Payment failed or other error
-  // DEBUG
-  console.log('[DEBUG] Case C: Redirecting to failed page');
-  console.log('[DEBUG] Reason: paymentUrl is', paymentUrl, 'status is', status);
+  // External gateway (MoMo/VNPay) — BE will redirect user after payment.
+  // FE MUST redirect to paymentUrl; BE handles the return to /payment/result.
+  if (result.paymentUrl) {
+    return { type: 'gateway', paymentUrl: result.paymentUrl };
+  }
 
-  // Redirect to failed page
-  const failedUrl = `/payment/result?status=failed&orderId=${orderId}`;
-  window.location.href = failedUrl;
-  return { redirected: true };
+  // No paymentUrl and not WALLET: BE failed — signal error, do NOT redirect.
+  return { type: 'failed', orderId: 0 };
 }
 
 /**
@@ -172,10 +143,11 @@ export async function deliverOutProviderOrder(orderId: number) {
 export async function shipProviderOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
   images: File[]
 ) {
-  return orderApi.shipOrder(orderId, trackingCode, notes, images);
+  return orderApi.shipOrder(orderId, trackingCode, shippingCarrierName, notes, images);
 }
 
 /**
@@ -212,6 +184,15 @@ export async function completeProviderOrder(orderId: number) {
 }
 
 /**
+ * Cancel an order (update status to CANCELLED)
+ * NOTE: API response does NOT return updated order — caller must refetch after success.
+ * @param orderId - The order ID
+ */
+export async function cancelOrder(orderId: number) {
+  return orderApi.cancelOrder(orderId);
+}
+
+/**
  * Return a cosplayer's order (update status to SHIPPING_BACK)
  * @param orderId - The order ID
  * @param trackingCode - The tracking code for return shipment
@@ -231,8 +212,11 @@ export async function returnCosplayerOrder(
 /**
  * Create a dispute for an order
  * @param orderId - The order ID
- * @param reason - The dispute reason
+ * @param payload - { reason, files: string[] }
  */
-export async function createDisputeService(orderId: number, reason: string) {
-  await orderApi.createDispute(orderId, reason);
+export async function createDisputeService(
+  orderId: number,
+  payload: CreateDisputePayload
+) {
+  await disputeApi(orderId, payload);
 }

@@ -20,7 +20,7 @@ interface UseWalletTopUpResult {
   setPaymentMethod: (method: PaymentMethod | null) => void
 
   // Actions
-  handleSubmit: () => Promise<void>
+  handleSubmit: (redirectUrl?: string) => Promise<void>
 }
 
 export function useWalletTopUp(): UseWalletTopUpResult {
@@ -29,17 +29,17 @@ export function useWalletTopUp(): UseWalletTopUpResult {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = useCallback(async () => {
+  const handleSubmit = useCallback(async (redirectUrl?: string) => {
     // Validate amount
     const numAmount = parseFloat(amount)
     if (!amount || isNaN(numAmount) || numAmount <= 0) {
-      message.error(VI.profile.wallet.invalidAmount)
+      message.error(VI.wallet.invalidAmount)
       return
     }
 
     // Validate payment method
     if (!paymentMethod) {
-      message.error(VI.profile.wallet.selectPaymentMethod)
+      message.error(VI.wallet.selectPaymentMethod)
       return
     }
 
@@ -55,14 +55,20 @@ export function useWalletTopUp(): UseWalletTopUpResult {
 
     try {
       if (paymentMethod === "MOMO") {
-        await walletService.topUpWithMomo(userId, numAmount)
+        await walletService.topUpWithMomo(userId, numAmount, redirectUrl)
       } else {
-        await walletService.topUpWithVnpay(userId, numAmount)
+        await walletService.topUpWithVnpay(userId, numAmount, redirectUrl)
       }
     } catch (err) {
       console.error("Top-up failed:", err)
-      setError(VI.profile.wallet.error)
-      message.error(VI.profile.wallet.error)
+      const axiosErr = err as { code?: string; message?: string }
+      if (axiosErr.code === "ECONNABORTED" || axiosErr.message?.includes("timeout")) {
+        setError("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
+        message.error("Yêu cầu thanh toán đang xử lý. Vui lòng chờ hoặc kiểm tra lại số dư ví sau vài phút.")
+      } else {
+        setError(VI.wallet.error)
+        message.error(VI.wallet.error)
+      }
     } finally {
       setLoading(false)
     }

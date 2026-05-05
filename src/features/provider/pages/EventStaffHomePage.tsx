@@ -60,7 +60,7 @@ export default function EventStaffHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.provider.dashboardEventStaff.title} sidebarItems={sidebarItems} brandName="CosMate Event Staff">
+    <DashboardLayout title={VI.provider.dashboardEventStaff.title} sidebarItems={sidebarItems} brandName="CosMate Event Staff" showChatButton={false}>
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />

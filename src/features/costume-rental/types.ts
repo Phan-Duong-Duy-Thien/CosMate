@@ -31,6 +31,7 @@ export interface AccessoryOption {
 }
 
 export interface CostumeItem {
+  aiSimilarityScore?: number
   id: string
   name: string
   characterName: string
@@ -115,10 +116,13 @@ export interface CreateCostumeBasicPayload {
   name: string
   description: string
   size: CostumeSizeOption
+  rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   providerId: number
+  characterIds: number[]
   imageFiles: File[]
 }
 
@@ -144,7 +148,7 @@ export interface RentalOptionInput {
 // â”€â”€â”€ Backend API Types (Provider / Costume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Status values returned by the backend for a Costume */
-export type CostumeStatus = 'AVAILABLE' | 'RENTED' | string
+export type CostumeStatus = 'AVAILABLE' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
 
 export interface CostumeSurcharge {
   id: number
@@ -168,6 +172,13 @@ export interface CostumeRentalOption {
   description: string
 }
 
+/** Linked character / work (series) from costume API */
+export interface CostumeCharacter {
+  id: number
+  name: string
+  anime: string
+}
+
 /**
  * Full Costume model returned by:
  *   GET /api/costumes/provider/{providerId}  (list item)
@@ -181,6 +192,7 @@ export interface Costume {
   rentPurpose: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   status: CostumeStatus
   imageUrls: string[]
@@ -189,6 +201,8 @@ export interface Costume {
   accessories: CostumeAccessory[]
   rentalOptions: CostumeRentalOption[]
   rentalsCount?: number
+  /** Optional; when present, list UI shows first entry; detail shows full list */
+  characters?: CostumeCharacter[]
 }
 
 /**
@@ -208,8 +222,10 @@ export interface UpdateCostumeBasicInput {
   name: string
   description?: string
   size: CostumeSizeOption
+  rentPurpose?: string
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   imageFiles?: File[]
 }

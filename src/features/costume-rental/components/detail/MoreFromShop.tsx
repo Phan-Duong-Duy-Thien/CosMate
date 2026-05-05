@@ -1,8 +1,8 @@
 import { Heart } from "lucide-react"
 import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { getMockMoreFromShop, type MoreFromShopItem } from "../../mocks/moreFromShop.mock"
+import { useProviderCostumesForShop, type MoreFromShopItem } from "../../hooks/useProviderCostumesForShop"
 import { VI } from "@/shared/i18n/vi"
+import { Spin } from "antd"
 
 interface MoreFromShopProps {
   providerId: number
@@ -11,24 +11,30 @@ interface MoreFromShopProps {
 }
 
 export function MoreFromShop({ providerId, onSelectCostume, currentCostumeId }: MoreFromShopProps) {
-  const items = getMockMoreFromShop(providerId)
-  // Filter out current costume
-  const filteredItems = items.filter((item) => item.id !== currentCostumeId)
+  const { items, loading, error } = useProviderCostumesForShop(providerId, currentCostumeId)
 
-  if (filteredItems.length === 0) {
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-8">
+        <Spin size="small" />
+      </div>
+    )
+  }
+
+  if (error || items.length === 0) {
     return null
   }
 
   return (
     <div className="space-y-4">
       <div className="inline-block rounded-lg border-2 border-pink-200 bg-pink-50 px-3 py-1.5">
-        <h3 className="text-sm font-semibold text-slate-800 text-center">
+        <h3 className="text-center text-sm font-semibold text-slate-800">
           {VI.costumeRental.detail.moreFromShop}
         </h3>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {filteredItems.map((item) => (
+        {items.map((item) => (
           <ProductCard key={item.id} item={item} onClick={() => onSelectCostume(item.id)} />
         ))}
       </div>
@@ -40,7 +46,6 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
   const handleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation()
     console.log("Wishlist clicked for:", item.id)
-    // Future: call wishlist API
   }
 
   return (
@@ -74,8 +79,9 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
         <p className="line-clamp-2 text-sm font-semibold text-slate-800">{item.name}</p>
         <p className="text-xs text-slate-500">{item.characterName}</p>
         <div className="flex items-center justify-between">
-          <p className="text-sm font-semibold text-pink-600">
-            {item.pricePerDay.toLocaleString("vi-VN")} VNĐ<span className="text-xs font-normal text-slate-500">/ngày</span>
+          <p className="text-xs font-semibold leading-tight text-pink-600">
+            <span className="whitespace-nowrap">{item.pricePerDay.toLocaleString("vi-VN")} VND</span>
+            <span className="ml-1 text-[11px] font-normal text-slate-500">/ngày</span>
           </p>
           {item.brandName && (
             <span className="rounded bg-pink-100 px-1.5 py-0.5 text-[10px] text-pink-600">

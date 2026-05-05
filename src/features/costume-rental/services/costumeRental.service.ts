@@ -86,13 +86,20 @@ export function buildUpdateCostumeFormData(
   providerId: number,
 ): FormData {
   const form = new FormData()
-  form.append('name', input.name)
-  form.append('description', input.description ?? '')
-  form.append('size', input.size)
-  form.append('numberOfItems', String(input.numberOfItems))
-  form.append('pricePerDay', String(input.pricePerDay))
-  form.append('depositAmount', String(input.depositAmount))
-  form.append('providerId', String(providerId))
+  const safeNumber = (value: unknown, fallback = 0) => {
+    const parsed = Number(value)
+    return Number.isFinite(parsed) ? parsed : fallback
+  }
+
+  form.append('name', String(input.name ?? ''))
+  form.append('description', String(input.description ?? ''))
+  form.append('size', String(input.size ?? ''))
+  if (input.rentPurpose) form.append('rentPurpose', String(input.rentPurpose))
+  form.append('numberOfItems', String(safeNumber(input.numberOfItems, 0)))
+  form.append('pricePerDay', String(safeNumber(input.pricePerDay, 0)))
+  form.append('rentDiscount', String(safeNumber(input.rentDiscount, 0)))
+  form.append('depositAmount', String(safeNumber(input.depositAmount, 0)))
+  form.append('providerId', String(safeNumber(providerId, 0)))
   if (input.imageFiles && input.imageFiles.length > 0) {
     input.imageFiles.forEach((file) => form.append('imageFiles', file))
   }

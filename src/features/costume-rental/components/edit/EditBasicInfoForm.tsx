@@ -10,23 +10,31 @@
  * Never calls API directly.
  */
 
-import { useEffect } from 'react'
-import { Button, Form, Input, InputNumber, Select, Upload, Alert } from 'antd'
-import { InboxOutlined }from '@ant-design/icons'
+import { useEffect, useState } from 'react'
+import { Alert, Button, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
+import { InboxOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { UpdateCostumeBasicInput, CostumeSizeOption, Costume } from '../../types'
+import { applyFormValidationErrors } from '@/shared/utils/formValidation'
+import { VI } from '@/shared/i18n/vi'
 
 const { Dragger } = Upload
 const { TextArea } = Input
 
 const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
+const MODERATION_ERROR_MESSAGE = 'Ảnh của bạn vi phạm tiêu chuẩn cộng đồng, xin hãy dùng ảnh khác'
 
 interface FormValues {
   name: string
   description?: string
   size: CostumeSizeOption
+  heightMin?: number
+  heightMax?: number
+  weightMin?: number
+  weightMax?: number
   numberOfItems: number
   pricePerDay: number
+  rentDiscount: number
   depositAmount: number
   imageFiles?: { fileList: UploadFile[] }
 }
@@ -39,6 +47,7 @@ interface Props {
   providerIdMissing?: boolean
 }
 
+
 export default function EditBasicInfoForm({
   initialValues,
   onSubmit,
@@ -46,6 +55,7 @@ export default function EditBasicInfoForm({
   providerIdMissing,
 }: Props) {
   const [form] = Form.useForm<FormValues>()
+  const [moderationError, setModerationError] = useState<string | null>(null)
 
   // Prefill whenever the detail changes (e.g. after a successful save)
   useEffect(() => {
@@ -55,6 +65,7 @@ export default function EditBasicInfoForm({
       size: initialValues.size as CostumeSizeOption,
       numberOfItems: initialValues.numberOfItems,
       pricePerDay: initialValues.pricePerDay,
+      rentDiscount: initialValues.rentDiscount ?? 0,
       depositAmount: initialValues.depositAmount,
     })
   }, [form, initialValues])
@@ -63,16 +74,51 @@ export default function EditBasicInfoForm({
     const rawFiles = (values.imageFiles?.fileList ?? [])
       .map((f: UploadFile) => f.originFileObj)
       .filter((f): f is File => f !== undefined)
+    const rangeValues = values as FormValues & {
+      heightMin?: number
+      heightMax?: number
+      weightMin?: number
+      weightMax?: number
+    }
+    const hasFullRange =
+      Number.isFinite(rangeValues.heightMin) &&
+      Number.isFinite(rangeValues.heightMax) &&
+      Number.isFinite(rangeValues.weightMin) &&
+      Number.isFinite(rangeValues.weightMax)
+    const sizeString = hasFullRange
+      ? `${values.size} (${rangeValues.heightMin}-${rangeValues.heightMax}cm, ${rangeValues.weightMin}-${rangeValues.weightMax}kg)`
+      : values.size
 
-    await onSubmit({
-      name: values.name,
-      description: values.description,
-      size: values.size,
-      numberOfItems: values.numberOfItems,
-      pricePerDay: values.pricePerDay,
-      depositAmount: values.depositAmount,
-      imageFiles: rawFiles.length > 0 ? rawFiles : undefined,
-    })
+    setModerationError(null)
+
+    try {
+      const submitPayload = {
+        name: values.name,
+        description: values.description,
+        size: sizeString as UpdateCostumeBasicInput['size'],
+        numberOfItems: values.numberOfItems,
+        pricePerDay: values.pricePerDay,
+        rentDiscount: values.rentDiscount,
+        depositAmount: values.depositAmount,
+        imageFiles: rawFiles.length > 0 ? (rawFiles as unknown as File[]) : undefined,
+        rentalOptions: null,
+      }
+      await onSubmit(submitPayload as UpdateCostumeBasicInput)
+    } catch (error: unknown) {
+      const handled = applyFormValidationErrors(form, error)
+      const errMessage = error instanceof Error ? error.message : ''
+      if (
+        !handled &&
+        (errMessage.includes('vi phạm tiêu chuẩn cộng đồng') ||
+          errMessage.includes('Read timed out') ||
+          errMessage.includes('Lỗi kiểm duyệt ảnh'))
+      ) {
+        setModerationError(MODERATION_ERROR_MESSAGE)
+        message.error(MODERATION_ERROR_MESSAGE)
+        return
+      }
+      throw error
+    }
   }
 
   return (
@@ -93,16 +139,30 @@ export default function EditBasicInfoForm({
         </Form.Item>
       )}
 
+      {moderationError && (
+        <Form.Item>
+          <Alert
+            type="error"
+            showIcon={false}
+            description={
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                <span>{MODERATION_ERROR_MESSAGE}</span>
+              </div>
+            }
+          />
+        </Form.Item>
+      )}
+
       <Form.Item
         label="Tên trang phục"
         name="name"
-        rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }]}
+        rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }, { max: 120, message: 'Tên trang phục không vượt quá 120 ký tự' }]}
       >
-        <Input placeholder="Nhập tên trang phục" />
+        <Input placeholder="Nhập tên trang phục" maxLength={120} />
       </Form.Item>
 
       <Form.Item label="Mô tả" name="description">
-        <TextArea rows={3}placeholder="Mô tả trang phục" />
+        <TextArea rows={3} placeholder="Mô tả trang phục" />
       </Form.Item>
 
       <Form.Item
@@ -119,12 +179,38 @@ export default function EditBasicInfoForm({
         </Select>
       </Form.Item>
 
+      <Row gutter={12}>
+        <Col span={12}>
+          <Form.Item label="Chiều cao tối thiểu (cm)" name="heightMin">
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item label="Chiều cao tối đa (cm)" name="heightMax">
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
+          </Form.Item>
+        </Col>
+      </Row>
+
+      <Row gutter={12}>
+        <Col span={12}>
+          <Form.Item label="Cân nặng tối thiểu (kg)" name="weightMin">
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item label="Cân nặng tối đa (kg)" name="weightMax">
+            <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
+          </Form.Item>
+        </Col>
+      </Row>
+
       <Form.Item
-        label="Số lượng"
+        label="Số lượng vật phẩm bao gồm tất cả vật phẩm và trang phục"
         name="numberOfItems"
         rules={[
-          { required: true, message: 'Vui lòng nhập số lượng' },
-          { type: 'number', min: 1, message: 'Số lượng phải lớn hơn 0' },
+          { required: true, message: 'Vui lòng nhập số lượng vật phẩm' },
+          { type: 'number', min: 1, message: 'Số lượng vật phẩm phải lớn hơn 0' },
         ]}
       >
         <InputNumber min={1} style={{ width: '100%' }} placeholder="Số lượng" />
@@ -139,6 +225,17 @@ export default function EditBasicInfoForm({
         ]}
       >
         <InputNumber min={1}style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
+      </Form.Item>
+
+      <Form.Item
+        label={VI.costumeRental.rentDiscount}
+        name="rentDiscount"
+        rules={[
+          { required: true, message: 'Vui lòng nhập giảm giá thuê' },
+          { type: 'number', min: 0, message: 'Giảm giá thuê không được âm' },
+        ]}
+      >
+        <InputNumber min={0} style={{ width: '100%' }} placeholder="Số tiền giảm giá" />
       </Form.Item>
 
       <Form.Item

@@ -1,5 +1,10 @@
 import { useState, useEffect, useCallback } from "react"
-import { fetchNotifications, markRead, markAllRead } from "../services/notification.service"
+import {
+  fetchNotifications,
+  markRead,
+  markAllRead as markAllReadService,
+  removeNotification,
+} from "../services/notification.service"
 import type { NotificationItem } from "../types"
 
 interface UseNotificationsResult {
@@ -10,6 +15,7 @@ interface UseNotificationsResult {
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>
   markNotificationRead: (id: number) => Promise<void>
   markAllRead: () => Promise<void>
+  deleteNotification: (id: number) => Promise<void>
 }
 
 export function useNotifications(): UseNotificationsResult {
@@ -53,11 +59,23 @@ export function useNotifications(): UseNotificationsResult {
     const previous = notifications
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
     try {
-      await markAllRead()
+      await markAllReadService()
       console.log("[useNotifications] Mark all as read success")
     } catch (err) {
       setNotifications(previous)
       console.error("[useNotifications] Mark all as read failed:", err)
+    }
+  }, [notifications])
+
+  const deleteNotificationById = useCallback(async (id: number) => {
+    const previous = notifications
+    setNotifications((prev) => prev.filter((n) => n.id !== id))
+    try {
+      await removeNotification(id)
+      console.log("[useNotifications] Delete success:", id)
+    } catch (err) {
+      setNotifications(previous)
+      console.error("[useNotifications] Delete failed:", err)
     }
   }, [notifications])
 
@@ -75,5 +93,6 @@ export function useNotifications(): UseNotificationsResult {
     setNotifications,
     markNotificationRead,
     markAllRead,
+    deleteNotification: deleteNotificationById,
   }
 }

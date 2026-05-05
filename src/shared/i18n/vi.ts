@@ -27,6 +27,46 @@ export const VI = {
   },
 
   /**
+   * Dispute
+   */
+  dispute: {
+    button: "Khiếu nại",
+    modalTitle: "Khiếu nại đơn hàng",
+    reasonLabel: "Lý do khiếu nại",
+    reasonPlaceholder: "Mô tả chi tiết vấn đề của bạn...",
+    submit: "Gửi khiếu nại",
+    imagesLabel: "Hình ảnh đính kèm",
+    imagesOptional: "không bắt buộc",
+    imagesHint: "Kéo thả hoặc nhấn để tải ảnh lên",
+    uploadImages: "Tải ảnh lên",
+    maxImagesWarning: "Tối đa 3 hình ảnh",
+    maxImagesReached: "Đã đạt tối đa 3 ảnh",
+    uploadingImages: "Đang tải ảnh...",
+    uploadFailed: "Tải ảnh thất bại. Vui lòng thử lại.",
+    reasonTooShort: "Lý do phải có ít nhất 10 ký tự",
+    helperText: "Hình ảnh giúp CosMate xử lý khiếu nại nhanh hơn. Khuyến nghị tải lên ảnh/video làm bằng chứng.",
+    // Staff resolve
+    resolveModalTitle: "Giải quyết khiếu nại",
+    resolveResultLabel: "Kết quả xử lý",
+    resolveResultPlaceholder: "Mô tả chi tiết cách giải quyết...",
+    resolvePenaltyAmountLabel: "Số tiền phạt (VND)",
+    resolvePenaltyPercentLabel: "Phần trăm phạt (%)",
+    resolveNotesLabel: "Ghi chú",
+    resolveNotesPlaceholder: "Ghi chú bổ sung (nếu có)...",
+    resolveSubmit: "Xác nhận giải quyết",
+    resolving: "Đang xử lý...",
+    resolveSuccess: "Giải quyết khiếu nại thành công",
+    resolveError: "Không thể giải quyết khiếu nại. Vui lòng thử lại.",
+    resolveAction: "Giải quyết",
+    resultRequired: "Vui lòng nhập kết quả xử lý",
+    penaltyAmountInvalid: "Số tiền phạt phải lớn hơn hoặc bằng 0",
+    penaltyPercentInvalid: "Phần trăm phạt phải từ 0 đến 100",
+    penaltyPercentPlaceholder: "0 - 100",
+    penaltyAmountPlaceholder: "0",
+    actionResolve: "Có thể giải quyết",
+  },
+
+  /**
    * Common shared text
    */
   common: {
@@ -43,7 +83,11 @@ export const VI = {
       addresses: "Địa chỉ",
       addAddress: "Thêm địa chỉ",
       photographers: "Thuê Photographer",
+      photographerProfile: "Hồ sơ Nhiếp ảnh gia",
       staffs: "Thuê Staff",
+      staffProfile: "Hồ sơ Hỗ trợ sự kiện",
+      serviceDetail: "Chi tiết dịch vụ",
+      serviceDetailFromProfile: "Chi tiết dịch vụ",
       admin: "Quản trị",
       users: "Quản lý người dùng",
       provider: "Provider",
@@ -68,6 +112,7 @@ export const VI = {
       search: "Tìm kiếm",
       filter: "Lọc",
       sort: "Sắp xếp",
+      refresh: "Làm mới",
       viewMore: "Xem thêm",
       viewDetails: "Xem chi tiết",
       close: "Đóng",
@@ -76,6 +121,7 @@ export const VI = {
       continueWithGoogle: "Tiếp tục với Google",
       continueWithFacebook: "Tiếp tục với Facebook",
       continueWithEmail: "Hoặc tiếp tục với email",
+      other: "Khác",
     },
 
     status: {
@@ -87,6 +133,31 @@ export const VI = {
       pending: "Đang chờ",
       active: "Hoạt động",
       inactive: "Không hoạt động",
+      online: "Trực tuyến",
+      offline: "Ngoại tuyến",
+      loadingDots: "Đang tải...",
+    },
+
+    // Toast messages
+    toast: {
+      success: "Thành công",
+      error: "Đã xảy ra lỗi",
+      loading: "Đang xử lý...",
+      loginRequired: "Vui lòng đăng nhập để tiếp tục.",
+      wishlist: {
+        addSuccess: "Đã thêm vào danh sách yêu thích.",
+        removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
+        fetchFailed: "Không thể tải danh sách yêu thích.",
+        removeFailed: "Không thể xóa khỏi danh sách yêu thích.",
+        addFailed: "Không thể thêm vào danh sách yêu thích.",
+        loginRequired: "Vui lòng đăng nhập để thêm vào yêu thích.",
+        emptyTitle: "Danh sách yêu thích trống",
+        emptyDescription: "Hãy thêm trang phục bạn thích vào đây nhé!",
+        browseButton: "Khám phá trang phục",
+        itemsCount: "mặt hàng",
+        itemCount: "mặt hàng",
+        viewDetails: "Xem chi tiết",
+      },
     },
 
     permission: {
@@ -100,6 +171,14 @@ export const VI = {
       profile: "Hồ sơ",
       account: "Tài khoản",
       settings: "Cài đặt",
+    },
+
+    messages: {
+      title: "Tin nhắn",
+      noConversation: "Chưa chọn cuộc trò chuyện",
+      selectConversation: "Chọn một cuộc trò chuyện từ danh sách",
+      startConversation: "Bắt đầu trò chuyện",
+      sayHello: "Chào hỏi để bắt đầu!",
     },
   },
 
@@ -210,6 +289,52 @@ export const VI = {
         cannotManageAdmin: "Bạn không thể thao tác với tài khoản quản trị (ADMIN/SUPERADMIN).",
       },
     },
+
+    costumes: {
+      pageTitle: "Quản lý trang phục",
+
+      columns: {
+        id: "ID",
+        name: "Tên trang phục",
+        provider: "Nhà cung cấp",
+        pricePerDay: "Giá / ngày",
+        status: "Trạng thái",
+        actions: "Hành động",
+      },
+
+      toolbar: {
+        search: "Tìm kiếm theo tên, nhà cung cấp...",
+        filterStatus: "Lọc theo trạng thái",
+        refresh: "Làm mới",
+        createCostume: "Tạo trang phục",
+      },
+
+      actions: {
+        viewDetail: "Xem chi tiết",
+        toggleStatus: "Đổi trạng thái",
+        delete: "Xóa",
+      },
+
+      detail: {
+        title: "Chi tiết trang phục",
+        basicInfo: "Thông tin cơ bản",
+        pricingInfo: "Thông tin giá",
+        noData: "—",
+      },
+
+      confirm: {
+        deleteTitle: "Xác nhận xóa trang phục",
+        deleteMessage: "Bạn có chắc chắn muốn xóa trang phục này? Hành động này không thể hoàn tác.",
+        ok: "Xác nhận",
+        cancel: "Hủy",
+      },
+
+      messages: {
+        deleteSuccess: "Đã xóa trang phục thành công",
+        statusUpdatedSuccess: "Cập nhật trạng thái thành công",
+        fetchError: "Không thể tải danh sách trang phục",
+      },
+    },
   },
 
   /**
@@ -237,7 +362,7 @@ export const VI = {
       validation: {
         emailRequired: "Email hoặc tên người dùng là bắt buộc.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự bao gồm ít nhất 1 chữ cái và 1 số.",
       },
 
       messages: {
@@ -292,6 +417,27 @@ export const VI = {
       },
     },
 
+    changePassword: {
+      title: "Đổi mật khẩu",
+      oldPassword: "Mật khẩu cũ",
+      newPassword: "Mật khẩu mới",
+      confirmPassword: "Xác nhận mật khẩu mới",
+      placeholders: {
+        oldPassword: "Nhập mật khẩu hiện tại",
+        newPassword: "Nhập mật khẩu mới",
+        confirmPassword: "Nhập lại mật khẩu mới",
+      },
+      submit: "Đổi mật khẩu",
+      success: "Đổi mật khẩu thành công!",
+      error: {
+        required: "Vui lòng điền đầy đủ thông tin.",
+        minLength: "Mật khẩu mới phải có ít nhất 6 ký tự.",
+        passwordMismatch: "Mật khẩu xác nhận không khớp.",
+        failed: "Không thể đổi mật khẩu. Vui lòng thử lại.",
+        notAuthenticated: "Vui lòng đăng nhập để đổi mật khẩu.",
+      },
+    },
+
     register: {
       title: "Tạo tài khoản mới",
       subtitle: "Tham gia cộng đồng CosMate ngay hôm nay",
@@ -341,7 +487,7 @@ export const VI = {
         phoneRequired: "Số điện thoại là bắt buộc.",
         phoneInvalid: "Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự, ít nhất 1 chữ cái và 1 số.",
         confirmPasswordRequired: "Vui lòng xác nhận mật khẩu.",
         passwordMismatch: "Mật khẩu không khớp.",
       },
@@ -350,6 +496,42 @@ export const VI = {
         registrationFailed: "Đăng ký thất bại. Vui lòng thử lại.",
         registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng đăng nhập để tiếp tục.",
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
+      },
+    },
+
+    onboarding: {
+      title: "Chọn vai trò của bạn",
+      subtitle: "Hoàn tất hồ sơ bằng cách chọn vai trò phù hợp với bạn",
+      selectRole: "Chọn vai trò",
+      selected: "Đã chọn",
+      continue: "Tiếp tục",
+      skip: "Bỏ qua",
+      loading: "Đang xử lý...",
+      successTitle: "Hoàn tất thiết lập!",
+      successMessage: "Vai trò của bạn đã được cập nhật thành công.",
+      roleSelect: {
+        cosplayer: {
+          title: "Cosplayer",
+          description: "Tạo hồ sơ cosplay, thuê trang phục và đặt dịch vụ.",
+        },
+        provider: {
+          title: "Nhà cung cấp",
+          description: "Cung cấp trang phục cho thuê hoặc dịch vụ chụp ảnh, hỗ trợ sự kiện.",
+        },
+        staff: {
+          title: "Nhân viên sự kiện",
+          description: "Hỗ trợ sự kiện cosplay với tư cách nhân viên.",
+        },
+        photographer: {
+          title: "Nhiếp ảnh gia",
+          description: "Cung cấp dịch vụ chụp ảnh cho cosplayer.",
+        },
+      },
+      validation: {
+        roleRequired: "Vui lòng chọn một vai trò để tiếp tục.",
+      },
+      messages: {
+        updateFailed: "Cập nhật vai trò thất bại. Vui lòng thử lại.",
       },
     },
   },
@@ -449,6 +631,7 @@ export const VI = {
       schedule: "Lịch trình / Khả dụng",
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
+      messages: "Tin nhắn",
       // Event Staff
       eventStaffDashboard: "Bảng điều khiển Staff",
       eventStaffSchedule: "Lịch làm việc",
@@ -461,6 +644,7 @@ export const VI = {
       photographBookings: "Đơn đặt PTG",
       photographReviews: "Đánh giá",
       photographSettings: "Hồ sơ / Cài đặt",
+      wallet: "Ví của tôi",
     },
 
     dashboardPhotograph: {
@@ -534,9 +718,9 @@ export const VI = {
       formCity: "Tỉnh/Thành phố",
       formCityPlaceholder: "Chọn tỉnh/thành phố",
       formCityRequired: "Vui lòng chọn tỉnh/thành phố.",
-      formDistrict: "Quận/Huyện",
-      formDistrictPlaceholder: "Chọn quận/huyện",
-      formDistrictRequired: "Vui lòng chọn quận/huyện.",
+      formDistrict: "Phường/Xã",
+      formDistrictPlaceholder: "Chọn phường/xã",
+      formDistrictRequired: "Vui lòng chọn phường/xã.",
       formAddressName: "Tên địa chỉ",
       formAddressNamePlaceholder: "Ví dụ: Nhà, Shop, Công ty",
       formAddressNameRequired: "Vui lòng nhập tên địa chỉ.",
@@ -590,11 +774,23 @@ export const VI = {
         title: "Gửi hàng",
         trackingCode: "Mã vận đơn",
         trackingCodePlaceholder: "Nhập mã vận đơn",
+        carrierName: "Đơn vị vận chuyển",
+        selectCarrier: "Chọn đơn vị vận chuyển",
+        carrierNameOther: "Tên đơn vị vận chuyển khác",
+        carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
+        uploadText: "Click or drag files to upload",
+        uploadHint: "Hỗ trợ nhiều hình ảnh",
+        imagePrefix: "Hình ảnh",
         noteLabel: "Ghi chú",
         notePlaceholder: "Nhập ghi chú cho hình ảnh này",
         submit: "Gửi hàng",
         cancel: "Hủy",
+      },
+      validation: {
+        trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
         prepareSuccess: "Xác nhận chuẩn bị đơn thuê thành công",
@@ -605,12 +801,6 @@ export const VI = {
         shipFailed: "Không thể gửi hàng",
         completeSuccess: "Hoàn tất đơn thuê thành công",
         completeFailed: "Không thể hoàn tất đơn thuê",
-      },
-      validation: {
-        trackingRequired: "Vui lòng nhập mã vận đơn",
-        imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
-        noteRequired: "Vui lòng nhập ghi chú cho tất cả hình ảnh",
-        noteImageMismatch: "Số lượng ghi chú không khớp với số lượng hình ảnh",
       },
     },
 
@@ -626,6 +816,13 @@ export const VI = {
       },
       empty: "Chưa có đánh giá nào",
       loadError: "Không thể tải danh sách đánh giá",
+    },
+
+    serviceOrders: {
+      title: "Quản lý đơn đặt dịch vụ",
+      sidebar: "Đơn đặt dịch vụ",
+      empty: "Chưa có đơn đặt dịch vụ nào",
+      loadError: "Không thể tải danh sách đơn đặt dịch vụ",
     },
   },
 
@@ -714,8 +911,8 @@ export const VI = {
         addressNamePlaceholder: "Ví dụ: Nhà, Công ty, Shop",
         city: "Tỉnh/Thành phố",
         cityPlaceholder: "Chọn Tỉnh/Thành phố",
-        district: "Quận/Huyện",
-        districtPlaceholder: "Chọn Quận/Huyện",
+        district: "Phường/Xã",
+        districtPlaceholder: "Chọn Phường/Xã",
         streetAddress: "Địa chỉ chi tiết",
         streetAddressPlaceholder: "Số nhà, tên đường",
       },
@@ -723,7 +920,7 @@ export const VI = {
         required: "Trường này là bắt buộc",
         invalidPhone: "Số điện thoại không hợp lệ",
         selectCity: "Vui lòng chọn Tỉnh/Thành phố",
-        selectDistrict: "Vui lòng chọn Quận/Huyện",
+        selectDistrict: "Vui lòng chọn Phường/Xã",
         selectWard: "Vui lòng chọn Phường/Xã",
       },
       button: {
@@ -760,7 +957,7 @@ export const VI = {
     },
 
     orders: {
-      title: "Đơn mua",
+      title: "Đơn thuê trang phục",
       history: "Xem lịch sử mua hàng",
       pendingConfirm: "Chờ xác nhận",
       pendingPickup: "Chờ lấy hàng",
@@ -777,14 +974,18 @@ export const VI = {
       tabShippingBack: "Đang trả hàng",
       tabCompleted: "Hoàn thành",
       tabCancelled: "Đã hủy",
+      tabDispute: "Tranh chấp",
       empty: "Không có đơn hàng nào",
       loadError: "Không thể tải danh sách đơn hàng",
       // Status labels for list
       statusShippingOut: "Đang giao",
       statusDeliveringOut: "Chờ nhận",
+      statusDeliveryOut: "Giao đến",
       statusShippingBack: "Đang trả hàng",
+      statusUnpaid: "Chưa thanh toán",
       // Card display
       orderTitle: "Đơn hàng",
+      cardCostumeName: "Trang phục",
       orderCodePrefix: "CM",
       cardRentPeriod: "Thuê",
       cardDayCount: "ngày",
@@ -814,7 +1015,6 @@ export const VI = {
       // Review action
       actionReview: "Đánh giá",
       reviewModal: {
-        title: "Đánh giá đơn thuê",
         ratingLabel: "Chọn số sao",
         commentLabel: "Nội dung đánh giá",
         commentPlaceholder: "Chia sẻ trải nghiệm của bạn...",
@@ -824,68 +1024,161 @@ export const VI = {
       },
       toastReviewSuccess: "Gửi đánh giá thành công",
       toastReviewFailed: "Không thể gửi đánh giá",
+      toastDisputeSuccess: "Đã gửi khiếu nại thành công",
+      toastDisputeFailed: "Gửi khiếu nại thất bại",
+      actionCancel: "Hủy đơn",
+      toastCancelSuccess: "Hủy đơn thành công",
+      toastCancelFailed: "Không thể hủy đơn",
+      cancelModal: {
+        title: "Xác nhận hủy đơn",
+        message: "Bạn có chắc muốn hủy đơn hàng này không? Hành động này không thể hoàn tác.",
+      },
       validationReview: {
         ratingRequired: "Vui lòng chọn số sao đánh giá",
       },
+      // Pagination
+      paginationCostume: "Đơn thuê trang phục",
+      paginationService: "Đơn đặt dịch vụ",
+      paginationShow: "hiển thị",
+      paginationOf: "trong tổng",
     },
 
-    wallet: {
-      title: "Ví của tôi",
-      balance: "Số dư ví",
-      depositBalance: "Tiền cọc",
-      manage: "Quản lý ví",
-      topup: "Nạp tiền vào ví",
-      topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
-      amount: "Số tiền nạp",
-      amountPlaceholder: "Nhập số tiền",
-      submit: "Nạp tiền",
-
-      // Transaction history
-      viewTransactions: "Xem giao dịch",
-      hideTransactions: "Ẩn giao dịch",
-      transactionDate: "Ngày",
-      transactionType: "Loại giao dịch",
-      transactionAmount: "Số tiền",
-      transactionStatus: "Trạng thái",
-      noTransactions: "Chưa có giao dịch nào",
-      loading: "Đang tải...",
-      walletError: "Không thể tải thông tin ví",
-
-      // Wallet checkout validation
-      checkoutValidation: {
-        insufficientTitle: "Số dư ví không đủ",
-        balanceLabel: "Số dư hiện tại",
-        totalLabel: "Tổng cần thanh toán",
-        missingLabel: "Thiếu",
-        topUpCta: "Nạp thêm",
-        payWithWalletNote: "Thanh toán bằng số dư ví CosMate",
-      },
-
-      // Transaction status
+    serviceOrders: {
+      title: "Lịch sử đơn hàng",
+      tabCostume: "Đơn thuê trang phục",
+      tabService: "Đơn đặt dịch vụ",
+      empty: "Chưa có đơn đặt dịch vụ nào",
+      loadError: "Không thể tải danh sách đơn đặt dịch vụ",
+      orderTitle: "Đặt dịch vụ",
+      orderCodePrefix: "DV",
+      cardBookingDate: "Ngày đặt",
+      cardTimeSlot: "Khung giờ",
+      cardPeopleCount: "Số người",
+      cardSlotAmount: "Số slot",
+      cardBookings: "Lịch đặt",
+      cardBookingsCount: "lịch đặt",
+      cardMoreBookings: "thêm lịch đặt",
+      statusUnconfirm: "Chờ xác nhận",
+      statusUnpaid: "Chưa thanh toán",
+      statusPaid: "Đã thanh toán",
+      statusWaitingServiceDate: "Chờ ngày dịch vụ",
+      statusInService: "Đang thực hiện",
       statusCompleted: "Hoàn thành",
-      statusFailed: "Thất bại",
-      statusPending: "Đang chờ",
-
-      // Transaction types
-      typeTopUp: "Nạp tiền",
-      typePayment: "Thanh toán",
-      typeRefund: "Hoàn tiền",
-      typeDeposit: "Đặt cọc",
-      typeOther: "Khác",
-
-      // Top-up form
-      topUpTitle: "Nạp tiền vào ví",
-      topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
-      paymentMethodLabel: "Phương thức thanh toán",
-      momo: "MoMo",
-      momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
-      vnpay: "VNPAY",
-      vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
-      invalidAmount: "Số tiền phải lớn hơn 0",
-      selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
-      processing: "Đang xử lý...",
-      error: "Có lỗi xảy ra. Vui lòng thử lại.",
+      statusDispute: "Tranh chấp",
+      statusCancelled: "Đã hủy",
+      filterLabel: "Bộ lọc hiện tại",
+      chatTooltip: "Nhắn tin",
+      // Set Waiting action
+      setWaiting: "Chờ ngày thực hiện",
+      setWaitingModalTitle: "Xác nhận chuyển trạng thái",
+      setWaitingModalMessage: "Bạn có chắc chắn muốn chuyển đơn này sang trạng thái \"Chờ ngày thực hiện\" không?",
+      setWaitingModalOk: "Xác nhận",
+      // Start Service action
+      startService: "Bắt đầu dịch vụ",
+      startServiceModalTitle: "Xác nhận bắt đầu dịch vụ",
+      startServiceModalMessage: "Bắt đầu dịch vụ ngay bây giờ?",
+      startServiceModalOk: "Bắt đầu",
+      // Complete Service action
+      completeService: "Hoàn thành dịch vụ",
+      completeServiceModalTitle: "Xác nhận hoàn thành dịch vụ",
+      completeServiceModalMessage: "Bạn có chắc chắn muốn xác nhận hoàn thành dịch vụ này không?",
+      completeServiceModalOk: "Xác nhận",
+      // Confirm & Pay
+      btnConfirmAndPay: "Xác nhận & Thanh toán",
+      btnPayNow: "Thanh toán ngay",
+      btnProcessing: "Đang xử lý...",
+      toastConfirmPaySuccess: "Xác nhận thành công! Đang chuyển đến thanh toán...",
+      toastConfirmPayFailed: "Xác nhận và thanh toán thất bại",
+      toastPayFailed: "Thanh toán thất bại",
+      toastPaySuccess: "Đang chuyển đến thanh toán...",
     },
+
+    servicePayment: {
+      modalTitle: "Chọn phương thức thanh toán",
+      totalLabel: "Tổng cần thanh toán",
+      btnConfirm: "Xác nhận",
+      btnProcessing: "Đang xử lý...",
+    },
+  },
+
+  /**
+   * Wallet page text
+   */
+  wallet: {
+    title: "Ví của tôi",
+    balance: "Số dư ví",
+    depositBalance: "Tiền cọc",
+    manage: "Quản lý ví",
+    topup: "Nạp tiền vào ví",
+    topupPlaceholder: "Tính năng nạp tiền sẽ sớm được hỗ trợ.",
+    amount: "Số tiền nạp",
+    amountPlaceholder: "Nhập số tiền",
+    submit: "Nạp tiền",
+
+    // Transaction history
+    viewTransactions: "Xem giao dịch",
+    hideTransactions: "Ẩn giao dịch",
+    transactionDate: "Ngày",
+    transactionType: "Loại giao dịch",
+    transactionAmount: "Số tiền",
+    transactionStatus: "Trạng thái",
+    noTransactions: "Chưa có giao dịch nào",
+    loading: "Đang tải...",
+    walletError: "Không thể tải thông tin ví",
+
+    // Wallet checkout validation
+    checkoutValidation: {
+      insufficientTitle: "Số dư ví không đủ",
+      balanceLabel: "Số dư hiện tại",
+      totalLabel: "Tổng cần thanh toán",
+      missingLabel: "Thiếu",
+      topUpCta: "Nạp thêm",
+      payWithWalletNote: "Thanh toán bằng số dư ví CosMate",
+    },
+
+    // Transaction status
+    statusCompleted: "Hoàn thành",
+    statusFailed: "Thất bại",
+    statusPending: "Đang chờ",
+
+    // Transaction types
+    typeTopUp: "Nạp tiền",
+    typePayment: "Thanh toán",
+    typeRefund: "Hoàn tiền",
+    typeDeposit: "Đặt cọc",
+    typeOther: "Khác",
+
+    // Top-up form
+    topUpTitle: "Nạp tiền vào ví",
+    topUpDescription: "Nhập số tiền và chọn phương thức thanh toán",
+    topUpSuccessResume: "Nạp tiền thành công! Bạn có thể tiếp tục thanh toán.",
+    paymentMethodLabel: "Phương thức thanh toán",
+    momo: "MoMo",
+    momoDesc: "Thanh toán nhanh qua ứng dụng MoMo",
+    vnpay: "VNPAY",
+    vnpayDesc: "Thanh toán qua ngân hàng hoặc thẻ ATM",
+    invalidAmount: "Số tiền phải lớn hơn 0",
+    selectPaymentMethod: "Vui lòng chọn phương thức thanh toán",
+    processing: "Đang xử lý...",
+    error: "Có lỗi xảy ra. Vui lòng thử lại.",
+
+    // Withdraw form
+    withdraw: "Rút tiền",
+    withdrawTitle: "Rút tiền từ ví",
+    withdrawDescription: "Nhập số tiền và thông tin tài khoản ngân hàng để rút tiền",
+    withdrawAmountLabel: "Số tiền rút",
+    withdrawAmountPlaceholder: "Nhập số tiền muốn rút",
+    withdrawBankAccountLabel: "Số tài khoản",
+    withdrawBankAccountPlaceholder: "Nhập số tài khoản ngân hàng",
+    withdrawBankNameLabel: "Tên ngân hàng",
+    withdrawBankNamePlaceholder: "Nhập tên ngân hàng",
+    withdrawSubmit: "Rút tiền",
+    withdrawProcessing: "Đang xử lý...",
+    withdrawSuccess: "Yêu cầu rút tiền đã được gửi thành công",
+    withdrawError: "Không thể gửi yêu cầu rút tiền. Vui lòng thử lại.",
+    withdrawValidationInvalidAmount: "Số tiền rút phải lớn hơn 0",
+    withdrawValidationBankAccountRequired: "Vui lòng nhập số tài khoản",
+    withdrawValidationBankNameRequired: "Vui lòng nhập tên ngân hàng",
   },
 
   /**
@@ -895,6 +1188,7 @@ export const VI = {
     detail: {
       title: "Chi tiết đơn hàng",
       basicInfo: "Thông tin cơ bản",
+      costumeInfo: "Trang phục thuê",
       orderId: "Mã đơn",
       status: "Trạng thái",
       totalAmount: "Tổng tiền",
@@ -926,6 +1220,31 @@ export const VI = {
     actions: {
       viewDetail: "Xem chi tiết",
     },
+    extend: {
+      title: "Gia hạn thuê",
+      subtitle: "Chọn số ngày muốn gia hạn và phương thức thanh toán.",
+      extendDaysLabel: "Số ngày gia hạn",
+      daysSuffix: "ngày",
+      minDaysError: "Vui lòng nhập ít nhất 1 ngày.",
+      paymentMethodLabel: "Phương thức thanh toán",
+      btnConfirm: "Xác nhận gia hạn",
+      btnProcessing: "Đang xử lý...",
+      extendHistory: "Lịch sử gia hạn",
+      createdAt: "Thời gian",
+      oldReturnDate: "Ngày trả cũ",
+      newReturnDate: "Ngày trả mới",
+      extendDays: "Số ngày",
+      extendPrice: "Phí gia hạn",
+      paymentStatus: "Thanh toán",
+      viewDetail: "Chi tiết",
+      payNow: "Thanh toán ngay",
+      empty: "Chưa có lịch sử gia hạn.",
+      paymentStatusLabels: {
+        PAID: "Đã TT",
+        PENDING: "Chờ TT",
+        FAILED: "Thất bại",
+      },
+    },
   },
 
   /**
@@ -945,10 +1264,17 @@ export const VI = {
     viewDetails: "Xem chi tiết",
     viewDetail: "Xem chi tiết",
     costumeName: "Tên trang phục",
+    /** Costume list: line under title — e.g. Name (từ Series) */
+    characterFromWork: "từ",
+    /** Costume detail: heading above character list */
+    charactersHeading: "Nhân vật",
+    /** Costume list card — shop line */
+    listShopLabel: "Shop",
     description: "Mô tả",
     rentPurpose: "Mục đích thuê",
     numberOfItems: "Số lượng món",
     pricePerDay: "Giá theo ngày",
+    rentDiscount: "Giảm giá thuê",
     depositAmount: "Tiền cọc",
     status: "Trạng thái",
     providerId: "ID nhà cung cấp",
@@ -966,6 +1292,9 @@ export const VI = {
       rentalCount: "Lượt thuê",
       reviewsTitle: "Đánh giá",
       myReviewTitle: "Đánh giá của tôi",
+      ratingOfYou: "Đánh giá của bạn:",
+      rentedBanner: "Trang phục này hiện đang được thuê. Vui lòng quay lại sau.",
+      rentedButton: "Đã được thuê",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",
@@ -975,6 +1304,12 @@ export const VI = {
       writeReview: "Viết đánh giá",
       uploadImages: "Tải ảnh lên",
       addPhotos: "Thêm ảnh",
+      loadReviewsError: "Không thể tải đánh giá.",
+      reviewer: "Người dùng",
+      validation: {
+        ratingRequired: "Vui lòng chọn số sao đánh giá.",
+        commentRequired: "Vui lòng nhập nội dung đánh giá.",
+      },
     },
 
     // Validation messages
@@ -1089,6 +1424,21 @@ export const VI = {
    * Booking (Photographer/Staff) text
    */
   booking: {
+    create: {
+      title: "Tạo đơn đặt",
+      customer: "Khách hàng",
+      service: "Dịch vụ",
+      selectService: "-- Chọn dịch vụ --",
+      bookingDate: "Ngày đặt",
+      time: "Thời gian",
+      numberOfPeople: "Số người",
+      price: "Giá dịch vụ",
+      cancel: "Hủy",
+      create: "Tạo đơn đặt",
+      creating: "Đang tạo...",
+      success: "Đặt dịch vụ thành công!",
+      error: "Không thể tạo đơn đặt. Vui lòng thử lại.",
+    },
     photographer: {
       title: "Đặt nhiếp ảnh gia",
       searchPlaceholder: "Tìm nhiếp ảnh gia...",
@@ -1115,6 +1465,8 @@ export const VI = {
     create: {
       pageTitle: "Tạo dịch vụ mới",
       form: {
+        serviceName: "Tên dịch vụ",
+        serviceNamePlaceholder: "Nhập tên dịch vụ...",
         serviceType: "Loại dịch vụ",
         providerId: "Mã nhà cung cấp",
         areas: "Khu vực hoạt động",
@@ -1148,6 +1500,16 @@ export const VI = {
         submit: "Tạo dịch vụ",
       },
     },
+    edit: {
+      pageTitle: "Chỉnh sửa dịch vụ",
+      button: {
+        submit: "Lưu thay đổi",
+      },
+      messages: {
+        updateSuccess: "Cập nhật dịch vụ thành công!",
+        updateError: "Không thể cập nhật dịch vụ. Vui lòng thử lại.",
+      },
+    },
 
     list: {
       pageTitle: "Danh sách dịch vụ",
@@ -1157,6 +1519,7 @@ export const VI = {
       table: {
         coverImage: "Ảnh",
         serviceType: "Loại dịch vụ",
+        serviceName: "Tên dịch vụ",
         description: "Mô tả",
         slotDuration: "Thời lượng slot",
         pricePerSlot: "Giá mỗi slot",
@@ -1170,6 +1533,34 @@ export const VI = {
       messages: {
         loadError: "Không thể tải danh sách dịch vụ.",
         refresh: "Làm mới",
+        deleteSuccess: "Đã xóa dịch vụ!",
+        deleteError: "Không thể xóa dịch vụ. Vui lòng thử lại.",
+      },
+      delete: {
+        confirmTitle: "Xóa dịch vụ này?",
+        confirmDescription: "Hành động này không thể hoàn tác.",
+      },
+      detail: {
+        title: "Chi tiết dịch vụ",
+        viewButton: "Xem",
+        loading: "Đang tải chi tiết dịch vụ...",
+        loadError: "Không thể tải chi tiết dịch vụ.",
+        serviceName: "Tên dịch vụ",
+        serviceNameFallback: "(Không có tên)",
+        serviceType: "Loại dịch vụ",
+        description: "Mô tả",
+        descriptionEmpty: "Không có mô tả",
+        pricePerSlot: "Giá mỗi slot",
+        minPrice: "Giá tối thiểu",
+        maxPrice: "Giá tối đa",
+        slotDuration: "Thời lượng slot",
+        slotDurationUnit: "giờ",
+        depositAmount: "Tiền cọc",
+        areas: "Khu vực hoạt động",
+        areasEmpty: "Chưa có khu vực nào",
+        images: "Hình ảnh",
+        imagesEmpty: "Chưa có hình ảnh nào",
+        status: "Trạng thái",
       },
     },
   },
@@ -2030,6 +2421,108 @@ export const VI = {
   },
 
   /**
+   * Staff dashboard text
+   */
+  staff: {
+    layout: {
+      title: "Bảng điều khiển Staff",
+      brandName: "CosMate Staff",
+      brandShort: "SM",
+    },
+    sidebar: {
+      dashboard: "Trang chủ",
+      bookings: "Đơn đặt",
+      customers: "Khách hàng",
+      reports: "Báo cáo",
+      messages: "Tin nhắn",
+      settings: "Cài đặt",
+      withdraw: "Yêu cầu rút tiền",
+      disputes: "Khiếu nại",
+    },
+    home: {
+      welcome: "Chào mừng trở lại, Staff!",
+      overview: "Quản lý công việc, lịch trình và đơn đặt của bạn từ đây.",
+      recentBookings: "Đơn đặt gần đây",
+      tableCustomer: "Khách hàng",
+      tableService: "Dịch vụ",
+      tableDate: "Ngày",
+      tableTime: "Thời gian",
+      tableStatus: "Trạng thái",
+    },
+    bookings: {
+      title: "Quản lý đơn đặt",
+      searchPlaceholder: "Tìm kiếm đơn đặt...",
+      statusAll: "Tất cả",
+      statusPending: "Chờ xác nhận",
+      statusConfirmed: "Đã xác nhận",
+      statusInProgress: "Đang thực hiện",
+      statusCompleted: "Hoàn thành",
+      statusCancelled: "Đã hủy",
+      empty: "Chưa có đơn đặt nào",
+      loadError: "Không thể tải danh sách đơn đặt",
+    },
+    disputes: {
+      title: "Khiếu nại",
+      description: "Danh sách khiếu nại từ người dùng",
+      orderId: "Mã đơn hàng",
+      cosplayerId: "Cosplayer",
+      providerId: "Provider",
+      totalAmount: "Tổng tiền",
+      orderStatus: "Trạng thái đơn",
+      orderType: "Loại đơn",
+      orderInfo: "Thông tin đơn hàng",
+      createdAt: "Ngày tạo",
+      reason: "Lý do",
+      evidence: "Hình ảnh chứng cứ",
+      result: "Kết quả",
+      penaltyAmount: "Số tiền phạt",
+      penaltyPercent: "Phần trăm phạt",
+      status: "Trạng thái",
+      disputeDetail: "Chi tiết khiếu nại",
+      disputeImageAlt: "Ảnh chứng cứ",
+      filterAll: "Tất cả",
+      filterOpen: "Mở",
+      filterResolved: "Đã giải quyết",
+      filterRejected: "Từ chối",
+      statusOpen: "Mở",
+      statusResolved: "Đã giải quyết",
+      statusRejected: "Từ chối",
+      empty: "Chưa có khiếu nại nào",
+    },
+    withdraw: {
+      title: "Yêu cầu rút tiền",
+      description: "Danh sách yêu cầu rút tiền từ người dùng",
+      colId: "Mã yêu cầu",
+      colUser: "Người dùng",
+      colAmount: "Số tiền",
+      colBankAccount: "Số tài khoản",
+      colBankName: "Ngân hàng",
+      colStatus: "Trạng thái",
+      colRequestedAt: "Ngày yêu cầu",
+      colAction: "Hành động",
+      statusCompleted: "Hoàn thành",
+      statusFailed: "Thất bại",
+      statusPending: "Đang chờ",
+      empty: "Chưa có yêu cầu rút tiền nào",
+      loadError: "Không thể tải danh sách yêu cầu rút tiền",
+      reject: "Từ chối",
+      rejecting: "Đang xử lý...",
+      rejectSuccess: "Đã từ chối yêu cầu rút tiền",
+      rejectError: "Không thể từ chối yêu cầu. Vui lòng thử lại.",
+      approve: "Duyệt",
+      approving: "Đang duyệt...",
+      approveSuccess: "Đã duyệt yêu cầu rút tiền",
+      approveError: "Không thể duyệt yêu cầu. Vui lòng thử lại.",
+      onlyPendingCanApprove: "Chỉ yêu cầu đang chờ mới có thể duyệt",
+      onlyPendingCanReject: "Chỉ yêu cầu đang chờ mới có thể từ chối",
+      rejectModalTitle: "Từ chối yêu cầu rút tiền",
+      rejectModalDesc: "Vui lòng nhập lý do từ chối:",
+      rejectModalOk: "Từ chối",
+      rejectReasonPlaceholder: "VD: Số tài khoản không hợp lệ",
+    },
+  },
+
+  /**
    * Payment Result Page
    */
   paymentResult: {
@@ -2039,6 +2532,8 @@ export const VI = {
     failedDesc: "Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc liên hệ hỗ trợ.",
     cancelledTitle: "Thanh toán đã bị hủy",
     cancelledDesc: "Giao dịch thanh toán đã bị hủy. Bạn có thể thử lại hoặc quay lại sau.",
+    pendingTitle: "Thanh toán đang xử lý",
+    pendingDesc: "Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để xác nhận đơn.",
     unknownTitle: "Kết quả thanh toán",
     unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
     orderIdLabel: "Mã đơn hàng",

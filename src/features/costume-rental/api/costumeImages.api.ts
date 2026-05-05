@@ -37,12 +37,16 @@ export async function uploadCostumeImage(
   file: File,
 ): Promise<CostumeImage> {
   const form = new FormData()
-  form.append('file', file)
-  const res = await axiosInstance.post<CostumeApiResponse<CostumeImage>>(
+  form.append('files', file)
+  const res = await axiosInstance.post<CostumeApiResponse<CostumeImage[]>>(
     `/api/images/costume/${costumeId}?type=${type}`,
     form,
   )
-  return res.data.result
+  const firstImage = res.data.result?.[0]
+  if (!firstImage) {
+    throw new Error('Upload ảnh thành công nhưng backend không trả dữ liệu ảnh.')
+  }
+  return firstImage
 }
 
 /** DELETE /api/images/{imageId} */

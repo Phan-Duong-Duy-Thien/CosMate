@@ -1,14 +1,12 @@
 import {
   LayoutDashboard,
   Package,
-  ShoppingBag,
-  Calendar,
   Star,
   Settings,
   ClipboardList,
-  Camera,
-  Briefcase,
   PlusCircle,
+  MessageCircle,
+  Wallet,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -43,7 +41,7 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
   {
     key: 'costumeCreate',
     label: VI.provider.sidebar.costumeCreate,
-    icon: Package,
+    icon: PlusCircle,
     path: '/provider-rental/costumes/create',
   },
   {
@@ -51,18 +49,6 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.orders.title,
     icon: ClipboardList,
     path: '/provider-rental/orders',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.bookings,
-    icon: ShoppingBag,
-    path: '/provider/bookings',
-  },
-  {
-    key: 'schedule',
-    label: VI.provider.sidebar.schedule,
-    icon: Calendar,
-    path: '/provider/schedule',
   },
   {
     key: 'reviews',
@@ -75,6 +61,18 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.settings,
     icon: Settings,
     path: '/provider/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider/messages',
+  },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-rental/wallet',
   },
 ];
 
@@ -95,34 +93,34 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/services',
   },
   {
+    key: 'serviceOrders',
+    label: VI.provider.serviceOrders.sidebar,
+    icon: ClipboardList,
+    path: '/provider-photograph/service-orders',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
     path: '/provider-photograph/serviceCreate',
   },
   {
-    key: 'schedule',
-    label: VI.provider.sidebar.photographSchedule,
-    icon: Calendar,
-    path: '/provider-photograph/schedule',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.photographBookings,
-    icon: Camera,
-    path: '/provider-photograph/bookings',
-  },
-  {
-    key: 'reviews',
-    label: VI.provider.sidebar.photographReviews,
-    icon: Star,
-    path: '/provider-photograph/reviews',
-  },
-  {
     key: 'settings',
     label: VI.provider.sidebar.photographSettings,
     icon: Settings,
     path: '/provider-photograph/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-photograph/messages',
+  },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-photograph/wallet',
   },
 ];
 
@@ -143,33 +141,33 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-event-staff/services',
   },
   {
+    key: 'serviceOrders',
+    label: VI.provider.serviceOrders.sidebar,
+    icon: ClipboardList,
+    path: '/provider-event-staff/service-orders',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
     path: '/provider-event-staff/serviceCreate',
   },
   {
-    key: 'schedule',
-    label: VI.provider.sidebar.eventStaffSchedule,
-    icon: Calendar,
-    path: '/provider-event-staff/schedule',
-  },
-  {
-    key: 'bookings',
-    label: VI.provider.sidebar.eventStaffBookings,
-    icon: Briefcase,
-    path: '/provider-event-staff/bookings',
-  },
-  {
-    key: 'reviews',
-    label: VI.provider.sidebar.eventStaffReviews,
-    icon: Star,
-    path: '/provider-event-staff/reviews',
-  },
-  {
     key: 'settings',
     label: VI.provider.sidebar.eventStaffSettings,
     icon: Settings,
     path: '/provider-event-staff/settings',
+  },
+  {
+    key: 'messages',
+    label: VI.provider.sidebar.messages,
+    icon: MessageCircle,
+    path: '/provider-event-staff/messages',
+  },
+  {
+    key: 'wallet',
+    label: VI.provider.sidebar.wallet,
+    icon: Wallet,
+    path: '/provider-event-staff/wallet',
   },
 ];

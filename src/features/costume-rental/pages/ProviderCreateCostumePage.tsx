@@ -10,12 +10,13 @@
 import { useNavigate } from 'react-router-dom'
 import { notification, Steps, Typography, Row, Col, Card, Spin } from 'antd'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
-import type { DashboardSidebarItem }from '@/app/layouts/DashboardLayout'
+import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout'
 import { providerSidebarItems } from '@/features/provider/constants/sidebar'
 import { useCreateCostumeWizard } from '../hooks/useCreateCostumeWizard'
 import Phase1BasicInfoForm from '../components/create/Phase1BasicInfoForm'
 import Phase2BuilderTabs from '../components/create/Phase2BuilderTabs'
 import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
+import { useCurrentProviderProfile } from '@/features/provider/hooks/useCurrentProviderProfile'
 import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
 import { VI } from '@/shared/i18n/vi'
 
@@ -25,6 +26,7 @@ export default function ProviderCreateCostumePage() {
   const navigate = useNavigate()
   const wizard = useCreateCostumeWizard()
   const gate = useProviderGate()
+  const { provider, loading: providerLoading } = useCurrentProviderProfile()
 
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
     const Icon = item.icon
@@ -41,10 +43,10 @@ export default function ProviderCreateCostumePage() {
       await wizard.handlePhase2Submit()
       notification.success({
         message: 'Tạo trang phục thành công!',
-        description: 'Trang phục đã được lưu cùng toàn bộ thông tin bổ sung.',
+        description: 'Trang phục đã được lưu. Hệ thống đang định hình trang phục cho việc search hình ảnh.',
       })
       navigate('/provider-rental/costumes')
-    }catch {
+    } catch {
       // error already set in hook
     }
   }
@@ -53,6 +55,7 @@ export default function ProviderCreateCostumePage() {
     <DashboardLayout
       title="Đăng trang phục mới"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
       {gate.profileLoading && (
@@ -61,6 +64,7 @@ export default function ProviderCreateCostumePage() {
           <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
         </div>
       )}
+
       {!gate.profileLoading && gate.verified === false && (
         <ProviderActivationGate
           plans={gate.plans}
@@ -75,10 +79,11 @@ export default function ProviderCreateCostumePage() {
           subscribeError={gate.subscribeError}
         />
       )}
+
       {!gate.profileLoading && gate.verified === true && (
         <Row justify="center">
-          <Col xs={24}sm={22}md={20} lg={18} xl={16}>
-            <Title level={3}style={{ marginBottom: 24 }}>
+          <Col xs={24} sm={22} md={20} lg={18} xl={16}>
+            <Title level={3} style={{ marginBottom: 24 }}>
               Đăng trang phục mới
             </Title>
 
@@ -92,7 +97,7 @@ export default function ProviderCreateCostumePage() {
             />
 
             <Card
-              bordered={false}
+              variant="borderless"
               style={{
                 borderRadius: 12,
                 boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
@@ -100,10 +105,19 @@ export default function ProviderCreateCostumePage() {
             >
               {wizard.phase === 1 && (
                 <Phase1BasicInfoForm
-                  onSubmit={wizard.handlePhase1Submit}
+                  onSubmit={(values) => {
+                    if (!provider?.id) {
+                      notification.error({
+                        message: 'Không thể xác định Provider',
+                        description: 'Vui lòng tải lại hồ sơ Provider hoặc đăng nhập lại.',
+                      })
+                      return Promise.resolve()
+                    }
+                    return wizard.handlePhase1Submit({ ...values, providerId: provider.id })
+                  }}
                   loading={wizard.isPhase1Loading}
                   error={wizard.phase1Error}
-                  disabled={wizard.isPhase1Loading}
+                  disabled={wizard.isPhase1Loading || providerLoading || !provider?.id}
                 />
               )}
 

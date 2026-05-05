@@ -1,235 +1,545 @@
 # CosMate_FE — Cấu trúc thư mục (Directory Structure)
 
-> Xuất ngày: 2025-02-09
+> Xuất ngày: 2026-04-14
 
 ```
-CosMate_FE/
+src/
+├── App.css
+├── index.css
+├── main.tsx
 │
-├── .cursor/
-│   └── skills/
-│       └── cosmate-fe-workflow-driver/
-│           └── SKILL.md
+├── assets/
+│   ├── ai-mascot.png
+│   ├── anh1.jpg
+│   ├── background.jpg
+│   ├── banner game.jpg
+│   ├── banner marin.jpg
+│   ├── banner2.jpg
+│   ├── banner3.jpg
+│   ├── cosmate.png
+│   ├── ghn.jpg
+│   ├── logo.png
+│   ├── mascot-content.png
+│   ├── mascot-moderation.png
+│   ├── mascot-pose-100.png
+│   ├── mascot-pose-bad.png
+│   ├── mascot-pose-good.png
+│   ├── mascot-pose-verygood.png
+│   ├── mascot-pose.png
+│   ├── mascot-quiz.png
+│   ├── mascot-search.png
+│   ├── quiz1.jpg
+│   ├── quiz2.jpg
+│   ├── quiz3.jpg
+│   ├── react.svg
+│   ├── saukura.jpg
+│   └── video-mascot-quiz.mov
 │
-├── docs/
-│   ├── admin-user-management-implementation.md
-│   └── i18n-vietnamese-standardization.md
+├── components/
+│   └── ui/
+│       ├── button.tsx
+│       ├── card.tsx
+│       └── separator.tsx
 │
-├── public/
-│   └── vite.svg
+├── lib/
+│   ├── datetime.ts
+│   └── utils.ts
 │
-├── scripts/
-│   └── i18n-check.mjs
+├── services/
+│   ├── authService.ts
+│   └── axiosInstance.ts
 │
-├── src/
-│   ├── app/
-│   │   ├── layouts/
-│   │   │   ├── CosplayerSiteLayout.tsx
-│   │   │   └── DashboardLayout.tsx
-│   │   ├── pages/
-│   │   │   └── NoPermissionPage.tsx
-│   │   ├── providers/
-│   │   │   └── .gitkeep
-│   │   ├── routes/
-│   │   │   ├── index.tsx
-│   │   │   └── ProtectedRoute.tsx
-│   │   └── App.tsx
-│   │
-│   ├── assets/
-│   │   └── react.svg
-│   │
+├── shared/
+│   ├── api/
+│   │   └── vnLocation.api.ts
 │   ├── components/
-│   │   └── ui/
-│   │       ├── button.tsx
-│   │       ├── card.tsx
-│   │       └── separator.tsx
-│   │
-│   ├── features/
-│   │   ├── admin/
-│   │   │   ├── api/
-│   │   │   │   └── adminUsers.api.ts
-│   │   │   ├── components/
-│   │   │   │   └── users/
-│   │   │   │       └── UserDetailDrawer.tsx
-│   │   │   ├── constants/
-│   │   │   │   └── sidebar.ts
-│   │   │   ├── hooks/
-│   │   │   │   └── useAdminUsers.ts
-│   │   │   ├── pages/
-│   │   │   │   ├── AdminHomePage.tsx
-│   │   │   │   └── AdminUsersPage.tsx
-│   │   │   ├── services/
-│   │   │   │   └── adminUsers.service.ts
-│   │   │   ├── utils/
-│   │   │   │   ├── userPermissions.ts
-│   │   │   │   ├── userRole.ts
-│   │   │   │   └── userStatus.ts
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── auth/
-│   │   │   ├── api/
-│   │   │   │   └── auth.api.ts
-│   │   │   ├── components/
-│   │   │   │   ├── AuthForm.tsx
-│   │   │   │   ├── ConfirmButton.tsx
-│   │   │   │   ├── LoginForm.tsx
-│   │   │   │   └── RegisterForm.tsx
-│   │   │   ├── hooks/
-│   │   │   │   ├── useLogin.ts
-│   │   │   │   └── useRegister.ts
-│   │   │   ├── layout/
-│   │   │   │   └── AuthLayout.tsx
-│   │   │   ├── pages/
-│   │   │   │   ├── CosplayerRegPage.tsx
-│   │   │   │   ├── LoginPage.tsx
-│   │   │   │   ├── PhotographerRegPage.tsx
-│   │   │   │   ├── ProviderRegPage.tsx
-│   │   │   │   ├── RegisterPage.tsx
-│   │   │   │   ├── RegisterRoleSelectPage.tsx
-│   │   │   │   └── StaffRegPage.tsx
-│   │   │   ├── services/
-│   │   │   │   └── tokenStorage.ts
-│   │   │   ├── utils/
-│   │   │   │   ├── authStorage.ts
-│   │   │   │   └── roleRedirect.ts
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── costume-rental/
-│   │   │   ├── components/
-│   │   │   │   ├── detail/
-│   │   │   │   │   ├── DetailTabs.tsx
-│   │   │   │   │   ├── MediaGallery.tsx
-│   │   │   │   │   ├── PriceBreakdownCard.tsx
-│   │   │   │   │   ├── PurchasePanel.tsx
-│   │   │   │   │   ├── RelatedCostumeList.tsx
-│   │   │   │   │   ├── ReviewsSection.tsx
-│   │   │   │   │   └── ShopInfoCard.tsx
-│   │   │   │   ├── filters/
-│   │   │   │   │   └── FilterSidebar.tsx
-│   │   │   │   ├── CostumeCard.tsx
-│   │   │   │   ├── CostumeGrid.tsx
-│   │   │   │   ├── Pagination.tsx
-│   │   │   │   ├── ShopResultCard.tsx
-│   │   │   │   └── SortBar.tsx
-│   │   │   ├── mocks/
-│   │   │   │   ├── costumes.mock.ts
-│   │   │   │   └── shops.mock.ts
-│   │   │   ├── pages/
-│   │   │   │   ├── CostumeDetailPage.tsx
-│   │   │   │   └── CostumeListPage.tsx
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── general/
-│   │   │   ├── components/
-│   │   │   │   └── home/
-│   │   │   │       ├── HeroCarousel.tsx
-│   │   │   │       ├── ProductCard.tsx
-│   │   │   │       ├── ProductSection.tsx
-│   │   │   │       ├── QuizModal.tsx
-│   │   │   │       ├── ShopCarousel.tsx
-│   │   │   │       └── TagChips.tsx
-│   │   │   ├── mocks/
-│   │   │   │   └── home.mock.ts
-│   │   │   └── pages/
-│   │   │       ├── HomePage.tsx
-│   │   │       └── home.types.ts
-│   │   │
-│   │   ├── photographer-booking/
-│   │   │   ├── components/
-│   │   │   │   ├── ui/
-│   │   │   │   │   ├── badge.tsx
-│   │   │   │   │   ├── button-variants.ts
-│   │   │   │   │   ├── button.tsx
-│   │   │   │   │   ├── dropdown-menu.tsx
-│   │   │   │   │   └── input.tsx
-│   │   │   │   ├── ListingFilterBar.tsx
-│   │   │   │   ├── PhotographerCard.tsx
-│   │   │   │   ├── ProfileMainContent.tsx
-│   │   │   │   └── ProfileSidebar.tsx
-│   │   │   ├── mocks/
-│   │   │   │   ├── ImageWithFallback.tsx
-│   │   │   │   └── PortfolioGrid.tsx
-│   │   │   ├── pages/
-│   │   │   │   ├── PhotographerProfilePage.tsx
-│   │   │   │   └── PhotographersListingPage.tsx
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── profile/
-│   │   │   ├── components/
-│   │   │   │   ├── EditProfileModal.tsx
-│   │   │   │   ├── GalleryGrid.tsx
-│   │   │   │   ├── LogoutConfirmDialog.tsx
-│   │   │   │   ├── ProfileActions.tsx
-│   │   │   │   ├── ProfileSidebarCard.tsx
-│   │   │   │   ├── ProfileTabs.tsx
-│   │   │   │   ├── SortDropdown.tsx
-│   │   │   │   └── TagChips.tsx
-│   │   │   ├── pages/
-│   │   │   │   └── CosplayerProfilePage.tsx
-│   │   │   └── types.ts
-│   │   │
-│   │   ├── provider/
-│   │   │   ├── constants/
-│   │   │   │   └── sidebar.ts
-│   │   │   └── pages/
-│   │   │       └── ProviderHomePage.tsx
-│   │   │
-│   │   └── staff-booking/
-│   │       ├── components/
-│   │       │   ├── ui/
-│   │       │   │   ├── badge.tsx
-│   │       │   │   ├── button-variants.ts
-│   │       │   │   ├── button.tsx
-│   │       │   │   ├── dropdown-menu.tsx
-│   │       │   │   └── input.tsx
-│   │       │   ├── ListingFilterBar.tsx
-│   │       │   ├── ProfileMainContent.tsx
-│   │       │   ├── ProfileSidebar.tsx
-│   │       │   └── StaffCard.tsx
-│   │       ├── mocks/
-│   │       │   ├── ImageWithFallback.tsx
-│   │       │   └── PortfolioGrid.tsx
-│   │       ├── pages/
-│   │       │   ├── StaffProfilePage.tsx
-│   │       │   └── StaffsListingPage.tsx
-│   │       └── types.ts
-│   │
-│   ├── lib/
-│   │   └── utils.ts
-│   │
-│   ├── services/
-│   │   ├── authService.ts
-│   │   └── axiosInstance.ts
-│   │
-│   ├── shared/
-│   │   ├── components/
-│   │   │   ├── Badge.tsx
-│   │   │   ├── Button.tsx
-│   │   │   ├── Card.tsx
-│   │   │   ├── Dialog.tsx
-│   │   │   ├── DropdownMenu.tsx
-│   │   │   ├── Input.tsx
-│   │   │   ├── RatingStars.tsx
-│   │   │   └── SectionHeader.tsx
-│   │   └── i18n/
-│   │       └── vi.ts
-│   │
-│   ├── types/
-│   │   └── auth.ts
-│   │
-│   ├── App.css
-│   ├── index.css
-│   └── main.tsx
+│   │   ├── AlertMessage/
+│   │   │   ├── AlertMessage.tsx
+│   │   │   └── index.ts
+│   │   ├── AILoadingMascot.tsx
+│   │   ├── Badge.tsx
+│   │   ├── Breadcrumbs.tsx
+│   │   ├── Button.tsx
+│   │   ├── Card.tsx
+│   │   ├── Dialog.tsx
+│   │   ├── DropdownMenu.tsx
+│   │   ├── Input.tsx
+│   │   ├── RatingStars.tsx
+│   │   ├── ScrollToTop.tsx
+│   │   └── SectionHeader.tsx
+│   ├── constants/
+│   │   └── bankList.ts
+│   ├── data/
+│   │   ├── vietnamLocations.ts
+│   │   └── vietnamLocations.types.ts
+│   ├── hooks/
+│   │   ├── useAreaLocations.ts
+│   │   └── useVietnamLocations.ts
+│   ├── i18n/
+│   │   └── vi.ts
+│   └── utils/
+│       └── vietnamLocation.utils.ts
 │
-├── .env.example
-├── .gitignore
-├── eslint.config.js
-├── index.html
-├── package.json
-├── package-lock.json
-├── tsconfig.app.json
-├── tsconfig.json
-├── tsconfig.node.json
-└── vite.config.ts
+├── types/
+│   └── auth.ts
+│
+├── app/
+│   ├── App.tsx
+│   ├── layouts/
+│   │   ├── AdminLayout.tsx
+│   │   ├── CosplayerSiteLayout.tsx
+│   │   ├── CosplayerSiteLayout.tsx
+│   │   └── DashboardLayout.tsx
+│   ├── pages/
+│   │   └── NoPermissionPage.tsx
+│   ├── providers/
+│   │   ├── BreadcrumbProvider.tsx
+│   │   ├── ChatPopupRoot.tsx
+│   │   └── UserProfileProvider.tsx
+│   └── routes/
+│       ├── ProtectedRoute.tsx
+│       └── index.tsx
+│
+└── features/
+    ├── admin/
+    │   ├── api/
+    │   │   ├── adminUsers.api.ts
+    │   │   └── menu.api.ts
+    │   ├── components/
+    │   │   └── users/
+    │   │       └── UserDetailDrawer.tsx
+    │   ├── constants/
+    │   │   └── sidebar.ts
+    │   ├── hooks/
+    │   │   ├── useAdminUsers.ts
+    │   │   ├── useDynamicMenu.tsx
+    │   │   └── useMenuManagement.ts
+    │   ├── pages/
+    │   │   ├── AdminHomePage.tsx
+    │   │   ├── AdminMenusPage.tsx
+    │   │   └── AdminUsersPage.tsx
+    │   ├── services/
+    │   │   └── adminUsers.service.ts
+    │   ├── types.ts
+    │   └── utils/
+    │       ├── userPermissions.ts
+    │       ├── userRole.ts
+    │       └── userStatus.ts
+    │
+    ├── auth/
+    │   ├── api/
+    │   │   └── auth.api.ts
+    │   ├── components/
+    │   │   ├── AuthForm.tsx
+    │   │   ├── ConfirmButton.tsx
+    │   │   ├── LoginForm.tsx
+    │   │   └── RegisterForm.tsx
+    │   ├── hooks/
+    │   │   ├── useForgotPasswordRequest.ts
+    │   │   ├── useLogin.ts
+    │   │   ├── useRegister.ts
+    │   │   └── useResetPassword.ts
+    │   ├── layout/
+    │   │   └── AuthLayout.tsx
+    │   ├── pages/
+    │   │   ├── CosplayerRegPage.tsx
+    │   │   ├── ForgotPasswordPage.tsx
+    │   │   ├── LoginPage.tsx
+    │   │   ├── OnboardingRolePage.tsx
+    │   │   ├── PhotographerRegPage.tsx
+    │   │   ├── ProviderRegPage.tsx
+    │   │   ├── RegisterPage.tsx
+    │   │   ├── RegisterRoleSelectPage.tsx
+    │   │   ├── ResetPasswordPage.tsx
+    │   │   └── StaffRegPage.tsx
+    │   ├── services/
+    │   │   └── tokenStorage.ts
+    │   ├── types.ts
+    │   └── utils/
+    │       ├── authStorage.ts
+    │       └── roleRedirect.ts
+    │
+    ├── chat/
+    │   ├── api/
+    │   │   └── chat.api.ts
+    │   ├── components/
+    │   │   ├── ChatFooter.tsx
+    │   │   ├── ChatFooterInput.tsx
+    │   │   ├── ChatHeader.tsx
+    │   │   ├── ChatMessageBubble.tsx
+    │   │   ├── ChatMessageList.tsx
+    │   │   ├── ChatPopup.tsx
+    │   │   ├── ChatPopupContext.tsx
+    │   │   ├── ChatRoomList.tsx
+    │   │   ├── ProviderChatPanel.tsx
+    │   │   ├── ChatMessageStore.ts
+    │   │   └── useUnreadCount.ts
+    │   ├── hooks/
+    │   │   ├── useChatByRoomId.ts
+    │   │   ├── useChatMessageStore.ts
+    │   │   ├── useChatMessages.ts
+    │   │   ├── useChatPartner.ts
+    │   │   ├── useChatRoom.ts
+    │   │   ├── useChatRooms.ts
+    │   │   ├── useChatSocket.ts
+    │   │   └── useStartChat.ts
+    │   ├── pages/
+    │   │   ├── ChatPage.tsx
+    │   │   └── ProviderMessagesPage.tsx
+    │   ├── services/
+    │   │   ├── chat.service.ts
+    │   │   └── chatSocket.service.ts
+    │   └── types.ts
+    │
+    ├── costume-rental/
+    │   ├── api/
+    │   │   ├── costume.api.ts
+    │   │   ├── costumeImages.api.ts
+    │   │   ├── costumeRental.api.ts
+    │   │   ├── provider.api.ts
+    │   │   └── review.api.ts
+    │   ├── components/
+    │   │   ├── CostumeCard.tsx
+    │   │   ├── CostumeGrid.tsx
+    │   │   ├── Pagination.tsx
+    │   │   ├── ShopResultCard.tsx
+    │   │   ├── SortBar.tsx
+    │   │   ├── create/
+    │   │   │   ├── Phase1BasicInfoForm.tsx
+    │   │   │   └── Phase2BuilderTabs.tsx
+    │   │   ├── detail/
+    │   │   │   ├── DetailTabs.tsx
+    │   │   │   ├── MediaGallery.tsx
+    │   │   │   ├── MoreFromShop.tsx
+    │   │   │   ├── MyReviewForm.tsx
+    │   │   │   ├── PriceBreakdownCard.tsx
+    │   │   │   ├── ProductInfoSections.tsx
+    │   │   │   ├── ProductReviewsSection.tsx
+    │   │   │   ├── ProviderShopCard.tsx
+    │   │   │   ├── PurchasePanel.tsx
+    │   │   │   ├── RelatedCostumeList.tsx
+    │   │   │   ├── ReviewsSection.tsx
+    │   │   │   └── ShopInfoCard.tsx
+    │   │   ├── edit/
+    │   │   │   ├── EditBasicInfoForm.tsx
+    │   │   │   ├── EditCostumeModal.tsx
+    │   │   │   ├── FeesTab.tsx
+    │   │   │   └── ImagesTab.tsx
+    │   │   └── filters/
+    │   │       └── FilterSidebar.tsx
+    │   ├── hooks/
+    │   │   ├── useCostumeImageActions.ts
+    │   │   ├── useCostumeImages.ts
+    │   │   ├── useCreateCostumeWizard.ts
+    │   │   ├── useCreateReview.ts
+    │   │   ├── useEditCostumeModal.ts
+    │   │   ├── useFeaturedCostumes.ts
+    │   │   ├── useProviderCostumes.ts
+    │   │   ├── useProviderInfo.ts
+    │   │   ├── usePublicCostumeDetail.ts
+    │   │   ├── usePublicCostumes.ts
+    │   │   └── useSearchCostumes.ts
+    │   ├── mocks/
+    │   │   ├── costumes.mock.ts
+    │   │   ├── moreFromShop.mock.ts
+    │   │   ├── rentalCount.mock.ts
+    │   │   ├── reviewPermission.mock.ts
+    │   │   ├── reviews.mock.ts
+    │   │   └── shops.mock.ts
+    │   ├── pages/
+    │   │   ├── CostumeDetailPage.tsx
+    │   │   ├── CostumeListPage.tsx
+    │   │   ├── ProviderCostumeListPage.tsx
+    │   │   └── ProviderCreateCostumePage.tsx
+    │   ├── services/
+    │   │   ├── costumeImages.service.ts
+    │   │   ├── costumeRental.service.ts
+    │   │   ├── normalizeCostumeInputs.ts
+    │   │   └── validateCostumeConstraints.ts
+    │   └── types.ts
+    │
+    ├── general/
+    │   ├── components/
+    │   │   └── home/
+    │   │       ├── HeroCarousel.tsx
+    │   │       ├── ProductCard.tsx
+    │   │       ├── ProductSection.tsx
+    │   │       ├── QuizModal.tsx
+    │   │       ├── ShopCarousel.tsx
+    │   │       └── TagChips.tsx
+    │   ├── constants/
+    │   │   └── guidelinesRulesContent.ts
+    │   ├── mocks/
+    │   │   └── home.mock.ts
+    │   └── pages/
+    │       ├── GuidelinesRulesPage.tsx
+    │       ├── HomePage.tsx
+    │       ├── NotificationsPage.tsx
+    │       ├── PaymentResultPage.tsx
+    │       └── home.types.ts
+    │
+    ├── notification/
+    │   ├── api/
+    │   │   └── notification.api.ts
+    │   ├── hooks/
+    │   │   └── useNotifications.ts
+    │   ├── services/
+    │   │   └── notification.service.ts
+    │   └── types.ts
+    │
+    ├── order/
+    │   ├── api/
+    │   │   └── order.api.ts
+    │   ├── components/
+    │   │   ├── ConfirmDeliveryModal.tsx
+    │   │   ├── CreateDisputeModal.tsx
+    │   │   ├── OrderDetailDrawer.tsx
+    │   │   ├── ReturnOrderModal.tsx
+    │   │   ├── ReviewModal.tsx
+    │   │   └── ShipOrderModal.tsx
+    │   ├── hooks/
+    │   │   ├── useCheckoutReview.ts
+    │   │   ├── useCreateDispute.ts
+    │   │   ├── useOrderDetail.ts
+    │   │   ├── usePaymentVerification.ts
+    │   │   ├── usePrepareOrder.ts
+    │   │   └── useProviderOrders.ts
+    │   ├── pages/
+    │   │   ├── CheckoutReviewPage.tsx
+    │   │   └── ProviderOrdersPage.tsx
+    │   ├── services/
+    │   │   └── order.service.ts
+    │   ├── types.ts
+    │   └── utils/
+    │       ├── paymentReturnUrls.ts
+    │       └── rentalDraftStorage.ts
+    │
+    ├── photographer-booking/
+    │   ├── components/
+    │   │   ├── ListingFilterBar.tsx
+    │   │   ├── PhotographerCard.tsx
+    │   │   ├── ProfileMainContent.tsx
+    │   │   ├── ProfileSidebar.tsx
+    │   │   └── ui/
+    │   │       ├── badge.tsx
+    │   │       ├── button-variants.ts
+    │   │       ├── button.tsx
+    │   │       ├── dropdown-menu.tsx
+    │   │       └── input.tsx
+    │   ├── hooks/
+    │   │   └── useProvidersByRole.ts
+    │   ├── mocks/
+    │   │   ├── ImageWithFallback.tsx
+    │   │   └── PortfolioGrid.tsx
+    │   ├── pages/
+    │   │   ├── PhotographerProfilePage.tsx
+    │   │   └── PhotographersListingPage.tsx
+    │   └── types.ts
+    │
+    ├── pose-battle/
+    │   ├── components/
+    │   │   └── PoseResultOverlay.tsx
+    │   ├── constants/
+    │   │   └── poseBattle.constants.ts
+    │   ├── hooks/
+    │   │   └── usePoseBattle.ts
+    │   ├── pages/
+    │   │   └── PoseBattlePage.tsx
+    │   ├── services/
+    │   │   └── poseBattle.service.ts
+    │   └── types.ts
+    │
+    ├── profile/
+    │   ├── api/
+    │   │   ├── userAddress.api.ts
+    │   │   ├── userProfile.api.ts
+    │   │   ├── vnLocation.api.ts
+    │   │   ├── wallet.api.ts
+    │   │   └── withdraw.api.ts
+    │   ├── components/
+    │   │   ├── AddressModal.tsx
+    │   │   ├── EditProfileModal.tsx
+    │   │   ├── GalleryGrid.tsx
+    │   │   ├── ImageCropDialog.tsx
+    │   │   ├── LogoutConfirmDialog.tsx
+    │   │   ├── ProfileActions.tsx
+    │   │   ├── ProfileBioCard.tsx
+    │   │   ├── ProfileCover.tsx
+    │   │   ├── ProfileSidebarCard.tsx
+    │   │   ├── ProfileTabs.tsx
+    │   │   ├── SortDropdown.tsx
+    │   │   └── TagChips.tsx
+    │   ├── hooks/
+    │   │   ├── useCreateAddress.ts
+    │   │   ├── useEditProfile.ts
+    │   │   ├── usePurchaseOrders.ts
+    │   │   ├── useUserAddresses.ts
+    │   │   ├── useUserAddressesCrud.ts
+    │   │   ├── useUserProfile.ts
+    │   │   ├── useVnLocation.ts
+    │   │   ├── useWallet.ts
+    │   │   ├── useWalletTopUp.ts
+    │   │   └── useWithdraw.ts
+    │   ├── pages/
+    │   │   ├── AddressCreatePage.tsx
+    │   │   ├── CosplayerProfilePage.tsx
+    │   │   ├── PurchaseHistoryPage.tsx
+    │   │   ├── WalletPage.tsx
+    │   │   ├── WalletTopUpPage.tsx
+    │   │   └── WalletWithdrawPage.tsx
+    │   ├── services/
+    │   │   ├── userAddress.service.ts
+    │   │   ├── userProfile.service.ts
+    │   │   ├── wallet.service.ts
+    │   │   └── withdraw.service.ts
+    │   └── types.ts
+    │
+    ├── provider/
+    │   ├── api/
+    │   │   ├── provider.api.ts
+    │   │   ├── providerShop.api.ts
+    │   │   └── subscription.api.ts
+    │   ├── components/
+    │   │   ├── ProviderActivationGate.tsx
+    │   │   ├── ProviderProfileCompletionGate.tsx
+    │   │   └── shop-profile/
+    │   │       ├── RecommendedProductsSection.tsx
+    │   │       ├── ShopContactsSection.tsx
+    │   │       ├── ShopPoliciesSection.tsx
+    │   │       ├── ShopProductCard.tsx
+    │   │       ├── ShopProductGrid.tsx
+    │   │       ├── ShopProductToolbar.tsx
+    │   │       ├── ShopProfileHero.tsx
+    │   │       └── ShopReviewsSection.tsx
+    │   ├── constants/
+    │   │   └── sidebar.ts
+    │   ├── hooks/
+    │   │   ├── useCurrentProviderProfile.ts
+    │   │   ├── useProviderGate.ts
+    │   │   ├── useProviderProfile.ts
+    │   │   ├── useProviderProfileCompletion.ts
+    │   │   ├── useProviderProfileEdit.ts
+    │   │   ├── useProviderReviews.ts
+    │   │   ├── useProviderShopProfile.ts
+    │   │   ├── useProviderSubscribe.ts
+    │   │   ├── useProviderVerification.ts
+    │   │   ├── useShopProducts.ts
+    │   │   ├── useShopReviews.ts
+    │   │   └── useSubscriptionPlans.ts
+    │   ├── mocks/
+    │   │   ├── shopPolicies.mock.ts
+    │   │   ├── shopProducts.mock.ts
+    │   │   ├── shopProfile.mock.ts
+    │   │   └── shopReviews.mock.ts
+    │   ├── pages/
+    │   │   ├── EventStaffHomePage.tsx
+    │   │   ├── PhotographHomePage.tsx
+    │   │   ├── ProviderHomePage.tsx
+    │   │   ├── ProviderProfileCompletionPage.tsx
+    │   │   ├── ProviderProfileEditPage.tsx
+    │   │   ├── ProviderProfileViewPage.tsx
+    │   │   ├── ProviderReviewsPage.tsx
+    │   │   └── ShopProfilePage.tsx
+    │   ├── services/
+    │   │   └── provider.service.ts
+    │   └── types.ts
+    │
+    ├── search/
+    │   ├── components/
+    │   │   ├── AISearchBar.tsx
+    │   │   └── SearchBar.tsx
+    │   └── hooks/
+    │       └── useAISearch.ts
+    │
+    ├── service/
+    │   ├── api/
+    │   │   ├── booking.api.ts
+    │   │   └── service.api.ts
+    │   ├── components/
+    │   │   ├── CreateServiceForm.tsx
+    │   │   └── ServiceDetailModal.tsx
+    │   ├── hooks/
+    │   │   ├── useCreateService.ts
+    │   │   ├── useCreateServiceBooking.ts
+    │   │   ├── useProviderServices.ts
+    │   │   ├── usePublicProviderServices.ts
+    │   │   ├── usePublicServices.ts
+    │   │   ├── useServiceDetail.ts
+    │   │   ├── useUpdateService.ts
+    │   │   └── useViewService.ts
+    │   ├── pages/
+    │   │   ├── ProviderCreateServicePage.tsx
+    │   │   ├── ProviderServiceListPage.tsx
+    │   │   └── ServiceDetailPage.tsx
+    │   ├── services/
+    │   │   ├── booking.service.ts
+    │   │   └── service.service.ts
+    │   └── types.ts
+    │
+    ├── staff/
+    │   ├── constants/
+    │   │   └── sidebar.ts
+    │   ├── hooks/
+    │   │   ├── useApproveWithdraw.ts
+    │   │   ├── useRejectWithdraw.ts
+    │   │   └── useWithdrawRequests.ts
+    │   ├── layout/
+    │   │   └── StaffLayout.tsx
+    │   ├── pages/
+    │   │   ├── StaffHomePage.tsx
+    │   │   └── StaffWithdrawPage.tsx
+    │   └── services/
+    │       └── withdraw.service.ts
+    │
+    ├── staff-booking/
+    │   ├── components/
+    │   │   ├── ListingFilterBar.tsx
+    │   │   ├── ProfileMainContent.tsx
+    │   │   ├── ProfileSidebar.tsx
+    │   │   ├── StaffCard.tsx
+    │   │   └── ui/
+    │   │       ├── badge.tsx
+    │   │       ├── button-variants.ts
+    │   │       ├── button.tsx
+    │   │       ├── dropdown-menu.tsx
+    │   │       └── input.tsx
+    │   ├── mocks/
+    │   │   ├── ImageWithFallback.tsx
+    │   │   └── PortfolioGrid.tsx
+    │   ├── pages/
+    │   │   ├── StaffProfilePage.tsx
+    │   │   └── StaffsListingPage.tsx
+    │   └── types.ts
+    │
+    ├── style-quiz/
+    │   ├── components/
+    │   │   ├── QuizBoard.tsx
+    │   │   ├── QuizHero.tsx
+    │   │   ├── ResultCostumeGrid.tsx
+    │   │   └── StyleResultCard.tsx
+    │   ├── constants/
+    │   │   ├── archetypes.ts
+    │   │   └── stageQuestions.ts
+    │   ├── hooks/
+    │   │   └── useStyleQuiz.ts
+    │   ├── pages/
+    │   │   └── StyleQuizPage.tsx
+    │   ├── quizAlgorithm.ts
+    │   ├── services/
+    │   │   └── styleQuiz.service.ts
+    │   └── types.ts
+    │
+    └── wishlist/
+        ├── api/
+        │   └── wishlist.api.ts
+        ├── hooks/
+        │   └── useWishlist.ts
+        ├── pages/
+        │   └── WishlistPage.tsx
+        ├── services/
+        │   └── wishlist.service.ts
+        └── types/
+            └── index.ts
 ```
 
 ---
@@ -238,11 +548,9 @@ CosMate_FE/
 
 | Mục | Số lượng |
 |-----|----------|
-| **Features** | 8 (admin, auth, costume-rental, general, photographer-booking, profile, provider, staff-booking) |
-| **App layouts** | 2 (CosplayerSiteLayout, DashboardLayout) |
-| **Shared components** | 8 |
+| **Features** | 16 (admin, auth, chat, costume-rental, general, notification, order, photographer-booking, pose-battle, profile, provider, search, service, staff, staff-booking, style-quiz, wishlist) |
+| **App layouts** | 4 (AdminLayout, CosplayerSiteLayout, DashboardLayout, StaffLayout) |
+| **Shared components** | 14 |
 | **UI components (shadcn)** | 3 |
-| **Services** | 2 (authService, axiosInstance) |
-| **Docs** | 2 |
-
-*Bỏ qua: `.git/`, `node_modules/`*
+| **Services (root)** | 2 (authService, axiosInstance) |
+| **Total files in src/** | ~370 |

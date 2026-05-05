@@ -3,20 +3,22 @@ import { Card } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getMockRentalCount } from "../../mocks/rentalCount.mock"
 import { VI } from "@/shared/i18n/vi"
+import { useStartChat } from "@/features/chat/hooks/useStartChat"
 
 interface ProviderShopCardProps {
   provider: {
     id: number
+    userId: number
     shopName: string
     avatarUrl: string | null
     verified: boolean
     bio?: string | null
   }
-  onChat?: () => void
-  onViewShop?: () => void
+  onViewShop: () => void
 }
 
-export function ProviderShopCard({ provider, onChat, onViewShop }: ProviderShopCardProps) {
+export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps) {
+  const { startChat, loading: chatLoading } = useStartChat()
   const stats = getMockRentalCount(String(provider.id))
   const rating = stats.rating
   const totalReviews = stats.totalReviews
@@ -68,7 +70,8 @@ export function ProviderShopCard({ provider, onChat, onViewShop }: ProviderShopC
           variant="default"
           size="sm"
           className="rounded-full gap-1 bg-pink-100 text-pink-700 hover:bg-pink-200"
-          onClick={onChat}
+          onClick={() => startChat(provider.userId, provider.shopName)}
+          loading={chatLoading}
         >
           <MessageCircle className="h-4 w-4" />
           {VI.costumeRental.detail.chatNow}

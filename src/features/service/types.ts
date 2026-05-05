@@ -28,6 +28,7 @@ export interface ServiceArea {
  * Matches multipart/form-data fields sent to POST /api/services.
  */
 export interface CreateServiceFormData {
+  serviceName: string;
   serviceType: ServiceType;
   description: string;
   slotDurationHours: number;
@@ -46,6 +47,7 @@ export interface CreateServiceFormData {
  * The areas array is stringified when sent as FormData.
  */
 export interface CreateServicePayload {
+  serviceName: string;
   serviceType: ServiceType;
   description: string;
   slotDurationHours: number;
@@ -72,6 +74,7 @@ export interface CreatedService {
  */
 export interface ServiceItem {
   id: number;
+  serviceName: string;
   serviceType: string;
   description: string;
   slotDurationHours: number;
@@ -79,6 +82,7 @@ export interface ServiceItem {
   equipmentDepreciationCost: number;
   status: string;
   providerId: number;
+  userId: number;
   areas: ServiceArea[];
   imageUrls: string[];
   minPrice: number | null;
@@ -91,6 +95,7 @@ export interface ServiceItem {
  */
 export interface PublicServiceItem {
   id: number;
+  serviceName: string;
   serviceType: string;
   description: string;
   slotDurationHours: number;
@@ -98,6 +103,7 @@ export interface PublicServiceItem {
   equipmentDepreciationCost: number;
   status: string;
   providerId: number;
+  userId: number;
   areas: ServiceArea[];
   imageUrls: string[];
   minPrice: number | null;

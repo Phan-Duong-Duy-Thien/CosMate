@@ -1,15 +1,16 @@
-import { Link } from 'react-router-dom';
 import { useParams } from 'react-router-dom';
 import { Spin } from 'antd';
+import { motion } from 'motion/react';
 import { ProfileSidebar } from '../components/ProfileSidebar';
 import { ProfileMainContent } from '../components/ProfileMainContent';
-import { motion } from 'motion/react';
 import { useProviderProfile } from '@/features/provider/hooks/useProviderProfile';
+import { useStartChat } from '@/features/chat/hooks/useStartChat';
 
 export default function PhotographerProfilePage() {
   const { photographerId } = useParams();
   const providerId = photographerId ? Number(photographerId) : undefined;
   const { provider, loading, error } = useProviderProfile(providerId!);
+  const { startChat, loading: chatLoading } = useStartChat()
 
   if (loading) {
     return (
@@ -25,6 +26,10 @@ export default function PhotographerProfilePage() {
         {error ?? 'Không tìm thấy nhiếp ảnh gia'}
       </div>
     );
+  }
+
+  const handleChat = () => {
+    if (provider.userId) startChat(provider.userId, provider.shopName ?? undefined)
   }
 
   const photographerData = {
@@ -115,19 +120,10 @@ export default function PhotographerProfilePage() {
         </div>
 
         <div className="relative z-10">
-          {/* Breadcrumbs (Đường dẫn) */}
-          <nav className="flex items-center gap-2 text-[10px] font-black uppercase tracking-[0.2em] mb-10 px-4" aria-label="Breadcrumb">
-            <Link to="/" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Dịch vụ</Link>
-            <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-            <Link to="/photographers" className="text-[#A090C5] opacity-50 hover:text-[#B59DFF] transition-colors">Nhiếp ảnh gia</Link>
-            <div className="w-1 h-1 rounded-full bg-[#B59DFF]" aria-hidden />
-            <span className="text-[#4A3B6B] font-bold" aria-current="page">Hồ sơ</span>
-          </nav>
-
           {/* 2-Column Layout */}
           <div className="flex flex-col lg:flex-row gap-10">
-            <ProfileSidebar {...photographerData} />
-            <ProfileMainContent portfolioItems={portfolioItems} />
+            <ProfileSidebar {...photographerData} onChat={handleChat} />
+            <ProfileMainContent portfolioItems={portfolioItems} providerId={providerId} />
           </div>
         </div>
       </div>

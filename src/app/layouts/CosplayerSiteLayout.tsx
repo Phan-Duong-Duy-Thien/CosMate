@@ -1,41 +1,50 @@
 import * as React from "react"
-import { Link, Outlet, useNavigate, useSearchParams, useLocation } from "react-router-dom"
+import { Link, Outlet, useNavigate, useLocation } from "react-router-dom"
 import {
   Bell,
+  BookOpen,
   Camera,
-  ChevronDown,
   Facebook,
+  Home,
   Instagram,
   Mail,
   MapPin,
   MessageCircle,
   Phone,
-  Search,
+  Shirt,
   ShoppingCart,
-  Youtube,
+  Heart,
   Smartphone,
+  Sparkles,
+  FileText,
+  UserRound,
+  Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar, Popover, Spin } from "antd"
+import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
+import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
-import { Button } from "@shared/components/Button"
-import { DropdownMenu } from "@shared/components/DropdownMenu"
-import { Input } from "@shared/components/Input"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
+import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
+import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
+import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
+import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import bgImage from "@/assets/background.jpg"
 import sideBannerImage1 from "@/assets/anh1.jpg"
 import sideBannerImage2 from "@/assets/quiz1.jpg"
 import sideBannerImage3 from "@/assets/quiz2.jpg"
 import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
+import siteLogo from "@/assets/cosmate.png"
+import type { MenuProps } from 'antd'
 
 function computeInitials(fullName: string | null): string {
   if (!fullName) return "U"
@@ -48,7 +57,6 @@ function computeInitials(fullName: string | null): string {
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const location = useLocation()
-  const [searchParams, setSearchParams] = useSearchParams()
   const [isScrolled, setIsScrolled] = React.useState(false)
   const [bannerIndex, setBannerIndex] = React.useState(0)
 
@@ -61,30 +69,43 @@ export default function CosplayerSiteLayout() {
     return () => clearInterval(interval)
   }, [bannerImages.length])
 
-  const searchValue = searchParams.get("q") ?? ""
-
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
+  const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
   const isWideContentPage =
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount, markNotificationRead } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
+  const userId = getUserId()
+  const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
   React.useEffect(() => {
-    if (loggedIn) {
-      const roles = getRoles() as import("@/types/auth").UserRole[]
-      if (roles.length > 0) {
-        const correctPath = getRedirectPath(roles)
-        if (correctPath !== "/") {
-          console.log("[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:", correctPath)
-          navigate(correctPath, { replace: true })
-        }
-      }
-    }
-  }, [loggedIn, navigate])
+    if (!loggedIn) return
+
+    const roles = getRoles() as import("@/types/auth").UserRole[]
+    if (roles.length === 0) return
+
+    const correctPath = getRedirectPath(roles)
+    if (correctPath === "/") return
+
+    // Allow non-cosplayer users to browse costume/service pages without redirecting
+    const publicBrowsePaths = [
+      "/costumes",
+      "/photographers",
+      "/staffs",
+      "/service",
+      "/staff/",
+      "/photographer/",
+    ]
+    const isPublicBrowsePath = publicBrowsePaths.some((p) => location.pathname.startsWith(p))
+    if (isPublicBrowsePath) return
+
+    console.log("[CosplayerSiteLayout] User role is not COSPLAYER, redirecting to:", correctPath)
+    navigate(correctPath, { replace: true })
+  }, [loggedIn, navigate, location.pathname])
 
   React.useEffect(() => {
     const fetchProfile = async () => {
@@ -149,15 +170,96 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.photographers },
       ])
+    } else if (path.startsWith("/photographer/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+        { label: VI.common.breadcrumb.photographerProfile },
+      ])
     } else if (path === "/staffs") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
+    } else if (path.startsWith("/staff/")) {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+        { label: VI.common.breadcrumb.staffProfile },
+      ])
+    } else if (path.startsWith("/service/")) {
+      const state = location.state as { providerType?: string; providerId?: number } | null
+      if (state?.providerType === 'staff' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.staffs, to: "/staffs" },
+          { label: VI.common.breadcrumb.staffProfile, to: `/staff/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else if (state?.providerType === 'photographer' && state?.providerId) {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.photographerProfile, to: `/photographer/${state.providerId}` },
+          { label: VI.common.breadcrumb.serviceDetailFromProfile },
+        ])
+      } else {
+        setItems([
+          { label: VI.common.breadcrumb.home, to: "/" },
+          { label: VI.common.breadcrumb.photographers, to: "/photographers" },
+          { label: VI.common.breadcrumb.serviceDetail },
+        ])
+      }
+    } else if (path === "/style-quiz") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Quiz" },
+      ])
+    } else if (path === "/pose-battle") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Pose Battle" },
+      ])
     } else if (path === "/notifications") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.notification.title },
+      ])
+    } else if (path === "/profile") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile },
+      ])
+    } else if (path === "/profile/purchase-history") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: VI.profile.orders.title },
+      ])
+    } else if (path === "/profile/addresses/new") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Địa chỉ", to: "/profile" },
+        { label: "Thêm địa chỉ" },
+      ])
+    } else if (path === "/profile/wallet") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi" },
+      ])
+    } else if (path === "/profile/wallet/withdraw") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: "Ví của tôi", to: "/profile/wallet" },
+        { label: VI.wallet.withdrawTitle },
+      ])
+    } else if (path === "/wishlist") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: "Wishlist" },
       ])
     }
   }, [location.pathname, setItems])
@@ -177,23 +279,13 @@ export default function CosplayerSiteLayout() {
     window.location.reload()
   }
 
-  const handleSearchChange = (value: string) => {
-    const next = new URLSearchParams(searchParams)
-
-    if (value.trim()) {
-      next.set("q", value)
-    } else {
-      next.delete("q")
-    }
-
-    setSearchParams(next, { replace: true })
-  }
-
   const userMenuItems: MenuProps["items"] = [
     { key: "profile", label: "Trang cá nhân", onClick: () => navigate("/profile") },
+    { key: "change-password", label: VI.auth.changePassword.title, onClick: () => setChangePasswordOpen(true) },
     { key: "logout", label: "Đăng xuất", danger: true, onClick: handleLogout },
   ]
 
+  const [changePasswordOpen, setChangePasswordOpen] = React.useState(false)
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
@@ -232,12 +324,40 @@ export default function CosplayerSiteLayout() {
                 onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
                 onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
               >
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
                 <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
                   {n.header}
                 </p>
                 <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
                   {n.content}
                 </p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Xóa thông báo"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      Modal.confirm({
+                        title: "Xóa thông báo này?",
+                        okText: VI.common.actions.delete,
+                        cancelText: VI.common.actions.cancel,
+                        okButtonProps: { danger: true },
+                        onOk: () => void deleteNotification(n.id),
+                      })
+                    }}
+                    style={{
+                      border: "none",
+                      background: "transparent",
+                      color: "#94a3b8",
+                      cursor: "pointer",
+                      padding: 2,
+                      lineHeight: 1,
+                    }}
+                  >
+                    <DeleteOutlined />
+                  </button>
+                </div>
               </div>
             ))}
           </>
@@ -276,127 +396,130 @@ export default function CosplayerSiteLayout() {
           isScrolled && "border-pink-300/80 shadow-md"
         )}
       >
-        <div className="mx-auto flex h-14 w-full max-w-7xl items-center gap-3 px-4">
+        <div className="flex h-16 w-full items-center gap-3 pl-0 pr-4">
           <Link
             to="/"
-            className="shrink-0 whitespace-nowrap text-lg font-bold text-pink-500 hover:text-pink-600"
+            aria-label="Về trang chủ"
+            className="ml-4 inline-flex shrink-0 items-center rounded-lg p-0 transition hover:bg-pink-50"
           >
-            CosMate
+            <img src={siteLogo} alt="CosMate" className="h-15 w-auto object-contain" />
           </Link>
 
-          <nav className="hidden flex-1 items-center justify-center gap-1.5 whitespace-nowrap text-sm md:flex lg:gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                isHomePage ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
-              )}
-              onClick={() => navigate("/")}
-            >
-              Trang chủ
-            </Button>
+          <nav className="hidden flex-1 items-center justify-center gap-2 whitespace-nowrap md:flex lg:gap-3">
+            <Tooltip title="Trang chủ">
+              <button
+                type="button"
+                aria-label="Trang chủ"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  isHomePage ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/")}
+              >
+                <Home className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <DropdownMenu
-              triggerLabel={
-                <span className="inline-flex items-center gap-1 font-medium">
-                  Thuê đồ Cosplay
-                  <ChevronDown className="h-4 w-4" />
-                </span>
-              }
-              triggerClassName={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                location.pathname.startsWith("/costumes")
-                  ? "rounded-lg bg-pink-50 px-2 py-1 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              items={[
-                { label: "Anime", onSelect: () => navigate("/costumes?category=anime") },
-                { label: "Game", onSelect: () => navigate("/costumes?category=game") },
-              ]}
-            />
+            <Tooltip title="Thuê đồ Cosplay">
+              <button
+                type="button"
+                aria-label="Thuê đồ Cosplay"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname.startsWith("/costumes") ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/costumes")}
+              >
+                <Shirt className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hover:bg-pink-50 hover:text-pink-600",
-                location.pathname === "/quiz" ? "bg-pink-50 font-semibold text-pink-600" : "text-slate-700"
-              )}
-            >
-              Quiz
-            </Button>
+            <Tooltip title="Quiz">
+              <button
+                type="button"
+                aria-label="Quiz"
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/style-quiz" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/style-quiz")}
+              >
+                <FileText className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 lg:inline-flex",
-                location.pathname === "/guidelines-rules"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/guidelines-rules")}
-            >
-              Hướng dẫn &amp; Quy định
-            </Button>
+            <Tooltip title="Pose Battle">
+              <button
+                type="button"
+                aria-label="Pose Battle"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/pose-battle" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/pose-battle")}
+              >
+                <Sparkles className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 xl:inline-flex",
-                location.pathname === "/photographers"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/photographers")}
-            >
-              Thuê Photographer
-            </Button>
+            <Tooltip title="Hướng dẫn & Quy định">
+              <button
+                type="button"
+                aria-label="Hướng dẫn và Quy định"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/guidelines-rules" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/guidelines-rules")}
+              >
+                <BookOpen className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-            <Button
-              variant="ghost"
-              size="sm"
-              className={cn(
-                "hidden whitespace-nowrap hover:bg-pink-50 hover:text-pink-600 2xl:inline-flex",
-                location.pathname === "/staffs"
-                  ? "bg-pink-50 font-semibold text-pink-600"
-                  : "text-slate-700"
-              )}
-              onClick={() => navigate("/staffs")}
-            >
-              Thuê Staff
-            </Button>
+            <Tooltip title="Thuê Photographer">
+              <button
+                type="button"
+                aria-label="Thuê Photographer"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/photographers" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/photographers")}
+              >
+                <Camera className="h-6 w-6" />
+              </button>
+            </Tooltip>
+
+            <Tooltip title="Thuê Staff">
+              <button
+                type="button"
+                aria-label="Thuê Staff"
+                className={cn(
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/staffs" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
+                onClick={() => navigate("/staffs")}
+              >
+                <UserRound className="h-6 w-6" />
+              </button>
+            </Tooltip>
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-2">
-            <div className="relative hidden w-44 lg:block">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-              <Input
-                aria-label="Tìm kiếm"
-                placeholder="Tìm kiếm"
-                className="pl-9 pr-10 text-sm"
-                value={searchValue}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  handleSearchChange(e.target.value)
-                }
-              />
-              <button
-                type="button"
-                aria-label="Tìm kiếm bằng hình ảnh"
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-pink-500"
-              >
-                <Camera className="h-4 w-4 opacity-60" />
-              </button>
-            </div>
+            <SearchBar className="hidden md:flex" />
 
             <button
               type="button"
               aria-label="Tin nhắn"
-              className="rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => openChat(0, 0)}
             >
-              <MessageCircle className="h-5 w-5" />
+              <MessageCircle className="h-6 w-6" />
+              {chatUnreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
             </button>
 
             <button
@@ -405,9 +528,20 @@ export default function CosplayerSiteLayout() {
               className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               onClick={() => navigate('/profile/purchase-history')}
             >
-              <ShoppingCart className="h-5 w-5" />
+              <ShoppingCart className="h-6 w-6" />
               <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
             </button>
+
+            <Tooltip title="Wishlist">
+              <button
+                type="button"
+                aria-label="Wishlist"
+                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                onClick={() => navigate('/wishlist')}
+              >
+                <Heart className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
             <Popover
               content={notifPopoverContent}
@@ -422,7 +556,7 @@ export default function CosplayerSiteLayout() {
                 aria-label="Thông báo"
                 className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
               >
-                <Bell className="h-5 w-5" />
+                <Bell className="h-6 w-6" />
                 {unreadCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
                     {unreadCount > 9 ? "9+" : unreadCount}
@@ -432,7 +566,12 @@ export default function CosplayerSiteLayout() {
             </Popover>
 
             {loggedIn ? (
-              <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={["click"]}>
+              <Dropdown 
+                menu={{ items: userMenuItems }} 
+                placement="bottomRight" 
+                trigger={["click"]} 
+                styles={{ root: { zIndex: 9999 } }}
+              >
                 <div className="cursor-pointer" style={{ display: "inline-flex" }}>
                   {userProfile.avatarUrl ? (
                     <Avatar size={36} src={userProfile.avatarUrl} />
@@ -451,33 +590,17 @@ export default function CosplayerSiteLayout() {
                 </AntButton>
               </>
             )}
-          </div>
-        </div>
 
-        <div className="mx-auto w-full max-w-7xl px-4 pb-3 md:hidden">
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              aria-label="Tìm kiếm"
-              placeholder="Tìm kiếm"
-              className="pl-9 pr-10"
-              value={searchValue}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                handleSearchChange(e.target.value)
-              }
-            />
-            <button type="button" className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400">
-              <Camera className="h-4 w-4 opacity-60" />
-            </button>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto w-full max-w-7xl px-4 pt-3">
-        <Breadcrumbs items={items} />
-      </div>
-
       <main className="flex-1 pt-[56px]">
+        {!isHomePage && items.length > 0 && (
+          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+            <Breadcrumbs items={items} />
+          </div>
+        )}
         {isHomePage ? (
           <div className="relative">
             <div
@@ -501,6 +624,7 @@ export default function CosplayerSiteLayout() {
                         </p>
                         <button
                           type="button"
+                          onClick={() => navigate("/style-quiz")}
                           className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
                           Làm quiz ngay
@@ -524,13 +648,14 @@ export default function CosplayerSiteLayout() {
                       />
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
                         <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Bạn là nhân vật nào?
+                          Tìm trang phục qua ảnh
                         </p>
                         <button
                           type="button"
+                          onClick={() => navigate("/costumes")}
                           className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
                         >
-                          Làm quiz ngay
+                          Tìm bằng hình ảnh
                         </button>
                       </div>
                     </div>
@@ -724,6 +849,7 @@ export default function CosplayerSiteLayout() {
           © 2026 CosMate. All rights reserved.
         </div>
       </footer>
+      <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </div>
   )
 }

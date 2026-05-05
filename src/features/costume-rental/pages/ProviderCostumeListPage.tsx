@@ -7,9 +7,9 @@
  * No direct API calls in this file.
  */
 
-import { Button, Table, Tag, Space, Modal, Image, Descriptions, List, Alert, Spin, Input, Select, Typography } from 'antd'
+import { Button, Table, Tag, Space, Modal, Image, Descriptions, List, Alert, Spin, Input, Select, Typography, Popconfirm } from 'antd'
 import type { TableProps }from 'antd'
-import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined }from '@ant-design/icons'
+import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined, DeleteOutlined }from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout'
@@ -190,6 +190,8 @@ export default function ProviderCostumeListPage() {
     detailLoading,
     openDetail,
     closeDetail,
+    deletingId,
+    removeCostume,
     sortKey,
     setSortKey,
     sortOrder,
@@ -241,6 +243,8 @@ export default function ProviderCostumeListPage() {
     title: 'Tên trang phục',
     dataIndex: 'name',
     key: 'name',
+    width: 240,
+    ellipsis: true,
   },
   {
     title: 'Kích cỡ',
@@ -249,7 +253,7 @@ export default function ProviderCostumeListPage() {
       width: 90,
     },
     {
-      title: 'Số lượng',
+      title: 'Số lượng vật phẩm',
       dataIndex: 'numberOfItems',
       key: 'numberOfItems',
       width: 100,
@@ -280,7 +284,7 @@ export default function ProviderCostumeListPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 180,
+      width: 240,
       render: (_, record) => (
         <Space>
           <Button
@@ -297,6 +301,18 @@ export default function ProviderCostumeListPage() {
           >
             Sửa
           </Button>
+          <Popconfirm
+            title="Xóa trang phục này?"
+            description="Hành động này không thể hoàn tác."
+            okText="Xóa"
+            cancelText="Hủy"
+            okButtonProps={{ danger: true, loading: deletingId === record.id }}
+            onConfirm={() => void removeCostume(record.id)}
+          >
+            <Button type="link" danger icon={<DeleteOutlined />}>
+              Xóa
+            </Button>
+          </Popconfirm>
         </Space>
     ),
   },
@@ -307,6 +323,7 @@ export default function ProviderCostumeListPage() {
     <DashboardLayout
       title="Danh sách trang phục"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName="CosMate Provider"
     >
         {/* Verification gate */}

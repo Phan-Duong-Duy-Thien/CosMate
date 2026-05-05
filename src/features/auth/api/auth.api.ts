@@ -1,12 +1,6 @@
 import axiosInstance from '@/services/axiosInstance';
 import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../types';
 
-interface ApiResponse<T> {
-  code: number;
-  message?: string;
-  result: T;
-}
-
 /**
  * Login with username/email and password
  * @param payload - Login credentials
@@ -44,4 +38,35 @@ export async function requestPasswordReset(identifier: string): Promise<void> {
  */
 export async function resetPassword(token: string, newPassword: string): Promise<void> {
   await axiosInstance.post<void>('/api/auth/password-reset', { token, newPassword });
+}
+
+/**
+ * Login/Register with Google idToken
+ * @param idToken - Google OAuth idToken from Google Identity Services
+ * @returns Login response with token
+ */
+export async function loginWithGoogle(idToken: string): Promise<LoginResponse> {
+  const response = await axiosInstance.post<LoginResponse>('/api/auth/google/login', { idToken });
+  return response.data;
+}
+
+/**
+ * Update the current user's role (for onboarding flow)
+ * @param role - The role to assign to the user
+ * @returns Updated user info
+ */
+export async function updateUserRole(role: string): Promise<{ code: number; message: string; result: unknown }> {
+  const response = await axiosInstance.post('/api/auth/role', { role });
+  return response.data;
+}
+
+/**
+ * POST /api/users/{userId}/change-password
+ * Change the current user's password.
+ */
+export async function changePassword(userId: number, payload: {
+  oldPassword: string;
+  newPassword: string;
+}): Promise<void> {
+  await axiosInstance.post<void>(`/api/users/${userId}/change-password`, payload);
 }

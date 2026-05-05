@@ -23,6 +23,17 @@ import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
 import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
 import { getRoleTagProps } from '../utils/userRole';
+
+const ROLE_OPTIONS = [
+  { id: 1, name: 'SUPERADMIN' },
+  { id: 2, name: 'ADMIN' },
+  { id: 3, name: 'COSPLAYER' },
+  { id: 4, name: 'PROVIDER' },
+  { id: 5, name: 'PROVIDER_RENTAL' },
+  { id: 6, name: 'PROVIDER_PHOTOGRAPH' },
+  { id: 7, name: 'PROVIDER_EVENT_STAFF' },
+  { id: 8, name: 'STAFF' },
+];
 import { canManageUser } from '../utils/userPermissions';
 import { getRoles, getUserId } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
@@ -77,7 +88,7 @@ export default function AdminUsersPage() {
   const currentUserRoles = getRoles();
   const currentUserId = getUserId();
 
-  const allRoles = Array.from(new Set(users.flatMap((user) => getUserRolesArray(user)))).sort();
+  const allRoles = ROLE_OPTIONS.map((role) => role.name);
   const allStatuses = Array.from(new Set(users.map((user) => user.status))).sort();
 
   const handleViewDetail = (user: AdminUser) => {
@@ -249,7 +260,7 @@ export default function AdminUsersPage() {
     {
       title: VI.admin.users.columns.actions,
       key: 'actions',
-      width: 140,
+      width: 120,
       align: 'center',
       render: (_, user) => {
         const statusNorm = normalizeStatus(user.status);
@@ -264,32 +275,42 @@ export default function AdminUsersPage() {
         });
 
         return (
-          <Space size={8} onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
             <Tooltip title={VI.admin.users.actions.viewDetail}>
-              <Button type="text" icon={<EyeOutlined />} onClick={() => handleViewDetail(user)} />
-            </Tooltip>
-            
-            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
-              <Button 
-                type="text" 
-                icon={userIsLocked ? <UnlockOutlined /> : <LockOutlined />} 
-                onClick={() => handleLockToggle(user)} 
-                disabled={!permission.allowed || actionLoadingId === user.id}
-                style={{ color: userIsLocked ? '#52c41a' : '#faad14' }}
+              <EyeOutlined
+                onClick={() => handleViewDetail(user)}
+                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
               />
             </Tooltip>
 
-            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
-              <Button 
-                type="text" 
-                danger={!userIsBanned}
-                icon={userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />} 
-                onClick={() => handleBanToggle(user)} 
-                disabled={!permission.allowed || actionLoadingId === user.id}
-                style={userIsBanned ? { color: '#52c41a' } : undefined}
-              />
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
+              <span
+                onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleLockToggle(user)}
+                style={{
+                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
+                  fontSize: 16,
+                  color: userIsLocked ? '#52c41a' : '#faad14',
+                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
+                }}
+              >
+                {userIsLocked ? <UnlockOutlined /> : <LockOutlined />}
+              </span>
             </Tooltip>
-          </Space>
+
+            <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
+              <span
+                onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleBanToggle(user)}
+                style={{
+                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
+                  fontSize: 16,
+                  color: userIsBanned ? '#52c41a' : '#ff4d4f',
+                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
+                }}
+              >
+                {userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />}
+              </span>
+            </Tooltip>
+          </div>
         );
       },
     },
@@ -324,6 +345,8 @@ export default function AdminUsersPage() {
               </Button>
               
               <input 
+                title="Tải file Excel"
+                placeholder="Tải file Excel"
                 type="file" 
                 ref={fileInputRef}
                 accept=".xlsx, .xls, .csv" 
@@ -381,8 +404,6 @@ export default function AdminUsersPage() {
           dataSource={users}
           rowKey="id"
           loading={isLoading}
-          scroll={{ y: 'calc(100vh - 300px)' }} 
-          
           pagination={{
             current: page,
             pageSize: pageSize,
@@ -399,7 +420,7 @@ export default function AdminUsersPage() {
             onClick: () => handleViewDetail(user),
             style: { cursor: 'pointer' },
           })}
-          rowClassName="admin-user-row"
+          rowClassName={() => 'admin-user-row'}
         />
 
         {/* Detail Modal */}
@@ -511,12 +532,11 @@ export default function AdminUsersPage() {
               rules={[{ required: true, message: 'Vui lòng chọn vai trò' }]}
             >
               <Select placeholder="Chọn vai trò">
-                <Select.Option value="COSPLAYER">Cosplayer</Select.Option>
-                <Select.Option value="PROVIDER_RENTAL">Provider (Thuê trang phục)</Select.Option>
-                <Select.Option value="PROVIDER_PHOTOGRAPH">Photographer (Thợ ảnh)</Select.Option>
-                <Select.Option value="PROVIDER_EVENT_STAFF">Event Staff (Nhân sự sự kiện)</Select.Option>
-                <Select.Option value="STAFF">Staff (Nhân viên hệ thống)</Select.Option>
-                <Select.Option value="ADMIN">Admin (Quản trị viên)</Select.Option>
+                {ROLE_OPTIONS.map((role) => (
+                  <Select.Option key={role.id} value={role.name}>
+                    {role.id} - {role.name}
+                  </Select.Option>
+                ))}
               </Select>
             </Form.Item>
             <Form.Item style={{ marginBottom: 0, textAlign: 'right' }}>

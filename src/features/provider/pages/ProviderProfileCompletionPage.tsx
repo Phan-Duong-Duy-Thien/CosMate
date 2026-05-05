@@ -24,16 +24,6 @@ export default function ProviderProfileCompletionPage() {
   const location = useLocation();
   const { profile, refetch } = useProviderVerification();
 
-  // Sync API profile data into form when profile loads
-  useEffect(() => {
-    if (profile) {
-      if (profile.shopName) updateFormField('shopName', profile.shopName);
-      if (profile.bio) updateFormField('bio', profile.bio);
-      if (profile.bankAccountNumber) updateFormField('bankAccountNumber', profile.bankAccountNumber);
-      if (profile.bankName) updateFormField('bankName', profile.bankName);
-    }
-  }, [profile]);
-
   // Determine which home page to navigate to based on current route
   const homePath = location.pathname.startsWith('/provider-photograph')
     ? '/provider-photograph'
@@ -62,6 +52,15 @@ export default function ProviderProfileCompletionPage() {
     uploadAvatar,
     uploadCoverImage,
   } = useProviderProfileCompletion();
+
+  // Sync API profile data into form when profile loads
+  useEffect(() => {
+    if (!profile) return;
+    if (profile.shopName) updateFormField('shopName', profile.shopName);
+    if (profile.bio) updateFormField('bio', profile.bio);
+    if (profile.bankAccountNumber) updateFormField('bankAccountNumber', profile.bankAccountNumber);
+    if (profile.bankName) updateFormField('bankName', profile.bankName);
+  }, [profile, updateFormField]);
 
   // Address creation form state
   const [showAddressForm, setShowAddressForm] = useState(false);
@@ -136,6 +135,7 @@ export default function ProviderProfileCompletionPage() {
     <DashboardLayout
       title={VI.provider.profileCompletion.pageTitle}
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       <Card style={{ borderRadius: 12 }}>

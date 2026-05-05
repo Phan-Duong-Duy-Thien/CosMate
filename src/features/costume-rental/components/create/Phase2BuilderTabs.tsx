@@ -26,14 +26,11 @@ import type {
   SurchargeInput,
   AccessoryInput,
   RentalOptionInput,
-  RentalOptionName,
 } from '../../types'
-import { canAddRentalOption, canAddAccessory } from '../../services/validateCostumeConstraints'
+import { canAddAccessory } from '../../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
 
 const { Text } = Typography
-
-const RENTAL_OPTION_NAMES: RentalOptionName[] = ['FEST', 'SHOOT', 'TEST', 'EVENT']
 
 // ─── Surcharge Tab ────────────────────────────────────────────────────────────
 
@@ -176,112 +173,6 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
   )
 }
 
-// ─── Rental Option Tab ────────────────────────────────────────────────────────
-// Fixed 4 rental packages: FEST, SHOOT, TEST, EVENT
-// No add/remove - each package is always visible
-
-interface RentalOptionTabProps {
-  items: RentalOptionInput[]
-  onAdd: (item: RentalOptionInput) => void
-  onUpdate: (index: number, item: RentalOptionInput) => void
-}
-
-const RENTAL_OPTION_LABELS: Record<RentalOptionName, string> = {
-  FEST: 'Festival',
-  SHOOT: 'Shooting',
-  TEST: 'Thử đồ',
-  EVENT: 'Sự kiện',
-}
-
-function RentalOptionTab({ items, onAdd, onUpdate }: RentalOptionTabProps) {
-  // Build a map from current items for easy lookup
-  const itemsMap = new Map<RentalOptionName, RentalOptionInput>()
-  items.forEach((item) => {
-    itemsMap.set(item.name, item)
-  })
-
-  const handleChange = (name: RentalOptionName, field: 'price' | 'description', value: number | string) => {
-    const existing = itemsMap.get(name)
-    const updated: RentalOptionInput = {
-      name,
-      price: field === 'price' ? (value as number) : (existing?.price ?? 0),
-      description: field === 'description' ? (value as string) : (existing?.description ?? ''),
-    }
-    // Find index in items array
-    const idx = items.findIndex((item) => item.name === name)
-    if (idx >= 0) {
-      onUpdate(idx, updated)
-    } else {
-      // If not exists yet, add it
-      onAdd(updated)
-    }
-  }
-
-  // Ensure we have entries for all 4 types
-  const getValue = (name: RentalOptionName, field: 'price' | 'description'): number | string => {
-    const item = itemsMap.get(name)
-    if (item) {
-      return field === 'price' ? item.price : item.description
-    }
-    return field === 'price' ? 0 : ''
-  }
-
-  return (
-    <div>
-      <Alert
-        type="info"
-        message="Bắt buộc phải nhập đầy đủ thông tin cho cả 4 gói thuê"
-        showIcon
-        style={{ marginBottom: 16 }}
-      />
-      <Space direction="vertical" style={{ width: '100%' }} size="middle">
-        {RENTAL_OPTION_NAMES.map((name) => {
-          const item = itemsMap.get(name)
-          const hasValue = item && (item.price > 0 || item.description)
-
-          return (
-            <Card
-              key={name}
-              size="small"
-              title={
-                <span>
-                  {name} - {RENTAL_OPTION_LABELS[name]}
-                  {!hasValue && <Text type="danger" style={{ marginLeft: 8 }}>(Chưa nhập)</Text>}
-                </span>
-              }
-              style={{ borderColor: hasValue ? '#52c41a' : '#ffccc7' }}
-            >
-              <Form layout="vertical">
-                <Form.Item
-                  label={VI.costumeRental.rentalOptions.form.price}
-                  required
-                  style={{ marginBottom: 12 }}
-                >
-                  <InputNumber
-                    min={0}
-                    value={getValue(name, 'price')}
-                    onChange={(value) => handleChange(name, 'price', value ?? 0)}
-                    style={{ width: '100%' }}
-                    placeholder="Nhập giá thuê"
-                  />
-                </Form.Item>
-                <Form.Item label={VI.costumeRental.rentalOptions.form.description}>
-                  <Input.TextArea
-                    value={getValue(name, 'description')}
-                    onChange={(e) => handleChange(name, 'description', e.target.value)}
-                    placeholder="Mô tả gói thuê (thời gian, điều kiện...)"
-                    rows={2}
-                  />
-                </Form.Item>
-              </Form>
-            </Card>
-          )
-        })}
-      </Space>
-    </div>
-  )
-}
-
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 interface Phase2BuilderTabsProps {
@@ -305,7 +196,6 @@ interface Phase2BuilderTabsProps {
 export default function Phase2BuilderTabs({
   surcharges,
   accessories,
-  rentalOptions,
   numberOfItems,
   onAddSurcharge,
   onUpdateSurcharge,
@@ -313,8 +203,6 @@ export default function Phase2BuilderTabs({
   onAddAccessory,
   onUpdateAccessory,
   onRemoveAccessory,
-  onAddRentalOption,
-  onUpdateRentalOption,
   onFinish,
   loading,
   error,
@@ -334,13 +222,6 @@ export default function Phase2BuilderTabs({
       children: (
         <AccessoryTab items={accessories} numberOfItems={numberOfItems}
           onAdd={onAddAccessory} onUpdate={onUpdateAccessory} onRemove={onRemoveAccessory} />
-      ),
-    },
-    {
-      key: 'rentalOptions',
-      label: VI.costumeRental.rentalOptions.title,
-      children: (
-        <RentalOptionTab items={rentalOptions} onAdd={onAddRentalOption} onUpdate={onUpdateRentalOption} />
       ),
     },
   ]

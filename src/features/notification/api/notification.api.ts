@@ -19,3 +19,14 @@ export async function markAllNotificationsRead(): Promise<void> {
   await axiosInstance.post("/api/notifications/mark-all-read")
   console.log("[notification.api] Mark all read success")
 }
+
+export async function deleteNotification(notificationId: number): Promise<void> {
+  console.log("[notification.api] DELETE /api/notifications/", notificationId)
+  const response = await axiosInstance.delete<{ code?: number; message?: string }>(
+    `/api/notifications/${notificationId}`
+  )
+  if (response.data?.code != null && response.data.code !== 0) {
+    throw new Error(response.data.message || "Xóa thông báo thất bại")
+  }
+  console.log("[notification.api] Delete success")
+}

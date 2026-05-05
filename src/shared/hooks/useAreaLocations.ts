@@ -1,13 +1,16 @@
 /**
  * Shared Vietnam Area Locations Hook
  *
- * Provides province / district cascading selection for service area selection.
+ * Provides province / ward cascading selection for service area selection.
  * Uses Province Open API V2:
  *   GET /p/         -> list all provinces
- *   GET /d?province={code} -> districts (Quận/Huyện) for a province
+ *   GET /p/{code}?depth=2 -> province with its wards (Phường/Xã)
+ *
+ * Note: V2 does not have a /d endpoint. The second level are wards (Phường/Xã)
+ * grouped under each district. We expose them directly as the second dropdown.
  */
 import { useState, useEffect, useCallback } from 'react';
-import { fetchProvinces, fetchDistrictsByProvince } from '@/shared/api/vnLocation.api';
+import { fetchProvinces, fetchWardsByProvince } from '@/shared/api/vnLocation.api';
 import type { Province, District } from '@/features/profile/types';
 
 interface UseAreaLocationsResult {
@@ -58,7 +61,7 @@ export function useAreaLocations(): UseAreaLocationsResult {
       }
       setIsLoadingDistricts(true);
       try {
-        const data = await fetchDistrictsByProvince(selectedProvinceId);
+        const data = await fetchWardsByProvince(selectedProvinceId);
         setDistricts(data);
       } catch {
         setError('Không thể tải danh sách quận/huyện.');

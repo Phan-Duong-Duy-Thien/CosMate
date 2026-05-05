@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
 import { useVnLocation } from "../hooks/useVnLocation"
-import { message } from "antd"
+import { message, Modal } from "antd"
 
 function normalizeVnName(n: string | undefined | null): string {
   if (!n) return ""
@@ -174,7 +174,16 @@ export function AddressModal({
   }
 
   const handleDeleteAddress = async (addressId: number) => {
-    const confirmed = window.confirm(VI.profile.address.confirm.delete)
+    const confirmed = await new Promise<boolean>((resolve) => {
+      Modal.confirm({
+        title: VI.profile.address.confirm.delete,
+        okText: VI.common.actions.delete,
+        cancelText: VI.common.actions.cancel,
+        okButtonProps: { danger: true },
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      })
+    })
     if (!confirmed) return
 
     const ok = await remove(addressId)

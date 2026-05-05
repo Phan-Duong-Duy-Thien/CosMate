@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Play } from "lucide-react"
+import { Play, Heart } from "lucide-react"
 
 import { Badge } from "@/shared/components/Badge"
 import { cn } from "@/lib/utils"
@@ -18,6 +18,10 @@ interface MediaGalleryProps {
   rentalsCount?: number
   hasAccessories: boolean
   accessoryCount?: number
+  /** Wishlist toggle */
+  isWishlisted?: boolean
+  onToggleWishlist?: () => void
+  wishlistLoading?: boolean
 }
 
 export const MediaGallery = ({
@@ -28,6 +32,9 @@ export const MediaGallery = ({
   rentalsCount,
   hasAccessories,
   accessoryCount,
+  isWishlisted = false,
+  onToggleWishlist,
+  wishlistLoading = false,
 }: MediaGalleryProps) => {
   const mediaItems = React.useMemo<MediaItem[]>(() => {
     const items = images.map((url, index) => ({
@@ -67,6 +74,29 @@ export const MediaGallery = ({
             </Badge>
           )}
         </div>
+
+        {/* Wishlist Button */}
+        {onToggleWishlist && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation()
+              onToggleWishlist()
+            }}
+            disabled={wishlistLoading}
+            className={cn(
+              "absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full transition-colors",
+              isWishlisted
+                ? "bg-pink-500 text-white hover:bg-pink-600"
+                : "bg-white/80 text-pink-500 hover:bg-pink-50"
+            )}
+          >
+            <Heart
+              className={cn("h-5 w-5", isWishlisted ? "fill-current" : "fill-none")}
+            />
+          </button>
+        )}
+
         <div className="aspect-[4/5] w-full bg-slate-50">
           {activeItem?.type === "video" ? (
             <video

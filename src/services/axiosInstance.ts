@@ -11,7 +11,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
  */
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
-  timeout: 15000,
+  timeout: 120000, // tạm tăng lên 120s để loại trừ timeout
 });
 
 /**

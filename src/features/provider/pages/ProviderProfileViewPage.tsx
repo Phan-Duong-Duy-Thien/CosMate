@@ -53,6 +53,7 @@ export default function ProviderProfileViewPage() {
     <DashboardLayout
       title="Hồ sơ cửa hàng"
       sidebarItems={sidebarItems}
+      showChatButton={false}
       brandName={brandName}
     >
       {loading ? (
@@ -92,7 +93,7 @@ export default function ProviderProfileViewPage() {
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.4) 0%, transparent 60%)',
+                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
                 }}
               />
               <div

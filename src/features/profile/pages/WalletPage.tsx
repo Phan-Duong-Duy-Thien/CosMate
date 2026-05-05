@@ -1,8 +1,14 @@
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 import { useWallet } from "../hooks/useWallet"
+
+type WalletPageProps = {
+  /** Base wallet path derived from current provider role (e.g. "/provider-photograph/wallet").
+   *  When omitted, defaults to "/profile/wallet" for the cosplayer site. */
+  walletBase?: string
+}
 
 // Format currency to VND
 function formatCurrency(amount: number): string {
@@ -36,9 +42,9 @@ function getStatusColor(status: string): string {
 // Get status label
 function getStatusLabel(status: string): string {
   const normalizedStatus = status?.toUpperCase()
-  if (normalizedStatus === "COMPLETED") return VI.profile.wallet.statusCompleted
-  if (normalizedStatus === "FAILED") return VI.profile.wallet.statusFailed
-  if (normalizedStatus === "PENDING") return VI.profile.wallet.statusPending
+  if (normalizedStatus === "COMPLETED") return VI.wallet.statusCompleted
+  if (normalizedStatus === "FAILED") return VI.wallet.statusFailed
+  if (normalizedStatus === "PENDING") return VI.wallet.statusPending
   return status
 }
 
@@ -47,22 +53,23 @@ function getTransactionTypeLabel(type: string): string {
   const normalizedType = type?.toUpperCase()
 
   // CREDIT = Nap tien vao vi
-  if (normalizedType === "CREDIT") return VI.profile.wallet.typeTopUp
+  if (normalizedType === "CREDIT") return VI.wallet.typeTopUp
 
   // ORDER#xxx = Thanh toan don thue
-  if (normalizedType?.startsWith("ORDER")) return VI.profile.wallet.typePayment
+  if (normalizedType?.startsWith("ORDER")) return VI.wallet.typePayment
 
   // REFUND = Hoan tien
-  if (normalizedType === "REFUND") return VI.profile.wallet.typeRefund
+  if (normalizedType === "REFUND") return VI.wallet.typeRefund
 
   // DEPOSIT = Dat coc
-  if (normalizedType === "DEPOSIT") return VI.profile.wallet.typeDeposit
+  if (normalizedType === "DEPOSIT") return VI.wallet.typeDeposit
 
-  return VI.profile.wallet.typeOther
+  return VI.wallet.typeOther
 }
 
-export default function WalletPage() {
+export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPageProps) {
   const navigate = useNavigate()
+  const location = useLocation()
   const {
     walletInfo,
     transactions,
@@ -72,7 +79,19 @@ export default function WalletPage() {
     error,
     toggleTransactions,
     fetchTransactionsIfNeeded,
+    refetchWallet,
   } = useWallet()
+
+  // Redirect back to this page to clear stale MoMo/VNPay return URL in the address bar
+  // (BE returns {json} as path segment instead of query params, leaving junk in the URL)
+  const rawUrl = location.pathname + location.search
+  const isStalePaymentRedirect = rawUrl.includes('partnerCode') ||
+    rawUrl.includes('resultCode') || rawUrl.includes('MOMO')
+
+  if (isStalePaymentRedirect) {
+    navigate(walletBase, { replace: true })
+    return null
+  }
 
   const handleToggleTransactions = () => {
     toggleTransactions()
@@ -83,7 +102,7 @@ export default function WalletPage() {
     <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#fff6fc] via-[#f6f5ff] to-[#eef7ff] px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900">{VI.profile.wallet.title}</h1>
+          <h1 className="text-2xl font-bold text-slate-900">{VI.wallet.title}</h1>
 
           {/* Error state */}
           {error && (
@@ -95,7 +114,7 @@ export default function WalletPage() {
           {/* Loading state */}
           {loadingWallet && (
             <div className="mt-4 text-sm text-slate-500">
-              {VI.profile.wallet.loading}
+              {VI.wallet.loading}
             </div>
           )}
 
@@ -103,7 +122,7 @@ export default function WalletPage() {
           {walletInfo && !loadingWallet && (
             <>
               <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-                <p className="text-xs font-medium text-slate-500">{VI.profile.wallet.balance}</p>
+                <p className="text-xs font-medium text-slate-500">{VI.wallet.balance}</p>
                 <p className="mt-1 text-xl font-semibold text-slate-900">
                   {formatCurrency(walletInfo.balance)}
                 </p>
@@ -112,7 +131,7 @@ export default function WalletPage() {
               {/* Deposit balance - only show if > 0 */}
               {walletInfo.depositBalance > 0 && (
                 <div className="mt-3 rounded-xl bg-blue-50 px-4 py-3">
-                  <p className="text-xs font-medium text-blue-600">{VI.profile.wallet.depositBalance}</p>
+                  <p className="text-xs font-medium text-blue-600">{VI.wallet.depositBalance}</p>
                   <p className="mt-1 text-xl font-semibold text-blue-700">
                     {formatCurrency(walletInfo.depositBalance)}
                   </p>
@@ -122,9 +141,12 @@ export default function WalletPage() {
           )}
 
           {/* Top-up button */}
-          <div className="mt-4 flex justify-end">
-            <Button type="button" onClick={() => navigate("/profile/wallet/topup")}>
-              {VI.profile.wallet.topup}
+          <div className="mt-4 flex justify-end gap-3">
+            <Button type="button" variant="outline" onClick={() => navigate(`${walletBase}/withdraw`)}>
+              {VI.wallet.withdraw}
+            </Button>
+            <Button type="button" onClick={() => navigate(`${walletBase}/topup`)}>
+              {VI.wallet.topup}
             </Button>
           </div>
 
@@ -136,7 +158,7 @@ export default function WalletPage() {
               className="flex w-full items-center justify-between text-left font-medium text-slate-700 hover:text-slate-900"
             >
               <span>
-                {isTransactionsOpen ? VI.profile.wallet.hideTransactions : VI.profile.wallet.viewTransactions}
+                {isTransactionsOpen ? VI.wallet.hideTransactions : VI.wallet.viewTransactions}
               </span>
               <span className="text-lg">{isTransactionsOpen ? "▲" : "▼"}</span>
             </button>
@@ -145,9 +167,9 @@ export default function WalletPage() {
             {isTransactionsOpen && (
               <div className="mt-4">
                 {loadingTransactions ? (
-                  <div className="text-sm text-slate-500">{VI.profile.wallet.loading}</div>
+                  <div className="text-sm text-slate-500">{VI.wallet.loading}</div>
                 ) : transactions.length === 0 ? (
-                  <div className="text-sm text-slate-500">{VI.profile.wallet.noTransactions}</div>
+                  <div className="text-sm text-slate-500">{VI.wallet.noTransactions}</div>
                 ) : (
                   <div className="space-y-3">
                     {transactions.map((transaction) => (

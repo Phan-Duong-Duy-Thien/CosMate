@@ -18,6 +18,7 @@ import {
   type UpsertUserAddressPayload,
 } from '@/features/profile/api/userAddress.api';
 import { createUserAddress as createUserAddressSvc } from '@/features/profile/services/userAddress.service';
+import axiosInstance from '@/services/axiosInstance';
 
 /**
  * Get a single user address by ID
@@ -105,7 +106,13 @@ export async function uploadProviderAvatar(userId: number, file: File): Promise<
 
 /**
  * Upload provider cover image
+ *
+ * Uses PUT /api/providers/{providerId}/cover-image which accepts a `coverImage` field.
  */
 export async function uploadProviderCoverImageSvc(providerId: number, file: File): Promise<void> {
-  await uploadProviderCoverImage(providerId, file);
+  const formData = new FormData();
+  formData.append('coverImage', file);
+  await axiosInstance.put(`/api/providers/${providerId}/cover-image`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
 }

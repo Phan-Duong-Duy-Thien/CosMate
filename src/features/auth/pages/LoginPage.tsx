@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react"
+import { useCallback, useEffect, useRef } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import loginHero from "@/assets/saukura.jpg"
@@ -13,18 +13,117 @@ import type { LoginFormValues } from "../types"
 import { VI } from "@/shared/i18n/vi"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 
+declare global {
+  interface Window {
+    google: {
+      accounts: {
+        id: {
+          initialize: (config: IdConfiguration) => void
+          renderButton: (element: HTMLElement, config: GButtonConfig) => void
+          prompt: () => void
+        }
+      }
+    }
+  }
+}
+
+interface IdConfiguration {
+  client_id: string
+  callback: (response: CredentialResponse) => void
+  auto_select?: boolean
+  context?: string
+  itp_support?: boolean
+  cancel_on_tap_outside?: boolean
+}
+
+interface GButtonConfig {
+  type?: "standard" | "icon"
+  theme?: "outline" | "filled_blue" | "filled_black"
+  size?: "small" | "medium" | "large"
+  text?: "signin_with" | "signup_with" | "continue_with" | "signin"
+  shape?: "rectangular" | "pill" | "circle" | "square"
+  logo_alignment?: "left" | "center"
+  width?: number
+}
+
+interface CredentialResponse {
+  credential?: string
+  select_by?: string
+  error?: string
+}
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ""
+
+function loadGoogleSdk(): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.google?.accounts?.id) {
+      resolve()
+      return
+    }
+    const script = document.createElement("script")
+    script.src = "https://accounts.google.com/gsi/client"
+    script.async = true
+    script.defer = true
+    script.onload = () => resolve()
+    document.head.appendChild(script)
+  })
+}
+
 export default function LoginPage() {
   const { submitting, googleLoading, formError, handleEmailLogin, handleGoogleLogin } = useLogin()
   const navigate = useNavigate()
   const { refreshProfile } = useUserProfile()
+  const googleButtonRef = useRef<HTMLDivElement>(null)
+  const initializedRef = useRef(false)
+
+  useEffect(() => {
+    if (!GOOGLE_CLIENT_ID) {
+      console.warn("VITE_GOOGLE_CLIENT_ID is not set – Google login will be disabled")
+      return
+    }
+    loadGoogleSdk().then(() => {
+      if (initializedRef.current) return
+      initializedRef.current = true
+      window.google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: async (response: CredentialResponse) => {
+          if (response.error) {
+            console.error("Google Sign-In error:", response.error)
+            return
+          }
+          if (!response.credential) {
+            console.error("No credential in Google response")
+            return
+          }
+          const idToken = response.credential
+          const roles = await handleGoogleLogin(idToken)
+          if (roles) {
+            refreshProfile()
+            const redirectPath = getRedirectPath(roles)
+            navigate(redirectPath)
+          }
+        },
+        context: "signin",
+      })
+      if (googleButtonRef.current) {
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
+          type: "standard",
+          theme: "outline",
+          size: "large",
+          text: "signin_with",
+          shape: "rectangular",
+          width: 400,
+        })
+      }
+    })
+  }, [handleGoogleLogin, navigate, refreshProfile])
 
   const onLoginSubmit = async (values: LoginFormValues) => {
     const roles = await handleEmailLogin(values)
-    
+
     if (roles) {
       refreshProfile()
       const redirectPath = getRedirectPath(roles)
-      console.log("🔐 Redirecting user to:", redirectPath)
       navigate(redirectPath)
     }
   }
@@ -73,34 +172,18 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <div className="space-y-3">
+        {GOOGLE_CLIENT_ID ? (
+          <div ref={googleButtonRef} className="flex justify-center" />
+        ) : (
           <Button
             type="button"
             variant="outline"
             className="w-full rounded-full border-[#E5E7EB] text-[#111827]"
-            onClick={handleGoogleLogin}
-            disabled={googleLoading}
+            disabled
           >
-            {googleLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#E5E7EB] text-[11px] font-semibold">
-                G
-              </span>
-            )}
-            {VI.common.actions.continueWithGoogle}
+            {VI.common.actions.continueWithGoogle} (not configured)
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full rounded-full border-[#E5E7EB] text-[#111827]"
-          >
-            <span className="flex h-5 w-5 items-center justify-center rounded-full border border-[#E5E7EB] text-[11px] font-semibold">
-              f
-            </span>
-            {VI.common.actions.continueWithFacebook}
-          </Button>
-        </div>
+        )}
 
         <div className="flex items-center gap-4 text-xs text-[#6B7280]">
           <Separator />

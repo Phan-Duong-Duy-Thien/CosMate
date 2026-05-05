@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react"
 import { Link } from "react-router-dom"
 
-import registerHero from "@/assets/react.svg"
+import registerHero from "@/assets/sakura-card.jpg"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
@@ -17,32 +17,30 @@ export default function PhotographerRegPage() {
   return (
     <AuthLayout
       left={
-        <Card className="w-full max-w-[420px] overflow-hidden rounded-2xl border-0 shadow-xl">
-          <CardContent className="p-0">
-            <div className="relative aspect-4/5 w-full lg:aspect-3/4">
-              <img
-                src={registerHero}
-                alt="Cosmate registration hero"
-                className="h-full w-full object-cover"
-              />
-              <div className="absolute left-4 top-4 rounded-2xl bg-white/90 px-3 py-2 text-xs shadow-md">
-                <div className="font-semibold text-[#111827]">CosMate</div>
-                <div className="text-[11px] text-[#6B7280]">Find Your Character</div>
-              </div>
-              <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 text-xs shadow-md">
-                <div className="grid grid-cols-3 gap-2 text-center text-[#6B7280]">
-                  <div>
-                    <div className="text-sm font-semibold text-[#7C3AED]">5K+</div>
-                    Costumes
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-[#EC4899]">2K+</div>
-                    Users
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold text-[#10B981]">500+</div>
-                    Rentals
-                  </div>
+        <Card className="h-full w-full overflow-hidden rounded-none border-0 shadow-xl">
+          <CardContent className="relative h-full p-0">
+            <img
+              src={registerHero}
+              alt="Cosmate registration hero"
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute left-4 top-4 rounded-2xl bg-white/90 px-3 py-2 text-xs shadow-md">
+              <div className="font-semibold text-[#111827]">{VI.common.appName}</div>
+              <div className="text-[11px] text-[#6B7280]">Tìm nhân vật của bạn</div>
+            </div>
+            <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 text-xs shadow-md">
+              <div className="grid grid-cols-3 gap-2 text-center text-[#6B7280]">
+                <div>
+                  <div className="text-sm font-semibold text-[#7C3AED]">5K+</div>
+                  {VI.auth.login.stats.costumes}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#EC4899]">2K+</div>
+                  {VI.auth.login.stats.users}
+                </div>
+                <div>
+                  <div className="text-sm font-semibold text-[#10B981]">500+</div>
+                  {VI.auth.login.stats.rentals}
                 </div>
               </div>
             </div>

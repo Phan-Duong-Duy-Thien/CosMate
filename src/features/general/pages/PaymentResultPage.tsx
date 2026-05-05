@@ -2,88 +2,150 @@
  * Payment Result Page
  * Displays payment result after redirect from payment gateway.
  *
- * Anti-replay guard: Once a payment result (identified by orderId) has been
- * shown on this page, it is marked in sessionStorage. Re-mounting or
- * re-navigating to the same result will not re-trigger any logic.
- * This prevents duplicate processing in StrictMode, back-button scenarios,
- * and any future on-mount effects that read from query params.
+ * Handles BOTH costume orders (via usePaymentVerification → /api/orders/{id})
+ * and service orders (via useServiceOrderVerification → GET /api/service-orders/cosplayer/{userId}).
+ *
+ * Status priority: service verification → costume verification → URL hint.
+ * Only uses EXISTING BE APIs — no invented endpoints.
+ *
+ * Anti-replay guard: each orderId is marked in sessionStorage to prevent
+ * duplicate processing on re-mount or back-button scenarios.
  */
 import * as React from 'react';
-import { useSearchParams, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
+import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
+import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
 import type { UserRole } from '@/types/auth';
+import { MessageCircle } from 'lucide-react';
 
-type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'unknown';
+type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'pending' | 'unknown';
 
-const PROCESSED_KEY_PREFIX = 'cosmate:payment:processed:';
+/**
+ * Determines the payment status hint from URL params.
+ * resultCode is MoMo/VNPay callback; status is BE internal redirect.
+ */
+function parseUrlHint(): { status: PaymentStatus; orderId: string | null; message: string | null } {
+  const params = new URLSearchParams(window.location.search);
+  const orderId = params.get('orderId') || params.get('transactionId') || null;
+  const message = params.get('message') || null;
+
+  const rawResultCode = params.get('resultCode');
+  if (rawResultCode !== null) {
+    if (rawResultCode === '0') return { status: 'success', orderId, message };
+    if (rawResultCode === '1006' || rawResultCode === '1009') return { status: 'cancelled', orderId, message };
+  }
+
+  const rawStatus = params.get('status');
+  if (rawStatus !== null) {
+    const valid = (['success', 'failed', 'cancelled'].includes(rawStatus)
+      ? rawStatus
+      : 'unknown') as PaymentStatus;
+    return { status: valid, orderId, message };
+  }
+
+  return { status: 'unknown', orderId, message };
+}
 
 export default function PaymentResultPage() {
-  const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
+  const redirectUrl = searchParams.get('redirect') || null;
 
-  const status = (searchParams.get('status') as PaymentStatus) || 'unknown';
-  const orderId = searchParams.get('orderId') || null;
-  const message = searchParams.get('message') || null;
-
-  const isSuccess = status === 'success';
-
-  // Anti-replay guard: only process each orderId once per session.
-  // Once this page has been shown for a given orderId, mark it as
-  // processed so re-mounts / repeated navigations won't re-trigger anything.
-  // This also protects against React StrictMode double-invocation in dev.
+  // ── Debug guard: detect misconfigured returnUrl ──────────────────────────
+  // If raw gateway params (partnerCode for MOMO, vnp_TmnCode for VNPay) are
+  // present, it means the payment gateway redirected directly to FE instead
+  // of going through the BE callback endpoint. This is a returnUrl bug.
   React.useEffect(() => {
-    if (orderId) {
-      const key = `${PROCESSED_KEY_PREFIX}${orderId}`;
-      if (sessionStorage.getItem(key) === '1') {
-        // Already shown this result — do nothing on re-mount.
-        return;
-      }
+    const params = new URLSearchParams(window.location.search);
+    if (params.has('partnerCode') || params.has('vnp_TmnCode')) {
+      console.error(
+        '[PaymentResultPage] ⚠️ BUG DETECTED: Payment gateway returned directly to FE.',
+        'This means returnUrl was set to the FE page instead of the BE callback endpoint.',
+        'The BE never received the payment confirmation → order status is NOT updated.',
+        'URL:', window.location.href
+      );
+    }
+  }, []);
+
+  // Authoritative status for costume orders (orderType = RENT_COSTUME)
+  const costumeVerification = usePaymentVerification(rawOrderId);
+  // Authoritative status for service orders (orderType = RENT_SERVICE)
+  const serviceVerification = useServiceOrderVerification(rawOrderId);
+
+  // Use whichever verification has returned a definitive result (not 'unknown')
+  const costumeResolved = costumeVerification.status !== 'unknown';
+  const serviceResolved = serviceVerification.status !== 'unknown';
+
+  let finalStatus: PaymentStatus;
+  if (serviceResolved) {
+    finalStatus = serviceVerification.status;
+  } else if (costumeResolved) {
+    finalStatus = costumeVerification.status;
+  } else {
+    finalStatus = urlStatus;
+  }
+
+  const isLoading = !costumeResolved && !serviceResolved;
+  const isSuccess = finalStatus === 'success';
+  const error = (serviceVerification.error || costumeVerification.error) ?? null;
+
+  React.useEffect(() => {
+    console.log('[FINAL STATUS]', finalStatus);
+  }, [finalStatus]);
+
+  // Anti-replay guard
+  React.useEffect(() => {
+    if (rawOrderId) {
+      const key = `cosmate:payment:processed:${rawOrderId}`;
+      if (sessionStorage.getItem(key) === '1') return;
       sessionStorage.setItem(key, '1');
     }
-  }, [orderId]);
+  }, [rawOrderId]);
 
   const getTitle = () => {
-    switch (status) {
-      case 'success':
-        return VI.paymentResult.successTitle;
-      case 'failed':
-        return VI.paymentResult.failedTitle;
-      case 'cancelled':
-        return VI.paymentResult.cancelledTitle;
-      default:
-        return VI.paymentResult.unknownTitle;
+    switch (finalStatus) {
+      case 'success':   return VI.paymentResult.successTitle;
+      case 'failed':    return VI.paymentResult.failedTitle;
+      case 'cancelled': return VI.paymentResult.cancelledTitle;
+      case 'pending':   return VI.paymentResult.pendingTitle ?? VI.paymentResult.unknownTitle;
+      default:          return VI.paymentResult.unknownTitle;
     }
   };
 
   const getDescription = () => {
-    switch (status) {
-      case 'success':
-        return VI.paymentResult.successDesc;
-      case 'failed':
-        return message || VI.paymentResult.failedDesc;
-      case 'cancelled':
-        return VI.paymentResult.cancelledDesc;
-      default:
-        return VI.paymentResult.unknownDesc;
+    if (isLoading) return 'Verifying payment status...';
+    if (error) return error;
+    switch (finalStatus) {
+      case 'success':   return VI.paymentResult.successDesc;
+      case 'failed':    return VI.paymentResult.failedDesc;
+      case 'cancelled': return VI.paymentResult.cancelledDesc;
+      case 'pending':   return VI.paymentResult.pendingDesc ?? 'Thanh toán đang được xử lý. Vui lòng chờ.';
+      default:          return VI.paymentResult.unknownDesc;
     }
   };
 
   const handlePrimaryAction = () => {
-    if (isSuccess) {
-      // Get user roles and redirect to appropriate page
-      const roles = getRoles() as UserRole[];
-      const redirectPath = getRedirectPath(roles);
-      navigate(redirectPath);
-    } else {
-      // Payment failed - go to checkout to retry payment
-      navigate('/rent/checkout');
+    // After top-up (redirect param): go back to checkout with state intact
+    if (redirectUrl) {
+      // Append topup=success so checkout can show a toast
+      const separator = redirectUrl.includes('?') ? '&' : '?'
+      navigate(`${redirectUrl}${separator}topup=success`);
+      return;
     }
+    // After order payment success: go to purchase history list
+    if (isSuccess) {
+      navigate('/profile/purchase-history');
+      return;
+    }
+    // Fallback: wallet history
+    navigate('/profile/wallet');
   };
 
-  // Get role-based redirect path for home button
   const getHomeRedirectPath = () => {
     const roles = getRoles() as UserRole[];
     return getRedirectPath(roles);
@@ -93,77 +155,50 @@ export default function PaymentResultPage() {
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-16">
         <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 shadow-xl text-center">
-          {/* Icon */}
           <div className="mb-6 flex justify-center">
-            {isSuccess ? (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-green-100">
-                <svg
-                  className="h-10 w-10 text-green-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M5 13l4 4L19 7"
-                  />
+            {isLoading ? (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
+                <svg className="h-10 w-10 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              </div>
+            ) : isSuccess ? (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-pink-100">
+                <MessageCircle className="h-10 w-10 text-pink-500" />
+              </div>
+            ) : finalStatus === 'pending' ? (
+              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
+                <svg className="h-10 w-10 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
               </div>
             ) : (
               <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-                <svg
-                  className="h-10 w-10 text-red-600"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
+                <svg className="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </div>
             )}
           </div>
 
-          {/* Title */}
-          <h1 className="text-2xl font-semibold text-slate-900">
-            {getTitle()}
-          </h1>
+          <h1 className="text-2xl font-semibold text-slate-900">{getTitle()}</h1>
 
-          {/* Description */}
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">
-            {getDescription()}
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-slate-600">{getDescription()}</p>
 
-          {/* Order ID */}
-          {orderId && (
+          {rawOrderId && rawOrderId !== 'unknown' && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-4">
               <p className="text-xs text-slate-500">{VI.paymentResult.orderIdLabel}</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{orderId}</p>
+              <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{rawOrderId}</p>
             </div>
           )}
 
-          {/* Actions */}
           <div className="mt-8 flex flex-col gap-3">
-            <Button
-              variant="default"
-              size="lg"
-              className="w-full rounded-full"
-              onClick={handlePrimaryAction}
-            >
+            <Button variant="default" size="lg" className="w-full rounded-full" onClick={handlePrimaryAction}>
               {isSuccess ? VI.paymentResult.primarySuccessCta : VI.paymentResult.primaryFailedCta}
             </Button>
             <Link to={getHomeRedirectPath()}>
-              <Button
-                variant="outline"
-                size="lg"
-                className="w-full rounded-full"
-              >
+              <Button variant="outline" size="lg" className="w-full rounded-full">
                 {VI.paymentResult.homeCta}
               </Button>
             </Link>

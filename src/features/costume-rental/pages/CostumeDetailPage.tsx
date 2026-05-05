@@ -1,6 +1,7 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
+import { Card } from "@/components/ui/card"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
@@ -12,7 +13,9 @@ import { MoreFromShop } from "../components/detail/MoreFromShop"
 import { usePublicCostumeDetail } from "../hooks/usePublicCostumeDetail"
 import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
-import { getMockReviewPermission } from "../mocks/reviewPermission.mock"
+import { useReviewPermission } from "../hooks/useReviewPermission"
+import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
+import { useStartChat } from "@/features/chat/hooks/useStartChat"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -53,17 +56,41 @@ export default function CostumeDetailPage() {
   // Fetch provider info
   const { provider, loading: providerLoading } = useProviderInfo(costume?.providerId)
 
+  // Start chat
+  const { startChat } = useStartChat()
+
   // Review permission and submission
   const { submit: submitReview, loading: reviewSubmitting } = useCreateReview()
-  const reviewPermission = getMockReviewPermission(
-    costume ? Number(costume.id) : 0,
-    currentUserId ?? undefined
+  const { canReview, orderId, loading: reviewPermissionLoading } = useReviewPermission(
+    costume ? Number(costume.id) : 0
   )
 
+  // Wishlist
+  const { isInWishlist, addToWishlist: addToWishlistHandler, removeFromWishlist: removeFromWishlistHandler, wishlistItems } = useWishlist()
+  const isCostumeWishlisted = costume ? isInWishlist(costume.id) : false
+  const wishlistItem = wishlistItems.find((w) => w.costumeId === costume?.id)
+  const [wishlistToggling, setWishlistToggling] = React.useState(false)
+
+  const handleToggleWishlist = async () => {
+    if (!costume) return
+    if (wishlistToggling) return
+    setWishlistToggling(true)
+    try {
+      if (isCostumeWishlisted && wishlistItem) {
+        await removeFromWishlistHandler(wishlistItem.id)
+      } else {
+        await addToWishlistHandler(costume.id)
+      }
+    } finally {
+      setWishlistToggling(false)
+    }
+  }
+
   // Handlers for shop actions
-  const handleChat = () => {
-    console.log("Chat clicked - to be implemented with chat system")
-    // Future: navigate to chat or open chat modal
+  const handleChat = async () => {
+    if (provider?.userId) {
+      await startChat(provider.userId, provider.shopName)
+    }
   }
 
   const handleViewShop = () => {
@@ -73,14 +100,14 @@ export default function CostumeDetailPage() {
   }
 
   const handleReviewSubmit = async (data: { rating: number; comment: string; images: File[] }) => {
-    if (!currentUserId || !reviewPermission.orderId) {
+    if (!currentUserId || !orderId) {
       alert("Bạn cần đăng nhập để gửi đánh giá")
       return
     }
 
     const result = await submitReview({
       cosplayerId: currentUserId,
-      orderId: reviewPermission.orderId,
+      orderId: orderId,
       rating: data.rating,
       comment: data.comment,
       images: data.images,
@@ -88,7 +115,6 @@ export default function CostumeDetailPage() {
 
     if (result) {
       alert("Đánh giá của bạn đã được gửi thành công!")
-      // Optionally: refetch reviews or prepend the new review to the list
     }
   }
 
@@ -102,6 +128,11 @@ export default function CostumeDetailPage() {
       ])
     }
   }, [costume, setItems])
+
+  const characterRows = React.useMemo(
+    () => (costume?.characters ?? []).filter((c) => c.name?.trim() || c.anime?.trim()),
+    [costume],
+  )
 
   // Convert date string to YYYY-MM-DD for storage
   // The backend appends T00:00:00 at submission time (order.service.ts)
@@ -128,6 +159,18 @@ export default function CostumeDetailPage() {
     // Validate rentDay is valid
     if (!days || days <= 0) {
       setValidationError(VI.costumeRental.validation.invalidRentDay)
+      return
+    }
+
+    // Validate startDate is at least 3 days from today
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const minDate = new Date(today)
+    minDate.setDate(minDate.getDate() + 3)
+    const selected = new Date(startDate)
+    selected.setHours(0, 0, 0, 0)
+    if (selected < minDate) {
+      setValidationError('Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.')
       return
     }
 
@@ -239,6 +282,9 @@ export default function CostumeDetailPage() {
             rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
             hasAccessories={accessoryCount > 0}
             accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
+            isWishlisted={isCostumeWishlisted}
+            onToggleWishlist={handleToggleWishlist}
+            wishlistLoading={wishlistToggling}
           />
           <PurchasePanel
             costume={costume}
@@ -265,16 +311,32 @@ export default function CostumeDetailPage() {
         {/* Shop Info Card */}
         {provider && (
           <div className="mt-5">
-            <ProviderShopCard
-              provider={provider}
-              onChat={handleChat}
-              onViewShop={handleViewShop}
-            />
+            <ProviderShopCard provider={provider} onViewShop={handleViewShop} />
           </div>
         )}
 
         {/* Product Info Sections */}
         <div className="mt-5 space-y-5">
+          {characterRows.length > 0 && (
+            <div>
+              <div className="inline-block rounded-lg border-2 border-pink-200 px-4 py-1.5">
+                <h3 className="text-sm font-semibold text-slate-800">
+                  {VI.costumeRental.charactersHeading}
+                </h3>
+              </div>
+              <Card className="mt-2 rounded-xl border border-pink-100 bg-white p-4">
+                <ul className="list-inside list-disc space-y-1 text-sm text-slate-700">
+                  {characterRows.map((c) => {
+                    const name = c.name?.trim() ?? ""
+                    const anime = c.anime?.trim() ?? ""
+                    const line =
+                      name && anime ? `${name} (${anime})` : name || anime
+                    return <li key={c.id}>{line}</li>
+                  })}
+                </ul>
+              </Card>
+            </div>
+          )}
           <ProductInfoSections
             details={[
               { label: VI.costumeRental.costumeName, value: costume.name },
@@ -296,11 +358,11 @@ export default function CostumeDetailPage() {
         )}
 
         {/* My Review Form */}
-        {reviewPermission.canReview && currentUserId && (
+        {!reviewPermissionLoading && canReview && currentUserId && (
           <div className="mt-4">
             <MyReviewForm
-              canReview={reviewPermission.canReview}
-              orderId={reviewPermission.orderId}
+              canReview={canReview}
+              orderId={orderId}
               cosplayerId={currentUserId}
               onSubmit={handleReviewSubmit}
               loading={reviewSubmitting}

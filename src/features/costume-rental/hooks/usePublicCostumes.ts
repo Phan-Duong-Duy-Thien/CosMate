@@ -10,7 +10,9 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { getCostumes } from '../api/costume.api'
+import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
+import { VI } from '@/shared/i18n/vi'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
 
@@ -34,12 +36,26 @@ function computePriceRange(costume: Costume): { priceMin: number; priceMax: numb
       : 0
   const minTotal = 1 * baseDaily + deposit + optionAvg
   const maxTotal = 3 * baseDaily + deposit + optionAvg
-  const minK = roundToNearest10k(minTotal) / 1000
-  const maxK = roundToNearest10k(maxTotal) / 1000
-  return { priceMin: minK, priceMax: maxK }
+  const minVnd = roundToNearest10k(minTotal)
+  const maxVnd = roundToNearest10k(maxTotal)
+  return { priceMin: minVnd, priceMax: maxVnd }
 }
 
-function mapCostumeToItem(costume: Costume): CostumeItem {
+/** First linked character for list cards: "Name (từ Anime)"; empty if none */
+export function formatFirstCharacterListLine(costume: Pick<Costume, 'characters'>): string {
+  const chars = costume.characters ?? []
+  if (!chars.length) return ''
+  const first = chars[0]
+  const name = (first?.name ?? '').trim()
+  const anime = (first?.anime ?? '').trim()
+  if (name && anime) return `${name} (${VI.costumeRental.characterFromWork} ${anime})`
+  return name || anime
+}
+
+export function mapCostumeToItem(
+  costume: Costume,
+  shopName: string
+): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
   const { priceMin, priceMax } = computePriceRange(costume)
@@ -48,11 +64,11 @@ function mapCostumeToItem(costume: Costume): CostumeItem {
     id: String(costume.id),
     name: costume.name ?? '',
     description: costume.description ?? '',
-    characterName: '—',
+    characterName: formatFirstCharacterListLine(costume) || '—',
     seriesName: '',
     seriesType: 'anime',
     shopId: String(costume.providerId),
-    shopName: '—',
+    shopName,
     tags: [],
     isAdult18: false,
     bestSeller: costume.status !== 'RENTED',
@@ -100,8 +116,26 @@ export function usePublicCostumes() {
     try {
       // Call real API
       const costumes = await getCostumes()
+      const visibleCostumes = costumes.filter((c) => c.status !== 'DELETED')
+
+      // Batch fetch shop names — deduplicate providerIds, fetch in parallel
+      const uniqueProviderIds = [...new Set(visibleCostumes.map((c) => c.providerId))]
+      const providerResults = await Promise.all(
+        uniqueProviderIds.map((id) => getProviderById(id).catch(() => null))
+      )
+      const providerMap = Object.fromEntries(
+        providerResults
+          .filter((p): p is NonNullable<typeof p> => p !== null)
+          .map((p) => [p.id, p.shopName ?? '—'])
+      )
+
       // Mock rentalsCount for testing (API chua tra ve truong nay)
-      const mapped = costumes.map((c) => mapCostumeToItem({ ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) }))
+      const mapped = visibleCostumes.map((c) =>
+        mapCostumeToItem(
+          { ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) },
+          providerMap[c.providerId] ?? '—'
+        )
+      )
       setItems(mapped)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Khong the tai danh sach trang phuc.')

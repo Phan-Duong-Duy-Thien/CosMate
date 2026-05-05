@@ -31,11 +31,21 @@ export interface CreateOrderPayload {
 }
 
 // Create order response
+// Matches BE: POST /api/orders returns full order object
+// paymentUrl: null for WALLET (no external redirect), string for MoMo/VNPay
+// status: "PAID" if BE processed payment (e.g. WALLET success, MoMo resultCode=0)
+//         "UNPAID" if payment still pending
 export interface CreateOrderResponse {
   id: number;
-  status: 'UNPAID';
+  cosplayerId: number;
+  providerId: number;
+  orderType: string;
+  status: OrderStatus;
   totalAmount: number;
-  paymentUrl: string;
+  totalDepositAmount: number;
+  createdAt: string;
+  rentDate: string;
+  paymentUrl: string | null;
 }
 
 // Create order params (for service layer)
@@ -45,7 +55,7 @@ export interface CreateOrderParams {
   rentDay: number;
   rentStart: string; // date-only format YYYY-MM-DD
   paymentMethod: PaymentMethod;
-  returnUrl: string;
+  returnUrl?: string;
   cosplayerAddressId: number;
   selectedAccessoryIds: number[];
   selectedRentalOptionId: number | null;
@@ -68,6 +78,7 @@ export type OrderStatus =
 
 export interface OrderItem {
   id: number;
+  orderType: string; // 'RENT_COSTUME' = costume/rental order, 'RENT_SERVICE' = service order
   status: OrderStatus;
   totalAmount: number;
   depositAmount: number;

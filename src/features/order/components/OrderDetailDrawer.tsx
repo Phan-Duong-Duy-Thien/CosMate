@@ -6,18 +6,29 @@
  * No API calls - receives orderId and callbacks via props.
  */
 
-import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined } from '@ant-design/icons';
+import { useState } from 'react';
+import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography, Button, Table, Modal } from 'antd';
+import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
+import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
+import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
+import { ExtendRentalModal } from './ExtendRentalModal';
+import { useExtendOrder } from '../hooks/useExtendOrder';
+import { useOrderExtends } from '../hooks/useOrderExtends';
+import { useExtendDetail } from '../hooks/useExtendDetail';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderDetail, OrderStatus } from '../types';
+import type { PaymentMethod } from '../utils/paymentReturnUrls';
+import type { ExtendPaymentStatus } from '../api/order.api';
 
 const { Text } = Typography;
 
 interface OrderDetailDrawerProps {
   open: boolean;
   orderId: number | null;
+  orderType?: string; // 'RENT_COSTUME' — used to guard against cross-type contamination
   onClose: () => void;
+  onExtendSuccess?: () => void;
 }
 
 // Format currency
@@ -63,24 +74,145 @@ const getStatusLabel = (status: OrderStatus): string => {
 
 const getStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
-    UNPAID: 'default',
-    PAID: 'orange',
-    PREPARING: 'blue',
+    UNPAID: 'orange',
+    PAID: 'blue',
+    PREPARING: 'purple',
     SHIPPING_OUT: 'cyan',
-    DELIVERING_OUT: 'purple',
+    DELIVERING_OUT: 'cyan',
     IN_USE: 'purple',
     SHIPPING_BACK: 'volcano',
     RETURNED: 'green',
     COMPLETED: 'green',
-    CANCELLED: 'red',
+    CANCELLED: 'default',
     DISPUTE: 'magenta',
     EXTENDING: 'gold',
   };
   return colorMap[status] || 'default';
 };
 
-export function OrderDetailDrawer({ open, orderId, onClose }: OrderDetailDrawerProps) {
-  const { orderDetail, loading, error } = useOrderDetail(orderId);
+export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendSuccess }: OrderDetailDrawerProps) {
+  const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
+  const { extendOrder, isExtending } = useExtendOrder();
+
+  // Extend modal state
+  const [extendModalOpen, setExtendModalOpen] = useState(false);
+
+  // Extend detail modal state
+  const [extendDetailModalOpen, setExtendDetailModalOpen] = useState(false);
+  const [selectedExtendId, setSelectedExtendId] = useState<number | null>(null);
+  const { detail: extendDetail, loading: extendDetailLoading, fetchDetail, reset: resetExtendDetail } = useExtendDetail();
+
+  // Extend history hooks — only active when order is IN_USE
+  const { extends: extendsList, loading: extendsLoading, refetch: refetchExtends } = useOrderExtends(
+    orderDetail?.status === 'IN_USE' ? (orderId ?? null) : null
+  );
+
+  // Map extend payment status to badge color
+  const getExtendPaymentColor = (status: ExtendPaymentStatus): string => {
+    const map: Record<ExtendPaymentStatus, string> = {
+      PAID: 'success',
+      PENDING: 'warning',
+      FAILED: 'error',
+    };
+    return map[status] ?? 'default';
+  };
+
+  const handleViewExtend = async (extendId: number) => {
+    setSelectedExtendId(extendId);
+    const detailId = orderDetail?.details?.[0]?.id;
+    if (!orderId || !detailId) return;
+    await fetchDetail(orderId, detailId, extendId);
+    setExtendDetailModalOpen(true);
+  };
+
+  const handleCloseExtendDetail = () => {
+    setExtendDetailModalOpen(false);
+    setSelectedExtendId(null);
+    resetExtendDetail();
+  };
+
+  const handlePayNow = (paymentUrl: string) => {
+    window.location.href = paymentUrl;
+  };
+
+  // Fetch costume basic info from costumeId in first detail item
+  const costumeId = orderDetail?.details?.[0]?.costumeId ?? null;
+  const { costume: costumeInfo, loading: costumeLoading, error: costumeError } = useCostumeBasicInfo(costumeId);
+
+  // Guard: reject cross-type contamination.
+  // If orderType is passed but doesn't match, log a warning and skip rendering.
+  if (orderDetail && orderType && orderDetail.orderType && orderDetail.orderType !== orderType) {
+    console.warn(
+      '[OrderDetailDrawer] Order type mismatch — expected',
+      orderType,
+      'but got',
+      orderDetail.orderType,
+      '(id:',
+      orderId,
+      '). This may indicate cross-contamination between order types.'
+    );
+  }
+
+  console.log('[ORDER DEBUG]', {
+    id: orderDetail?.id,
+    type: orderDetail?.orderType,
+    status: orderDetail?.status,
+  });
+
+  const renderCostumeInfo = () => {
+    if (costumeLoading) {
+      return (
+        <div className="flex items-center gap-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <Spin size="small" />
+          <span className="text-sm text-slate-500">{VI.costumeRental.detail.productDetailTitle}</span>
+        </div>
+      );
+    }
+
+    if (costumeError || !costumeInfo) {
+      return (
+        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+          <span className="text-sm text-slate-400">{VI.order.detail.empty}</span>
+        </div>
+      );
+    }
+
+    const primaryImage = costumeInfo.imageUrls?.[0];
+    const resolvedUrl = primaryImage ? resolveImageUrl(primaryImage) : null;
+
+    return (
+      <div className="flex gap-3 rounded-lg border border-purple-200 bg-purple-50 p-3">
+        {resolvedUrl ? (
+          <img
+            src={resolvedUrl}
+            alt={costumeInfo.name}
+            className="h-16 w-16 flex-shrink-0 rounded-lg object-cover"
+          />
+        ) : (
+          <div className="flex h-16 w-16 flex-shrink-0 items-center justify-center rounded-lg bg-purple-100">
+            <AppstoreOutlined className="text-2xl text-purple-300" />
+          </div>
+        )}
+        <div className="flex flex-col justify-center">
+          <div className="flex items-center gap-2">
+            <AppstoreOutlined className="text-purple-600" />
+            <span className="font-semibold text-slate-800">{costumeInfo.name}</span>
+          </div>
+          <div className="mt-0.5 flex flex-wrap gap-x-4 gap-y-0.5 text-xs text-slate-500">
+            <span>
+              {VI.order.detail.size}: {costumeInfo.size}
+            </span>
+            <span>
+              {VI.order.detail.depositAmount}: {formatCurrency(costumeInfo.depositAmount)}
+            </span>
+            <span>
+              {VI.order.detail.rentAmount.split(' ')[0]}: {formatCurrency(costumeInfo.pricePerDay)}/ngày
+            </span>
+          </div>
+        </div>
+      </div>
+    );
+  };
 
   const renderBasicInfo = () => {
     if (!orderDetail) return null;
@@ -310,13 +442,14 @@ export function OrderDetailDrawer({ open, orderId, onClose }: OrderDetailDrawerP
   };
 
   return (
-    <Drawer
-      title={VI.order.detail.title}
-      placement="right"
-      width={600}
-      open={open}
-      onClose={onClose}
-    >
+    <>
+      <Drawer
+        title={VI.order.detail.title}
+        placement="right"
+        width={640}
+        open={open}
+        onClose={onClose}
+      >
       {loading ? (
         <div className="flex h-64 items-center justify-center">
           <Spin size="large" />
@@ -325,11 +458,106 @@ export function OrderDetailDrawer({ open, orderId, onClose }: OrderDetailDrawerP
         <div className="text-center text-red-500">{error}</div>
       ) : orderDetail ? (
         <div className="space-y-4">
+          {/* Costume Info */}
+          <div>
+            <h3 className="mb-2 flex items-center gap-1 font-semibold">
+              <AppstoreOutlined className="text-purple-600" />
+              {VI.order.detail.costumeInfo ?? 'Trang phục'}
+            </h3>
+            {renderCostumeInfo()}
+          </div>
+
+          <Divider />
+
           {/* Basic Info */}
           <div>
             <h3 className="mb-2 font-semibold">{VI.order.detail.basicInfo}</h3>
             {renderBasicInfo()}
           </div>
+
+          {/* Extend Rental — only for IN_USE orders */}
+          {orderDetail?.status === 'IN_USE' && (
+            <div>
+              <Button
+                type="primary"
+                icon={<PlusCircleOutlined />}
+                onClick={() => setExtendModalOpen(true)}
+              >
+                {VI.provider.orders.tabs.extending}
+              </Button>
+            </div>
+          )}
+
+          <Divider />
+
+          {/* Extend History — only for IN_USE orders */}
+          {orderDetail?.status === 'IN_USE' && (
+            <div>
+              <h3 className="mb-3 flex items-center gap-1 font-semibold">
+                <HistoryOutlined className="text-purple-600" />
+                {VI.order.extend.extendHistory}
+              </h3>
+
+              {extendsLoading ? (
+                <div className="flex justify-center py-4">
+                  <Spin size="small" />
+                </div>
+              ) : extendsList.length === 0 ? (
+                <p className="py-2 text-sm text-slate-400">{VI.order.extend.empty}</p>
+              ) : (
+                <Table
+                  dataSource={extendsList}
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  scroll={{ x: 400 }}
+                  columns={[
+                    {
+                      title: VI.order.extend.createdAt,
+                      dataIndex: 'createdAt',
+                      key: 'createdAt',
+                      render: (val) => formatDate(val),
+                    },
+                    {
+                      title: VI.order.extend.extendDays,
+                      dataIndex: 'extendDays',
+                      key: 'extendDays',
+                      render: (val) => `${val} ${VI.order.extend.daysSuffix}`,
+                    },
+                    {
+                      title: VI.order.extend.extendPrice,
+                      dataIndex: 'extendPrice',
+                      key: 'extendPrice',
+                      render: (val) => formatCurrency(val),
+                    },
+                    {
+                      title: VI.order.extend.paymentStatus,
+                      dataIndex: 'paymentStatus',
+                      key: 'paymentStatus',
+                      render: (status: ExtendPaymentStatus) => (
+                        <Tag color={getExtendPaymentColor(status)}>
+                          {VI.order.extend.paymentStatusLabels[status]}
+                        </Tag>
+                      ),
+                    },
+                    {
+                      title: '',
+                      key: 'action',
+                      render: (_, record) => (
+                        <Button
+                          type="link"
+                          size="small"
+                          onClick={() => handleViewExtend(record.id)}
+                        >
+                          {VI.order.extend.viewDetail}
+                        </Button>
+                      ),
+                    },
+                  ]}
+                />
+              )}
+            </div>
+          )}
 
           <Divider />
 
@@ -393,6 +621,68 @@ export function OrderDetailDrawer({ open, orderId, onClose }: OrderDetailDrawerP
       ) : (
         <Empty description={VI.order.detail.empty} />
       )}
-    </Drawer>
+      </Drawer>
+    <ExtendRentalModal
+      open={extendModalOpen}
+      onClose={() => setExtendModalOpen(false)}
+      onConfirm={async (extendDays: number, paymentMethod: PaymentMethod) => {
+        const detailId = orderDetail?.details?.[0]?.id;
+        if (!orderId || !detailId) return;
+        await extendOrder(orderId, detailId, { extendDays, paymentMethod, payNow: true });
+        setExtendModalOpen(false);
+        await refetch();
+        await refetchExtends();
+        onExtendSuccess?.();
+      }}
+      loading={isExtending}
+    />
+
+    {/* Extend Detail Modal */}
+    <Modal
+      title={VI.order.extend.title}
+      open={extendDetailModalOpen}
+      onCancel={handleCloseExtendDetail}
+      footer={null}
+      width={500}
+    >
+      {extendDetailLoading ? (
+        <div className="flex justify-center py-6">
+          <Spin />
+        </div>
+      ) : extendDetail ? (
+        <div className="space-y-3">
+          <Descriptions column={1} size="small" bordered>
+            <Descriptions.Item label={VI.order.extend.oldReturnDate}>
+              {formatDate(extendDetail.oldReturnDate)}
+            </Descriptions.Item>
+            <Descriptions.Item label={VI.order.extend.newReturnDate}>
+              {formatDate(extendDetail.newReturnDate)}
+            </Descriptions.Item>
+            <Descriptions.Item label={VI.order.extend.extendDays}>
+              {extendDetail.extendDays} {VI.order.extend.daysSuffix}
+            </Descriptions.Item>
+            <Descriptions.Item label={VI.order.extend.extendPrice}>
+              <Typography.Text type="success">{formatCurrency(extendDetail.extendPrice)}</Typography.Text>
+            </Descriptions.Item>
+            <Descriptions.Item label={VI.order.extend.paymentStatus}>
+              <Tag color={getExtendPaymentColor(extendDetail.paymentStatus)}>
+                {VI.order.extend.paymentStatusLabels[extendDetail.paymentStatus]}
+              </Tag>
+            </Descriptions.Item>
+          </Descriptions>
+
+          {extendDetail.paymentStatus === 'PENDING' && extendDetail.paymentUrl && (
+            <Button
+              type="primary"
+              block
+              onClick={() => handlePayNow(extendDetail.paymentUrl!)}
+            >
+              {VI.order.extend.payNow}
+            </Button>
+          )}
+        </div>
+      ) : null}
+    </Modal>
+    </>
   );
 }

@@ -59,7 +59,7 @@ export default function PhotographHomePage() {
   ];
 
   return (
-    <DashboardLayout title={VI.provider.dashboardPhotograph.title} sidebarItems={sidebarItems} brandName="CosMate Photographer">
+    <DashboardLayout title={VI.provider.dashboardPhotograph.title} sidebarItems={sidebarItems} brandName="CosMate Photographer" showChatButton={false}>
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />
