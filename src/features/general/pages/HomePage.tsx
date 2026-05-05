@@ -81,12 +81,11 @@ const HomePage = () => {
   }
 
   return (
-    <div className="home-anime relative min-h-[60vh] overflow-hidden bg-[#fff7fb]">
+    <div className="home-anime relative min-h-[60vh] w-full min-w-0 bg-[#fff7fb]">
       <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
         <div className="home-anime-blob home-anime-blob-a absolute -left-28 top-16 h-80 w-80 rounded-full bg-fuchsia-400/40 blur-3xl" />
         <div className="home-anime-blob home-anime-blob-b absolute -right-24 top-48 h-96 w-96 rounded-full bg-cyan-300/35 blur-3xl" />
         <div className="home-anime-blob home-anime-blob-c absolute bottom-32 left-1/3 h-72 w-72 rounded-full bg-amber-300/30 blur-3xl" />
-        <div className="absolute inset-0 opacity-[0.07] bg-[radial-gradient(circle_at_center,#4c1d95_1px,transparent_1px)] [background-size:14px_14px]" />
       </div>
 
       <main
@@ -166,7 +165,7 @@ const StatusCard = ({
   actionLabel?: string
   onAction?: () => void
 }) => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-10" data-reveal="true">
+  <section className="w-full pt-10" data-reveal="true">
     <div className="rounded-[1.35rem] border-[5px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] via-[#fce7f3] to-[#e0f2fe] p-8 text-center shadow-[14px_14px_0_0_rgba(30,27,75,0.75)] md:p-10">
       <div className="mx-auto mb-4 inline-flex rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-violet-500 p-3 text-white shadow-[5px_5px_0_0_#1e1b4b]">
         <Sparkles className="h-8 w-8" aria-hidden />
@@ -191,7 +190,7 @@ const StatusCard = ({
 )
 
 const HomeSkeleton = () => (
-  <section className="mx-auto w-full max-w-screen-2xl pt-10" data-reveal="true">
+  <section className="w-full pt-10" data-reveal="true">
     <div className="rounded-[1.35rem] border-[5px] border-indigo-950 bg-[#fffbeb]/90 p-6 shadow-[12px_12px_0_0_rgba(30,27,75,0.45)] md:p-8">
       <div className="animate-pulse space-y-8">
         <div className="flex flex-col gap-3">

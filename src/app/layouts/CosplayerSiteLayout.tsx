@@ -580,21 +580,31 @@ export default function CosplayerSiteLayout() {
         </div>
       </header>
 
-      <main className="flex-1 pt-[56px]">
+      <main className="min-w-0 flex-1 pt-[56px]">
         {!isHomePage && items.length > 0 && (
           <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
             <Breadcrumbs items={items} />
           </div>
         )}
         {isHomePage ? (
-          <div className="relative">
+          <div className="relative isolate">
+            {/* Dot grid + tint across full main width (not limited by max-w column) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1] bg-[#fff7fb]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+                backgroundSize: "14px 14px",
+              }}
+            />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
+              className="pointer-events-none absolute inset-0 z-[2] bg-white/12 backdrop-blur-[1px]"
             />
 
-            {/* Full-width column: avoids squeezing main content between two side banners */}
-            <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 pb-3 pt-2 md:px-6 xl:px-8">
+            {/* Wide column on large screens so side margins feel less empty (no side-banner grid) */}
+            <div className="relative z-10 mx-auto w-full min-w-0 max-w-[min(1800px,100%)] px-3 pb-3 pt-2 sm:px-4 md:px-6 lg:px-8 xl:px-10">
               <div className="min-w-0">
                 <Outlet />
               </div>
