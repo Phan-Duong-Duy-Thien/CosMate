@@ -37,56 +37,44 @@ export const ProductCard = ({
         onViewDetail(product.id)
       }
     }}
-    className="group cursor-pointer overflow-hidden rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.45)]"
+    className="group cursor-pointer overflow-hidden border border-slate-100/90 bg-white shadow-sm ring-0 transition-all duration-300 hover:-translate-y-1 hover:border-pink-100 hover:shadow-xl hover:shadow-pink-500/10 hover:ring-1 hover:ring-pink-100"
   >
-    <div className="relative border-b-[4px] border-indigo-950">
+    <div className="relative">
       <img
-        src={
-          product.imageUrls[0] ||
-          "https://placehold.co/400x500/e9d5ff/4c1d95?text=CosMate"
-        }
+        src={product.imageUrls[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
         alt={product.name}
         loading="lazy"
-        className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-[1.06]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 bg-gradient-to-t from-indigo-950/25 to-transparent opacity-70"
+        className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
       />
       {product.status === "RENTED" && (
-        <Badge className="absolute left-3 top-3 border-[3px] border-indigo-950 bg-slate-800 font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b]">
-          Đã thuê
-        </Badge>
+        <Badge className="absolute left-3 top-3 bg-slate-700 text-white">Đã thuê</Badge>
       )}
       <button
         type="button"
         aria-label={VI.general.home.featured.wishlist}
         className={cn(
-          "absolute right-3 top-3 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-2 text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:scale-105 hover:bg-pink-100",
-          isWishlisted && "border-pink-600 bg-pink-500 text-white hover:bg-pink-600"
+          "absolute right-3 top-3 rounded-full bg-white/95 p-2 text-slate-500 shadow-md backdrop-blur-sm transition hover:scale-105",
+          isWishlisted && "text-pink-500"
         )}
         onClick={(event) => {
           event.stopPropagation()
           onToggleWishlist(String(product.id))
         }}
       >
-        <Heart className={cn("h-4 w-4", isWishlisted && "fill-current")} />
+        <Heart className={cn("h-4 w-4", isWishlisted && "fill-pink-500")} />
       </button>
       {product.imageUrls.length > 1 && (
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg border-2 border-indigo-950 bg-[#fffbeb] px-2 py-0.5 text-xs font-bold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
-          <ImageIcon className="h-3 w-3" aria-hidden />
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-white/80 px-2 py-0.5 text-xs text-slate-600">
+          <ImageIcon className="h-3 w-3" />
           {product.imageUrls.length}
         </div>
       )}
     </div>
-    <div className="space-y-3 p-4">
-      <div className="inline-flex rounded-lg border-2 border-indigo-950/80 bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-indigo-800">
+    <div className="space-y-2 p-3.5">
+      <div className="text-xs font-medium text-slate-500">
         {statusLabelVi[product.status] ?? product.status}
       </div>
-      <h3
-        className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
-        title={product.name}
-      >
+      <h3 className="overflow-hidden text-sm font-semibold text-slate-800" title={product.name}>
         <span className="block truncate group-hover:hidden">{product.name}</span>
         <span className="hidden group-hover:block">
           <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
@@ -95,15 +83,14 @@ export const ProductCard = ({
           </span>
         </span>
       </h3>
-      <div className="text-lg font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
-        {product.pricePerDay.toLocaleString("vi-VN")}{" "}
-        <span className="text-indigo-950">VNĐ</span>
-        <span className="text-xs font-bold text-indigo-800/70">/ngày</span>
+      <div className="text-base font-semibold text-pink-600">
+        {product.pricePerDay.toLocaleString("vi-VN")} VNĐ
+        <span className="text-xs font-normal text-slate-400">/ngày</span>
       </div>
       <Button
         variant="soft"
         size="sm"
-        className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-400 to-teal-400 font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-105"
+        className="w-full"
         onClick={(event) => {
           event.stopPropagation()
           onViewDetail(product.id)
