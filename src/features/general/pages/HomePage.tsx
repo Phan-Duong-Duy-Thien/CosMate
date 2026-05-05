@@ -3,6 +3,7 @@ import { Sparkles } from "lucide-react"
 import { useNavigate } from "react-router-dom"
 
 import { HeroCarousel } from "../components/home/HeroCarousel"
+import { HomeAiPromoCards } from "../components/home/HomeAiPromoCards"
 import { ProductSection } from "../components/home/ProductSection"
 import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
@@ -92,6 +93,11 @@ const HomePage = () => {
         className="relative z-[1] pb-16 [&_[data-reveal=true]]:translate-y-3 [&_[data-reveal=true]]:opacity-0 [&_[data-reveal=true]]:transition-all [&_[data-reveal=true]]:duration-500 [&_[data-reveal=true][data-visible=true]]:translate-y-0 [&_[data-reveal=true][data-visible=true]]:opacity-100 motion-reduce:[&_[data-reveal=true]]:translate-y-0 motion-reduce:[&_[data-reveal=true]]:opacity-100"
       >
         <HeroCarousel slides={bannerSlides} onCtaClick={handleCtaClick} />
+        <HomeAiPromoCards
+          className="mt-5 md:mt-6"
+          onStyleQuiz={() => navigate("/style-quiz")}
+          onCostumeImageSearch={() => navigate("/costumes")}
+        />
         <QuizModal
           open={isQuizOpen}
           onOpenChange={setIsQuizOpen}
