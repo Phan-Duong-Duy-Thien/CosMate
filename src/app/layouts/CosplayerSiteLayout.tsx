@@ -38,10 +38,6 @@ import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import bgImage from "@/assets/background.jpg"
-import sideBannerImage1 from "@/assets/anh1.jpg"
-import sideBannerImage2 from "@/assets/quiz1.jpg"
-import sideBannerImage3 from "@/assets/quiz2.jpg"
-import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
 import siteLogo from "@/assets/cosmate.png"
 import type { MenuProps } from 'antd'
@@ -58,17 +54,6 @@ export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isScrolled, setIsScrolled] = React.useState(false)
-  const [bannerIndex, setBannerIndex] = React.useState(0)
-
-  const bannerImages = [sideBannerImage1, sideBannerImage2, sideBannerImage3, sideBannerImage4]
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerIndex((prev) => (prev + 1) % bannerImages.length)
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [bannerImages.length])
-
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
   const { openChat } = useChatPopup()
@@ -608,59 +593,10 @@ export default function CosplayerSiteLayout() {
               className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
             />
 
-            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-2 lg:px-3 xl:px-4">
-              <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-5 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben trai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Bạn là nhân vật nào?
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/style-quiz")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Làm quiz ngay
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
-
-                <div className="min-w-0">
-                  <Outlet />
-                </div>
-
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben phai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Tìm trang phục qua ảnh
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/costumes")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Tìm bằng hình ảnh
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
+            {/* Full-width column: avoids squeezing main content between two side banners */}
+            <div className="relative z-10 mx-auto w-full max-w-screen-2xl px-4 pb-3 pt-2 md:px-6 xl:px-8">
+              <div className="min-w-0">
+                <Outlet />
               </div>
             </div>
           </div>
