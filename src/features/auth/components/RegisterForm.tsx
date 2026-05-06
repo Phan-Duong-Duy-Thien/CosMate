@@ -35,7 +35,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.usernamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<User className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -50,7 +50,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.fullNamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<User className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<User className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -68,7 +68,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.emailPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Mail className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -89,7 +89,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.phonePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Phone className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Phone className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -107,7 +107,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.passwordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -133,7 +133,7 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.confirmPasswordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>

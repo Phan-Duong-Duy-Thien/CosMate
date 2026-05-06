@@ -125,7 +125,7 @@ export default function ProviderReviewsPage() {
       brandName="CosMate Provider"
     >
       {error && (
-        <div style={{ color: '#ff4d4f', marginBottom: 16 }}>
+        <div className="mb-4 text-destructive">
           {error}
         </div>
       )}

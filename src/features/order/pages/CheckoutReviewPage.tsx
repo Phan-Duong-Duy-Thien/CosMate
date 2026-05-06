@@ -73,7 +73,7 @@ export default function CheckoutReviewPage() {
   // No draft - show empty state
   if (!isLoading && !draft) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
             <div className="mb-4 text-5xl">📦</div>
@@ -100,7 +100,7 @@ export default function CheckoutReviewPage() {
   // Loading state
   if (isLoading) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
             <div className="animate-pulse">
@@ -116,7 +116,7 @@ export default function CheckoutReviewPage() {
   // Not logged in
   if (!userId) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
             <div className="mb-4 text-5xl">🔒</div>
@@ -147,7 +147,7 @@ export default function CheckoutReviewPage() {
   ];
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
       <div className="mx-auto w-full max-w-4xl px-4 pt-8">
         {/* Page Header */}
         <div className="mb-6">

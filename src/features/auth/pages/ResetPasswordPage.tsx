@@ -49,8 +49,8 @@ export default function ResetPasswordPage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-50">
               <Lock className="h-8 w-8 text-red-500" />
             </div>
-            <h2 className="text-xl font-bold text-[#111827]">{VI.auth.resetPassword.invalidTokenTitle}</h2>
-            <p className="text-sm text-[#6B7280]">{VI.auth.resetPassword.invalidTokenMessage}</p>
+            <h2 className="text-xl font-bold text-foreground">{VI.auth.resetPassword.invalidTokenTitle}</h2>
+            <p className="text-sm text-muted-foreground">{VI.auth.resetPassword.invalidTokenMessage}</p>
             <Link to="/login">
               <Button className="mt-2">{VI.auth.resetPassword.backToLogin}</Button>
             </Link>
@@ -68,8 +68,8 @@ export default function ResetPasswordPage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <Lock className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#111827]">{VI.auth.resetPassword.successTitle}</h2>
-            <p className="text-sm text-[#6B7280]">{VI.auth.resetPassword.successMessage}</p>
+            <h2 className="text-xl font-bold text-foreground">{VI.auth.resetPassword.successTitle}</h2>
+            <p className="text-sm text-muted-foreground">{VI.auth.resetPassword.successMessage}</p>
             <Link to="/login">
               <Button className="mt-2">{VI.auth.resetPassword.goToLogin}</Button>
             </Link>
@@ -85,14 +85,14 @@ export default function ResetPasswordPage() {
         <CardContent className="p-8">
           <Link
             to="/login"
-            className="mb-6 flex items-center gap-1 text-sm text-[#6B7280] hover:text-[#7C3AED]"
+            className="mb-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
             {VI.auth.resetPassword.back}
           </Link>
 
-          <h2 className="mb-1 text-2xl font-bold text-[#111827]">{VI.auth.resetPassword.title}</h2>
-          <p className="mb-6 text-sm text-[#6B7280]">{VI.auth.resetPassword.subtitle}</p>
+          <h2 className="mb-1 text-2xl font-bold text-foreground">{VI.auth.resetPassword.title}</h2>
+          <p className="mb-6 text-sm text-muted-foreground">{VI.auth.resetPassword.subtitle}</p>
 
           <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-4">
             <Form.Item
@@ -106,7 +106,7 @@ export default function ResetPasswordPage() {
               <Input.Password
                 placeholder={VI.auth.resetPassword.newPasswordPlaceholder}
                 size="large"
-                prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+                prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
                 className="h-11 rounded-full px-4"
               />
             </Form.Item>
@@ -121,7 +121,7 @@ export default function ResetPasswordPage() {
               <Input.Password
                 placeholder={VI.auth.resetPassword.confirmPasswordPlaceholder}
                 size="large"
-                prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+                prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
                 className="h-11 rounded-full px-4"
               />
             </Form.Item>

@@ -70,7 +70,9 @@ export const CostumeCard = ({
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
           <div className="absolute right-3 top-3">
-            <Tag color="#7c3aed" className="m-0 rounded-full border-0 px-3 py-1 font-semibold text-white shadow-sm">
+            <Tag
+              className="m-0 rounded-full border-0 bg-primary px-3 py-1 font-semibold !text-primary-foreground shadow-sm"
+            >
               ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
             </Tag>
           </div>

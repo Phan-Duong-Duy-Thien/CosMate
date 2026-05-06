@@ -212,8 +212,8 @@ export default function AdminUsersPage() {
       width: 250,
       render: (_, record) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14 }}>{record.username}</span>
-          <span style={{ color: '#6b7280', fontSize: 13 }}>{record.email}</span>
+          <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 14 }}>{record.username}</span>
+          <span style={{ color: 'var(--muted-foreground)', fontSize: 13 }}>{record.email}</span>
         </div>
       )
     },
@@ -224,9 +224,9 @@ export default function AdminUsersPage() {
       width: 140,
       render: (phone: string | null) => {
         if (!phone || phone.trim() === '') {
-          return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+          return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         }
-        return <span style={{ color: '#4b5563' }}>{phone}</span>; 
+        return <span style={{ color: 'var(--foreground)' }}>{phone}</span>; 
       }
     },
     {
@@ -235,7 +235,7 @@ export default function AdminUsersPage() {
       width: 200,
       render: (_, record) => {
         const rolesArray = getUserRolesArray(record);
-        if (rolesArray.length === 0) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        if (rolesArray.length === 0) return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         return (
           <Space size={4} wrap>
             {rolesArray.map((role) => {
@@ -279,7 +279,7 @@ export default function AdminUsersPage() {
             <Tooltip title={VI.admin.users.actions.viewDetail}>
               <EyeOutlined
                 onClick={() => handleViewDetail(user)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
               />
             </Tooltip>
 
@@ -289,7 +289,7 @@ export default function AdminUsersPage() {
                 style={{
                   cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
                   fontSize: 16,
-                  color: userIsLocked ? '#52c41a' : '#faad14',
+                  color: userIsLocked ? 'var(--cosmate-success)' : 'var(--cosmate-warning)',
                   opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
                 }}
               >
@@ -303,7 +303,7 @@ export default function AdminUsersPage() {
                 style={{
                   cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
                   fontSize: 16,
-                  color: userIsBanned ? '#52c41a' : '#ff4d4f',
+                  color: userIsBanned ? 'var(--cosmate-success)' : 'var(--destructive)',
                   opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
                 }}
               >
@@ -320,7 +320,7 @@ export default function AdminUsersPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 

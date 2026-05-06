@@ -85,7 +85,7 @@ export default function StyleQuizPage() {
 
           <div className="flex items-center gap-3">
             <div className="flex-1">
-              <Progress percent={quiz.progressPercent} showInfo={false} strokeColor="#ec4899" railColor="#fce7f3" />
+              <Progress percent={quiz.progressPercent} showInfo={false} strokeColor="var(--cosmate-pink)" railColor="var(--cosmate-soft-pink)" />
             </div>
             <span className="w-12 text-right text-base font-semibold text-pink-600">{quiz.progressPercent}%</span>
           </div>

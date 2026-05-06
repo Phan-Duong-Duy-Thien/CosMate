@@ -20,7 +20,7 @@ export default function ServiceDetailPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+      <div className="min-h-screen flex items-center justify-center bg-cosmate-page">
         <Spin size="large" />
       </div>
     );
@@ -28,11 +28,11 @@ export default function ServiceDetailPage() {
 
   if (error || !service) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] text-[#A090C5] gap-4">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-cosmate-page text-cosmate-lavender-muted gap-4">
         <p>{error ?? 'Không tìm thấy dịch vụ.'}</p>
         <button
           onClick={() => navigate(-1)}
-          className="px-4 py-2 bg-[#F5F1FF] text-[#8E7AB5] font-bold rounded-xl hover:bg-[#B59DFF] hover:text-white transition-all"
+          className="px-4 py-2 bg-cosmate-lavender-surface text-cosmate-text-soft font-bold rounded-xl hover:bg-cosmate-lavender hover:text-white transition-all"
         >
           Quay lại
         </button>
@@ -56,22 +56,22 @@ export default function ServiceDetailPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans">
+    <div className="min-h-screen bg-cosmate-page selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans">
       <div className="max-w-4xl mx-auto py-12 px-6">
         {/* Back button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-[#A090C5] hover:text-[#B59DFF] transition-colors mb-6 font-medium"
+          className="flex items-center gap-2 text-cosmate-lavender-muted hover:text-cosmate-lavender transition-colors mb-6 font-medium"
         >
           <ArrowLeft className="w-4 h-4" />
           Quay lại
         </button>
 
         {/* Main card */}
-        <div className="bg-white border border-[#F0E6FF] rounded-3xl overflow-hidden">
+        <div className="bg-white border border-cosmate-lavender-border rounded-3xl overflow-hidden">
           {/* Cover image */}
           {service.imageUrls && service.imageUrls.length > 0 ? (
-            <div className="w-full h-72 overflow-hidden bg-[#F5F1FF]">
+            <div className="w-full h-72 overflow-hidden bg-cosmate-lavender-surface">
               <img
                 src={service.imageUrls[0]}
                 alt={service.serviceType}
@@ -79,8 +79,8 @@ export default function ServiceDetailPage() {
               />
             </div>
           ) : (
-            <div className="w-full h-72 bg-[#F5F1FF] flex items-center justify-center">
-              <ImageIcon className="w-20 h-20 text-[#D7D0E5]" />
+            <div className="w-full h-72 bg-cosmate-lavender-surface flex items-center justify-center">
+              <ImageIcon className="w-20 h-20 text-cosmate-icon-dim" />
             </div>
           )}
 
@@ -89,8 +89,8 @@ export default function ServiceDetailPage() {
             <div>
               <div className="flex items-start justify-between gap-4">
                 <div>
-                  <h1 className="text-2xl font-black text-[#4A3B6B] mb-1">{service.serviceType}</h1>
-                  <div className="text-3xl font-black text-[#B59DFF]">{formatPrice()}</div>
+                  <h1 className="text-2xl font-black text-cosmate-ink mb-1">{service.serviceType}</h1>
+                  <div className="text-3xl font-black text-cosmate-lavender">{formatPrice()}</div>
                 </div>
                 <span className={`px-3 py-1 text-xs font-bold rounded-full ${
                   service.status === 'ACTIVE'
@@ -112,28 +112,28 @@ export default function ServiceDetailPage() {
 
             {/* Details */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="flex items-center gap-3 p-4 bg-[#F5F1FF] rounded-2xl">
-                <Clock className="w-5 h-5 text-[#B59DFF]" />
+              <div className="flex items-center gap-3 p-4 bg-cosmate-lavender-surface rounded-2xl">
+                <Clock className="w-5 h-5 text-cosmate-lavender" />
                 <div>
-                  <p className="text-xs text-[#A090C5]">Thời lượng mỗi slot</p>
-                  <p className="font-bold text-[#4A3B6B]">{formatDuration(service.slotDurationHours)}</p>
+                  <p className="text-xs text-cosmate-lavender-muted">Thời lượng mỗi slot</p>
+                  <p className="font-bold text-cosmate-ink">{formatDuration(service.slotDurationHours)}</p>
                 </div>
               </div>
               {service.depositAmount != null && service.depositAmount > 0 && (
-                <div className="flex items-center gap-3 p-4 bg-[#F5F1FF] rounded-2xl">
+                <div className="flex items-center gap-3 p-4 bg-cosmate-lavender-surface rounded-2xl">
                   <CheckCircle2 className="w-5 h-5 text-green-500" />
                   <div>
-                    <p className="text-xs text-[#A090C5]">Tiền đặt cọc</p>
-                    <p className="font-bold text-[#4A3B6B]">{service.depositAmount.toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-cosmate-lavender-muted">Tiền đặt cọc</p>
+                    <p className="font-bold text-cosmate-ink">{service.depositAmount.toLocaleString('vi-VN')}đ</p>
                   </div>
                 </div>
               )}
               {service.equipmentDepreciationCost > 0 && (
-                <div className="flex items-center gap-3 p-4 bg-[#F5F1FF] rounded-2xl">
-                  <CheckCircle2 className="w-5 h-5 text-[#B59DFF]" />
+                <div className="flex items-center gap-3 p-4 bg-cosmate-lavender-surface rounded-2xl">
+                  <CheckCircle2 className="w-5 h-5 text-cosmate-lavender" />
                   <div>
-                    <p className="text-xs text-[#A090C5]">Phí khấu hao thiết bị</p>
-                    <p className="font-bold text-[#4A3B6B]">{service.equipmentDepreciationCost.toLocaleString('vi-VN')}đ</p>
+                    <p className="text-xs text-cosmate-lavender-muted">Phí khấu hao thiết bị</p>
+                    <p className="font-bold text-cosmate-ink">{service.equipmentDepreciationCost.toLocaleString('vi-VN')}đ</p>
                   </div>
                 </div>
               )}
@@ -142,18 +142,18 @@ export default function ServiceDetailPage() {
             {/* Description */}
             {service.description && (
               <div>
-                <h2 className="text-lg font-bold text-[#4A3B6B] mb-2">Mô tả dịch vụ</h2>
-                <p className="text-[#6B5A94] leading-relaxed">{service.description}</p>
+                <h2 className="text-lg font-bold text-cosmate-ink mb-2">Mô tả dịch vụ</h2>
+                <p className="text-cosmate-mauve leading-relaxed">{service.description}</p>
               </div>
             )}
 
             {/* Areas */}
             {service.areas && service.areas.length > 0 && (
               <div>
-                <h2 className="text-lg font-bold text-[#4A3B6B] mb-2">Khu vực hoạt động</h2>
+                <h2 className="text-lg font-bold text-cosmate-ink mb-2">Khu vực hoạt động</h2>
                 <div className="flex flex-wrap gap-2">
                   {service.areas.map((area, idx) => (
-                    <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-[#F5F1FF] text-[#8E7AB5] text-sm font-medium rounded-full">
+                    <span key={idx} className="flex items-center gap-1.5 px-3 py-1.5 bg-cosmate-lavender-surface text-cosmate-text-soft text-sm font-medium rounded-full">
                       <MapPin className="w-3.5 h-3.5" />
                       {area}
                     </span>
@@ -165,10 +165,10 @@ export default function ServiceDetailPage() {
             {/* More images */}
             {service.imageUrls && service.imageUrls.length > 1 && (
               <div>
-                <h2 className="text-lg font-bold text-[#4A3B6B] mb-3">Hình ảnh</h2>
+                <h2 className="text-lg font-bold text-cosmate-ink mb-3">Hình ảnh</h2>
                 <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
                   {service.imageUrls.map((url, idx) => (
-                    <div key={idx} className="aspect-square rounded-2xl overflow-hidden bg-[#F5F1FF]">
+                    <div key={idx} className="aspect-square rounded-2xl overflow-hidden bg-cosmate-lavender-surface">
                       <img src={url} alt={`Hình ${idx + 1}`} className="w-full h-full object-cover" />
                     </div>
                   ))}

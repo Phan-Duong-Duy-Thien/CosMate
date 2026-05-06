@@ -139,21 +139,21 @@ export default function LoginPage() {
               className="absolute inset-0 h-full w-full object-cover"
             />
             <div className="absolute left-4 top-4 rounded-2xl bg-white/90 px-3 py-2 text-xs shadow-md">
-              <div className="font-semibold text-[#111827]">{VI.common.appName}</div>
-              <div className="text-[11px] text-[#6B7280]">Tìm nhân vật của bạn</div>
+              <div className="font-semibold text-foreground">{VI.common.appName}</div>
+              <div className="text-[11px] text-muted-foreground">Tìm nhân vật của bạn</div>
             </div>
             <div className="absolute bottom-4 left-4 right-4 rounded-2xl bg-white/90 px-4 py-3 text-xs shadow-md">
-              <div className="grid grid-cols-3 gap-2 text-center text-[#6B7280]">
+              <div className="grid grid-cols-3 gap-2 text-center text-muted-foreground">
                 <div>
-                  <div className="text-sm font-semibold text-[#7C3AED]">5K+</div>
+                  <div className="text-sm font-semibold text-primary">5K+</div>
                   {VI.auth.login.stats.costumes}
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#EC4899]">2K+</div>
+                  <div className="text-sm font-semibold text-cosmate-pink">2K+</div>
                   {VI.auth.login.stats.users}
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-[#10B981]">500+</div>
+                  <div className="text-sm font-semibold text-cosmate-success">500+</div>
                   {VI.auth.login.stats.rentals}
                 </div>
               </div>
@@ -164,10 +164,10 @@ export default function LoginPage() {
     >
       <div className="flex w-full flex-col justify-center gap-[clamp(16px,2vw,24px)] px-[clamp(24px,4vw,48px)] py-[clamp(24px,4vw,48px)]">
         <div className="space-y-2 text-center">
-          <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
+          <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-foreground">
             {VI.auth.login.title}
           </h1>
-          <p className="text-sm text-[#6B7280] sm:text-base">
+          <p className="text-sm text-muted-foreground sm:text-base">
             {VI.auth.login.subtitle}
           </p>
         </div>
@@ -178,14 +178,14 @@ export default function LoginPage() {
           <Button
             type="button"
             variant="outline"
-            className="w-full rounded-full border-[#E5E7EB] text-[#111827]"
+            className="w-full rounded-full border-border text-foreground"
             disabled
           >
             {VI.common.actions.continueWithGoogle} (not configured)
           </Button>
         )}
 
-        <div className="flex items-center gap-4 text-xs text-[#6B7280]">
+        <div className="flex items-center gap-4 text-xs text-muted-foreground">
           <Separator />
           <span className="whitespace-nowrap">{VI.common.actions.continueWithEmail}</span>
           <Separator />
@@ -197,10 +197,10 @@ export default function LoginPage() {
           formError={formError}
         />
 
-        <div className="flex flex-col gap-2 text-center text-sm text-[#6B7280]">
+        <div className="flex flex-col gap-2 text-center text-sm text-muted-foreground">
           <Link
             to="/forgot-password"
-            className="font-medium text-[#7C3AED] hover:text-[#6D28D9]"
+            className="font-medium text-primary hover:text-primary/90"
           >
             {VI.auth.login.forgotPassword}
           </Link>
@@ -208,7 +208,7 @@ export default function LoginPage() {
             {VI.auth.login.noAccount}{" "}
             <Link
               to="/register"
-              className="font-medium text-[#7C3AED] hover:text-[#6D28D9]"
+              className="font-medium text-primary hover:text-primary/90"
             >
               {VI.auth.login.signUp}
             </Link>

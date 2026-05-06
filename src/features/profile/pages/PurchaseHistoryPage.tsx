@@ -846,7 +846,7 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
-    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#fff6fc] via-[#f6f5ff] to-[#eef7ff] px-4 py-10">
+    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-wallet-from via-wallet-via to-wallet-to px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
           <h1 className="text-2xl font-bold text-slate-900">{VI.profile.serviceOrders.title}</h1>
@@ -1098,7 +1098,7 @@ export default function PurchaseHistoryPage() {
           setCancelOrderId(null)
         }}
       >
-        <p style={{ color: '#6b7280' }}>
+        <p className="text-muted-foreground">
           {VI.profile.orders.cancelModal.message}
         </p>
       </Modal>

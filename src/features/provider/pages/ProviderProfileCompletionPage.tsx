@@ -192,8 +192,8 @@ export default function ProviderProfileCompletionPage() {
                               hoverable
                               style={{
                                 borderRadius: 8,
-                                border: selectedAddressId === addr.id ? '2px solid #7C3AED' : '1px solid #E5E7EB',
-                                background: selectedAddressId === addr.id ? '#F5F3FF' : '#fff',
+                                border: selectedAddressId === addr.id ? "2px solid var(--primary)" : "1px solid var(--border)",
+                                background: selectedAddressId === addr.id ? "var(--cosmate-lavender-surface)" : "var(--card)",
                               }}
                               onClick={() => setSelectedAddressId(addr.id)}
                             >
@@ -407,9 +407,9 @@ export default function ProviderProfileCompletionPage() {
                   <Col xs={24} md={12}>
                     <Card
                       style={{
-                        border: '1px solid #f1f5f9',
+                        border: "1px solid var(--border)",
                         borderRadius: 8,
-                        background: '#f8fafc',
+                        background: "var(--cosmate-page)",
                       }}
                       bodyStyle={{ padding: 16 }}
                     >
@@ -423,7 +423,7 @@ export default function ProviderProfileCompletionPage() {
                               height: 80,
                               borderRadius: '50%',
                               objectFit: 'cover',
-                              border: '3px solid #e2e8f0',
+                              border: "3px solid var(--border)",
                               marginBottom: 12,
                             }}
                           />
@@ -433,13 +433,13 @@ export default function ProviderProfileCompletionPage() {
                               width: 80,
                               height: 80,
                               borderRadius: '50%',
-                              background: '#ddd6fe',
+                              background: "color-mix(in oklch, var(--primary) 30%, var(--background))",
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: 28,
                               fontWeight: 700,
-                              color: '#7c3aed',
+                              color: "var(--primary)",
                               margin: '0 auto 12px',
                             }}
                           >
@@ -464,8 +464,8 @@ export default function ProviderProfileCompletionPage() {
                           style={{
                             display: 'inline-block',
                             borderRadius: 9999,
-                            background: '#fce7f3',
-                            color: '#be185d',
+                            background: "color-mix(in oklch, var(--cosmate-pink) 14%, var(--background))",
+                            color: "var(--cosmate-rose-tag-text)",
                             padding: '6px 14px',
                             fontSize: 12,
                             fontWeight: 500,
@@ -488,9 +488,9 @@ export default function ProviderProfileCompletionPage() {
                   <Col xs={24} md={12}>
                     <Card
                       style={{
-                        border: '1px solid #f1f5f9',
+                        border: "1px solid var(--border)",
                         borderRadius: 8,
-                        background: '#f8fafc',
+                        background: "var(--cosmate-page)",
                       }}
                       bodyStyle={{ padding: 16 }}
                     >
@@ -504,7 +504,7 @@ export default function ProviderProfileCompletionPage() {
                               height: 72,
                               objectFit: 'cover',
                               borderRadius: 6,
-                              border: '2px solid #e2e8f0',
+                              border: "2px solid var(--border)",
                               marginBottom: 12,
                             }}
                           />
@@ -514,12 +514,12 @@ export default function ProviderProfileCompletionPage() {
                               width: '100%',
                               height: 72,
                               borderRadius: 6,
-                              background: '#ede9fe',
+                              background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: 12,
-                              color: '#7c3aed',
+                              color: "var(--primary)",
                               marginBottom: 12,
                             }}
                           >
@@ -544,8 +544,8 @@ export default function ProviderProfileCompletionPage() {
                           style={{
                             display: 'inline-block',
                             borderRadius: 9999,
-                            background: '#ede9fe',
-                            color: '#7c3aed',
+                            background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
+                            color: "var(--primary)",
                             padding: '6px 14px',
                             fontSize: 12,
                             fontWeight: 500,

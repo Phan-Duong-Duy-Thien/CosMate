@@ -14,7 +14,7 @@ export default function StaffProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
+      <div className="min-h-screen flex items-center justify-center bg-cosmate-page">
         <Spin size="large" />
       </div>
     );
@@ -22,7 +22,7 @@ export default function StaffProfilePage() {
 
   if (error || !provider) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] text-red-500">
+      <div className="min-h-screen flex items-center justify-center bg-cosmate-page text-red-500">
         {error ?? 'Không tìm thấy nhân sự'}
       </div>
     );
@@ -97,7 +97,7 @@ export default function StaffProfilePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
+    <div className="min-h-screen bg-cosmate-page selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans flex flex-col">
       <div className="flex-1 max-w-[1280px] mx-auto py-12 px-6 lg:px-8 w-full">
         {/* Animated Background Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
@@ -107,7 +107,7 @@ export default function StaffProfilePage() {
               opacity: [0.3, 0.5, 0.3],
             }}
             transition={{ duration: 10, repeat: Infinity }}
-            className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-[#FFD7E5]/20 blur-[100px] rounded-full"
+            className="absolute -top-[10%] -right-[10%] w-[50%] h-[50%] bg-cosmate-selection-bg/20 blur-[100px] rounded-full"
           />
           <motion.div 
             animate={{ 
@@ -115,7 +115,7 @@ export default function StaffProfilePage() {
               opacity: [0.2, 0.4, 0.2],
             }}
             transition={{ duration: 15, repeat: Infinity, delay: 2 }}
-            className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-[#B59DFF]/10 blur-[100px] rounded-full"
+            className="absolute -bottom-[10%] -left-[10%] w-[40%] h-[40%] bg-cosmate-lavender/10 blur-[100px] rounded-full"
           />
         </div>
 

@@ -531,7 +531,7 @@ export function ChatPopup() {
                               ? "rounded-br-sm"
                               : "rounded-bl-sm"
                           )}
-                          style={isMine ? { background: "linear-gradient(135deg, #f472b6, #ec4899)" } : {}}
+                          style={isMine ? { background: "var(--gradient-chat-mine)" } : {}}
                         >
                           {(msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http")) ? (() => {
                             const imgSrc = resolveImageUrl(msg.content ?? "")

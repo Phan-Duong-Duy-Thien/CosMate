@@ -116,7 +116,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'code',
       key: 'code',
       render: (v: string | undefined) => (
-        <span style={{ fontWeight: 600, color: '#1f2937' }}>{v ?? '—'}</span>
+        <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -124,7 +124,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'userName',
       key: 'userName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -132,7 +132,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'cosplayerName',
       key: 'cosplayerName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -140,7 +140,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'providerName',
       key: 'providerName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -149,7 +149,7 @@ export default function AdminOrdersPage() {
       key: 'total',
       align: 'right',
       render: (v: number | undefined) => (
-        <span style={{ color: '#7c3aed', fontWeight: 600 }}>{formatCurrency(v)}</span>
+        <span style={{ color: "var(--primary)", fontWeight: 600 }}>{formatCurrency(v)}</span>
       ),
     },
     {
@@ -159,7 +159,7 @@ export default function AdminOrdersPage() {
       width: 160,
       align: 'center',
       render: (v: string | undefined) => {
-        if (!v) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        if (!v) return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         const { bg, text, label } = getCostumeOrderStatusProps(v);
         return (
           <span
@@ -207,7 +207,7 @@ export default function AdminOrdersPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 

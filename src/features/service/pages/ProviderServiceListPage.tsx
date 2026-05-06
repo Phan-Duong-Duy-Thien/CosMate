@@ -133,7 +133,7 @@ export default function ProviderServiceListPage() {
         record.imageUrls && record.imageUrls.length > 0 ? (
           <Image src={record.imageUrls[0]} width={60} height={60} style={{ objectFit: 'cover', borderRadius: 8 }} />
         ) : (
-          <div style={{ width: 60, height: 60, background: '#f0f0f0', borderRadius: 8 }} />
+          <div style={{ width: 60, height: 60, background: 'var(--muted)', borderRadius: 8 }} />
         ),
     },
     {
@@ -177,7 +177,7 @@ export default function ProviderServiceListPage() {
                 setViewModalOpen(true);
                 openView(record.id);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
           </RCTooltip>
           <RCTooltip title={VI.common.actions.edit}>
@@ -186,7 +186,7 @@ export default function ProviderServiceListPage() {
                 setEditingService(record);
                 setEditModalOpen(true);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)' }}
             />
           </RCTooltip>
           <Popconfirm
@@ -198,7 +198,7 @@ export default function ProviderServiceListPage() {
             onConfirm={() => void removeService(record.id)}
           >
             <RCTooltip title={VI.common.actions.delete}>
-              <DeleteOutlined style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f' }} />
+              <DeleteOutlined style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }} />
             </RCTooltip>
           </Popconfirm>
         </div>
@@ -211,7 +211,7 @@ export default function ProviderServiceListPage() {
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
         </div>
       )}
 

@@ -86,7 +86,7 @@ export default function AdminCharactersPage() {
     <div className="w-full h-full">
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 16, marginBottom: 16, flexWrap: 'wrap' }}>
         <Space size={12}>
-          <TeamOutlined style={{ fontSize: 20, color: '#1677ff' }} />
+          <TeamOutlined style={{ fontSize: 20, color: "var(--cosmate-info)" }} />
           <div>
             <div style={{ fontSize: 18, fontWeight: 700 }}>Quản lý Nhân vật</div>
             <div style={{ color: 'rgba(0,0,0,0.45)' }}>Đồng bộ và quản trị dữ liệu nhân vật anime/game</div>

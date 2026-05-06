@@ -24,11 +24,11 @@ export default function NoPermissionPage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        background: '#f5f5f5',
+        background: "var(--muted)",
       }}
     >
       <Result
-        icon={<ShieldX size={64} color="#faad14" />}
+        icon={<ShieldX size={64} className="text-cosmate-warning" />}
         status="warning"
         title={VI.common.permission.accessDenied}
         subTitle={VI.common.permission.noPermissionMessage}

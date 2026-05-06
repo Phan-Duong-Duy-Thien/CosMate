@@ -34,8 +34,8 @@ export default function ForgotPasswordPage() {
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <Mail className="h-8 w-8 text-green-600" />
             </div>
-            <h2 className="text-xl font-bold text-[#111827]">{VI.auth.forgotPassword.successTitle}</h2>
-            <p className="text-sm text-[#6B7280]">{VI.auth.forgotPassword.successMessage}</p>
+            <h2 className="text-xl font-bold text-foreground">{VI.auth.forgotPassword.successTitle}</h2>
+            <p className="text-sm text-muted-foreground">{VI.auth.forgotPassword.successMessage}</p>
             <Link to="/login">
               <Button className="mt-2">{VI.auth.forgotPassword.backToLogin}</Button>
             </Link>
@@ -51,14 +51,14 @@ export default function ForgotPasswordPage() {
         <CardContent className="p-8">
           <Link
             to="/login"
-            className="mb-6 flex items-center gap-1 text-sm text-[#6B7280] hover:text-[#7C3AED]"
+            className="mb-6 flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
           >
             <ArrowLeft className="h-4 w-4" />
             {VI.auth.forgotPassword.back}
           </Link>
 
-          <h2 className="mb-1 text-2xl font-bold text-[#111827]">{VI.auth.forgotPassword.title}</h2>
-          <p className="mb-6 text-sm text-[#6B7280]">{VI.auth.forgotPassword.subtitle}</p>
+          <h2 className="mb-1 text-2xl font-bold text-foreground">{VI.auth.forgotPassword.title}</h2>
+          <p className="mb-6 text-sm text-muted-foreground">{VI.auth.forgotPassword.subtitle}</p>
 
           <Form form={form} layout="vertical" onFinish={handleSubmit} className="space-y-4">
             <Form.Item
@@ -71,7 +71,7 @@ export default function ForgotPasswordPage() {
               <Input
                 placeholder={VI.auth.forgotPassword.identifierPlaceholder}
                 size="large"
-                prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+                prefix={<Mail className="h-4 w-4 text-muted-foreground" />}
                 className="h-11 rounded-full px-4"
               />
             </Form.Item>

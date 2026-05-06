@@ -34,7 +34,7 @@ export function ConfirmButton({
       className={cn(
         "w-full rounded-full",
         isGradient
-          ? "bg-[linear-gradient(90deg,#C4B5FD_0%,#F9A8D4_100%)] text-white shadow-md shadow-purple-200 hover:bg-[linear-gradient(90deg,#A78BFA_0%,#F472B6_100%)]"
+          ? "border-0 bg-[image:var(--gradient-confirm-btn)] bg-[length:100%_100%] text-primary-foreground shadow-md shadow-primary/25 hover:bg-[image:var(--gradient-confirm-btn-hover)]"
           : undefined,
         className
       )}

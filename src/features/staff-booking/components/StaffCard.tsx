@@ -56,7 +56,7 @@ export function StaffCard({
 
           <div className="absolute bottom-4 left-4">
             {verified && (
-              <Badge className="bg-white/90 backdrop-blur-sm text-[#4A3B6B] border-none font-medium px-3 py-1 shadow-sm flex items-center gap-1">
+              <Badge className="bg-white/90 backdrop-blur-sm text-cosmate-ink border-none font-medium px-3 py-1 shadow-sm flex items-center gap-1">
                 <BadgeCheck className="w-3 h-3 fill-blue-500 text-white" />
                 Đã xác minh
               </Badge>
@@ -75,7 +75,7 @@ export function StaffCard({
               />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-[#4A3B6B] truncate group-hover:text-[#B59DFF] transition-colors">
+              <h3 className="font-bold text-cosmate-ink truncate group-hover:text-cosmate-lavender transition-colors">
                 {name}
               </h3>
               <p className="text-xs text-gray-500 truncate">{bio ?? 'Nhân sự sự kiện Cosplay'}</p>
@@ -88,7 +88,7 @@ export function StaffCard({
           </div>
 
           <div className="flex flex-wrap gap-2">
-            <span className="text-[10px] font-bold text-[#A090C5] bg-[#F8F7FF] px-2.5 py-1 rounded-full border border-[#ECE9FF] uppercase tracking-wider">
+            <span className="text-[10px] font-bold text-cosmate-lavender-muted bg-cosmate-lavender-surface-alt px-2.5 py-1 rounded-full border border-cosmate-lavender-border uppercase tracking-wider">
               #{description ? description.slice(0, 20) : 'Staff'}
             </span>
           </div>

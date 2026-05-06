@@ -50,7 +50,7 @@ export default function AdminAuditLogsPage() {
       dataIndex: 'actor',
       key: 'actor',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -58,14 +58,14 @@ export default function AdminAuditLogsPage() {
       dataIndex: 'action',
       key: 'action',
       render: (value: string | undefined) =>
-        value ? <Tag style={{ margin: 0 }}>{value}</Tag> : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>,
+        value ? <Tag style={{ margin: 0 }}>{value}</Tag> : <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>,
     },
     {
       title: 'Đối tượng',
       dataIndex: 'entityType',
       key: 'entityType',
       render: (v: string | undefined) => (
-        <span style={{ color: '#4b5563' }}>{v ?? '—'}</span>
+        <span style={{ color: 'var(--foreground)' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -84,9 +84,9 @@ export default function AdminAuditLogsPage() {
       key: 'detail',
       render: (value: string | undefined) =>
         value ? (
-          <span style={{ whiteSpace: 'pre-wrap', color: '#374151' }}>{value}</span>
+          <span style={{ whiteSpace: 'pre-wrap', color: "var(--foreground)" }}>{value}</span>
         ) : (
-          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>
+          <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>
         ),
     },
   ];
@@ -95,7 +95,7 @@ export default function AdminAuditLogsPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 

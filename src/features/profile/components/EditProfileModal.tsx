@@ -327,7 +327,7 @@ export default function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "basic"
-                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
+                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("basic")}
@@ -339,7 +339,7 @@ export default function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "address"
-                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
+                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("address")}

@@ -112,10 +112,10 @@ export default function OnboardingRolePage() {
       <div className="w-full max-w-4xl rounded-3xl border border-white/40 bg-white/85 p-[clamp(20px,4vw,40px)] shadow-2xl">
         <div className="flex w-full flex-col gap-[clamp(16px,2vw,24px)]">
           <div className="space-y-2 text-center">
-            <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
+            <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-foreground">
               {VI.auth.onboarding.title}
             </h1>
-            <p className="text-sm text-[#6B7280] sm:text-base">
+            <p className="text-sm text-muted-foreground sm:text-base">
               {VI.auth.onboarding.subtitle}
             </p>
           </div>

@@ -110,13 +110,16 @@ export default function ProviderProfileViewPage() {
                   size={96}
                   src={provider.avatarUrl}
                   style={{
-                    border: '4px solid white',
+                    border: "4px solid var(--card)",
                     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
                   }}
                 />
                 <div style={{ paddingBottom: 8 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Title level={4} style={{ margin: 0, color: '#fff', textShadow: '0 1px 4px rgba(0,0,0,0.3)' }}>
+                    <Title
+                      level={4}
+                      style={{ margin: 0, color: "var(--primary-foreground)", textShadow: "0 1px 4px color-mix(in oklch, var(--foreground) 45%, transparent)" }}
+                    >
                       {provider.shopName ?? 'Chưa có tên cửa hàng'}
                     </Title>
                     {provider.verified && (
@@ -161,7 +164,7 @@ export default function ProviderProfileViewPage() {
                   title="Đánh giá"
                   value={provider.totalRating ?? 0}
                   precision={1}
-                  prefix={<Star size={16} style={{ marginRight: 4, color: '#f59e0b' }} />}
+                  prefix={<Star size={16} style={{ marginRight: 4, color: "var(--cosmate-warning)" }} />}
                   suffix={`(${provider.totalReviews ?? 0})`}
                 />
               </Card>
@@ -171,7 +174,7 @@ export default function ProviderProfileViewPage() {
                 <Statistic
                   title="Trạng thái"
                   value={provider.verified ? 'Đã xác minh' : 'Chưa xác minh'}
-                  prefix={provider.verified ? <CheckCircle size={16} style={{ color: '#22c55e' }} /> : null}
+                  prefix={provider.verified ? <CheckCircle size={16} style={{ color: "var(--cosmate-success)" }} /> : null}
                 />
               </Card>
             </Col>

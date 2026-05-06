@@ -27,7 +27,7 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
+      <div className="inline-flex items-center rounded-2xl border-2 border-cosmate-soft-pink bg-white px-4 py-2">
         <h3 className="text-lg font-semibold tracking-wide text-slate-800">
           {VI.provider.shop.reviews.title}
         </h3>

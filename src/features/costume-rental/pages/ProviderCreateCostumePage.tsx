@@ -61,7 +61,7 @@ export default function ProviderCreateCostumePage() {
       {gate.profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
         </div>
       )}
 

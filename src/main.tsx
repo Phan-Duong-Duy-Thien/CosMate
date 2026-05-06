@@ -20,7 +20,7 @@ const requiredAsteriskStyle = `
   }
   .ant-form-item-required > .ant-form-item-label > label::after {
     content: " *" !important;
-    color: #ff4d4f !important;
+    color: var(--destructive) !important;
     margin-left: 4px !important;
     font-weight: 400 !important;
   }

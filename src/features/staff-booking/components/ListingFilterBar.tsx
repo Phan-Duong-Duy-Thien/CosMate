@@ -16,7 +16,7 @@ export function ListingFilterBar() {
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <Input 
           placeholder="Tìm theo tên hoặc phong cách..."
-          className="pl-11 pr-4 h-12 rounded-2xl border-none bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-[#d4c5f9] transition-all"
+          className="pl-11 pr-4 h-12 rounded-2xl border-none bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-cosmate-lavender-hover-border transition-all"
         />
       </div>
 
@@ -25,7 +25,7 @@ export function ListingFilterBar() {
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <MapPin className="w-4 h-4 text-[#B59DFF]" />
+              <MapPin className="w-4 h-4 text-cosmate-lavender" />
               Khu vực
               <ChevronDown className="w-4 h-4 opacity-50" />
             </Button>
@@ -41,7 +41,7 @@ export function ListingFilterBar() {
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <DollarSign className="w-4 h-4 text-[#FFD7E5]" />
+              <DollarSign className="w-4 h-4 text-cosmate-selection-bg" />
               Mức giá
               <ChevronDown className="w-4 h-4 opacity-50" />
             </Button>
@@ -57,7 +57,7 @@ export function ListingFilterBar() {
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <Calendar className="w-4 h-4 text-[#B8E8C5]" />
+              <Calendar className="w-4 h-4 text-cosmate-success" />
               Lịch trống
               <ChevronDown className="w-4 h-4 opacity-50" />
             </Button>
@@ -76,7 +76,7 @@ export function ListingFilterBar() {
           <span className="text-gray-400 whitespace-nowrap">Sắp xếp:</span>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 font-bold text-[#4A3B6B] hover:text-[#B59DFF] transition-colors">
+              <button className="flex items-center gap-1 font-bold text-cosmate-ink hover:text-cosmate-lavender transition-colors">
                 Đề xuất
                 <ChevronDown className="w-4 h-4" />
               </button>

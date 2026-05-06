@@ -4,10 +4,10 @@ import { VI } from '@/shared/i18n/vi';
 import { useAdminDashboard } from '../hooks/useAdminDashboard';
 
 const DASHBOARD_STATS = (summary: any) => [
-  { title: VI.admin.dashboard.stats.totalUsers, value: summary?.totalUsers ?? 0, icon: <Users size={24} />, color: '#7C3AED' },
-  { title: VI.admin.dashboard.stats.activeBookings, value: summary?.totalOrders ?? 0, icon: <ShoppingBag size={24} />, color: '#EC4899' },
-  { title: VI.admin.dashboard.stats.totalCostumes, value: summary?.totalCostumes ?? 0, icon: <Shirt size={24} />, color: '#10B981' },
-  { title: VI.admin.dashboard.stats.revenue, value: summary?.revenueThisMonth ?? 0, icon: <TrendingUp size={24} />, color: '#F59E0B', prefix: '₫' },
+  { title: VI.admin.dashboard.stats.totalUsers, value: summary?.totalUsers ?? 0, icon: <Users size={24} />, color: 'var(--primary)' },
+  { title: VI.admin.dashboard.stats.activeBookings, value: summary?.totalOrders ?? 0, icon: <ShoppingBag size={24} />, color: 'var(--cosmate-pink)' },
+  { title: VI.admin.dashboard.stats.totalCostumes, value: summary?.totalCostumes ?? 0, icon: <Shirt size={24} />, color: 'var(--cosmate-success)' },
+  { title: VI.admin.dashboard.stats.revenue, value: summary?.revenueThisMonth ?? 0, icon: <TrendingUp size={24} />, color: 'var(--cosmate-warning)', prefix: '₫' },
 ];
 
 export default function AdminHomePage() {
@@ -29,7 +29,7 @@ export default function AdminHomePage() {
               {loading ? <Skeleton active paragraph={false} /> : (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                   <Statistic title={stat.title} value={stat.value} prefix={stat.prefix} valueStyle={{ color: stat.color, fontSize: 22, fontWeight: 700 }} />
-                  <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: `${stat.color}15`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
+                  <div style={{ width: 40, height: 40, borderRadius: 10, backgroundColor: `color-mix(in oklch, ${stat.color} 14%, transparent)`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: stat.color }}>
                     {stat.icon}
                   </div>
                 </div>

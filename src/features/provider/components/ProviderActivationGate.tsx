@@ -68,14 +68,14 @@ export function ProviderActivationGate({
               width: 64,
               height: 64,
               borderRadius: '50%',
-              background: '#FEF3C7',
+              background: "color-mix(in oklch, var(--cosmate-warning) 22%, var(--background))",
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 16,
             }}
           >
-            <LockOutlined style={{ fontSize: 28, color: '#D97706' }} />
+            <LockOutlined style={{ fontSize: 28, color: "var(--cosmate-warning)" }} />
           </div>
           <Title level={3} style={{ marginBottom: 8 }}>
             {VI.provider.activation.title}
@@ -115,8 +115,8 @@ export function ProviderActivationGate({
                       onClick={() => onSelectPlan(plan.id)}
                       style={{
                         borderRadius: 12,
-                        border: isSelected ? '2px solid #7C3AED' : '1px solid #E5E7EB',
-                        background: isSelected ? '#F5F3FF' : '#fff',
+                        border: isSelected ? "2px solid var(--primary)" : "1px solid var(--border)",
+                        background: isSelected ? "var(--cosmate-lavender-surface)" : "var(--card)",
                         cursor: 'pointer',
                         textAlign: 'center',
                         transition: 'all 0.2s',
@@ -125,13 +125,13 @@ export function ProviderActivationGate({
                     >
                       {isSelected && (
                         <CheckCircleOutlined
-                          style={{ color: '#7C3AED', fontSize: 18, marginBottom: 4, display: 'block' }}
+                          style={{ color: "var(--primary)", fontSize: 18, marginBottom: 4, display: "block" }}
                         />
                       )}
                       <Tag color="purple" style={{ marginBottom: 8 }}>
                         {getPlanLabel(plan.billingCycleMonths)}
                       </Tag>
-                      <div style={{ fontSize: 18, fontWeight: 700, color: '#7C3AED' }}>
+                      <div style={{ fontSize: 18, fontWeight: 700, color: "var(--primary)" }}>
                         {formatPrice(plan.price)}
                       </div>
                       <Text type="secondary" style={{ fontSize: 12 }}>

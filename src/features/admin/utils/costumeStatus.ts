@@ -38,11 +38,11 @@ export function getCostumeStatusTagProps(status?: string): { color: string; labe
  */
 export function getCostumeStatusDotColor(status?: string): string {
   const normalized = (status || '').toUpperCase();
-  if (normalized === 'ACTIVE') return '#52c41a';
-  if (normalized === 'INACTIVE') return '#faad14';
-  if (normalized === 'PENDING') return '#1677ff';
-  if (normalized === 'DELETED') return '#ff4d4f';
-  if (normalized === 'RENTED') return '#722ed1';
-  if (normalized === 'AVAILABLE') return '#13c2c2';
-  return '#d9d9d9';
+  if (normalized === 'ACTIVE') return 'var(--cosmate-success)';
+  if (normalized === 'INACTIVE') return 'var(--cosmate-warning)';
+  if (normalized === 'PENDING') return 'var(--cosmate-info)';
+  if (normalized === 'DELETED') return 'var(--destructive)';
+  if (normalized === 'RENTED') return 'var(--primary)';
+  if (normalized === 'AVAILABLE') return 'var(--chart-3)';
+  return 'var(--border)';
 }

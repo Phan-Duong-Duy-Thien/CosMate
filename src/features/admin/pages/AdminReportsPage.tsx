@@ -75,7 +75,7 @@ export default function AdminReportsPage() {
                     <Typography.Text>{item.label}</Typography.Text>
                     <Typography.Text strong>{item.value.toLocaleString('vi-VN')}</Typography.Text>
                   </div>
-                  <Progress percent={item.percent} showInfo={false} strokeColor="#7C3AED" />
+                  <Progress percent={item.percent} showInfo={false} strokeColor="var(--primary)" />
                 </div>
               ))}
             </div>

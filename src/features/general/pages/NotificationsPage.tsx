@@ -35,12 +35,12 @@ function getTypeLabel(type: string): string {
 
 function getTypeColor(type: string): string {
   const map: Record<string, string> = {
-    WALLET_CREDIT: "#22c55e",
-    ORDER_STATUS: "#8b5cf6",
-    REMINDER: "#f59e0b",
-    SYSTEM: "#64748b",
+    WALLET_CREDIT: "var(--cosmate-success)",
+    ORDER_STATUS: "var(--primary)",
+    REMINDER: "var(--cosmate-warning)",
+    SYSTEM: "var(--muted-foreground)",
   }
-  return map[type] ?? "#64748b"
+  return map[type] ?? "var(--muted-foreground)"
 }
 
 export default function NotificationsPage() {
@@ -50,7 +50,7 @@ export default function NotificationsPage() {
 
   if (!loggedIn) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-20 text-center">
           <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 shadow-xl">
             <div className="mb-4 flex justify-center">
@@ -69,7 +69,7 @@ export default function NotificationsPage() {
   }
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
       <div className="mx-auto w-full max-w-2xl px-4 pt-8">
         {/* Header */}
         <div className="mb-6 flex items-center gap-4">
@@ -144,7 +144,10 @@ export default function NotificationsPage() {
                     <div className="mt-1.5 flex items-center gap-2">
                       <span
                         className="rounded-full px-2 py-0.5 text-[10px] font-medium uppercase tracking-wide"
-                        style={{ backgroundColor: `${getTypeColor(n.type)}15`, color: getTypeColor(n.type) }}
+                        style={{
+                          backgroundColor: `color-mix(in oklch, ${getTypeColor(n.type)} 16%, transparent)`,
+                          color: getTypeColor(n.type),
+                        }}
                       >
                         {getTypeLabel(n.type)}
                       </span>

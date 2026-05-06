@@ -49,7 +49,7 @@ export default function ShopProfilePage() {
 
   if (loading) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
           <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
             {VI.common.status.loading}
@@ -61,7 +61,7 @@ export default function ShopProfilePage() {
 
   if (error || !shop) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
           <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
             <p>{error || 'Không tìm thấy shop'}</p>
@@ -72,7 +72,7 @@ export default function ShopProfilePage() {
   }
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
       <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-8">
         {/* Shop Hero */}
         <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
@@ -88,7 +88,7 @@ export default function ShopProfilePage() {
 
         {/* Products Section */}
         <div className="space-y-4">
-          <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
+          <div className="inline-flex items-center rounded-2xl border-2 border-cosmate-soft-pink bg-white px-4 py-2">
             <h3 className="text-lg font-semibold tracking-wide text-slate-800">
               {VI.provider.shop.products.title}
             </h3>

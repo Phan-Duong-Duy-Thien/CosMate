@@ -152,7 +152,7 @@ export default function PaymentResultPage() {
   };
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
       <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-16">
         <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 shadow-xl text-center">
           <div className="mb-6 flex justify-center">

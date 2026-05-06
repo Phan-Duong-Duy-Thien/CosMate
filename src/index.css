@@ -42,28 +42,55 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-cosmate-pink: var(--cosmate-pink);
+  --color-cosmate-success: var(--cosmate-success);
+  --color-cosmate-warning: var(--cosmate-warning);
+  --color-cosmate-info: var(--cosmate-info);
+  --color-cosmate-ink: var(--cosmate-ink);
+  --color-cosmate-lavender: var(--cosmate-lavender);
+  --color-cosmate-lavender-border: var(--cosmate-lavender-border);
+  --color-cosmate-lavender-surface: var(--cosmate-lavender-surface);
+  --color-cosmate-lavender-surface-alt: var(--cosmate-lavender-surface-alt);
+  --color-cosmate-lavender-muted: var(--cosmate-lavender-muted);
+  --color-cosmate-lavender-hover-border: var(--cosmate-lavender-hover-border);
+  --color-cosmate-mauve: var(--cosmate-mauve);
+  --color-cosmate-text-soft: var(--cosmate-text-soft);
+  --color-cosmate-page: var(--cosmate-page);
+  --color-cosmate-selection-bg: var(--cosmate-selection-bg);
+  --color-cosmate-selection-fg: var(--cosmate-selection-fg);
+  --color-cosmate-star: var(--cosmate-star);
+  --color-cosmate-icon-dim: var(--cosmate-icon-dim);
+  --color-cosmate-soft-pink: var(--cosmate-soft-pink);
+  --color-cosmate-surface-accent: var(--cosmate-surface-accent);
+  --color-cosmate-surface-warm: var(--cosmate-surface-warm);
+  --color-wallet-from: var(--wallet-from);
+  --color-wallet-via: var(--wallet-via);
+  --color-wallet-to: var(--wallet-to);
+  --color-cosmate-rose-tag-bg: var(--cosmate-rose-tag-bg);
+  --color-cosmate-rose-tag-text: var(--cosmate-rose-tag-text);
 }
 
 :root {
   --radius: 0.625rem;
   --background: oklch(1 0 0);
-  --foreground: oklch(0.129 0.042 264.695);
+  --foreground: oklch(0.239 0.032 267.364);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.239 0.032 267.364);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
-  --primary: oklch(0.208 0.042 265.755);
-  --primary-foreground: oklch(0.984 0.003 247.858);
+  --popover-foreground: oklch(0.239 0.032 267.364);
+  /* Brand ≈ #7C3AED */
+  --primary: oklch(0.524 0.272 284.76);
+  --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.968 0.007 247.896);
   --secondary-foreground: oklch(0.208 0.042 265.755);
   --muted: oklch(0.968 0.007 247.896);
-  --muted-foreground: oklch(0.554 0.046 257.417);
+  --muted-foreground: oklch(0.548 0.022 261.538);
   --accent: oklch(0.968 0.007 247.896);
   --accent-foreground: oklch(0.208 0.042 265.755);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.929 0.013 255.508);
-  --input: oklch(0.929 0.013 255.508);
-  --ring: oklch(0.704 0.04 256.788);
+  --border: oklch(0.922 0.01 259.774);
+  --input: oklch(0.922 0.01 259.774);
+  --ring: oklch(0.524 0.272 284.76);
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
@@ -77,6 +104,59 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --cosmate-pink: oklch(0.633 0.243 359.52);
+  --cosmate-success: oklch(0.696 0.17 162.48);
+  --cosmate-warning: oklch(0.769 0.188 70.08);
+  --cosmate-info: oklch(0.561 0.214 259.815);
+  --cosmate-ink: oklch(0.343 0.076 294.93);
+  --cosmate-lavender: oklch(0.765 0.116 294.93);
+  --cosmate-lavender-border: oklch(0.939 0.032 294.93);
+  --cosmate-lavender-surface: oklch(0.966 0.025 294.93);
+  --cosmate-lavender-surface-alt: oklch(0.972 0.022 294.93);
+  --cosmate-lavender-muted: oklch(0.694 0.057 294.93);
+  --cosmate-lavender-hover-border: oklch(0.864 0.067 294.93);
+  --cosmate-mauve: oklch(0.489 0.078 309.782);
+  --cosmate-text-soft: oklch(0.619 0.078 309.782);
+  --cosmate-page: oklch(0.983 0.005 259.774);
+  --cosmate-selection-bg: oklch(0.93 0.055 356.079);
+  --cosmate-selection-fg: oklch(0.343 0.076 294.93);
+  --cosmate-star: oklch(0.836 0.164 91.936);
+  --cosmate-icon-dim: oklch(0.838 0.032 294.93);
+  --cosmate-soft-pink: oklch(0.903 0.042 356.079);
+  --cosmate-surface-accent: oklch(0.965 0.03 294.93);
+  --cosmate-surface-warm: oklch(0.948 0.042 356.079);
+  --wallet-from: oklch(0.986 0.018 356.079);
+  --wallet-via: oklch(0.97 0.025 294.93);
+  --wallet-to: oklch(0.96 0.04 259.774);
+  --cosmate-rose-tag-bg: oklch(0.966 0.035 356.079);
+  --cosmate-rose-tag-text: oklch(0.66 0.12 356.079);
+  /* Soft shop / checkout vertical gradient */
+  --gradient-shop-page: linear-gradient(
+    180deg,
+    oklch(0.955 0.045 356.079) 0%,
+    oklch(0.978 0.028 342) 40%,
+    oklch(0.986 0.012 260) 100%
+  );
+  --gradient-chat-mine: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--cosmate-pink) 88%, var(--foreground)) 0%,
+    var(--cosmate-pink) 100%
+  );
+  --gradient-auth-page: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 22%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 25%, var(--background)) 100%
+  );
+  --gradient-confirm-btn: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 55%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 50%, var(--background)) 100%
+  );
+  --gradient-confirm-btn-hover: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 70%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 65%, var(--background)) 100%
+  );
 }
 
 .dark {
@@ -111,6 +191,58 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --cosmate-pink: oklch(0.72 0.18 359.52);
+  --cosmate-success: oklch(0.72 0.14 162.48);
+  --cosmate-warning: oklch(0.82 0.14 70.08);
+  --cosmate-info: oklch(0.7 0.12 259.815);
+  --cosmate-ink: oklch(0.9 0.04 294.93);
+  --cosmate-lavender: oklch(0.78 0.1 294.93);
+  --cosmate-lavender-border: oklch(0.35 0.04 294.93);
+  --cosmate-lavender-surface: oklch(0.28 0.04 294.93);
+  --cosmate-lavender-surface-alt: oklch(0.31 0.04 294.93);
+  --cosmate-lavender-muted: oklch(0.72 0.05 294.93);
+  --cosmate-lavender-hover-border: oklch(0.48 0.08 294.93);
+  --cosmate-mauve: oklch(0.78 0.06 309.782);
+  --cosmate-text-soft: oklch(0.75 0.06 309.782);
+  --cosmate-page: oklch(0.2 0.02 264.695);
+  --cosmate-selection-bg: oklch(0.35 0.08 356.079);
+  --cosmate-selection-fg: oklch(0.95 0.02 294.93);
+  --cosmate-star: oklch(0.88 0.14 91.936);
+  --cosmate-icon-dim: oklch(0.55 0.03 294.93);
+  --cosmate-soft-pink: oklch(0.4 0.06 356.079);
+  --cosmate-surface-accent: oklch(0.26 0.04 294.93);
+  --cosmate-surface-warm: oklch(0.32 0.06 356.079);
+  --wallet-from: oklch(0.24 0.04 356.079);
+  --wallet-via: oklch(0.26 0.05 294.93);
+  --wallet-to: oklch(0.28 0.06 259.774);
+  --cosmate-rose-tag-bg: oklch(0.3 0.06 356.079);
+  --cosmate-rose-tag-text: oklch(0.82 0.08 356.079);
+  --gradient-shop-page: linear-gradient(
+    180deg,
+    oklch(0.22 0.05 300) 0%,
+    oklch(0.24 0.04 300) 40%,
+    oklch(0.21 0.02 265) 100%
+  );
+  --gradient-chat-mine: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--cosmate-pink) 75%, var(--foreground)) 0%,
+    var(--cosmate-pink) 100%
+  );
+  --gradient-auth-page: linear-gradient(
+    135deg,
+    color-mix(in oklch, var(--primary) 35%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 30%, var(--background)) 100%
+  );
+  --gradient-confirm-btn: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 78%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 72%, var(--background)) 100%
+  );
+  --gradient-confirm-btn-hover: linear-gradient(
+    90deg,
+    color-mix(in oklch, var(--primary) 88%, var(--background)) 0%,
+    color-mix(in oklch, var(--cosmate-pink) 82%, var(--background)) 100%
+  );
 }
 
 @layer base {
@@ -133,12 +265,12 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #e5e5e5;
+  background: color-mix(in oklch, var(--border) 90%, transparent);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #b0b0b0;
+  background: color-mix(in oklch, var(--muted-foreground) 45%, var(--border));
 }
 
 /* Ant Design Message — use default animations, no custom overrides */

@@ -8,7 +8,7 @@ export default function PhotographersListingPage() {
   const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER);
 
   return (
-    <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
+    <div className="min-h-screen bg-white selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto py-12 px-6 lg:px-8 w-full">
         {/* Header Section */}
         <header className="mb-12">
@@ -17,7 +17,7 @@ export default function PhotographersListingPage() {
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-bold text-[#4A3B6B] mb-2"
+                className="text-4xl font-bold text-cosmate-ink mb-2"
               >
                Tìm kiếm Photographer
               </motion.h1>
@@ -31,7 +31,7 @@ export default function PhotographersListingPage() {
               </motion.p>
             </div>
             <div className="text-sm font-medium text-gray-400">
-              Tổng cộng <span className="text-[#4A3B6B] font-bold">{providers.length}</span> nhiếp ảnh gia
+              Tổng cộng <span className="text-cosmate-ink font-bold">{providers.length}</span> nhiếp ảnh gia
             </div>
           </div>
 
@@ -55,23 +55,23 @@ export default function PhotographersListingPage() {
         <div className="flex flex-col items-center gap-6 pb-12">
           <Button
             variant="outline"
-            className="rounded-full px-12 py-6 border-2 border-gray-100 hover:border-[#d4c5f9] hover:bg-[#F8F7FF] transition-all font-bold text-[#4A3B6B]"
+            className="rounded-full px-12 py-6 border-2 border-gray-100 hover:border-cosmate-lavender-hover-border hover:bg-cosmate-lavender-surface-alt transition-all font-bold text-cosmate-ink"
           >
             Xem thêm
           </Button>
           <div className="flex items-center gap-4 text-sm text-gray-400">
-            <button className="hover:text-[#B59DFF] transition-colors">Trước</button>
+            <button className="hover:text-cosmate-lavender transition-colors">Trước</button>
             <div className="flex gap-2">
               {[1, 2, 3, '...', 12].map((n, i) => (
                 <button
                   key={i}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${n === 1 ? 'bg-[#4A3B6B] text-white shadow-lg' : 'hover:bg-gray-100 text-gray-600'}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${n === 1 ? 'bg-cosmate-ink text-white shadow-lg' : 'hover:bg-gray-100 text-gray-600'}`}
                 >
                   {n}
                 </button>
               ))}
             </div>
-            <button className="hover:text-[#B59DFF] transition-colors">Tiếp</button>
+            <button className="hover:text-cosmate-lavender transition-colors">Tiếp</button>
           </div>
         </div>
       </main>

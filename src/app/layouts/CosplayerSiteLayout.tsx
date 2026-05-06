@@ -289,30 +289,43 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
-      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
+    <div className="w-[320px] rounded-xl bg-card text-card-foreground shadow-lg ring-1 ring-border/80">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <p className="m-0 text-sm font-semibold text-foreground">{VI.notification.title}</p>
         {unreadCount > 0 && (
           <button
+            type="button"
             onClick={() => markAllRead()}
-            style={{ fontSize: 12, color: "#ec4899", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 500 }}
+            className="border-0 bg-transparent p-0 text-xs font-medium text-cosmate-pink hover:underline"
           >
             Đánh dấu đã đọc
           </button>
         )}
       </div>
-      <div style={{ maxHeight: 360, overflowY: "auto" }}>
+      <div className="max-h-[360px] overflow-y-auto">
         {notifLoading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+          <div className="flex items-center justify-center p-8">
             <Spin size="small" />
           </div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: 32, textAlign: "center", color: "#64748b", fontSize: 14 }}>{VI.notification.empty}</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{VI.notification.empty}</div>
         ) : (
           <>
             {notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault()
+                    void (async () => {
+                      if (!n.isRead) await markNotificationRead(n.id)
+                      if (n.link) navigate(n.link)
+                      setNotifOpen(false)
+                    })()
+                  }
+                }}
                 onClick={async () => {
                   if (!n.isRead) {
                     await markNotificationRead(n.id)
@@ -320,18 +333,16 @@ export default function CosplayerSiteLayout() {
                   if (n.link) navigate(n.link)
                   setNotifOpen(false)
                 }}
-                style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                className="cursor-pointer border-b border-border/60 px-4 py-2.5 transition-colors last:border-b-0 hover:bg-accent"
               >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
-                  {n.header}
-                </p>
-                <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {n.content}
-                </p>
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`m-0 text-sm ${n.isRead ? "font-normal text-muted-foreground" : "font-semibold text-foreground"}`}
+                    >
+                      {n.header}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{n.content}</p>
                   </div>
                   <button
                     type="button"
@@ -346,14 +357,7 @@ export default function CosplayerSiteLayout() {
                         onOk: () => void deleteNotification(n.id),
                       })
                     }}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      color: "#94a3b8",
-                      cursor: "pointer",
-                      padding: 2,
-                      lineHeight: 1,
-                    }}
+                    className="cursor-pointer border-0 bg-transparent p-0.5 leading-none text-muted-foreground hover:text-foreground"
                   >
                     <DeleteOutlined />
                   </button>
@@ -365,7 +369,7 @@ export default function CosplayerSiteLayout() {
       </div>
       {notifications.length > 0 && (
         <div
-          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9" }}
+          className="cursor-pointer border-t border-border px-4 py-2.5 text-center text-sm font-medium text-cosmate-pink hover:underline"
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)
@@ -378,7 +382,7 @@ export default function CosplayerSiteLayout() {
   )
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-[#111827]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-foreground">
       <div
         aria-hidden="true"
         className="pointer-events-none fixed inset-0 -z-10"
@@ -576,7 +580,7 @@ export default function CosplayerSiteLayout() {
                   {userProfile.avatarUrl ? (
                     <Avatar size={36} src={userProfile.avatarUrl} />
                   ) : (
-                    <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
+                    <Avatar size={36} className="!bg-cosmate-pink !text-white">
                       {computeInitials(userProfile.fullName)}
                     </Avatar>
                   )}

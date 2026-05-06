@@ -162,7 +162,7 @@ export default function GuidelinesRulesPage() {
                     "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]",
                     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
                     activeView === tab.key
-                      ? "bg-[#FDCCD7] text-pink-900 border-2 border-[#FDCCD7]"
+                      ? "bg-cosmate-soft-pink text-pink-900 border-2 border-cosmate-soft-pink"
                       : "bg-pink-50 text-pink-700 hover:bg-pink-100"
                   )}
                   onClick={() => setActiveView(tab.key)}

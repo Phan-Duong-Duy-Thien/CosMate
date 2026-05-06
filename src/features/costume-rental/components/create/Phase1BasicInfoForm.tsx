@@ -227,7 +227,15 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           />
         </Form.Item>
 
-        <Card size="small" title="✨ AI Hỗ trợ viết mô tả" style={{ marginBottom: 16, background: '#fafcff', borderColor: '#d9e8ff' }}>
+        <Card
+          size="small"
+          title="✨ AI Hỗ trợ viết mô tả"
+          style={{
+            marginBottom: 16,
+            background: "color-mix(in oklch, var(--cosmate-info) 6%, var(--background))",
+            borderColor: "color-mix(in oklch, var(--cosmate-info) 35%, var(--border))",
+          }}
+        >
           {isAiGenerating && (
             <div style={{ marginBottom: 16 }}>
               <AILoadingMascot type="content" variant="inline" />

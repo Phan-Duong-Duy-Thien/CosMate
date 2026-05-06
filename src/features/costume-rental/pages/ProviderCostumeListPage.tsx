@@ -72,7 +72,7 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
       destroyOnClose
     >
       {loading && (
-        <div style={{ textAlign: 'center', padding: '40px 0', color: '#6B7280' }}>
+        <div className="py-10 text-center text-muted-foreground">
           Đang tải chi tiết...
         </div>
       )}
@@ -227,11 +227,11 @@ export default function ProviderCostumeListPage() {
               width: 56,
               height: 56,
               borderRadius: 6,
-              background: '#f0f0f0',
+              background: "var(--muted)",
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              color: '#bbb',
+              color: "var(--muted-foreground)",
               fontSize: 11,
             }}
           >
@@ -330,7 +330,7 @@ export default function ProviderCostumeListPage() {
         {gate.profileLoading && (
           <div style={{ textAlign: 'center', padding: '80px 0' }}>
             <Spin size="large" />
-            <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+            <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
           </div>
         )}
         {!gate.profileLoading && gate.verified === false && (

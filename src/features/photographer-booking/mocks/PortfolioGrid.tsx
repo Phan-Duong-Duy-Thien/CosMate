@@ -21,7 +21,7 @@ export const PortfolioGrid: React.FC<PortfolioGridProps> = ({ images }) => {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm border border-[#F0E6FF] hover:shadow-xl hover:shadow-[#E0D7FF]/30 transition-all duration-300"
+              className="group relative bg-white rounded-3xl overflow-hidden shadow-sm border border-cosmate-lavender-border hover:shadow-xl hover:shadow-cosmate-lavender-hover-border/30 transition-all duration-300"
             >
               <div className="relative aspect-auto overflow-hidden">
                 <ImageWithFallback
@@ -31,7 +31,7 @@ export const PortfolioGrid: React.FC<PortfolioGridProps> = ({ images }) => {
                 />
                 
                 {/* Overlay on Hover */}
-                <div className="absolute inset-0 bg-gradient-to-t from-[#4A3B6B]/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
+                <div className="absolute inset-0 bg-gradient-to-t from-cosmate-ink/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex flex-col justify-end p-6">
                   <h4 className="text-white font-bold text-lg mb-1">{image.title}</h4>
                   <p className="text-white/80 text-xs mb-4">{image.category}</p>
                   
@@ -44,7 +44,7 @@ export const PortfolioGrid: React.FC<PortfolioGridProps> = ({ images }) => {
                       <Eye className="w-3.5 h-3.5" />
                       {image.views}
                     </button>
-                    <button className="ml-auto w-8 h-8 flex items-center justify-center bg-white rounded-full text-[#4A3B6B] hover:bg-[#B59DFF] hover:text-white transition-colors">
+                    <button className="ml-auto w-8 h-8 flex items-center justify-center bg-white rounded-full text-cosmate-ink hover:bg-cosmate-lavender hover:text-white transition-colors">
                       <Share2 className="w-4 h-4" />
                     </button>
                   </div>

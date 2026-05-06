@@ -200,14 +200,14 @@ export default function ProviderServiceOrdersPage() {
             <Tooltip title={VI.order.actions.viewDetail}>
               <EyeOutlined
                 onClick={() => setDetailModal({ open: true, order: record })}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
               />
             </Tooltip>
             {canSetWaiting && (
               <Tooltip title={VI.profile.serviceOrders.setWaiting}>
                 <ClockCircleOutlined
                   onClick={() => handleSetWaitingClick(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: loadingAction === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
             )}
@@ -215,7 +215,7 @@ export default function ProviderServiceOrdersPage() {
               <Tooltip title={VI.profile.serviceOrders.startService}>
                 <PlayCircleOutlined
                   onClick={() => handleStartServiceClick(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: loadingAction === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
             )}
@@ -223,7 +223,7 @@ export default function ProviderServiceOrdersPage() {
               <Tooltip title={VI.profile.serviceOrders.completeService}>
                 <CheckCircleOutlined
                   onClick={() => handleCompleteServiceClick(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a', opacity: loadingAction === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)', opacity: loadingAction === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
             )}

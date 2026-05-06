@@ -3,72 +3,73 @@
  *
  * Single source of truth for costume/rental order status rendering.
  * Used by AdminOrdersPage and any admin-side order tables.
+ * Colors reference design tokens from src/index.css (no raw hex).
  */
 export const COSTUME_ORDER_STATUS_UI: Record<
   string,
   { label: string; bg: string; text: string }
 > = {
   UNPAID: {
-    label: 'Chưa thanh toán',
-    bg: '#ffe7ba',
-    text: '#fa8c16',
+    label: "Chưa thanh toán",
+    bg: "color-mix(in oklch, var(--cosmate-warning) 24%, var(--background))",
+    text: "var(--cosmate-warning)",
   },
   PAID: {
-    label: 'Đã thanh toán',
-    bg: '#bae7ff',
-    text: '#1677ff',
+    label: "Đã thanh toán",
+    bg: "color-mix(in oklch, var(--cosmate-info) 22%, var(--background))",
+    text: "var(--cosmate-info)",
   },
   PREPARING: {
-    label: 'Đang chuẩn bị',
-    bg: '#fff7e6',
-    text: '#fa8c16',
+    label: "Đang chuẩn bị",
+    bg: "color-mix(in oklch, var(--cosmate-warning) 18%, var(--background))",
+    text: "var(--cosmate-warning)",
   },
   SHIPPING_OUT: {
-    label: 'Đang giao hàng',
-    bg: '#e6f4ff',
-    text: '#1890ff',
+    label: "Đang giao hàng",
+    bg: "color-mix(in oklch, var(--cosmate-info) 16%, var(--background))",
+    text: "var(--cosmate-info)",
   },
   DELIVERING_OUT: {
-    label: 'Đang vận chuyển',
-    bg: '#e6f7ff',
-    text: '#13c2c2',
+    label: "Đang vận chuyển",
+    bg: "color-mix(in oklch, var(--chart-3) 20%, var(--background))",
+    text: "var(--chart-3)",
   },
   IN_USE: {
-    label: 'Đang sử dụng',
-    bg: '#f9f0ff',
-    text: '#722ed1',
+    label: "Đang sử dụng",
+    bg: "color-mix(in oklch, var(--primary) 14%, var(--background))",
+    text: "var(--primary)",
   },
   SHIPPING_BACK: {
-    label: 'Đang trả hàng',
-    bg: '#fff1f0',
-    text: '#fa541c',
+    label: "Đang trả hàng",
+    bg: "color-mix(in oklch, var(--destructive) 12%, var(--background))",
+    text: "var(--destructive)",
   },
   RETURNED: {
-    label: 'Đã trả',
-    bg: '#d9f7be',
-    text: '#52c41a',
+    label: "Đã trả",
+    bg: "color-mix(in oklch, var(--cosmate-success) 20%, var(--background))",
+    text: "var(--cosmate-success)",
   },
   COMPLETED: {
-    label: 'Hoàn thành',
-    bg: '#d9f7be',
-    text: '#52c41a',
+    label: "Hoàn thành",
+    bg: "color-mix(in oklch, var(--cosmate-success) 20%, var(--background))",
+    text: "var(--cosmate-success)",
   },
   CANCELLED: {
-    label: 'Đã hủy',
-    bg: '#434343',
-    text: '#ffffff',
+    label: "Đã hủy",
+    bg: "color-mix(in oklch, var(--muted-foreground) 22%, var(--muted))",
+    text: "var(--foreground)",
   },
   DISPUTE: {
-    label: 'Khiếu nại',
-    bg: '#ffccc7',
-    text: '#cf1322',
+    label: "Khiếu nại",
+    bg: "color-mix(in oklch, var(--destructive) 18%, var(--background))",
+    text: "var(--destructive)",
   },
   EXTENDING: {
-    label: 'Gia hạn',
-    bg: '#fff0f6',
-    text: '#eb2f96',
+    label: "Gia hạn",
+    bg: "color-mix(in oklch, var(--cosmate-pink) 16%, var(--background))",
+    text: "var(--cosmate-pink)",
   },
-};
+}
 
 export function getCostumeOrderStatusProps(
   status: string
@@ -76,8 +77,8 @@ export function getCostumeOrderStatusProps(
   return (
     COSTUME_ORDER_STATUS_UI[status] ?? {
       label: status,
-      bg: '#f5f5f5',
-      text: '#8c8c8c',
+      bg: "color-mix(in oklch, var(--muted) 80%, var(--background))",
+      text: "var(--muted-foreground)",
     }
-  );
+  )
 }

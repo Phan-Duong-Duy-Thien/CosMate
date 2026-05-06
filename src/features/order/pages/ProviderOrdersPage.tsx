@@ -231,14 +231,14 @@ export default function ProviderOrdersPage() {
                 setSelectedOrderId(record.id);
                 setDetailDrawerOpen(true);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
           </Tooltip>
           {record.status === 'PAID' && (
             <Tooltip title={VI.provider.orders.actions.prepare}>
               <CheckCircleOutlined
                 onClick={() => handlePrepare(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: preparingOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: preparingOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -246,7 +246,7 @@ export default function ProviderOrdersPage() {
             <Tooltip title={VI.provider.orders.actions.ship}>
               <SendOutlined
                 onClick={() => handleShip(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: shippingOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: shippingOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -254,7 +254,7 @@ export default function ProviderOrdersPage() {
             <Tooltip title={VI.provider.orders.actions.deliverOut}>
               <CarOutlined
                 onClick={() => handleDeliverOut(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: deliveringOutOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: deliveringOutOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -263,13 +263,13 @@ export default function ProviderOrdersPage() {
               <Tooltip title={VI.provider.orders.actions.complete}>
                 <CheckCircleOutlined
                   onClick={() => handleComplete(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a', opacity: completingOrderId === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)', opacity: completingOrderId === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
               <Tooltip title={VI.dispute.button}>
                 <FlagOutlined
                   onClick={() => handleDispute(record.id, record.status)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
             </>
@@ -310,7 +310,7 @@ export default function ProviderOrdersPage() {
       brandName="CosMate Provider"
     >
       {error && (
-        <div style={{ color: '#ff4d4f', marginBottom: 16 }}>
+        <div style={{ color: 'var(--destructive)', marginBottom: 16 }}>
           {error}
         </div>
       )}

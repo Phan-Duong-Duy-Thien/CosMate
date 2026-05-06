@@ -315,7 +315,7 @@ export function DashboardLayout({
           left: 0,
           top: 0,
           bottom: 0,
-          borderRight: '1px solid #f0f0f0',
+          borderRight: "1px solid var(--border)",
         }}
       >
         <div
@@ -325,10 +325,10 @@ export function DashboardLayout({
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'flex-start',
             paddingLeft: collapsed ? 0 : 24,
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: "1px solid var(--border)",
             fontWeight: 700,
             fontSize: 18,
-            color: '#7C3AED',
+            color: "var(--primary)",
           }}
         >
           {collapsed ? brandShort : brandName}
@@ -348,8 +348,8 @@ export function DashboardLayout({
         <Header
           style={{
             padding: '0 24px',
-            background: '#fff',
-            borderBottom: '1px solid #f0f0f0',
+            background: "var(--card)",
+            borderBottom: "1px solid var(--border)",
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -378,7 +378,7 @@ export function DashboardLayout({
                   justifyContent: 'center',
                 }}
               >
-                <MessageCircle size={22} style={{ color: '#64748b' }} />
+                <MessageCircle size={22} style={{ color: "var(--muted-foreground)" }} />
                 {chatUnreadCount > 0 && (
                   <span
                     style={{
@@ -389,8 +389,8 @@ export function DashboardLayout({
                       height: 16,
                       padding: '0 3px',
                       borderRadius: 8,
-                      backgroundColor: '#ef4444',
-                      color: '#fff',
+                      backgroundColor: "var(--destructive)",
+                      color: "var(--primary-foreground)",
                       fontSize: 9,
                       fontWeight: 700,
                       display: 'flex',
@@ -418,7 +418,7 @@ export function DashboardLayout({
                 {userProfile.avatarUrl ? (
                   <Avatar src={userProfile.avatarUrl} />
                 ) : (
-                  <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+                  <Avatar className="!bg-primary !text-primary-foreground">{userName.charAt(0)}</Avatar>
                 )}
                 <span style={{ fontWeight: 500 }}>{userName}</span>
               </div>
@@ -430,7 +430,7 @@ export function DashboardLayout({
           style={{
             margin: 16,
             padding: 20,
-            background: '#fff',
+            background: "var(--card)",
             borderRadius: 8,
             minHeight: 280,
           }}
@@ -446,15 +446,15 @@ export function DashboardLayout({
                         e.preventDefault();
                         navigate(item.to!);
                       }}
-                      style={{ color: '#64748b', textDecoration: 'none', fontSize: 14 }}
+                      style={{ color: "var(--muted-foreground)", textDecoration: "none", fontSize: 14 }}
                     >
                       {item.label}
                     </a>
                   ) : (
-                    <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>{item.label}</span>
+                    <span style={{ color: "var(--foreground)", fontWeight: 500, fontSize: 14 }}>{item.label}</span>
                   )}
                   {index < breadcrumbItems.length - 1 && (
-                    <ChevronRight size={14} style={{ margin: '0 8px', color: '#94a3b8' }} />
+                    <ChevronRight size={14} style={{ margin: "0 8px", color: "var(--muted-foreground)" }} />
                   )}
                 </span>
               ))}

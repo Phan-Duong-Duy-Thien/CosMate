@@ -72,7 +72,7 @@ export default function AdminProvidersPage() {
       dataIndex: 'shopName',
       key: 'shopName',
       render: (v: string | undefined) => (
-        <span style={{ fontWeight: 600, color: '#1f2937' }}>{v ?? '—'}</span>
+        <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -82,7 +82,7 @@ export default function AdminProvidersPage() {
       width: 100,
       align: 'center',
       render: (v: number | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
       ),
     },
     {
@@ -97,7 +97,7 @@ export default function AdminProvidersPage() {
             {value ? 'Đã duyệt' : 'Chưa duyệt'}
           </Tag>
         ) : (
-          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>
+          <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>
         ),
     },
     {
@@ -134,7 +134,7 @@ export default function AdminProvidersPage() {
                   setActionLoadingId(null);
                 }
               }}
-              style={{ color: record.verified ? '#faad14' : '#52c41a' }}
+              style={{ color: record.verified ? "var(--cosmate-warning)" : "var(--cosmate-success)" }}
             />
           </Tooltip>
         </Space>
@@ -146,7 +146,7 @@ export default function AdminProvidersPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 
