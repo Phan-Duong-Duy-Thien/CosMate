@@ -27,8 +27,8 @@ export function MoreFromShop({ providerId, onSelectCostume, currentCostumeId }: 
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-200 to-violet-200 px-4 py-1.5 shadow-[4px_4px_0_0_rgba(30,27,75,0.35)]">
-        <h3 className="text-center text-sm font-extrabold text-indigo-950">
+      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+        <h3 className="text-center text-sm font-extrabold uppercase tracking-wide text-indigo-950">
           {VI.costumeRental.detail.moreFromShop}
         </h3>
       </div>
@@ -59,20 +59,20 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
           onClick()
         }
       }}
-      className="group relative overflow-hidden rounded-[1.05rem] border-[3px] border-indigo-950/20 bg-white shadow-sm transition-all hover:-translate-y-1 hover:border-indigo-950/40 hover:shadow-[8px_8px_0_0_rgba(30,27,75,0.28)]"
+      className="group relative overflow-hidden rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] to-[#fce7f3] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[11px_11px_0_0_rgba(236,72,153,0.4)]"
     >
       {/* Wishlist Button */}
       <button
         type="button"
         onClick={handleWishlist}
-        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-full border-2 border-indigo-950 bg-white/90 text-pink-500 opacity-0 transition-opacity group-hover:opacity-100 hover:bg-pink-50"
+        className="absolute right-2 top-2 z-10 flex h-8 w-8 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] text-[#DC2626] opacity-0 shadow-[3px_3px_0_0_#1e1b4b] transition-opacity group-hover:opacity-100 hover:bg-[#FEE2E2]"
       >
         <Heart className="h-4 w-4" />
       </button>
 
       <img src={item.imageUrl} alt={item.name} className="h-40 w-full object-cover object-top" />
       <div className="space-y-1 p-3">
-        <p className="overflow-hidden text-sm font-semibold text-slate-800" title={item.name}>
+        <p className="overflow-hidden text-sm font-extrabold text-indigo-950" title={item.name}>
           <span className="block truncate group-hover:hidden">{item.name}</span>
           <span className="hidden group-hover:block">
             <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
@@ -81,19 +81,19 @@ function ProductCard({ item, onClick }: { item: MoreFromShopItem; onClick: () =>
             </span>
           </span>
         </p>
-        <p className="text-xs text-slate-500">{item.characterName}</p>
+        <p className="text-xs font-semibold text-indigo-900/70">{item.characterName}</p>
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold leading-tight text-pink-600">
+          <p className="text-xs font-bold leading-tight text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
             <span className="whitespace-nowrap">{item.pricePerDay.toLocaleString("vi-VN")} VND</span>
-            <span className="ml-1 text-[11px] font-normal text-slate-500">/ngày</span>
+            <span className="ml-1 text-[11px] font-semibold text-indigo-900/70">/ngày</span>
           </p>
           {item.brandName && (
-            <span className="rounded border border-indigo-950/20 bg-pink-100 px-1.5 py-0.5 text-[10px] font-semibold text-pink-600">
+            <span className="rounded-lg border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-orange-300 px-1.5 py-0.5 text-[10px] font-extrabold text-indigo-950">
               {item.brandName}
             </span>
           )}
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs font-semibold text-indigo-900/65">
           {item.rentalCount} {VI.costumeRental.detail.rentalCount.toLowerCase()}
         </p>
       </div>

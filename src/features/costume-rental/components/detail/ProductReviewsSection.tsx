@@ -26,16 +26,16 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-200 to-violet-200 px-4 py-1.5 shadow-[4px_4px_0_0_rgba(30,27,75,0.35)]">
-        <h3 className="text-sm font-extrabold text-indigo-950 text-center">
+      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+        <h3 className="text-center text-sm font-extrabold uppercase tracking-wide text-indigo-950">
           {VI.costumeRental.detail.reviewsTitle}
         </h3>
       </div>
 
-      <Card className="rounded-[1.2rem] border-[3px] border-indigo-950/20 bg-white p-4">
+      <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
         <div className="flex flex-wrap items-center gap-4">
           <div>
-            <p className="text-2xl font-extrabold text-pink-600">{average.toFixed(1)}</p>
+            <p className="bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-2xl font-extrabold text-transparent">{average.toFixed(1)}</p>
             <div className="mt-1 flex text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -44,7 +44,7 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
                 />
               ))}
             </div>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs font-semibold text-indigo-900/70">
               {reviews.length} {VI.costumeRental.detail.totalReviews}
             </p>
           </div>
@@ -55,7 +55,7 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
       {loading && (
         <div className="space-y-3">
           {[1, 2, 3].map((i) => (
-            <Card key={i} className="animate-pulse border-[3px] border-indigo-950/15 bg-white p-4">
+            <Card key={i} className="animate-pulse rounded-2xl border-[3px] border-indigo-950/25 bg-white p-4">
               <div className="flex items-start gap-3">
                 <div className="h-10 w-10 rounded-full bg-pink-100" />
                 <div className="flex-1 space-y-2 pt-1">
@@ -74,14 +74,14 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
       {/* Error State */}
       {!loading && error && (
-        <Card className="border-[3px] border-red-200 bg-white p-4 text-center text-sm text-red-500">
+        <Card className="border-[3px] border-[#DC2626] bg-[#FEE2E2] p-4 text-center text-sm text-[#991B1B]">
           {error}
         </Card>
       )}
 
       {/* Reviews List */}
       {!loading && !error && reviews.length === 0 && (
-        <Card className="border-[3px] border-indigo-950/15 bg-white p-4 text-center text-sm text-slate-500">
+        <Card className="rounded-2xl border-[3px] border-indigo-950/30 bg-white p-4 text-center text-sm font-semibold text-indigo-900/75">
           {VI.costumeRental.detail.noReviews}
         </Card>
       )}
@@ -99,14 +99,14 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 
 function ReviewCard({ review }: { review: ReviewItem }) {
   return (
-    <Card className="rounded-[1.1rem] border-[3px] border-indigo-950/15 bg-white p-4">
+    <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-indigo-950 bg-pink-100 text-sm font-semibold text-pink-600">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-semibold text-indigo-950">
             U
           </div>
           <div>
-            <p className="font-semibold text-slate-700">{VI.costumeRental.detail.reviewer}</p>
+            <p className="font-semibold text-indigo-950">{VI.costumeRental.detail.reviewer}</p>
             <div className="mt-0.5 flex items-center gap-1 text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -117,9 +117,9 @@ function ReviewCard({ review }: { review: ReviewItem }) {
             </div>
           </div>
         </div>
-        <span className="text-xs text-slate-400">{formatDate(review.createdAt)}</span>
+        <span className="text-xs font-semibold text-indigo-900/65">{formatDate(review.createdAt)}</span>
       </div>
-      <p className="mt-3 text-sm text-slate-600">{review.comment}</p>
+      <p className="mt-3 text-sm font-semibold text-indigo-900/85">{review.comment}</p>
       {review.images && review.images.length > 0 && (
         <div className="mt-3 flex gap-2">
           {review.images.map((img) => (
@@ -127,7 +127,7 @@ function ReviewCard({ review }: { review: ReviewItem }) {
               key={img.id}
               src={img.url}
               alt=""
-              className="h-16 w-16 rounded-lg object-cover"
+              className="h-16 w-16 rounded-xl border-[3px] border-indigo-950 object-cover"
             />
           ))}
         </div>
