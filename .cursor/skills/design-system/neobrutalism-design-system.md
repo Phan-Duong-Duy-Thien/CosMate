@@ -1,5 +1,5 @@
 ---
-name: Homepage Anime
+name: Anime Design
 colors:
   primary: "#FBCFE8"
   secondary: "#A855F7"
