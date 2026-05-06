@@ -37,7 +37,7 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
     if (slides.length < 2 || prefersReducedMotion || isDragging) return
     const interval = window.setInterval(() => {
       setActiveIndex((prev) => (prev + 1) % slides.length)
-    }, 2000)
+    }, 6000)
     return () => window.clearInterval(interval)
   }, [isDragging, prefersReducedMotion, slides.length])
 
@@ -49,9 +49,7 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
     setActiveIndex((prev) => (prev + 1) % slides.length)
   }
 
-  const handlePointerDown = (
-    event: React.PointerEvent<HTMLDivElement>
-  ) => {
+  const handlePointerDown = (event: React.PointerEvent<HTMLDivElement>) => {
     const target = event.target as HTMLElement
     if (target.closest("button, a, input, textarea, select")) {
       return
@@ -91,15 +89,14 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
   }
 
   return (
-    <section
-      className="w-full pt-8"
-      data-reveal="true"
-    >
+    <section className="w-full pt-4 md:pt-6" data-reveal="true">
       <div
         role="region"
         aria-roledescription="carousel"
         aria-label="Banner CosMate"
-        className="relative select-none overflow-hidden rounded-3xl shadow-xl transition-transform duration-500 ease-out hover:-translate-y-1 touch-pan-y"
+        className={cn(
+          "relative touch-pan-y select-none overflow-hidden rounded-[1.35rem] border-[5px] border-indigo-950 bg-indigo-950 shadow-[14px_14px_0_0_rgba(249,168,212,0.95)] ring-4 ring-amber-300 transition-[transform,box-shadow] duration-300 hover:-translate-y-1 hover:shadow-[18px_18px_0_0_rgba(251,207,232,0.95)] motion-reduce:transform-none motion-reduce:hover:shadow-[14px_14px_0_0_rgba(249,168,212,0.95)] md:rounded-[1.65rem]"
+        )}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerEnd}
@@ -115,43 +112,50 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
                 "absolute inset-0 will-change-transform",
                 isActive
                   ? "translate-x-0 scale-100 opacity-100 blur-0"
-                  : "pointer-events-none translate-x-1 scale-[1.02] opacity-0 blur-[1px]"
+                  : "pointer-events-none translate-x-2 scale-[1.03] opacity-0 blur-[2px]"
               )}
               style={{
                 transition:
-                  "opacity 700ms ease, transform 900ms cubic-bezier(0.22, 1, 0.36, 1), filter 700ms ease",
+                  "opacity 650ms ease, transform 850ms cubic-bezier(0.22, 1, 0.36, 1), filter 650ms ease",
               }}
               aria-hidden={!isActive}
             >
               <div
-                className="absolute inset-0 bg-cover bg-center"
+                className="absolute inset-0 scale-[1.08] bg-cover bg-[center_20%] motion-reduce:scale-105"
                 style={{ backgroundImage: `url(${slide.imageUrl})` }}
               />
-              <div className="relative flex h-full flex-col items-center justify-end gap-3 px-5 py-4 md:px-8 md:py-6">
-                <div>
+
+              <div className="relative flex h-full min-h-[300px] flex-col justify-end px-3 pb-3 sm:min-h-[340px] md:min-h-[400px] md:px-6 md:pb-5 lg:min-h-[420px]">
+                <div className="mt-auto flex items-end justify-between gap-4">
+                  <div
+                    className="flex flex-wrap items-center gap-2"
+                    role="tablist"
+                    aria-label="Chọn slide banner"
+                  >
+                    {slides.map((_, dotIndex) => (
+                      <button
+                        key={`dot-${dotIndex}`}
+                        type="button"
+                        role="tab"
+                        aria-selected={dotIndex === activeIndex}
+                        aria-label={`Slide ${dotIndex + 1}`}
+                        className={cn(
+                          "h-3 rounded-full border-[3px] border-indigo-950 transition-all duration-300 ease-out",
+                          dotIndex === activeIndex
+                            ? "w-10 bg-gradient-to-r from-pink-500 to-fuchsia-500"
+                            : "w-3 bg-white/95 hover:bg-pink-100"
+                        )}
+                        onClick={() => setActiveIndex(dotIndex)}
+                      />
+                    ))}
+                  </div>
                   <Button
                     size="pill"
-                    className="h-auto w-fit rounded-full bg-pink-500 px-8 py-2.5 text-lg font-medium text-white shadow-md hover:bg-pink-600"
+                    className="h-auto shrink-0 rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b] md:px-7 md:py-3"
                     onClick={() => onCtaClick(slide)}
                   >
                     {slide.ctaLabel}
                   </Button>
-                </div>
-                <div className="flex items-center gap-2">
-                  {slides.map((_, dotIndex) => (
-                    <button
-                      key={`dot-${dotIndex}`}
-                      type="button"
-                      aria-label={`Slide ${dotIndex + 1}`}
-                      className={cn(
-                        "h-2 w-2 rounded-full transition-all",
-                        dotIndex === activeIndex
-                          ? "w-6 bg-pink-400"
-                          : "bg-pink-200"
-                      )}
-                      onClick={() => setActiveIndex(dotIndex)}
-                    />
-                  ))}
                 </div>
               </div>
             </div>
@@ -160,7 +164,7 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
         <button
           type="button"
           aria-label="Slide trước"
-          className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 text-slate-700 shadow-md transition hover:bg-white"
+          className="absolute left-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-2.5 text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition hover:bg-amber-100 md:left-4 md:flex"
           onClick={goToPrevSlide}
         >
           <ChevronLeft className="h-5 w-5" />
@@ -168,12 +172,12 @@ export const HeroCarousel = ({ slides, onCtaClick }: HeroCarouselProps) => {
         <button
           type="button"
           aria-label="Slide tiếp theo"
-          className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/80 p-2 text-slate-700 shadow-md transition hover:bg-white"
+          className="absolute right-2 top-1/2 z-10 hidden -translate-y-1/2 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-2.5 text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition hover:bg-amber-100 md:right-4 md:flex"
           onClick={goToNextSlide}
         >
           <ChevronRight className="h-5 w-5" />
         </button>
-        <div className="aspect-[16/7] w-full md:aspect-auto md:h-[360px]" />
+        <div className="aspect-[16/10] w-full md:aspect-auto md:h-[420px] lg:h-[440px]" />
       </div>
     </section>
   )

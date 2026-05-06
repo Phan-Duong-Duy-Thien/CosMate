@@ -1583,8 +1583,15 @@ export const VI = {
         topPhotographers: "Nhiếp ảnh gia hàng đầu",
         recentEvents: "Sự kiện gần đây",
       },
+      browseByTheme: "Khám phá theo chủ đề",
+      browseByThemeHint:
+        "Chọn chủ đề yêu thích — banner và các nút khám phá sẽ gắn với chủ đề này khi bạn tương tác.",
+      trustedShopsTitle: "Shop cho thuê uy tín",
+      trustedShopsHint:
+        "Cửa hàng được đánh giá cao, minh bạch và được nhiều khách tin chọn.",
       featured: {
         title: "Trang phục nổi bật",
+        featuredHint: "Cập nhật liên tục — click vào thẻ để xem chi tiết và đặt thuê.",
         viewAll: "Xem tất cả",
         errorTitle: "Ôi không!",
         errorDescription: "Có lỗi xảy ra khi tải dữ liệu.",
