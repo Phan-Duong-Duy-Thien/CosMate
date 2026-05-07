@@ -16,7 +16,6 @@ import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
 import { useReviewPermission } from "../hooks/useReviewPermission"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
-import { useStartChat } from "@/features/chat/hooks/useStartChat"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -275,7 +274,7 @@ export default function CostumeDetailPage() {
           <MediaGallery
             images={resolvedImages}
             isAdult18={false}
-            bestSeller={costume.status !== "RENTED"}
+            bestSeller={costume.status === "AVAILABLE"}
             rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
             hasAccessories={accessoryCount > 0}
             accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}

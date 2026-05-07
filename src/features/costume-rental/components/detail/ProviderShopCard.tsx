@@ -9,7 +9,7 @@ interface ProviderShopCardProps {
   provider: {
     id: number
     userId: number
-    shopName: string
+    shopName: string | null
     avatarUrl: string | null
     verified: boolean
     bio?: string | null
@@ -19,6 +19,7 @@ interface ProviderShopCardProps {
 
 export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps) {
   const { startChat, loading: chatLoading } = useStartChat()
+  const safeShopName = provider.shopName ?? "Shop"
   const stats = getMockRentalCount(String(provider.id))
   const rating = stats.rating
   const totalReviews = stats.totalReviews
@@ -29,11 +30,11 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
       <div className="flex items-center gap-4">
         <img
           src={provider.avatarUrl || "https://via.placeholder.com/64"}
-          alt={provider.shopName}
+          alt={safeShopName}
           className="h-16 w-16 rounded-2xl border-[3px] border-indigo-950 object-cover shadow-[4px_4px_0_0_#1e1b4b]"
         />
         <div>
-          <h3 className="text-lg font-extrabold text-indigo-950">{provider.shopName}</h3>
+          <h3 className="text-lg font-extrabold text-indigo-950">{safeShopName}</h3>
           <p className="mt-1 w-fit rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-orange-300 px-2 py-0.5 text-xs font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
             Shop nổi bật
           </p>
@@ -70,7 +71,7 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
           variant="default"
           size="sm"
           className="gap-1 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110"
-          onClick={() => startChat(provider.userId, provider.shopName)}
+          onClick={() => startChat(provider.userId, safeShopName)}
           loading={chatLoading}
         >
           <MessageCircle className="h-4 w-4" />
