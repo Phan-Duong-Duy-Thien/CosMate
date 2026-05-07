@@ -22,12 +22,38 @@ export interface CostumeImage {
   costumeId?: number
 }
 
+/** Raw row from GET /api/images/costume/{id} — field names vary by backend version */
+type CostumeImageApiRow = {
+  id: number
+  type?: string
+  url?: string
+  fileUrl?: string
+  imageUrl?: string
+  costumeId?: number
+}
+
+function pickImageUrl(row: CostumeImageApiRow): string {
+  const u = row.url ?? row.fileUrl ?? row.imageUrl
+  return typeof u === 'string' ? u.trim() : ''
+}
+
+function normalizeImageType(raw: string | undefined): CostumeImageType {
+  const t = String(raw ?? '').toUpperCase()
+  return t === 'DETAIL' ? 'DETAIL' : 'MAIN'
+}
+
 /** GET /api/images/costume/{costumeId} */
 export async function getCostumeImages(costumeId: number): Promise<CostumeImage[]> {
-  const res = await axiosInstance.get<CostumeApiResponse<CostumeImage[]>>(
+  const res = await axiosInstance.get<CostumeApiResponse<CostumeImageApiRow[]>>(
     `/api/images/costume/${costumeId}`,
   )
-  return res.data.result
+  const rows = res.data.result ?? []
+  return rows.map((row) => ({
+    id: Number(row.id),
+    url: pickImageUrl(row),
+    type: normalizeImageType(row.type),
+    costumeId: row.costumeId,
+  }))
 }
 
 /** POST /api/images/costume/{costumeId}?type=MAIN|DETAIL */

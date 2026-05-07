@@ -173,6 +173,7 @@ export default function ImagesTab({
             canDelete={canDeleteMain}
             deleting={deleting === img.id}
             replacing={replacing === img.id}
+            onDelete={canDeleteMain ? () => onDeleteDetail(img.id) : undefined}
             onReplace={(file) => onReplaceMain(img.id, file)}
           />
         ))}

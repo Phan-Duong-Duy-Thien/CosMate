@@ -5,6 +5,7 @@ import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
+import { cn } from "@/lib/utils"
 
 interface QuizOption {
   label: string
@@ -92,7 +93,6 @@ export const QuizModal = ({
       {} as Record<TagKey, number>
     )
 
-    // fallback safe
     const animeScore = score.anime ?? 0
     const gameScore = score.game ?? 0
 
@@ -109,72 +109,90 @@ export const QuizModal = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent onClose={() => onOpenChange(false)} className="select-none">
-        <div className="space-y-6">
-          <div>
-            <Badge className="bg-pink-100 text-pink-600">Quiz nhanh</Badge>
-            <h2 className="mt-3 text-2xl font-semibold text-slate-900">
-              Bạn hợp cosplay nhân vật nào nhất?
-            </h2>
-            <p className="text-sm text-slate-500">
-              Trả lời 5 câu hỏi để tụi mình gợi ý vibe + tag trang phục phù hợp.
-            </p>
-          </div>
+      <DialogContent
+        onClose={() => onOpenChange(false)}
+        className={cn(
+          "home-anime max-h-[90vh] overflow-y-auto border-[5px] border-indigo-950 bg-gradient-to-b from-[#fef9c3] via-[#fce7f3] to-[#dbeafe] p-0 shadow-[16px_16px_0_0_rgba(30,27,75,0.8)] md:max-w-xl"
+        )}
+      >
+        <div className="relative p-6 md:p-8">
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 opacity-[0.08] bg-[radial-gradient(circle_at_center,#1e1b4b_1.5px,transparent_1.5px)] [background-size:10px_10px]"
+          />
 
-          {!isCompleted && currentQuestion && (
-            <div className="space-y-4">
-              <div className="text-base font-medium text-slate-800">
-                {currentQuestion.title}
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                {currentQuestion.options.map((option) => (
-                  <button
-                    key={option.label}
-                    type="button"
-                    onClick={() => handleSelect(option)}
-                    className="rounded-2xl border border-pink-100 bg-white px-4 py-3 text-left text-sm text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-pink-200 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-                  >
-                    {option.label}
-                  </button>
-                ))}
-              </div>
-
-              <div className="flex items-center justify-between text-xs text-slate-400">
-                <span>
-                  Câu {step + 1}/{quizQuestions.length}
-                </span>
-                <span className="text-slate-300">⏱ ~1 phút</span>
-              </div>
+          <div className="relative space-y-6">
+            <div>
+              <Badge className="border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-orange-400 font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b]">
+                Quiz nhanh
+              </Badge>
+              <h2 className="mt-4 text-2xl font-extrabold tracking-tight text-indigo-950 md:text-[1.65rem]">
+                「 Bạn hợp cosplay nhân vật nào nhất? 」
+              </h2>
+              <p className="mt-3 text-sm font-semibold leading-relaxed text-indigo-900/85">
+                Trả lời 5 câu để nhận vibe + tag trang phục phù hợp — phong cách manga cho CosMate!
+              </p>
             </div>
-          )}
 
-          {isCompleted && (
-            <Card className="border-pink-100 bg-pink-50/60 p-5">
-              <div className="text-sm font-semibold text-pink-600">Kết quả</div>
+            {!isCompleted && currentQuestion && (
+              <div className="space-y-5">
+                <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] px-4 py-4 text-base font-extrabold leading-snug text-indigo-950 shadow-[8px_8px_0_0_rgba(30,27,75,0.55)]">
+                  {currentQuestion.title}
+                </div>
 
-              <div className="mt-1 text-xl font-semibold text-slate-900">
-                Bạn hợp với {resultTitle}
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {currentQuestion.options.map((option) => (
+                    <button
+                      key={option.label}
+                      type="button"
+                      onClick={() => handleSelect(option)}
+                      className="rounded-2xl border-[4px] border-indigo-950 bg-white px-4 py-4 text-left text-sm font-bold leading-snug text-indigo-950 shadow-[7px_7px_0_0_rgba(30,27,75,0.45)] transition hover:-translate-y-0.5 hover:bg-[#fffbeb] hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.55)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300"
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className="flex items-center justify-between border-t-[3px] border-dashed border-indigo-950/25 pt-4 text-xs font-extrabold text-indigo-800/70">
+                  <span>
+                    Câu {step + 1}/{quizQuestions.length}
+                  </span>
+                  <span>⏱ ~1 phút</span>
+                </div>
               </div>
+            )}
 
-              <p className="mt-2 text-sm text-slate-600">{resultCopy}</p>
+            {isCompleted && (
+              <Card className="rounded-[1.25rem] border-[5px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] to-[#fbcfe8] p-6 shadow-[10px_10px_0_0_rgba(30,27,75,0.65)]">
+                <div className="text-sm font-extrabold uppercase tracking-wide text-pink-700">
+                  Kết quả
+                </div>
 
-              <Button
-                className="mt-4 w-full"
-                variant="soft"
-                onClick={() => {
-                  onApplyResult(resultTag)
-                  onOpenChange(false)
-                }}
-              >
-                Xem trang phục phù hợp
-              </Button>
+                <div className="mt-2 text-xl font-extrabold text-indigo-950 md:text-2xl">
+                  Bạn hợp với {resultTitle}
+                </div>
 
-              <div className="mt-2 text-center text-xs text-slate-400">
-                Tip: Bạn có thể làm lại quiz để đổi vibe ✨
-              </div>
-            </Card>
-          )}
+                <p className="mt-3 text-sm font-semibold leading-relaxed text-indigo-900/90">
+                  {resultCopy}
+                </p>
+
+                <Button
+                  className="mt-6 w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-violet-600 font-extrabold text-white shadow-[8px_8px_0_0_#1e1b4b] hover:brightness-110"
+                  variant="soft"
+                  onClick={() => {
+                    onApplyResult(resultTag)
+                    onOpenChange(false)
+                  }}
+                >
+                  Xem trang phục phù hợp
+                </Button>
+
+                <div className="mt-3 text-center text-xs font-bold text-indigo-800/60">
+                  Tip: làm lại quiz để đổi vibe ✨
+                </div>
+              </Card>
+            )}
+          </div>
         </div>
       </DialogContent>
     </Dialog>

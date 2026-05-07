@@ -25,31 +25,31 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
   const totalRentals = stats.totalRentals
 
   return (
-    <Card className="flex flex-col gap-4 border-pink-100 bg-white/90 p-4 shadow-sm sm:flex-row sm:items-center">
+    <Card className="flex flex-col gap-4 rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] to-[#fce7f3] p-4 shadow-[9px_9px_0_0_rgba(30,27,75,0.6)] sm:flex-row sm:items-center">
       <div className="flex items-center gap-4">
         <img
           src={provider.avatarUrl || "https://via.placeholder.com/64"}
           alt={provider.shopName}
-          className="h-16 w-16 rounded-full object-cover"
+          className="h-16 w-16 rounded-2xl border-[3px] border-indigo-950 object-cover shadow-[4px_4px_0_0_#1e1b4b]"
         />
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">{provider.shopName}</h3>
-          <p className="mt-1 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-700 w-fit">
+          <h3 className="text-lg font-extrabold text-indigo-950">{provider.shopName}</h3>
+          <p className="mt-1 w-fit rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-orange-300 px-2 py-0.5 text-xs font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
             Shop nổi bật
           </p>
         </div>
       </div>
 
-      <div className="flex flex-1 flex-wrap gap-6 text-sm text-slate-600">
+      <div className="flex flex-1 flex-wrap gap-6 text-sm text-indigo-900/85">
         <div>
-          <p className="text-xs text-slate-400">{VI.costumeRental.detail.rentalCount}</p>
-          <p className="font-semibold">{totalRentals.toLocaleString()}</p>
+          <p className="label-caps text-xs text-indigo-900/65">{VI.costumeRental.detail.rentalCount}</p>
+          <p className="font-bold text-indigo-950">{totalRentals.toLocaleString()}</p>
         </div>
         <div>
-          <p className="text-xs text-slate-400">{VI.costumeRental.detail.ratingLabel}</p>
-          <p className="font-semibold flex items-center gap-1">
+          <p className="label-caps text-xs text-indigo-900/65">{VI.costumeRental.detail.ratingLabel}</p>
+          <p className="flex items-center gap-1 font-bold text-indigo-950">
             <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-            {rating.toFixed(1)}/10 <span className="font-normal text-slate-500">({totalReviews} {VI.costumeRental.detail.totalReviews})</span>
+            {rating.toFixed(1)}/10 <span className="font-normal text-indigo-900/70">({totalReviews} {VI.costumeRental.detail.totalReviews})</span>
           </p>
         </div>
       </div>
@@ -59,7 +59,7 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
           type="button"
           variant="outline"
           size="sm"
-          className="rounded-full border-pink-100 text-slate-600 hover:border-pink-300 hover:bg-pink-50"
+          className="rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] hover:bg-amber-100"
           onClick={onViewShop}
         >
           <Eye className="mr-1 h-4 w-4" />
@@ -69,7 +69,7 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
           type="button"
           variant="default"
           size="sm"
-          className="rounded-full gap-1 bg-pink-100 text-pink-700 hover:bg-pink-200"
+          className="gap-1 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110"
           onClick={() => startChat(provider.userId, provider.shopName)}
           loading={chatLoading}
         >

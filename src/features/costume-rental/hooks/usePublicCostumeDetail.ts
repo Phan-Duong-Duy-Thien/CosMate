@@ -11,13 +11,10 @@
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { getCostumeById } from "../api/costume.api"
 import type { Costume, QuoteBreakdown } from "../types"
-
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+import { resolveCostumeImageUrl } from "../utils/resolveCostumeImageUrl"
 
 export function resolveImageUrl(url: string): string {
-  if (!url) return ""
-  if (url.startsWith("http://") || url.startsWith("https://")) return url
-  return `${API_BASE}${url}`
+  return resolveCostumeImageUrl(url)
 }
 
 export function usePublicCostumeDetail(costumeId: string | undefined) {

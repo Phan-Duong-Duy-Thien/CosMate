@@ -53,7 +53,7 @@ export const CostumeCard = ({
           src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
           alt={costume.name}
           loading="lazy"
-          className="h-52 w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           <Badge
@@ -101,8 +101,17 @@ export const CostumeCard = ({
         <p className="line-clamp-1 text-xs text-slate-600">
           {displayShopName}
         </p>
-        <h3 className="line-clamp-2 min-h-10 text-sm font-semibold text-slate-800">
-          {displayName}
+        <h3
+          className="overflow-hidden text-sm font-semibold text-slate-800"
+          title={displayName}
+        >
+          <span className="block truncate group-hover:hidden">{displayName}</span>
+          <span className="hidden group-hover:block">
+            <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
+              <span>{displayName}</span>
+              <span aria-hidden="true">{displayName}</span>
+            </span>
+          </span>
         </h3>
         <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
           Shop: {displayShopName}
