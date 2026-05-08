@@ -31,9 +31,9 @@ export const SortBar = ({
     sortKey === "priceAsc" || sortKey === "priceDesc" ? sortKey : ""
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-white/80 bg-white/80 px-4 py-2.5 shadow-sm backdrop-blur">
+    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] px-4 py-2.5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
       <div className="flex flex-wrap items-center gap-1.5">
-        <span className="text-sm font-medium text-slate-600">Sắp xếp</span>
+        <span className="text-sm font-extrabold text-indigo-950">Sắp xếp</span>
         {sortButtons.map((button) => (
           <Button
             key={button.key}
@@ -41,10 +41,10 @@ export const SortBar = ({
             variant={sortKey === button.key ? "soft" : "outline"}
             size="sm"
             className={cn(
-              "rounded-full border-pink-100",
+              "rounded-full border-[3px] border-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]",
               sortKey === button.key
-                ? "bg-pink-100 text-pink-700"
-                : "bg-white text-slate-600"
+                ? "bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white"
+                : "bg-white font-bold text-indigo-950 hover:bg-amber-50"
             )}
             onClick={() => onSortChange(button.key)}
           >
@@ -59,7 +59,7 @@ export const SortBar = ({
               (event.target.value || "relevance") as SortKey
             )
           }
-          className="h-9 rounded-full border border-slate-200 bg-white px-3 text-sm text-slate-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+          className="h-9 rounded-full border-[3px] border-indigo-950 bg-white px-3 text-sm font-bold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-950/30"
         >
           <option value="">Giá</option>
           <option value="priceAsc">Giá: thấp đến cao</option>
@@ -67,7 +67,7 @@ export const SortBar = ({
         </select>
       </div>
 
-      <div className="flex items-center gap-2 text-sm text-slate-500">
+      <div className="flex items-center gap-2 text-sm font-bold text-indigo-950/80">
         <span>
           {currentPage}/{totalPages}
         </span>
@@ -76,7 +76,7 @@ export const SortBar = ({
           aria-label="Trang trước"
           onClick={onPrev}
           disabled={currentPage <= 1}
-          className="rounded-full border border-slate-200 p-1 text-slate-500 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border-[3px] border-indigo-950 bg-white p-1 text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronLeft className="h-4 w-4" />
         </button>
@@ -85,7 +85,7 @@ export const SortBar = ({
           aria-label="Trang sau"
           onClick={onNext}
           disabled={currentPage >= totalPages}
-          className="rounded-full border border-slate-200 p-1 text-slate-500 hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-50"
+          className="rounded-full border-[3px] border-indigo-950 bg-white p-1 text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] hover:bg-amber-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <ChevronRight className="h-4 w-4" />
         </button>

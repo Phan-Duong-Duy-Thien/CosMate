@@ -1,10 +1,10 @@
 import * as React from "react"
-import { useNavigate }from "react-router-dom"
+import { useNavigate } from "react-router-dom"
 
 import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
-import { SortBar }from "../components/SortBar"
+import { SortBar } from "../components/SortBar"
 import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
@@ -49,9 +49,10 @@ export default function CostumeListPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [heroVisible, setHeroVisible] = React.useState(false)
   const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
+  const [mobileFiltersOpen, setMobileFiltersOpen] = React.useState(false)
   const navigate = useNavigate()
 
-  const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
+  const { items: allItems, isLoading, error, refetch } = usePublicCostumes()
 
   const brands = React.useMemo(
     () => Array.from(new Set(allItems.map((item) => item.brand).filter(Boolean))).sort(),
@@ -122,6 +123,7 @@ export default function CostumeListPage() {
   const handleReset = () => {
     setFilters(initialFilters)
     setAiResults(null)
+    setMobileFiltersOpen(false)
   }
 
   const handleAISearchCompleted = React.useCallback((results: AISearchResultItem[]) => {
@@ -171,47 +173,60 @@ export default function CostumeListPage() {
   }
 
   return (
-    <section className="min-h-screen bg-transparent pb-20">
-      <style>{`
-        @keyframes softSparkle {
-          0% { opacity: 0.6; transform: translateY(0px); }
-          50% { opacity: 1; transform: translateY(-1px); }
-          100% { opacity: 0.6; transform: translateY(0px); }
-        }
-      `}</style>
-      <div className="mx-auto w-full pt-6">
+    <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fce7f3_48%,#dbeafe_100%)] pb-20">
+      <div className="mx-auto w-full max-w-[min(1400px,100%)] px-4 pt-6">
         <div
           className={
-            "rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-5 py-5 text-center shadow-[0_8px_20px_rgba(236,72,153,0.12)] backdrop-blur transition-all duration-300 ease-out " +
+            "rounded-3xl border-[5px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] via-[#f9a8d4] to-[#c4b5fd] px-5 py-6 text-center shadow-[10px_10px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 ease-out " +
             (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
           }
         >
-          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-4xl font-bold text-pink-700 md:mt-2 md:text-5xl">
-            <span
-              aria-hidden="true"
-              className="text-[20px] tracking-[0.5px] text-pink-700 motion-reduce:animate-none md:text-[40px]"
-            >
-              ･:*🌸࿔   ⋆. 𐙚˚࿔  Thuê đồ Cosplay  𝜗𝜚˚⋆   ࿔🌸*:･
-            </span>
+          <p className="text-xs font-extrabold uppercase tracking-[0.25em] text-indigo-950/70">
+            Costume Rental
+          </p>
+          <h1 className="mt-2 text-3xl font-extrabold text-indigo-950 md:text-4xl">
+            Thuê đồ Cosplay
           </h1>
+          <p className="mx-auto mt-2 max-w-2xl text-sm font-semibold text-indigo-950/80">
+            Lọc nhanh theo khu vực, thương hiệu, rating, giá và tags. Có thể dùng AI để tìm mẫu giống nhân vật bạn muốn cosplay.
+          </p>
         </div>
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[280px_minmax(0,1fr)] xl:gap-6">
-          <FilterSidebar
-            filters={filters}
-            regions={regionOptions}
-            brands={brands}
-            tags={tagOptions}
-            resultCount={sortedItems.length}
-            onUpdate={(next) => setFilters((prev) => ({ ...prev, ...next }))}
-            onReset={handleReset}
-          />
+        <div className="mt-5 grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)] xl:gap-6">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between gap-3 lg:hidden">
+              <Button
+                type="button"
+                variant="soft"
+                size="sm"
+                className="rounded-xl border-[3px] border-indigo-950 bg-white font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] hover:bg-amber-50"
+                onClick={() => setMobileFiltersOpen((v) => !v)}
+              >
+                {mobileFiltersOpen ? "Ẩn bộ lọc" : "Hiện bộ lọc"}
+              </Button>
+              <span className="rounded-full border-[3px] border-indigo-950 bg-white px-3 py-1 text-xs font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b]">
+                {sortedItems.length} kết quả
+              </span>
+            </div>
+
+            <div className={mobileFiltersOpen ? "block" : "hidden lg:block"}>
+              <FilterSidebar
+                filters={filters}
+                regions={regionOptions}
+                brands={brands}
+                tags={tagOptions}
+                resultCount={sortedItems.length}
+                onUpdate={(next) => setFilters((prev) => ({ ...prev, ...next }))}
+                onReset={handleReset}
+              />
+            </div>
+          </div>
 
           <div className="space-y-4">
             <AISearchBar onSearchCompleted={handleAISearchCompleted} />
 
             {!aiResults && (
-              <div className="rounded-2xl border border-pink-100 bg-white/80 px-4 py-3 text-sm text-pink-700">
+              <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] px-4 py-3 text-sm font-semibold text-indigo-950 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
                 Gợi ý: Tải ảnh nhân vật bạn muốn cosplay + mô tả để AI đề xuất mẫu gần nhất.
               </div>
             )}
@@ -226,11 +241,13 @@ export default function CostumeListPage() {
             />
 
             {aiResults && (
-              <div className="overflow-hidden rounded-3xl border border-pink-200 bg-gradient-to-br from-pink-50 via-white to-rose-50 p-4 shadow-[0_10px_28px_rgba(236,72,153,0.12)] md:p-5">
+              <div className="overflow-hidden rounded-3xl border-[5px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] via-white to-[#fce7f3] p-4 shadow-[10px_10px_0_0_rgba(30,27,75,0.55)] md:p-5">
                 <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.2em] text-pink-500">AI MATCHES</p>
-                    <p className="text-base font-bold text-pink-700 md:text-lg">
+                    <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-indigo-950/65">
+                      AI MATCHES
+                    </p>
+                    <p className="text-base font-extrabold text-indigo-950 md:text-lg">
                       Kết quả gợi ý từ AI ({aiResults.length})
                     </p>
                   </div>
@@ -238,7 +255,7 @@ export default function CostumeListPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="rounded-full"
+                    className="rounded-xl border-[3px] border-indigo-950 bg-white font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] hover:bg-amber-50"
                     onClick={() => setAiResults(null)}
                   >
                     Ẩn kết quả AI
@@ -253,24 +270,34 @@ export default function CostumeListPage() {
             )}
 
             {uiState === "loading" && (
-              <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
+              <div className="rounded-3xl border-[5px] border-dashed border-indigo-950/60 bg-white/80 p-10 text-center text-sm font-semibold text-indigo-950/70 shadow-[10px_10px_0_0_rgba(30,27,75,0.25)]">
                 Đang tải danh sách trang phục...
               </div>
             )}
 
             {uiState === "error" && (
-              <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
+              <div className="rounded-3xl border-[5px] border-[#B91C1C] bg-[#FEE2E2] p-10 text-center text-sm font-semibold text-[#991B1B] shadow-[10px_10px_0_0_rgba(127,29,29,0.25)]">
                 <p>{error || "Đã có lỗi xảy ra. Vui lòng thử lại."}</p>
-                <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={refetch}>
+                <Button
+                  variant="soft"
+                  size="sm"
+                  className="mt-4 rounded-xl border-[3px] border-[#991B1B]"
+                  onClick={refetch}
+                >
                   Thử lại
                 </Button>
               </div>
             )}
 
             {uiState === "empty" && (
-              <div className="rounded-3xl border border-pink-100 bg-white/80 p-10 text-center text-sm text-slate-600">
+              <div className="rounded-3xl border-[5px] border-indigo-950 bg-[#fffbeb] p-10 text-center text-sm font-semibold text-indigo-950 shadow-[10px_10px_0_0_rgba(30,27,75,0.45)]">
                 <p>Chưa có trang phục phù hợp. Thử nới bộ lọc nhé!</p>
-                <Button variant="soft" size="sm" className="mt-4 rounded-full" onClick={handleReset}>
+                <Button
+                  variant="soft"
+                  size="sm"
+                  className="mt-4 rounded-xl border-[3px] border-indigo-950 bg-white font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] hover:bg-amber-50"
+                  onClick={handleReset}
+                >
                   Reset bộ lọc
                 </Button>
               </div>

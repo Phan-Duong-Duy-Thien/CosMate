@@ -1,5 +1,4 @@
 import { Heart, Image as ImageIcon } from "lucide-react"
-import { Tag } from "antd"
 
 import type { CostumeItem } from "../types"
 import { Badge } from "@/shared/components/Badge"
@@ -46,7 +45,7 @@ export const CostumeCard = ({
           onViewDetail(costume.id)
         }
       }}
-      className="group flex h-full flex-col overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group flex h-full flex-col overflow-hidden rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.5)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.35)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-950/30"
     >
       <div className="relative">
         <img
@@ -55,33 +54,37 @@ export const CostumeCard = ({
           loading="lazy"
           className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-indigo-950/55 to-transparent"
+        />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           <Badge
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-semibold text-white",
-              costume.isAvailable ? "bg-emerald-600" : "bg-slate-700"
+              "rounded-full border-[3px] border-indigo-950 bg-white/90 px-3 py-1 text-xs font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]",
+              costume.isAvailable ? "bg-white/90" : "bg-indigo-950 text-white"
             )}
           >
             {costume.isAvailable ? "Có sẵn" : "Đã thuê"}
           </Badge>
           {costume.isAdult18 && (
-            <Badge className="bg-pink-500 text-white">18+</Badge>
+            <Badge className="rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1 text-xs font-extrabold text-white shadow-[3px_3px_0_0_#1e1b4b]">
+              18+
+            </Badge>
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
           <div className="absolute right-3 top-3">
-            <Tag
-              className="m-0 rounded-full border-0 bg-primary px-3 py-1 font-semibold !text-primary-foreground shadow-sm"
-            >
+            <Badge className="rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-amber-300 to-yellow-300 px-3 py-1 font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
               ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
-            </Tag>
+            </Badge>
           </div>
         )}
         <button
           type="button"
           aria-label={liked ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
           className={cn(
-            "absolute right-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
+            "absolute right-3 rounded-full border-[3px] border-indigo-950 bg-white/90 p-2 text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] transition hover:-translate-y-0.5",
             typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
             liked && "text-pink-500"
           )}
@@ -92,17 +95,15 @@ export const CostumeCard = ({
         >
           <Heart className={cn("h-4 w-4", liked && "fill-pink-500")} />
         </button>
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-white/80 px-2 py-1 text-xs text-slate-600">
+        <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full border-[3px] border-indigo-950 bg-white/85 px-2 py-1 text-xs font-bold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
           <ImageIcon className="h-3 w-3" />
           {costume.images.length} ảnh
         </div>
       </div>
       <div className="flex min-h-[196px] flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-1 text-xs text-slate-600">
-          {displayShopName}
-        </p>
+        <p className="line-clamp-1 text-xs font-semibold text-indigo-950/70">{displayShopName}</p>
         <h3
-          className="overflow-hidden text-sm font-semibold text-slate-800"
+          className="overflow-hidden text-sm font-extrabold text-indigo-950"
           title={displayName}
         >
           <span className="block truncate group-hover:hidden">{displayName}</span>
@@ -113,19 +114,19 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
+        <p className="line-clamp-1 min-h-4 text-xs font-semibold text-indigo-950/65">
           Shop: {displayShopName}
         </p>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
+        <p className="line-clamp-1 min-h-4 text-xs font-semibold text-indigo-950/65">
           Nhân vật: {costume.characterName?.trim() || "-"}
         </p>
-        <div className="min-h-7 text-sm font-semibold leading-tight text-pink-600">
+        <div className="min-h-7 text-sm font-extrabold leading-tight text-fuchsia-700">
           {hasPrice ? (
             <>
               <span className="whitespace-nowrap">
                 {costume.priceMin.toLocaleString("vi-VN")} VND
               </span>
-              <span className="ml-1 text-[11px] font-normal text-slate-400">/ngày</span>
+              <span className="ml-1 text-[11px] font-semibold text-indigo-950/60">/ngày</span>
             </>
           ) : (
             "-"
@@ -134,7 +135,7 @@ export const CostumeCard = ({
         <Button
           variant="soft"
           size="sm"
-          className="mt-auto w-full rounded-md bg-pink-50 text-slate-700 hover:bg-pink-100"
+          className="mt-auto w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110"
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)
