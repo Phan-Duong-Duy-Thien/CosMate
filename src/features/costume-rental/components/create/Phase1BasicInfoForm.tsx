@@ -6,14 +6,15 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
-import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Row, Select, Tooltip, Upload, message } from 'antd'
+import { InboxOutlined, HighlightOutlined, RobotOutlined, StarFilled, InfoCircleOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import AILoadingMascot from '@/shared/components/AILoadingMascot'
+import { useUserProfile } from '@/app/providers/UserProfileProvider'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -57,6 +58,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [characters, setCharacters] = useState<CharacterOption[]>([])
   const [isCharactersLoading, setIsCharactersLoading] = useState(false)
   const [moderationError, setModerationError] = useState<string | null>(null)
+  const { deductNumberOfToken } = useUserProfile()
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -112,7 +114,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const handleGenerateDescription = async () => {
     const values = form.getFieldsValue()
     const name = String(values?.name || '').trim()
-    const promptText = String(form.getFieldValue('customPrompt') || '').trim()
+    const personaId = Number(form.getFieldValue('personaId')) || 1
     const files = extractFilesFromForm(values)
 
     if (!name) {
@@ -126,10 +128,11 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files, promptText)
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
-        message.success('AI đã tạo mô tả thành công.')
+        deductNumberOfToken(1)
+        message.success('AI đã tạo mô tả thành công. (-1 AI Token)')
       } else {
         message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
       }
@@ -227,30 +230,70 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           />
         </Form.Item>
 
-        <Card size="small" title="✨ AI Hỗ trợ viết mô tả" style={{ marginBottom: 16, background: '#fafcff', borderColor: '#d9e8ff' }}>
+        <div style={{ marginBottom: 24, background: 'linear-gradient(135deg, #F8FAFC 0%, #F1F5F9 100%)', borderRadius: 16, border: '1px solid #E2E8F0', padding: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <div style={{ background: 'linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)', borderRadius: 10, padding: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 6px rgba(139, 92, 246, 0.2)' }}>
+                <StarFilled style={{ color: 'white', fontSize: 18 }} />
+              </div>
+              <span style={{ fontWeight: 700, fontSize: 18, color: '#0F172A' }}>AI viết mô tả thông minh</span>
+            </div>
+            <Tooltip title="Nhập ảnh và tên trang phục để dùng chức năng AI tự động tạo mô tả trang phục">
+              <InfoCircleOutlined style={{ color: '#94A3B8', fontSize: 20, cursor: 'help' }} />
+            </Tooltip>
+          </div>
+
+          <Row gutter={12} style={{ marginBottom: 16 }}>
+            <Col flex="auto">
+              <Form.Item name="personaId" style={{ marginBottom: 0 }} initialValue={1}>
+                <Select size="large" style={{ width: '100%', borderRadius: 8 }}>
+                  <Select.Option value={1}>Phong cách Sale (Hấp dẫn, bán hàng)</Select.Option>
+                  <Select.Option value={2}>Phong cách Cute (Đáng yêu, nhí nhảnh)</Select.Option>
+                  <Select.Option value={3}>Phong cách Deep (Cổ trang, sâu lắng)</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                size="large"
+                icon={<HighlightOutlined />}
+                onClick={handleGenerateDescription}
+                loading={isAiGenerating}
+                disabled={disabled || loading || isAiGenerating || !canGenerateAI}
+                style={{
+                  background: 'linear-gradient(135deg, #6366F1 0%, #A855F7 100%)',
+                  border: 'none',
+                  fontWeight: 600,
+                  borderRadius: 8,
+                  padding: '0 20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  boxShadow: '0 4px 12px rgba(99, 102, 241, 0.3)'
+                }}
+              >
+                Tạo mô tả tự động
+              </Button>
+            </Col>
+          </Row>
+
           {isAiGenerating && (
-            <div style={{ marginBottom: 16 }}>
+            <div style={{ marginBottom: 16, background: 'white', padding: 12, borderRadius: 8, border: '1px dashed #CBD5E1' }}>
               <AILoadingMascot type="content" variant="inline" />
             </div>
           )}
 
-          <Form.Item label="Mô tả" name="description" style={{ marginBottom: 16 }}>
-            <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" disabled={isAiGenerating} />
+          <Form.Item name="description" style={{ marginBottom: 0 }}>
+            <TextArea
+              rows={5}
+              autoSize={{ minRows: 5, maxRows: 12 }}
+              placeholder="Mô tả chi tiết trang phục của bạn ở đây... (Hoặc để AI giúp bạn viết nó!)"
+              disabled={isAiGenerating}
+              style={{ borderRadius: 12, padding: '16px', fontSize: 15, borderColor: '#E2E8F0', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.02)' }}
+            />
           </Form.Item>
-
-          <Row gutter={12} align="middle">
-            <Col flex="auto">
-              <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt" style={{ marginBottom: 0 }}>
-                <Input.TextArea rows={3} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..." />
-              </Form.Item>
-            </Col>
-            <Col>
-              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI} style={{ marginTop: 30 }}>
-                AI tự viết mô tả
-              </Button>
-            </Col>
-          </Row>
-        </Card>
+        </div>
 
         <Form.Item label="Kích cỡ" name="size">
           <Select placeholder="Chọn kích cỡ">

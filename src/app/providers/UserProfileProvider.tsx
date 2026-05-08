@@ -4,12 +4,14 @@ import { isAuthenticated } from "@/features/auth/utils/authStorage"
 export interface UserProfileState {
   avatarUrl: string | null
   fullName: string | null
+  numberOfToken?: number
 }
 
 interface UserProfileContextValue {
   userProfile: UserProfileState
   setUserProfile: (profile: Partial<UserProfileState>) => void
   refreshProfile: () => void
+  deductNumberOfToken: (amount: number) => void
 }
 
 const STORAGE_KEY = "cosmate:userProfile"
@@ -23,7 +25,7 @@ function getStoredProfile(): UserProfileState {
   } catch {
     // Ignore parse errors
   }
-  return { avatarUrl: null, fullName: null }
+  return { avatarUrl: null, fullName: null, numberOfToken: undefined }
 }
 
 function storeProfile(profile: UserProfileState): void {
@@ -47,11 +49,20 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     })
   }, [])
 
+  const deductNumberOfToken = React.useCallback((amount: number) => {
+    setUserProfileState((prev) => {
+      if (prev.numberOfToken === undefined) return prev
+      const next = { ...prev, numberOfToken: Math.max(0, prev.numberOfToken - amount) }
+      storeProfile(next)
+      return next
+    })
+  }, [])
+
   // Function to refresh profile - called after login
   const refreshProfile = React.useCallback(() => {
     // Clear stored profile on login so it will be fetched fresh
     if (isAuthenticated()) {
-      setUserProfileState({ avatarUrl: null, fullName: null })
+      setUserProfileState({ avatarUrl: null, fullName: null, numberOfToken: undefined })
       localStorage.removeItem(STORAGE_KEY)
       // Dispatch event to trigger profile fetch in components
       window.dispatchEvent(new Event("profile:refresh"))
@@ -65,7 +76,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         refreshProfile()
       } else {
         // User logged out, clear profile
-        setUserProfileState({ avatarUrl: null, fullName: null })
+        setUserProfileState({ avatarUrl: null, fullName: null, numberOfToken: undefined })
         localStorage.removeItem(STORAGE_KEY)
       }
     }
@@ -75,7 +86,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   }, [refreshProfile])
 
   return (
-    <UserProfileContext.Provider value={{ userProfile, setUserProfile, refreshProfile }}>
+    <UserProfileContext.Provider value={{ userProfile, setUserProfile, refreshProfile, deductNumberOfToken }}>
       {children}
     </UserProfileContext.Provider>
   )

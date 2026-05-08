@@ -11,7 +11,7 @@ import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
-
+import { AITokenBadge } from '@/shared/components/AITokenBadge';
 const { Header, Sider, Content } = Layout;
 
 type LucideComponentLike = LucideIcon & {
@@ -227,10 +227,11 @@ export function DashboardLayout({
     const fetchProfile = async () => {
       try {
         const profile = await getUserProfile(userId);
-        if (profile?.avatarUrl || profile?.fullName) {
+        if (profile?.avatarUrl || profile?.fullName || profile?.numberOfToken !== undefined) {
           setUserProfile({
             avatarUrl: profile.avatarUrl ?? null,
             fullName: profile.fullName ?? null,
+            numberOfToken: profile.numberOfToken,
           });
         }
       } catch {
@@ -404,6 +405,7 @@ export function DashboardLayout({
                 )}
               </button>
             )}
+            <AITokenBadge />
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div
                 style={{

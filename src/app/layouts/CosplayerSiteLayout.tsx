@@ -37,6 +37,7 @@ import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
+import { AITokenBadge } from "@/shared/components/AITokenBadge"
 import bgImage from "@/assets/background.jpg"
 import sideBannerImage1 from "@/assets/anh1.jpg"
 import sideBannerImage2 from "@/assets/quiz1.jpg"
@@ -119,10 +120,11 @@ export default function CosplayerSiteLayout() {
 
       try {
         const profile = await getUserProfile(userId)
-        if (profile.avatarUrl || profile.fullName) {
+        if (profile.avatarUrl || profile.fullName || profile.numberOfToken !== undefined) {
           setUserProfile({
             avatarUrl: profile.avatarUrl ?? null,
             fullName: profile.fullName ?? null,
+            numberOfToken: profile.numberOfToken,
           })
         }
       } catch {
@@ -566,22 +568,25 @@ export default function CosplayerSiteLayout() {
             </Popover>
 
             {loggedIn ? (
-              <Dropdown 
-                menu={{ items: userMenuItems }} 
-                placement="bottomRight" 
-                trigger={["click"]} 
-                styles={{ root: { zIndex: 9999 } }}
-              >
-                <div className="cursor-pointer" style={{ display: "inline-flex" }}>
-                  {userProfile.avatarUrl ? (
-                    <Avatar size={36} src={userProfile.avatarUrl} />
-                  ) : (
-                    <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
-                      {computeInitials(userProfile.fullName)}
-                    </Avatar>
-                  )}
-                </div>
-              </Dropdown>
+              <>
+                <AITokenBadge />
+                <Dropdown 
+                  menu={{ items: userMenuItems }} 
+                  placement="bottomRight" 
+                  trigger={["click"]} 
+                  styles={{ root: { zIndex: 9999 } }}
+                >
+                  <div className="cursor-pointer" style={{ display: "inline-flex" }}>
+                    {userProfile.avatarUrl ? (
+                      <Avatar size={36} src={userProfile.avatarUrl} />
+                    ) : (
+                      <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
+                        {computeInitials(userProfile.fullName)}
+                      </Avatar>
+                    )}
+                  </div>
+                </Dropdown>
+              </>
             ) : (
               <>
                 <AntButton onClick={() => navigate("/login")}>Đăng nhập</AntButton>
