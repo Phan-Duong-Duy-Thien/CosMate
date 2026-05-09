@@ -3,16 +3,18 @@
  * Displays order summary, address selection, and payment method selection
  */
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { useCheckoutReview } from '../hooks/useCheckoutReview';
 import type { PaymentMethod } from '../types';
 import { message } from 'antd';
+import { CheckoutPolicyModal } from '../components/CheckoutPolicyModal';
 
 export default function CheckoutReviewPage() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
+  const [isGuidelinesModalOpen, setIsGuidelinesModalOpen] = useState(false);
   const {
     addresses,
     draft,
@@ -445,7 +447,21 @@ export default function CheckoutReviewPage() {
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-pink-500 focus:ring-pink-200"
                 />
                 <span className="text-sm text-slate-600">
-                  {VI.checkout.policy.label}
+                  <span className="whitespace-nowrap">
+                    Tôi đồng ý với{' '}
+                    <button
+                      type="button"
+                      className="inline text-pink-500 underline decoration-pink-300 decoration-[1.5px] underline-offset-2 transition-colors hover:text-pink-600"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsGuidelinesModalOpen(true);
+                      }}
+                    >
+                      Điều khoản dịch vụ
+                    </button>
+                  </span>{' '}
+                  <span>và Chính sách bảo mật</span>
                 </span>
               </label>
               {!policyAccepted && !isSubmitting && (
@@ -478,6 +494,10 @@ export default function CheckoutReviewPage() {
           </div>
         </div>
       </div>
+      <CheckoutPolicyModal
+        open={isGuidelinesModalOpen}
+        onClose={() => setIsGuidelinesModalOpen(false)}
+      />
     </section>
   );
 }
