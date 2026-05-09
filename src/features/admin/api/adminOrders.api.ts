@@ -7,6 +7,9 @@ interface PaginatedResponse<T> {
   totalElements: number;
 }
 
+/** Reserved for future server-side filters when BE supports them. */
+export type GetOrdersOptions = Record<string, unknown>;
+
 export async function getOrders(
   page = 1,
   pageSize = 10,

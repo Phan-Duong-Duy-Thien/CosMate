@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Input, Space, Table, Tag, Tooltip, Drawer, Descriptions, Select } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { Input, Table, Tag, Tooltip, Drawer, Descriptions, Select, message } from 'antd';
 import type { TableProps } from 'antd';
 import {
   SearchOutlined,
@@ -8,7 +8,8 @@ import {
 } from '@ant-design/icons';
 import { getCostumes } from '../api/adminCostumes.api';
 import { VI } from '@/shared/i18n/vi';
-import { getCostumeStatusTagProps } from '../utils/costumeStatus';
+import { COSTUME_STATUS_FILTER_VALUES, getCostumeStatusTagProps } from '../utils/costumeStatus';
+import { Button as UiButton } from '@/components/ui/button';
 
 interface CostumeRow {
   id: number;
@@ -47,7 +48,7 @@ export default function AdminCostumesPage() {
       setRows(content);
       setTotal(totalElements);
     } catch {
-      // silent
+      message.error(VI.admin.costumes.messages.fetchError);
     } finally {
       setLoading(false);
     }
@@ -56,11 +57,6 @@ export default function AdminCostumesPage() {
   useEffect(() => {
     fetchCostumes();
   }, [fetchCostumes]);
-
-  const allStatuses = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.status).filter(Boolean))).sort(),
-    [rows]
-  );
 
   const handleViewDetail = (costume: CostumeRow) => {
     setSelectedCostume(costume);
@@ -107,7 +103,7 @@ export default function AdminCostumesPage() {
       width: 140,
       align: 'right',
       render: (v: number | undefined) => (
-        <span style={{ color: 'var(--primary)', fontWeight: 600 }}>{formatCurrency(v)}</span>
+        <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{formatCurrency(v)}</span>
       ),
     },
     {
@@ -165,11 +161,10 @@ export default function AdminCostumesPage() {
               allowClear
             />
 
-            <Space wrap>
-              <Button icon={<ReloadOutlined />} onClick={fetchCostumes} loading={loading}>
-                {VI.admin.costumes.toolbar.refresh}
-              </Button>
-            </Space>
+            <UiButton variant="outline" disabled={loading} onClick={() => void fetchCostumes()}>
+              <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+              {VI.admin.costumes.toolbar.refresh}
+            </UiButton>
           </div>
 
           {/* TẦNG 2: Bộ lọc */}
@@ -182,7 +177,7 @@ export default function AdminCostumesPage() {
                 setPage(1);
               }}
               style={{ width: 180 }}
-              options={allStatuses.map((s) => {
+              options={COSTUME_STATUS_FILTER_VALUES.map((s) => {
                 const { label } = getCostumeStatusTagProps(s);
                 return { label, value: s };
               })}
