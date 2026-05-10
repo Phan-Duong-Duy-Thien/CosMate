@@ -218,7 +218,7 @@ export default function ChatPage() {
       {/* Right - Chat Container */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 pt-3 pb-2.5 shadow-sm">
           <div className="flex items-center gap-3">
             <button
               type="button"

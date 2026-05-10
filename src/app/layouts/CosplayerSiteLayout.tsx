@@ -99,8 +99,8 @@ export default function CosplayerSiteLayout() {
       const userId = getUserId()
       if (!userId) return
 
-      // Skip if already loaded
-      if (userProfile.avatarUrl || userProfile.fullName) return
+      // Skip only when we already have a user photo (fullName alone is not enough)
+      if (userProfile.avatarUrl) return
 
       try {
         const profile = await getUserProfile(userId)
@@ -116,7 +116,7 @@ export default function CosplayerSiteLayout() {
     }
 
     fetchProfile()
-  }, [loggedIn, userProfile.avatarUrl, userProfile.fullName, setUserProfile])
+  }, [loggedIn, userProfile.avatarUrl, setUserProfile])
 
   React.useEffect(() => {
     const path = location.pathname

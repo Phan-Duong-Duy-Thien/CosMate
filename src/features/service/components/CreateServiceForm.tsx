@@ -31,6 +31,7 @@ import { useAreaLocations } from '@/shared/hooks/useAreaLocations';
 import { useCreateService } from '../hooks/useCreateService';
 import { useUpdateService } from '../hooks/useUpdateService';
 import { VI } from '@/shared/i18n/vi';
+import { getServiceTypeDisplayLabel } from '../utils/serviceTypeDisplay';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -257,7 +258,7 @@ export function CreateServiceForm({
         <Space orientation="vertical" size={4} style={{ width: '100%' }}>
           <div className="flex items-center gap-3">
             <Text type="secondary">{VI.service.create.form.serviceType}:</Text>
-            <Tag color="purple">{serviceType}</Tag>
+            <Tag color="purple">{getServiceTypeDisplayLabel(serviceType)}</Tag>
           </div>
           <div className="flex items-center gap-3">
             <Text type="secondary">{VI.service.create.form.providerId}:</Text>

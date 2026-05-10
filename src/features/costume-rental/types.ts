@@ -148,7 +148,7 @@ export interface RentalOptionInput {
 // â”€â”€â”€ Backend API Types (Provider / Costume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Status values returned by the backend for a Costume */
-export type CostumeStatus = 'AVAILABLE' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
+export type CostumeStatus = 'AVAILABLE' | 'RENTED' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
 
 export interface CostumeSurcharge {
   id: number

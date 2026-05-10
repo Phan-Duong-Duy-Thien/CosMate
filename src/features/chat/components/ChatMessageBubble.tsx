@@ -44,7 +44,7 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
             />
             <p
               className={cn(
-                "px-2 pb-1 text-[10px]",
+                "px-1.5 pb-0.5 pt-0.5 text-[10px]",
                 isMine ? "text-right text-pink-200" : "text-slate-400"
               )}
             >
@@ -84,16 +84,16 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
     <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
       <div
         className={cn(
-          "group relative max-w-[70%] rounded-2xl px-4 py-2.5 text-sm shadow-sm transition-all overflow-hidden",
+          "group relative max-w-[70%] rounded-xl px-2.5 py-1.5 text-sm shadow-sm transition-all overflow-hidden",
           isMine
             ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
             : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
         )}
       >
-        <p className="whitespace-pre-wrap wrap-break-word leading-relaxed">{message.content}</p>
+        <p className="whitespace-pre-wrap wrap-break-word leading-snug">{message.content}</p>
         <p
           className={cn(
-            "mt-1 flex items-center gap-1 text-[10px]",
+            "mt-0.5 flex items-center gap-1 text-[10px]",
             isMine ? "justify-end text-pink-200" : "text-slate-400"
           )}
         >
