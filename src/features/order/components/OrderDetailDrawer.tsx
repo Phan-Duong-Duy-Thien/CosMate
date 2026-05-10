@@ -70,6 +70,14 @@ const getStatusLabel = (status: OrderStatus): string => {
   return statusMap[status] || status;
 };
 
+function formatTrackingDescription(trackingStatus: string, stage: string): string {
+  const statusMap = VI.order.detail.trackingStatusLabels as Record<string, string>;
+  const stageMap = VI.order.detail.trackingStageLabels as Record<string, string>;
+  const statusLabel = statusMap[trackingStatus] ?? trackingStatus;
+  const stageLabel = stageMap[stage] ?? stage;
+  return `${statusLabel} · ${stageLabel}`;
+}
+
 const getStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
     UNPAID: 'orange',
@@ -405,7 +413,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <List.Item>
             <List.Item.Meta
               title={item.trackingCode}
-              description={`${item.trackingStatus} - ${item.stage}`}
+              description={formatTrackingDescription(item.trackingStatus, item.stage)}
             />
             <Text type="secondary">{formatDate(item.createdAt)}</Text>
           </List.Item>
@@ -425,7 +433,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <div key={img.id} className="relative overflow-hidden rounded border">
             <img src={img.imageUrl} alt="" className="h-20 w-full object-cover" />
             <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5 text-xs text-white">
-              {img.stage}
+              {(VI.order.detail.trackingStageLabels as Record<string, string>)[img.stage] ?? img.stage}
             </div>
           </div>
         ))}

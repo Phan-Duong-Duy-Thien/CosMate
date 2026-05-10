@@ -136,6 +136,7 @@ export const VI = {
       online: "Trực tuyến",
       offline: "Ngoại tuyến",
       loadingDots: "Đang tải...",
+      countOverflow: "99+",
     },
 
     // Toast messages
@@ -185,6 +186,9 @@ export const VI = {
       chatNoUsersFound: "Không tìm thấy người dùng",
       chatNeedLogin: "Vui lòng đăng nhập để nhắn tin.",
       chatStartFailed: "Không thể mở cuộc trò chuyện.",
+      chatSelfNotAllowed: "Không thể mở chat với chính mình.",
+      chatRoomNotFound:
+        "Chưa có phòng chat với người này. Bắt đầu nhắn từ trang dịch vụ / cửa hàng để mở cuộc trò chuyện.",
     },
   },
 
@@ -1000,8 +1004,9 @@ export const VI = {
       statusUnpaid: "Chưa thanh toán",
       // Card display
       orderTitle: "Đơn hàng",
+      orderCodeLabel: "Mã đơn",
       cardCostumeName: "Trang phục",
-      orderCodePrefix: "CM",
+      orderCodePrefix: "RN",
       cardRentPeriod: "Thuê",
       cardDayCount: "ngày",
       cardTotal: "Tổng cộng",
@@ -1065,12 +1070,16 @@ export const VI = {
       empty: "Chưa có đơn đặt dịch vụ nào",
       loadError: "Không thể tải danh sách đơn đặt dịch vụ",
       orderTitle: "Đặt dịch vụ",
-      orderCodePrefix: "DV",
+      orderCodePrefix: "SE",
       cardBookingDate: "Ngày đặt",
       cardTimeSlot: "Khung giờ",
       cardPeopleCount: "Số người",
       cardSlotAmount: "Số slot",
       cardBookings: "Lịch đặt",
+      /** Cột / modal: tiền theo slot (không nhầm với «số slot») */
+      detailSlotAmount: "Thành tiền slot",
+      detailStatusLabel: "Trạng thái",
+      detailCreatedLabel: "Ngày tạo đơn",
       cardBookingsCount: "lịch đặt",
       cardMoreBookings: "thêm lịch đặt",
       statusUnconfirm: "Chờ xác nhận",
@@ -1231,6 +1240,23 @@ export const VI = {
       trackingCode: "Mã vận đơn",
       trackingStatus: "Trạng thái",
       stage: "Giai đoạn",
+      /** Mã API `trackingStatus` → hiển thị tiếng Việt (theo dõi vận chuyển) */
+      trackingStatusLabels: {
+        CREATED: "Đã ghi nhận vận đơn",
+        RETURN_CREATED: "Đã ghi nhận vận đơn trả hàng",
+        UPDATED: "Đã cập nhật",
+        DELIVERED: "Đã giao",
+        CANCELLED: "Đã hủy",
+      },
+      /** Mã API `stage` → hiển thị tiếng Việt */
+      trackingStageLabels: {
+        SHIPPING_OUT: "Đang giao đến khách",
+        SHIPPING_BACK: "Đang hoàn trả về cửa hàng",
+        DELIVERING_OUT: "Chờ khách xác nhận nhận hàng",
+        RETURNED: "Đã trả hàng",
+        PREPARING: "Đang chuẩn bị",
+        IN_TRANSIT: "Đang vận chuyển",
+      },
     },
     actions: {
       viewDetail: "Xem chi tiết",

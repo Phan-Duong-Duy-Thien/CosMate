@@ -1,8 +1,7 @@
 import { useState, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
-import { message, Tooltip, Modal } from "antd"
-import { MessageOutlined } from "@ant-design/icons"
+import { message, Tooltip, Modal, Table } from "antd"
 import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { useServiceOrders, type ServiceOrderTab } from "../hooks/useServiceOrders"
@@ -21,10 +20,9 @@ import { ServicePaymentModal } from "@/features/service/components/ServicePaymen
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
   PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw,
-  CalendarClock, WalletCards, AlertCircle, Ban
+  CalendarClock, WalletCards, Ban
 } from "lucide-react"
-import type { ServiceOrder } from "@/features/service/api/booking.api"
-
+import type { ServiceOrder, ServiceOrderBooking } from "@/features/service/api/booking.api"
 // ─── Parent Tab ────────────────────────────────────────────────────────────────
 
 type ParentTab = 'costume' | 'service'
@@ -91,6 +89,20 @@ const SERVICE_TAB_ICONS: Record<ServiceOrderTab, React.ElementType> = {
   CANCELLED: Ban,
 }
 
+/** Trạng thái đơn dịch vụ — badge nhất quán thẻ & modal chi tiết */
+const SERVICE_ORDER_STATUS_BADGE: Record<string, string> = {
+  UNCONFIRM: 'bg-amber-50 text-amber-900 ring-1 ring-amber-200/90',
+  UNPAID: 'bg-orange-50 text-orange-900 ring-1 ring-orange-200/90',
+  PAID: 'bg-blue-50 text-blue-900 ring-1 ring-blue-200/90',
+  WAITING_SERVICE_DATE:
+    'bg-cosmate-soft-pink/80 text-cosmate-pink ring-2 ring-cosmate-pink/40 shadow-sm',
+  IN_SERVICE:
+    'bg-cosmate-soft-pink text-cosmate-pink ring-2 ring-cosmate-pink/50 shadow-sm',
+  COMPLETED: 'bg-emerald-50 text-emerald-900 ring-1 ring-emerald-200/90',
+  DISPUTE: 'bg-red-50 text-red-900 ring-1 ring-red-200/90',
+  CANCELLED: 'bg-muted text-muted-foreground ring-1 ring-border',
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 // Format date safely
@@ -100,6 +112,14 @@ const formatDate = (dateString: string | undefined | null): string => {
   if (isNaN(date.getTime())) return '-';
   return date.toLocaleDateString('vi-VN');
 };
+
+/** Hiển thị mã đơn (cosplay thuê vs dịch vụ) — khớp VI prefix RN- / SE- */
+const formatCostumeOrderCode = (id: number) =>
+  `${VI.profile.orders.orderCodePrefix}-${String(id).padStart(4, '0')}`;
+const formatServiceOrderCode = (id: number) =>
+  `${VI.profile.serviceOrders.orderCodePrefix}-${String(id).padStart(4, '0')}`;
+
+const formatVnd = (amount: number) => `${amount.toLocaleString('vi-VN')} ₫`;
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -157,7 +177,7 @@ export default function PurchaseHistoryPage() {
   const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
   const [existingReview, setExistingReview] = useState<ReviewItem | null>(null)
 
-  const { submit: submitReview, loading: reviewingOrderId } = useCreateReview()
+  const { submit: submitReview, loading: isReviewSubmitting } = useCreateReview()
   const { createDispute, disputingOrderId } = useCreateDispute()
   const { cancelOrder, cancellingOrderId } = useCancelOrder()
   const { extendOrder, isExtending, getDetailIdFromOrder } = useExtendOrder()
@@ -361,37 +381,38 @@ export default function PurchaseHistoryPage() {
       COMPLETED: VI.profile.orders.tabCompleted,
       CANCELLED: VI.profile.orders.tabCancelled,
       DISPUTE: VI.profile.orders.tabDispute,
+      EXTENDING: VI.provider.orders.tabs.extending,
     }[order.status] || order.status
 
     const statusBadgeColor: Record<string, string> = {
       UNPAID: 'bg-orange-100 text-orange-700',
       PAID: 'bg-blue-100 text-blue-700',
-      PREPARING: 'bg-purple-100 text-purple-700',
+      PREPARING: 'bg-cosmate-soft-pink text-cosmate-pink',
       SHIPPING_OUT: 'bg-cyan-100 text-cyan-700',
       DELIVERING_OUT: 'bg-cyan-100 text-cyan-700',
       DELIVERY_OUT: 'bg-cyan-100 text-cyan-700',
-      IN_USE: 'bg-purple-100 text-purple-700',
+      IN_USE: 'bg-cosmate-soft-pink text-cosmate-pink',
+      EXTENDING: 'bg-cosmate-soft-pink text-cosmate-pink',
       SHIPPING_BACK: 'bg-orange-100 text-orange-700',
       RETURNED: 'bg-green-100 text-green-700',
       COMPLETED: 'bg-green-100 text-green-700',
       CANCELLED: 'bg-slate-200 text-slate-600',
+      DISPUTE: 'bg-red-100 text-red-700',
     }
     const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
 
-    const isUnpaid = order.status === 'UNPAID'
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
     const isInUse = order.status === 'IN_USE'
     const isCancellable = order.status === 'UNPAID' || order.status === 'PAID'
 
-    console.log('[ORDER ACTION]', order.id, order.status)
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
 
-    const orderCode = `${VI.profile.orders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
+    const orderCode = formatCostumeOrderCode(order.id)
 
     return (
       <div
         key={order.id}
-        className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
+        className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md hover:border-cosmate-soft-pink/80"
       >
         {/* Left: Thumbnail */}
         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
@@ -409,20 +430,16 @@ export default function PurchaseHistoryPage() {
         </div>
 
         {/* Middle: Info */}
-        <div className="flex flex-1 flex-col justify-between">
-          {/* Top row: order code + status badge */}
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-slate-900">
-                {order.costumeName || VI.profile.orders.cardCostumeName}
-              </h3>
-              <p className="mt-0.5 text-sm font-medium text-slate-500">
-                {VI.profile.orders.orderTitle} {orderCode}
-              </p>
-            </div>
-            <span className={`ml-2 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}>
-              {statusLabel}
-            </span>
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          {/* Title + order code — badge ở cột phải */}
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-slate-900">
+              {order.costumeName || VI.profile.orders.cardCostumeName}
+            </h3>
+            <p className="mt-0.5 text-sm font-medium text-slate-500">
+              {VI.profile.orders.orderCodeLabel}:{' '}
+              <span className="font-semibold text-cosmate-pink">{orderCode}</span>
+            </p>
           </div>
 
           {/* Middle row: rental period + item count */}
@@ -446,7 +463,7 @@ export default function PurchaseHistoryPage() {
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-cosmate-pink"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -486,19 +503,6 @@ export default function PurchaseHistoryPage() {
                 </button>
               </>
             )}
-
-            {isDeliveringOut && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleConfirmDelivery(order.id)}
-                  disabled={confirmingDeliveryId === order.id}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-                >
-                  {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
-                </button>
-              </>
-            )}
             {isInUse && (
               <>
                 <button
@@ -516,7 +520,7 @@ export default function PurchaseHistoryPage() {
                     setExtendModalOpen(true)
                   }}
                   disabled={isExtending}
-                  className="flex items-center gap-1 rounded-lg bg-purple-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-600 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-lg bg-cosmate-pink px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   {VI.provider.orders.tabs.extending}
@@ -527,32 +531,26 @@ export default function PurchaseHistoryPage() {
               <button
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
-                disabled={reviewingOrderId === order.id}
+                disabled={isReviewSubmitting && reviewOrderId === order.id}
                 className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
               >
                 <Star className="h-3.5 w-3.5" />
-                {reviewingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
+                {isReviewSubmitting && reviewOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
               </button>
             )}
           </div>
         </div>
 
-        {/* Right: Total amount + Chat */}
-        <div className="flex flex-col items-end justify-between text-right">
-          <span className="text-base font-bold text-purple-600">
+        {/* Right: status + total — căn sát viền phải thẻ */}
+        <div className="flex shrink-0 flex-col items-end justify-between gap-2 text-right">
+          <span
+            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}
+          >
+            {statusLabel}
+          </span>
+          <span className="text-base font-bold text-cosmate-pink">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
-          {order.cosplayerId && (
-            <Tooltip title={VI.profile.serviceOrders.chatTooltip}>
-              <button
-                type="button"
-                onClick={() => navigate(`/messages?target=${order.cosplayerId}`)}
-                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
-              >
-                <MessageOutlined className="text-lg" />
-              </button>
-            </Tooltip>
-          )}
         </div>
       </div>
     )
@@ -561,18 +559,10 @@ export default function PurchaseHistoryPage() {
   // ── Service order card renderer ─────────────────────────────────────────────
   const renderServiceOrderItem = (order: ServiceOrder) => {
     const statusLabel = SERVICE_TAB_LABELS[order.status as ServiceOrderTab] || order.status
-    const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
-    const statusBadgeColor: Record<string, string> = {
-      UNCONFIRM: 'bg-orange-100 text-orange-700',
-      UNPAID: 'bg-orange-100 text-orange-700',
-      PAID: 'bg-blue-100 text-blue-700',
-      WAITING_SERVICE_DATE: 'bg-purple-100 text-purple-700',
-      IN_SERVICE: 'bg-cyan-100 text-cyan-700',
-      COMPLETED: 'bg-green-100 text-green-700',
-      DISPUTE: 'bg-red-100 text-red-700',
-      CANCELLED: 'bg-slate-200 text-slate-600',
-    }
-    const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
+    const orderCode = formatServiceOrderCode(order.id)
+    const badgeColorClass =
+      SERVICE_ORDER_STATUS_BADGE[order.status] ??
+      'bg-blue-50 text-blue-900 ring-1 ring-blue-200/90'
     const isUnconfirm = order.status === 'UNCONFIRM'
     const isUnpaid = order.status === 'UNPAID'
     const isConfirmProcessing = confirmingOrderId === order.id
@@ -582,54 +572,34 @@ export default function PurchaseHistoryPage() {
     return (
       <div
         key={order.id}
-        className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
+        className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md hover:border-cosmate-soft-pink/80"
       >
         {/* Left: Icon */}
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-purple-50 flex items-center justify-center">
-          <CalendarClock className="h-10 w-10 text-purple-400" />
+        <div className="flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-cosmate-soft-pink/70">
+          <CalendarClock className="h-10 w-10 text-cosmate-pink" />
         </div>
 
         {/* Middle: Info */}
-        <div className="flex flex-1 flex-col justify-between">
-          {/* Top row: order code + status badge */}
-          <div className="flex items-start justify-between">
-            <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-slate-900">
-                {VI.profile.serviceOrders.orderTitle}
-              </h3>
-              <p className="mt-0.5 text-sm font-medium text-slate-500">
-                {orderCode}
-              </p>
-            </div>
-            <span className={`ml-2 shrink-0 rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}>
-              {statusLabel}
-            </span>
+        <div className="flex min-w-0 flex-1 flex-col justify-between">
+          <div className="min-w-0">
+            <h3 className="truncate font-semibold text-slate-900">
+              {VI.profile.serviceOrders.orderTitle}
+            </h3>
+            <p className="mt-0.5 text-sm font-medium text-slate-500">
+              {VI.profile.orders.orderCodeLabel}:{' '}
+              <span className="font-semibold text-cosmate-pink">{orderCode}</span>
+            </p>
           </div>
 
-          {/* Middle row: booking details */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
-            <span className="flex items-center gap-1">
-              <CalendarClock className="h-3.5 w-3.5" />
-              {order.bookings.length} {order.bookings.length === 1 ? VI.profile.serviceOrders.cardBookings : VI.profile.serviceOrders.cardBookingsCount}
+          {/* Một dòng tóm tắt — chi tiết lịch chỉ trong modal */}
+          <div className="mt-1 text-sm text-muted-foreground">
+            <span className="inline-flex items-center gap-1.5">
+              <CalendarClock className="h-3.5 w-3.5 shrink-0" />
+              <span>
+                {VI.profile.serviceOrders.detailCreatedLabel}:{' '}
+                <span className="font-medium text-foreground">{formatDate(order.createdAt)}</span>
+              </span>
             </span>
-            <span>{formatDate(order.createdAt)}</span>
-          </div>
-
-          {/* Bottom row: bookings summary */}
-          <div className="mt-2 flex flex-col gap-1">
-            {order.bookings.slice(0, 2).map((booking) => (
-              <div key={booking.id} className="flex flex-wrap items-center gap-x-3 text-xs text-slate-500">
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600">
-                  {formatDate(booking.bookingDate)}
-                </span>
-                <span>{booking.timeSlot}</span>
-                <span>{booking.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}</span>
-                <span>{booking.rentSlotAmount} {VI.profile.serviceOrders.cardSlotAmount}</span>
-              </div>
-            ))}
-            {order.bookings.length > 2 && (
-              <span className="text-xs text-slate-400">+{order.bookings.length - 2} {VI.profile.serviceOrders.cardMoreBookings}</span>
-            )}
           </div>
 
           {/* Bottom row: CTA buttons */}
@@ -640,7 +610,7 @@ export default function PurchaseHistoryPage() {
                 setServiceDetailOrder(order)
                 setServiceDetailModalOpen(true)
               }}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-cosmate-pink"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -653,7 +623,7 @@ export default function PurchaseHistoryPage() {
                   if (isConfirmProcessing || isPayProcessing) return
                   handleOpenPaymentModal(order.id, isUnconfirm ? 'confirm-pay' : 'pay-only')
                 }}
-                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+                className="rounded-lg bg-cosmate-pink px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
               >
                 {isConfirmProcessing || isPayProcessing
                   ? VI.profile.serviceOrders.btnProcessing
@@ -676,22 +646,16 @@ export default function PurchaseHistoryPage() {
           </div>
         </div>
 
-        {/* Right: Total amount + Chat */}
-        <div className="flex flex-col items-end justify-between text-right">
-          <span className="text-base font-bold text-purple-600">
+        {/* Right: status + total */}
+        <div className="flex shrink-0 flex-col items-end justify-between gap-2 text-right">
+          <span
+            className={`rounded-full px-3 py-1 text-xs font-semibold tracking-tight ${badgeColorClass}`}
+          >
+            {statusLabel}
+          </span>
+          <span className="text-base font-bold text-cosmate-pink">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
-          {order.providerId && (
-            <Tooltip title={VI.profile.serviceOrders.chatTooltip}>
-              <button
-                type="button"
-                onClick={() => navigate(`/messages?target=${order.providerId}`)}
-                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
-              >
-                <MessageOutlined className="text-lg" />
-              </button>
-            </Tooltip>
-          )}
         </div>
       </div>
     )
@@ -702,7 +666,7 @@ export default function PurchaseHistoryPage() {
     activeTab: OrderTab | ServiceOrderTab,
     tabLabels: Record<string, string>,
     tabIcons: Record<string, React.ElementType>,
-    countsObj: Record<string, number>,
+    countsObj: Readonly<Record<string, number>>,
     onTabClick: (tab: string) => void
   ) => (
     <div className="mt-4 flex flex-wrap justify-center gap-2">
@@ -715,17 +679,17 @@ export default function PurchaseHistoryPage() {
             <button
               type="button"
               onClick={() => onTabClick(tabKey)}
-              className={`relative flex items-center justify-center rounded-full w-10 h-10 transition-colors ${
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                 isActive
-                  ? "bg-purple-600 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? 'bg-cosmate-pink text-primary-foreground shadow-sm'
+                  : 'bg-muted/60 text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
               }`}
             >
               <Icon className="h-4 w-4" />
               {count > 0 && (
                 <span
-                  className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                    isActive ? "bg-white text-purple-600" : "bg-purple-600 text-white"
+                  className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+                    isActive ? 'bg-primary-foreground text-cosmate-pink' : 'bg-cosmate-pink text-primary-foreground'
                   }`}
                 >
                   {count > 99 ? VI.common.status.countOverflow : count}
@@ -774,7 +738,7 @@ export default function PurchaseHistoryPage() {
             type="button"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-cosmate-pink disabled:cursor-not-allowed disabled:opacity-40"
           >
             ‹
           </button>
@@ -788,8 +752,8 @@ export default function PurchaseHistoryPage() {
                 onClick={() => onPageChange(p)}
                 className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border text-sm transition-colors ${
                   p === currentPage
-                    ? 'border-purple-600 bg-purple-600 text-white'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? 'border-cosmate-pink bg-cosmate-pink text-primary-foreground'
+                    : 'border-border text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
                 }`}
               >
                 {p}
@@ -800,7 +764,7 @@ export default function PurchaseHistoryPage() {
             type="button"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-cosmate-pink disabled:cursor-not-allowed disabled:opacity-40"
           >
             ›
           </button>
@@ -810,20 +774,20 @@ export default function PurchaseHistoryPage() {
   }
 
   // ── Content renderer ─────────────────────────────────────────────────────────
-  const renderContent = (
+  function renderContent<T>(
     isLoading: boolean,
     hasError: boolean,
     isEmpty: boolean,
     emptyLabel: string,
     loadErrorLabel: string,
-    renderItem: (item: any) => React.ReactNode,
-    items: any[]
-  ) => {
+    renderItem: (item: T) => React.ReactNode,
+    items: T[]
+  ): React.ReactNode {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
-          <span className="ml-2 text-slate-600">{VI.common.status.loading}</span>
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-cosmate-pink border-t-transparent" />
+          <span className="ml-2 text-muted-foreground">{VI.common.status.loading}</span>
         </div>
       )
     }
@@ -845,6 +809,7 @@ export default function PurchaseHistoryPage() {
     return <div className="space-y-3">{items.map(renderItem)}</div>
   }
 
+
   return (
     <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-wallet-from via-wallet-via to-wallet-to px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
@@ -863,8 +828,8 @@ export default function PurchaseHistoryPage() {
                   onClick={() => handleParentTabClick(tabKey)}
                   className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? 'bg-cosmate-pink text-primary-foreground shadow-sm'
+                      : 'bg-muted/60 text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -882,7 +847,7 @@ export default function PurchaseHistoryPage() {
                 costumeTab,
                 TAB_LABELS,
                 TAB_ICONS,
-                counts,
+                counts as unknown as Readonly<Record<string, number>>,
                 handleTabClick
               )}
 
@@ -926,7 +891,7 @@ export default function PurchaseHistoryPage() {
                 selectedStatus,
                 SERVICE_TAB_LABELS,
                 SERVICE_TAB_ICONS,
-                serviceCounts,
+                serviceCounts as unknown as Readonly<Record<string, number>>,
                 (tab) => setStatus(tab as ServiceOrderTab)
               )}
 
@@ -957,7 +922,7 @@ export default function PurchaseHistoryPage() {
                 servicePageSize,
                 serviceTotal,
                 setServicePage,
-                VI.profile.serviceOrders.paginationService
+                VI.profile.orders.paginationService
               )}
             </>
           )}
@@ -1008,53 +973,98 @@ export default function PurchaseHistoryPage() {
         width={720}
       >
         {serviceDetailOrder && (
-          <div className="space-y-4">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <div className="grid grid-cols-1 gap-2 text-sm text-slate-600 md:grid-cols-2">
-                <p>
-                  <span className="font-medium text-slate-700">{VI.profile.serviceOrders.orderCodePrefix}:</span>{" "}
-                  {String(serviceDetailOrder.id).padStart(4, '0')}
-                </p>
-                <p>
-                  <span className="font-medium text-slate-700">{VI.profile.orders.cardTotal}:</span>{" "}
-                  {serviceDetailOrder.totalAmount.toLocaleString('vi-VN')} ₫
-                </p>
-                <p>
-                  <span className="font-medium text-slate-700">Trạng thái:</span>{" "}
-                  {SERVICE_TAB_LABELS[serviceDetailOrder.status as ServiceOrderTab] || serviceDetailOrder.status}
-                </p>
-                <p>
-                  <span className="font-medium text-slate-700">Ngày tạo đơn:</span>{" "}
-                  {formatDate(serviceDetailOrder.createdAt)}
-                </p>
-              </div>
+          <div className="space-y-5">
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <dl className="grid gap-4 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-muted-foreground">
+                    {VI.profile.orders.orderCodeLabel}
+                  </dt>
+                  <dd className="text-base font-semibold text-cosmate-pink">
+                    {formatServiceOrderCode(serviceDetailOrder.id)}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-muted-foreground">
+                    {VI.profile.orders.cardTotal}
+                  </dt>
+                  <dd className="text-base font-semibold text-foreground">
+                    {formatVnd(serviceDetailOrder.totalAmount)}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-muted-foreground">
+                    {VI.profile.serviceOrders.detailStatusLabel}
+                  </dt>
+                  <dd className="mt-0.5">
+                    <span
+                      className={`inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold tracking-tight ${
+                        SERVICE_ORDER_STATUS_BADGE[serviceDetailOrder.status] ??
+                        'bg-muted text-foreground ring-1 ring-border'
+                      }`}
+                    >
+                      {SERVICE_TAB_LABELS[serviceDetailOrder.status as ServiceOrderTab] ||
+                        serviceDetailOrder.status}
+                    </span>
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-muted-foreground">
+                    {VI.profile.serviceOrders.detailCreatedLabel}
+                  </dt>
+                  <dd className="text-sm font-medium text-foreground">
+                    {formatDate(serviceDetailOrder.createdAt)}
+                  </dd>
+                </div>
+              </dl>
             </div>
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-800">
+              <h3 className="mb-3 text-sm font-semibold text-foreground">
                 {VI.profile.serviceOrders.cardBookings}
               </h3>
-              <div className="space-y-2">
-                {serviceDetailOrder.bookings.map((booking) => (
-                  <div
-                    key={booking.id}
-                    className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600"
-                  >
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="font-medium text-slate-700">
-                        {formatDate(booking.bookingDate)}
-                      </span>
-                      <span>{booking.timeSlot}</span>
-                      <span>
-                        {booking.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}
-                      </span>
-                      <span>
-                        {booking.rentSlotAmount} {VI.profile.serviceOrders.cardSlotAmount}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {serviceDetailOrder.bookings.length === 0 ? (
+                <p className="rounded-xl border border-border bg-muted/30 px-4 py-6 text-center text-sm text-muted-foreground">
+                  {VI.common.status.noData}
+                </p>
+              ) : (
+                <Table<ServiceOrderBooking>
+                  size="small"
+                  pagination={false}
+                  rowKey="id"
+                  dataSource={serviceDetailOrder.bookings}
+                  scroll={{ x: 'max-content' }}
+                  className="[&_.ant-table]:rounded-xl [&_.ant-table]:border [&_.ant-table]:border-border [&_.ant-table-container]:!rounded-xl"
+                  columns={[
+                    {
+                      title: VI.profile.serviceOrders.cardBookingDate,
+                      dataIndex: 'bookingDate',
+                      key: 'bookingDate',
+                      render: (d: string) => formatDate(d),
+                    },
+                    {
+                      title: VI.profile.serviceOrders.cardTimeSlot,
+                      dataIndex: 'timeSlot',
+                      key: 'timeSlot',
+                      width: 120,
+                    },
+                    {
+                      title: VI.profile.serviceOrders.cardPeopleCount,
+                      dataIndex: 'numberOfHuman',
+                      key: 'numberOfHuman',
+                      align: 'center',
+                      width: 100,
+                    },
+                    {
+                      title: VI.profile.serviceOrders.detailSlotAmount,
+                      dataIndex: 'rentSlotAmount',
+                      key: 'rentSlotAmount',
+                      align: 'right',
+                      render: (v: number) => formatVnd(v),
+                    },
+                  ]}
+                />
+              )}
             </div>
           </div>
         )}
@@ -1064,7 +1074,7 @@ export default function PurchaseHistoryPage() {
         open={reviewModalOpen}
         orderId={reviewOrderId || 0}
         cosplayerId={reviewCosplayerId || 0}
-        loading={!!reviewingOrderId}
+        loading={isReviewSubmitting}
         onCancel={() => {
           setReviewModalOpen(false)
           setReviewOrderId(null)
