@@ -351,6 +351,10 @@ export const VI = {
    * Authentication text
    */
   auth: {
+    hero: {
+      promoLine: "Tìm nhân vật của bạn",
+    },
+
     login: {
       title: "Mừng bạn đến với CosMate",
       subtitle: "Đăng nhập để tiếp tục hành trình cosplay của bạn",
@@ -380,6 +384,8 @@ export const VI = {
         loginSuccess: "Đăng nhập thành công! Chào mừng bạn trở lại CosMate 🎉",
         invalidCredentials: "Không thể đăng nhập. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
       },
+
+      googleNotConfigured: "(chưa cấu hình)",
     },
 
     forgotPassword: {
@@ -466,6 +472,30 @@ export const VI = {
       haveAccount: "Đã có tài khoản?",
       signIn: "Đăng nhập",
       createAccount: "Tạo tài khoản",
+
+      chooseOtherRole: "Chọn vai trò khác",
+      continueWithForm: "Hoặc tiếp tục đăng ký với biểu mẫu",
+      googleComingSoon: "sắp có",
+
+      byRole: {
+        cosplayer: {
+          title: "Tạo tài khoản Cosplayer",
+          subtitle: "Tham gia cộng đồng CosMate và bắt đầu hành trình cosplay của bạn.",
+        },
+        provider: {
+          title: "Tạo tài khoản nhà cung cấp trang phục",
+          subtitle:
+            "Tham gia CosMate với vai trò nhà cung cấp cho thuê trang phục và quản lý danh mục của bạn.",
+        },
+        staff: {
+          title: "Tạo tài khoản nhân viên sự kiện",
+          subtitle: "Tham gia CosMate với vai trò nhân viên sự kiện và hỗ trợ các hoạt động cosplay.",
+        },
+        photographer: {
+          title: "Tạo tài khoản nhiếp ảnh gia",
+          subtitle: "Tham gia CosMate để cung cấp dịch vụ chụp ảnh cho cosplayer.",
+        },
+      },
 
       roleSelect: {
         title: "Chọn vai trò của bạn",
