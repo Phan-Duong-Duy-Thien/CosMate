@@ -4,11 +4,11 @@ description: >-
   Enforces CosMate_FE UI design tokens (src/index.css), @/components/ui
   primitives, Tailwind-first layout, and Ant Design rules for legacy vs new
   surfaces. Use when implementing or reviewing UI, tokens, buttons, forms,
-  Ant usage boundaries, feature component placement, or PR checklist for
-  design consistency in CosMate_FE.
+  Ant usage boundaries, feature component placement, pink vs primary accents,
+  or PR checklist for design consistency in CosMate_FE.
 disable-model-invocation: true
 ---
-# CosMate Design System — SKILL v2.3.1
+# CosMate Design System — SKILL v2.3.3
 
 ## Objective
 
@@ -53,6 +53,18 @@ border-border
 NOTE:
 - Only use classes mapped from `src/index.css` (`@theme` + `:root`)
 - Do not invent class names
+
+### Brand pink — CosMate emotional theme
+
+CosMate pairs **`primary` (indigo / violet)** for default interactive emphasis with **pink family tokens** (`cosmate-pink`, `cosmate-soft-pink`, `cosmate-lavender-*`, `cosmate-mauve`, …) as the **emotional / marketing identity** of the product.
+
+When refactoring or building UI:
+
+- Pages and flows that are **policy, guidelines, onboarding hero, marketing**, or any surface that was **pink-first by design**: MUST keep **pink accents** using only mapped Tailwind classes (e.g. `text-cosmate-pink`, `bg-cosmate-soft-pink/…`, `border-cosmate-pink/…`, gradients composed from these tokens). MUST NOT replace those accents wholesale with `text-primary` / `bg-primary` / `border-primary` in a way that **drops the pink brand** and reads as “generic default theme”.
+- Technical CTAs on neutral dashboards may still use `@/components/ui/button` defaults where product convention uses `primary`.
+- Still **FORBIDDEN**: hardcoded hex, non-token color class names, inline color styles (except the narrow animation/dynamic exceptions in this skill).
+
+Reference: `src/features/general/pages/GuidelinesRulesPage.tsx` (`/guidelines-rules`); cosplayer order history `src/features/profile/pages/PurchaseHistoryPage.tsx` (`/profile/purchase-history`).
 
 ---
 
@@ -305,6 +317,7 @@ MUST NOT:
 - No hex colors
 - No inline color styles
 - Uses tokens correctly (only if styling is touched)
+- Pink-first / marketing surfaces keep `cosmate-pink` / `cosmate-soft-pink` (etc.) accents; do not collapse them to `primary`-only
 
 ### Ant Usage
 - Only allowed components used in new UI

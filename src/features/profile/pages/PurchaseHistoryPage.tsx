@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
-import { Card } from "@/shared/components/Card"
+import { Card, CardContent } from "@/components/ui/card"
 import { message, Tooltip, Modal } from "antd"
 import { MessageOutlined } from "@ant-design/icons"
 import { VI } from "@/shared/i18n/vi"
@@ -364,19 +364,20 @@ export default function PurchaseHistoryPage() {
     }[order.status] || order.status
 
     const statusBadgeColor: Record<string, string> = {
-      UNPAID: 'bg-orange-100 text-orange-700',
-      PAID: 'bg-blue-100 text-blue-700',
-      PREPARING: 'bg-purple-100 text-purple-700',
-      SHIPPING_OUT: 'bg-cyan-100 text-cyan-700',
-      DELIVERING_OUT: 'bg-cyan-100 text-cyan-700',
-      DELIVERY_OUT: 'bg-cyan-100 text-cyan-700',
-      IN_USE: 'bg-purple-100 text-purple-700',
-      SHIPPING_BACK: 'bg-orange-100 text-orange-700',
-      RETURNED: 'bg-green-100 text-green-700',
-      COMPLETED: 'bg-green-100 text-green-700',
-      CANCELLED: 'bg-slate-200 text-slate-600',
+      UNPAID: "bg-cosmate-soft-pink text-cosmate-pink",
+      PAID: "bg-cosmate-lavender-surface text-cosmate-pink",
+      PREPARING: "bg-cosmate-soft-pink/80 text-cosmate-rose-tag-text",
+      SHIPPING_OUT: "bg-cosmate-lavender-surface-alt text-cosmate-ink",
+      DELIVERING_OUT: "bg-cosmate-lavender-surface-alt text-cosmate-ink",
+      DELIVERY_OUT: "bg-cosmate-lavender-surface-alt text-cosmate-ink",
+      IN_USE: "bg-cosmate-soft-pink text-cosmate-mauve",
+      SHIPPING_BACK: "bg-cosmate-soft-pink/90 text-cosmate-pink",
+      RETURNED: "bg-cosmate-rose-tag-bg text-cosmate-rose-tag-text",
+      COMPLETED: "bg-cosmate-rose-tag-bg text-cosmate-rose-tag-text",
+      CANCELLED: "bg-muted text-muted-foreground",
+      DISPUTE: "bg-destructive/10 text-destructive",
     }
-    const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
+    const badgeColorClass = statusBadgeColor[order.status] || "bg-cosmate-soft-pink text-cosmate-pink"
 
     const isUnpaid = order.status === 'UNPAID'
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
@@ -391,10 +392,10 @@ export default function PurchaseHistoryPage() {
     return (
       <div
         key={order.id}
-        className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
+        className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md hover:border-cosmate-pink/25"
       >
         {/* Left: Thumbnail */}
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-muted">
           {costumeImageMap[order.costumeId] ? (
             <img
               src={costumeImageMap[order.costumeId]}
@@ -402,7 +403,7 @@ export default function PurchaseHistoryPage() {
               className="h-full w-full object-cover"
             />
           ) : (
-            <div className="flex h-full w-full items-center justify-center text-slate-300">
+            <div className="flex h-full w-full items-center justify-center text-muted-foreground">
               <PackageCheck className="h-10 w-10" />
             </div>
           )}
@@ -413,10 +414,10 @@ export default function PurchaseHistoryPage() {
           {/* Top row: order code + status badge */}
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-slate-900">
+              <h3 className="truncate font-semibold text-foreground">
                 {order.costumeName || VI.profile.orders.cardCostumeName}
               </h3>
-              <p className="mt-0.5 text-sm font-medium text-slate-500">
+              <p className="mt-0.5 text-sm font-medium text-muted-foreground">
                 {VI.profile.orders.orderTitle} {orderCode}
               </p>
             </div>
@@ -426,7 +427,7 @@ export default function PurchaseHistoryPage() {
           </div>
 
           {/* Middle row: rental period + item count */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span>
               {VI.profile.orders.cardRentPeriod}: {formatDate(order.rentStart) || '-'} - {formatDate(order.rentEnd) || '-'}
             </span>
@@ -446,7 +447,7 @@ export default function PurchaseHistoryPage() {
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-cosmate-soft-pink/40 hover:border-cosmate-pink/30"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -457,7 +458,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleCancelOrder(order.id)}
                 disabled={cancellingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
               >
                 <Ban className="h-3.5 w-3.5" />
                 {cancellingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionCancel}
@@ -471,7 +472,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => handleConfirmDelivery(order.id)}
                   disabled={confirmingDeliveryId === order.id}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                  className="rounded-lg bg-cosmate-pink px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
                 >
                   {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
                 </button>
@@ -479,7 +480,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => handleCreateDispute(order.id, order.status)}
                   disabled={disputingOrderId === order.id}
-                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-lg border border-destructive/40 bg-destructive/5 px-3 py-1.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                 >
                   <Flag className="h-3.5 w-3.5" />
                   {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
@@ -487,25 +488,13 @@ export default function PurchaseHistoryPage() {
               </>
             )}
 
-            {isDeliveringOut && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => handleConfirmDelivery(order.id)}
-                  disabled={confirmingDeliveryId === order.id}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
-                >
-                  {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
-                </button>
-              </>
-            )}
             {isInUse && (
               <>
                 <button
                   type="button"
                   onClick={() => handleReturnOrder(order.id)}
                   disabled={returningOrderId === order.id}
-                  className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                  className="rounded-lg border border-cosmate-pink bg-cosmate-soft-pink/40 px-3 py-1.5 text-sm font-medium text-cosmate-pink transition-colors hover:bg-cosmate-soft-pink disabled:opacity-50"
                 >
                   {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
                 </button>
@@ -516,7 +505,7 @@ export default function PurchaseHistoryPage() {
                     setExtendModalOpen(true)
                   }}
                   disabled={isExtending}
-                  className="flex items-center gap-1 rounded-lg bg-purple-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-purple-600 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-lg border border-cosmate-pink/40 bg-cosmate-soft-pink/50 px-3 py-1.5 text-sm font-medium text-cosmate-pink transition-colors hover:bg-cosmate-soft-pink disabled:opacity-50"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   {VI.provider.orders.tabs.extending}
@@ -528,7 +517,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
                 disabled={reviewingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-lg bg-cosmate-pink px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
               >
                 <Star className="h-3.5 w-3.5" />
                 {reviewingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
@@ -539,7 +528,7 @@ export default function PurchaseHistoryPage() {
 
         {/* Right: Total amount + Chat */}
         <div className="flex flex-col items-end justify-between text-right">
-          <span className="text-base font-bold text-purple-600">
+          <span className="text-base font-bold text-cosmate-pink">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
           {order.cosplayerId && (
@@ -547,7 +536,7 @@ export default function PurchaseHistoryPage() {
               <button
                 type="button"
                 onClick={() => navigate(`/messages?target=${order.cosplayerId}`)}
-                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
+                className="mt-1 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-cosmate-soft-pink/50 hover:text-cosmate-pink"
               >
                 <MessageOutlined className="text-lg" />
               </button>
@@ -563,16 +552,16 @@ export default function PurchaseHistoryPage() {
     const statusLabel = SERVICE_TAB_LABELS[order.status as ServiceOrderTab] || order.status
     const orderCode = `${VI.profile.serviceOrders.orderCodePrefix}-${String(order.id).padStart(4, '0')}`
     const statusBadgeColor: Record<string, string> = {
-      UNCONFIRM: 'bg-orange-100 text-orange-700',
-      UNPAID: 'bg-orange-100 text-orange-700',
-      PAID: 'bg-blue-100 text-blue-700',
-      WAITING_SERVICE_DATE: 'bg-purple-100 text-purple-700',
-      IN_SERVICE: 'bg-cyan-100 text-cyan-700',
-      COMPLETED: 'bg-green-100 text-green-700',
-      DISPUTE: 'bg-red-100 text-red-700',
-      CANCELLED: 'bg-slate-200 text-slate-600',
+      UNCONFIRM: "bg-cosmate-soft-pink text-cosmate-pink",
+      UNPAID: "bg-cosmate-soft-pink text-cosmate-pink",
+      PAID: "bg-cosmate-lavender-surface text-cosmate-pink",
+      WAITING_SERVICE_DATE: "bg-cosmate-lavender-surface-alt text-cosmate-ink",
+      IN_SERVICE: "bg-cosmate-soft-pink/80 text-cosmate-mauve",
+      COMPLETED: "bg-cosmate-rose-tag-bg text-cosmate-rose-tag-text",
+      DISPUTE: "bg-destructive/10 text-destructive",
+      CANCELLED: "bg-muted text-muted-foreground",
     }
-    const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
+    const badgeColorClass = statusBadgeColor[order.status] || "bg-cosmate-soft-pink text-cosmate-pink"
     const isUnconfirm = order.status === 'UNCONFIRM'
     const isUnpaid = order.status === 'UNPAID'
     const isConfirmProcessing = confirmingOrderId === order.id
@@ -582,11 +571,11 @@ export default function PurchaseHistoryPage() {
     return (
       <div
         key={order.id}
-        className="flex gap-4 rounded-xl border border-slate-200 bg-white p-4 transition-shadow hover:shadow-md"
+        className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md hover:border-cosmate-pink/25"
       >
         {/* Left: Icon */}
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-purple-50 flex items-center justify-center">
-          <CalendarClock className="h-10 w-10 text-purple-400" />
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-cosmate-soft-pink/35 flex items-center justify-center">
+          <CalendarClock className="h-10 w-10 text-cosmate-pink" />
         </div>
 
         {/* Middle: Info */}
@@ -594,10 +583,10 @@ export default function PurchaseHistoryPage() {
           {/* Top row: order code + status badge */}
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <h3 className="truncate font-semibold text-slate-900">
+              <h3 className="truncate font-semibold text-foreground">
                 {VI.profile.serviceOrders.orderTitle}
               </h3>
-              <p className="mt-0.5 text-sm font-medium text-slate-500">
+              <p className="mt-0.5 text-sm font-medium text-muted-foreground">
                 {orderCode}
               </p>
             </div>
@@ -607,7 +596,7 @@ export default function PurchaseHistoryPage() {
           </div>
 
           {/* Middle row: booking details */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <CalendarClock className="h-3.5 w-3.5" />
               {order.bookings.length} {order.bookings.length === 1 ? VI.profile.serviceOrders.cardBookings : VI.profile.serviceOrders.cardBookingsCount}
@@ -618,8 +607,8 @@ export default function PurchaseHistoryPage() {
           {/* Bottom row: bookings summary */}
           <div className="mt-2 flex flex-col gap-1">
             {order.bookings.slice(0, 2).map((booking) => (
-              <div key={booking.id} className="flex flex-wrap items-center gap-x-3 text-xs text-slate-500">
-                <span className="rounded bg-slate-100 px-1.5 py-0.5 font-medium text-slate-600">
+              <div key={booking.id} className="flex flex-wrap items-center gap-x-3 text-xs text-muted-foreground">
+                <span className="rounded bg-muted px-1.5 py-0.5 font-medium text-foreground">
                   {formatDate(booking.bookingDate)}
                 </span>
                 <span>{booking.timeSlot}</span>
@@ -628,7 +617,7 @@ export default function PurchaseHistoryPage() {
               </div>
             ))}
             {order.bookings.length > 2 && (
-              <span className="text-xs text-slate-400">+{order.bookings.length - 2} {VI.profile.serviceOrders.cardMoreBookings}</span>
+              <span className="text-xs text-muted-foreground">+{order.bookings.length - 2} {VI.profile.serviceOrders.cardMoreBookings}</span>
             )}
           </div>
 
@@ -640,7 +629,7 @@ export default function PurchaseHistoryPage() {
                 setServiceDetailOrder(order)
                 setServiceDetailModalOpen(true)
               }}
-              className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-cosmate-soft-pink/40 hover:border-cosmate-pink/30"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -653,7 +642,7 @@ export default function PurchaseHistoryPage() {
                   if (isConfirmProcessing || isPayProcessing) return
                   handleOpenPaymentModal(order.id, isUnconfirm ? 'confirm-pay' : 'pay-only')
                 }}
-                className="rounded-lg bg-purple-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-purple-700 disabled:opacity-50"
+                className="rounded-lg bg-cosmate-pink px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
               >
                 {isConfirmProcessing || isPayProcessing
                   ? VI.profile.serviceOrders.btnProcessing
@@ -667,7 +656,7 @@ export default function PurchaseHistoryPage() {
               <button
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
-                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+                className="flex items-center gap-1 rounded-lg bg-cosmate-pink px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90"
               >
                 <Star className="h-3.5 w-3.5" />
                 {VI.profile.orders.actionReview}
@@ -678,7 +667,7 @@ export default function PurchaseHistoryPage() {
 
         {/* Right: Total amount + Chat */}
         <div className="flex flex-col items-end justify-between text-right">
-          <span className="text-base font-bold text-purple-600">
+          <span className="text-base font-bold text-cosmate-pink">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
           {order.providerId && (
@@ -686,7 +675,7 @@ export default function PurchaseHistoryPage() {
               <button
                 type="button"
                 onClick={() => navigate(`/messages?target=${order.providerId}`)}
-                className="mt-1 rounded-lg p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-purple-600"
+                className="mt-1 rounded-lg p-1.5 text-muted-foreground transition-colors hover:bg-cosmate-soft-pink/50 hover:text-cosmate-pink"
               >
                 <MessageOutlined className="text-lg" />
               </button>
@@ -715,17 +704,17 @@ export default function PurchaseHistoryPage() {
             <button
               type="button"
               onClick={() => onTabClick(tabKey)}
-              className={`relative flex items-center justify-center rounded-full w-10 h-10 transition-colors ${
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
                 isActive
-                  ? "bg-purple-600 text-white"
-                  : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                  ? "bg-cosmate-pink text-primary-foreground shadow-sm ring-2 ring-cosmate-pink/30"
+                  : "bg-muted text-muted-foreground hover:bg-cosmate-soft-pink/60 hover:text-cosmate-pink"
               }`}
             >
               <Icon className="h-4 w-4" />
               {count > 0 && (
                 <span
-                  className={`absolute -top-1.5 -right-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                    isActive ? "bg-white text-purple-600" : "bg-purple-600 text-white"
+                  className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
+                    isActive ? "bg-primary-foreground text-cosmate-pink" : "bg-cosmate-pink text-primary-foreground"
                   }`}
                 >
                   {count > 99 ? VI.common.status.countOverflow : count}
@@ -764,23 +753,25 @@ export default function PurchaseHistoryPage() {
 
     return (
       <div className="mt-6 flex flex-col items-center gap-2">
-        <p className="text-sm text-slate-500">
-          {label} {VI.profile.orders.paginationShow}{' '}
-          <span className="font-medium text-slate-700">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, total)}</span>{' '}
-          {VI.profile.orders.paginationOf} <span className="font-medium text-slate-700">{total}</span>
+        <p className="text-sm text-muted-foreground">
+          {label} {VI.profile.orders.paginationShow}{" "}
+          <span className="font-medium text-foreground">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, total)}</span>{" "}
+          {VI.profile.orders.paginationOf} <span className="font-medium text-foreground">{total}</span>
         </p>
         <div className="flex items-center gap-1">
           <button
             type="button"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm transition-colors hover:bg-cosmate-soft-pink/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
             ‹
           </button>
           {pages.map((p, i) =>
-            p === '...' ? (
-              <span key={`ellipsis-${i}`} className="flex h-8 w-8 items-center justify-center text-sm text-slate-400">…</span>
+            p === "..." ? (
+              <span key={`ellipsis-${i}`} className="flex h-8 w-8 items-center justify-center text-sm text-muted-foreground">
+                …
+              </span>
             ) : (
               <button
                 key={p}
@@ -788,8 +779,8 @@ export default function PurchaseHistoryPage() {
                 onClick={() => onPageChange(p)}
                 className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border text-sm transition-colors ${
                   p === currentPage
-                    ? 'border-purple-600 bg-purple-600 text-white'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                    ? "border-cosmate-pink bg-cosmate-pink text-primary-foreground shadow-sm"
+                    : "border-border text-foreground hover:bg-cosmate-soft-pink/40"
                 }`}
               >
                 {p}
@@ -800,7 +791,7 @@ export default function PurchaseHistoryPage() {
             type="button"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 text-sm transition-colors disabled:cursor-not-allowed disabled:opacity-40 hover:bg-slate-50"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm transition-colors hover:bg-cosmate-soft-pink/40 disabled:cursor-not-allowed disabled:opacity-40"
           >
             ›
           </button>
@@ -822,23 +813,23 @@ export default function PurchaseHistoryPage() {
     if (isLoading) {
       return (
         <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-purple-600 border-t-transparent" />
-          <span className="ml-2 text-slate-600">{VI.common.status.loading}</span>
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-cosmate-pink border-t-transparent" />
+          <span className="ml-2 text-muted-foreground">{VI.common.status.loading}</span>
         </div>
       )
     }
     if (hasError) {
       return (
-        <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-600">
+        <p className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
           {loadErrorLabel}
         </p>
       )
     }
     if (isEmpty) {
       return (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center">
-          <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
-          <p className="mt-3 text-sm text-slate-500">{emptyLabel}</p>
+        <div className="rounded-xl border border-border bg-muted/50 px-4 py-8 text-center">
+          <PackageCheck className="mx-auto h-12 w-12 text-muted-foreground" />
+          <p className="mt-3 text-sm text-muted-foreground">{emptyLabel}</p>
         </div>
       )
     }
@@ -846,10 +837,11 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
-    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-wallet-from via-wallet-via to-wallet-to px-4 py-10">
+    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-cosmate-soft-pink/35 via-wallet-via to-background px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
-        <Card className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900">{VI.profile.serviceOrders.title}</h1>
+        <Card className="border-cosmate-lavender-border shadow-md">
+          <CardContent className="p-6">
+          <h1 className="text-2xl font-bold text-foreground">{VI.profile.serviceOrders.title}</h1>
 
           {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
           <div className="mt-4 flex gap-2">
@@ -863,8 +855,8 @@ export default function PurchaseHistoryPage() {
                   onClick={() => handleParentTabClick(tabKey)}
                   className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-purple-600 text-white"
-                      : "bg-slate-100 text-slate-600 hover:bg-slate-200"
+                      ? "bg-cosmate-pink text-primary-foreground shadow-sm ring-2 ring-cosmate-pink/25"
+                      : "bg-muted text-muted-foreground hover:bg-cosmate-soft-pink/50 hover:text-cosmate-pink"
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -888,9 +880,9 @@ export default function PurchaseHistoryPage() {
 
               {/* Current filter info */}
               {costumeTab !== "all" && (
-                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                <div className="mt-4 rounded-xl border border-cosmate-lavender-border bg-cosmate-soft-pink/25 px-4 py-3">
+                  <p className="text-xs font-medium text-muted-foreground">{VI.profile.orders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{currentFilterLabel}</p>
                 </div>
               )}
 
@@ -932,9 +924,9 @@ export default function PurchaseHistoryPage() {
 
               {/* Current filter info */}
               {selectedStatus !== 'all' && (
-                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-medium text-slate-500">{VI.profile.serviceOrders.filterLabel}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                <div className="mt-4 rounded-xl border border-cosmate-lavender-border bg-cosmate-soft-pink/25 px-4 py-3">
+                  <p className="text-xs font-medium text-muted-foreground">{VI.profile.serviceOrders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-semibold text-foreground">{currentFilterLabel}</p>
                 </div>
               )}
 
@@ -961,6 +953,7 @@ export default function PurchaseHistoryPage() {
               )}
             </>
           )}
+        </CardContent>
         </Card>
       </div>
 
@@ -1009,39 +1002,39 @@ export default function PurchaseHistoryPage() {
       >
         {serviceDetailOrder && (
           <div className="space-y-4">
-            <div className="rounded-xl bg-slate-50 p-4">
-              <div className="grid grid-cols-1 gap-2 text-sm text-slate-600 md:grid-cols-2">
+            <div className="rounded-xl border border-border bg-muted/40 p-4">
+              <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground md:grid-cols-2">
                 <p>
-                  <span className="font-medium text-slate-700">{VI.profile.serviceOrders.orderCodePrefix}:</span>{" "}
+                  <span className="font-medium text-foreground">{VI.profile.serviceOrders.orderCodePrefix}:</span>{" "}
                   {String(serviceDetailOrder.id).padStart(4, '0')}
                 </p>
                 <p>
-                  <span className="font-medium text-slate-700">{VI.profile.orders.cardTotal}:</span>{" "}
+                  <span className="font-medium text-foreground">{VI.profile.orders.cardTotal}:</span>{" "}
                   {serviceDetailOrder.totalAmount.toLocaleString('vi-VN')} ₫
                 </p>
                 <p>
-                  <span className="font-medium text-slate-700">Trạng thái:</span>{" "}
+                  <span className="font-medium text-foreground">Trạng thái:</span>{" "}
                   {SERVICE_TAB_LABELS[serviceDetailOrder.status as ServiceOrderTab] || serviceDetailOrder.status}
                 </p>
                 <p>
-                  <span className="font-medium text-slate-700">Ngày tạo đơn:</span>{" "}
+                  <span className="font-medium text-foreground">Ngày tạo đơn:</span>{" "}
                   {formatDate(serviceDetailOrder.createdAt)}
                 </p>
               </div>
             </div>
 
             <div>
-              <h3 className="mb-2 text-sm font-semibold text-slate-800">
+              <h3 className="mb-2 text-sm font-semibold text-foreground">
                 {VI.profile.serviceOrders.cardBookings}
               </h3>
               <div className="space-y-2">
                 {serviceDetailOrder.bookings.map((booking) => (
                   <div
                     key={booking.id}
-                    className="rounded-xl border border-slate-200 bg-white p-3 text-sm text-slate-600"
+                    className="rounded-xl border border-border bg-card p-3 text-sm text-muted-foreground"
                   >
                     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <span className="font-medium text-slate-700">
+                      <span className="font-medium text-foreground">
                         {formatDate(booking.bookingDate)}
                       </span>
                       <span>{booking.timeSlot}</span>
