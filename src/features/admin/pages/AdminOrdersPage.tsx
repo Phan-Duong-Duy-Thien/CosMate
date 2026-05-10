@@ -150,7 +150,7 @@ export default function AdminOrdersPage() {
               />
             </div>
 
-            <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+            <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
               <ReloadOutlined className={loading ? 'animate-spin' : ''} />
               Làm mới
             </UiButton>

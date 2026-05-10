@@ -10,6 +10,11 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+        /** CosMate brand — use on dashboard toolbars & primary CTAs */
+        cosmate:
+          "border-0 bg-cosmate-soft-pink text-foreground shadow-sm hover:bg-cosmate-pink/35 focus-visible:ring-cosmate-pink/45",
+        cosmateOutline:
+          "border-2 border-cosmate-soft-pink bg-background text-foreground hover:bg-cosmate-soft-pink/80 hover:border-cosmate-pink/40 focus-visible:ring-cosmate-pink/35",
         outline:
           "border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
         ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",

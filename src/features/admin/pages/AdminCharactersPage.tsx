@@ -101,11 +101,11 @@ export default function AdminCharactersPage() {
             </div>
 
             <div className="flex flex-wrap gap-2">
-              <UiButton variant="outline" disabled={loading} onClick={() => void fetchCharacters()}>
+              <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void fetchCharacters()}>
                 <ReloadOutlined className={loading ? 'animate-spin' : ''} />
                 Làm mới
               </UiButton>
-              <UiButton disabled={syncLoading} onClick={() => void handleSync()}>
+              <UiButton variant="cosmate" disabled={syncLoading} onClick={() => void handleSync()}>
                 <SyncOutlined className={syncLoading ? 'animate-spin' : ''} />
                 Đồng bộ Top Anime
               </UiButton>

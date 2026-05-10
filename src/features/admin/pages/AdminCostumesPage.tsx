@@ -161,7 +161,7 @@ export default function AdminCostumesPage() {
               allowClear
             />
 
-            <UiButton variant="outline" disabled={loading} onClick={() => void fetchCostumes()}>
+            <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void fetchCostumes()}>
               <ReloadOutlined className={loading ? 'animate-spin' : ''} />
               {VI.admin.costumes.toolbar.refresh}
             </UiButton>

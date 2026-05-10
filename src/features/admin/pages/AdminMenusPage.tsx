@@ -105,20 +105,20 @@ export default function AdminMenusPage() {
           <h2 className="text-lg font-semibold text-foreground">Quản lý menu sidebar</h2>
 
           <div className="flex flex-wrap gap-2">
-            <UiButton variant="outline" disabled={tableLoading} onClick={() => void fetchMenus()}>
+            <UiButton variant="cosmateOutline" disabled={tableLoading} onClick={() => void fetchMenus()}>
               <ReloadOutlined className={tableLoading ? 'animate-spin' : ''} />
               Làm mới
             </UiButton>
-            <UiButton variant="outline" disabled={isExporting} onClick={() => void handleExport()}>
+            <UiButton variant="cosmateOutline" disabled={isExporting} onClick={() => void handleExport()}>
               <DownloadOutlined /> Xuất Excel
             </UiButton>
-            <UiButton variant="outline" onClick={() => void handleDownloadTemplate()}>
+            <UiButton variant="cosmateOutline" onClick={() => void handleDownloadTemplate()}>
               <DownloadOutlined /> Tải file mẫu
             </UiButton>
-            <UiButton variant="outline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
+            <UiButton variant="cosmateOutline" disabled={isImporting} onClick={() => fileInputRef.current?.click()}>
               <UploadOutlined /> Nhập Excel
             </UiButton>
-            <UiButton onClick={() => { formMenu.resetFields(); setIsMenuModalOpen(true); }}>
+            <UiButton variant="cosmate" onClick={() => { formMenu.resetFields(); setIsMenuModalOpen(true); }}>
               <FolderOutlined /> Tạo nhóm menu
             </UiButton>
           </div>

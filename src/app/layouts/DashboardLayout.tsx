@@ -1,6 +1,6 @@
 import { useState, useEffect, createElement, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Layout, Menu, Dropdown, Avatar } from 'antd';
+import { ConfigProvider, Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
@@ -13,6 +13,57 @@ import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
 const { Header, Sider, Content } = Layout;
+
+/**
+ * Ant Design theme uses @ant-design/fast-color, which does not parse `oklch(...)`/`var(...)`.
+ * That breaks `colorPrimary` and primary buttons can render black. Resolve `--cosmate-pink` to
+ * `#rrggbb` via the browser (same visual as CSS everywhere else).
+ */
+const FALLBACK_COSMATE_PINK_HEX = '#e84a90';
+
+function cssColorToHexForAntd(cssColor: string): string {
+  const trimmed = cssColor.trim();
+  if (typeof document === 'undefined') return FALLBACK_COSMATE_PINK_HEX;
+  if (/^#[0-9a-f]{6}$/i.test(trimmed)) return trimmed;
+  const probe = document.createElement('span');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.position = 'absolute';
+  probe.style.left = '-9999px';
+  probe.style.visibility = 'hidden';
+  probe.style.color = trimmed;
+  document.body.appendChild(probe);
+  const rgb = getComputedStyle(probe).color;
+  probe.remove();
+  const rgbaMatch = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(rgb);
+  if (!rgbaMatch) return FALLBACK_COSMATE_PINK_HEX;
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(Number(rgbaMatch[1]))}${toHex(Number(rgbaMatch[2]))}${toHex(Number(rgbaMatch[3]))}`;
+}
+
+function useSyncedCosmatePrimaryForAntd(): string {
+  const readToken = (): string => {
+    if (typeof document === 'undefined') return FALLBACK_COSMATE_PINK_HEX;
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--cosmate-pink').trim();
+    if (!raw) return FALLBACK_COSMATE_PINK_HEX;
+    return cssColorToHexForAntd(raw);
+  };
+
+  const [colorPrimary, setColorPrimary] = useState(() =>
+    typeof document !== 'undefined' ? readToken() : FALLBACK_COSMATE_PINK_HEX
+  );
+
+  useEffect(() => {
+    setColorPrimary(readToken());
+    const el = document.documentElement;
+    const obs = new MutationObserver(() => {
+      setColorPrimary(readToken());
+    });
+    obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+
+  return colorPrimary;
+}
 
 type LucideComponentLike = LucideIcon & {
   displayName?: string;
@@ -411,8 +462,17 @@ export function DashboardLayout({
   ];
 
   const displayTitle = breadcrumbItems.length > 0 ? breadcrumbItems[breadcrumbItems.length - 1].label : title;
+  const antdColorPrimary = useSyncedCosmatePrimaryForAntd();
 
   return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: antdColorPrimary,
+          colorLink: antdColorPrimary,
+        },
+      }}
+    >
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
         collapsible
@@ -440,7 +500,7 @@ export function DashboardLayout({
             borderBottom: "1px solid var(--border)",
             fontWeight: 700,
             fontSize: 18,
-            color: "var(--primary)",
+            color: "var(--cosmate-pink)",
           }}
         >
           {collapsed ? brandShort : brandName}
@@ -567,5 +627,6 @@ export function DashboardLayout({
         </Content>
       </Layout>
     </Layout>
+    </ConfigProvider>
   );
 }

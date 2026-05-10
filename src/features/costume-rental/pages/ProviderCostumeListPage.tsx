@@ -11,7 +11,8 @@ import {
   Table,
   Tag,
   Space,
-  Drawer,
+  Modal,
+  Tabs,
   Image,
   Descriptions,
   List,
@@ -22,6 +23,7 @@ import {
   Typography,
   Popconfirm,
   Tooltip,
+  Empty,
 } from 'antd'
 import type { TableProps }from 'antd'
 import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined, DeleteOutlined, UpOutlined, DownOutlined }from '@ant-design/icons'
@@ -79,13 +81,24 @@ interface DetailModalProps {
 }
 
 function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProps) {
+  const extrasEmpty =
+    !costume ||
+    ((!costume.surcharges || costume.surcharges.length === 0) &&
+      (!costume.accessories || costume.accessories.length === 0) &&
+      (!costume.rentalOptions || costume.rentalOptions.length === 0))
+
   return (
-    <Drawer
+    <Modal
       open={open}
-      onClose={onClose}
+      onCancel={onClose}
       title="Chi tiết trang phục"
+      footer={null}
       width={720}
+      centered
       destroyOnClose
+      styles={{
+        body: { maxHeight: 'min(72vh, 640px)', overflowY: 'auto', paddingTop: 8 },
+      }}
     >
       {loading && (
         <div className="py-10 text-center text-muted-foreground">
@@ -94,97 +107,132 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
       )}
 
       {!loading && costume && (
-        <div>
-          {costume.imageUrls && costume.imageUrls.length > 0 && (
-            <div style={{ marginBottom: 20 }}>
-              <Space wrap>
-                {costume.imageUrls.map((url, idx) => (
-                  <Image
-                    key={idx}
-                    src={url}
-                    width={120}
-                    height={120}
-                    style={{ objectFit: 'cover', borderRadius: 8 }}
-                    alt={`${costume.name} - ảnh ${idx + 1}`}
-                  />
-                ))}
-              </Space>
-            </div>
-          )}
+        <Tabs
+          defaultActiveKey="info"
+          items={[
+            {
+              key: 'info',
+              label: 'Thông tin',
+              children: (
+                <div className="pt-1">
+                  {costume.imageUrls && costume.imageUrls.length > 0 && (
+                    <div className="mb-4">
+                      <Space wrap>
+                        {costume.imageUrls.map((url, idx) => (
+                          <Image
+                            key={idx}
+                            src={url}
+                            width={120}
+                            height={120}
+                            style={{ objectFit: 'cover', borderRadius: 8 }}
+                            alt={`${costume.name} - ảnh ${idx + 1}`}
+                          />
+                        ))}
+                      </Space>
+                    </div>
+                  )}
 
-          <Descriptions bordered column={2}size="small" style={{ marginBottom: 20 }}>
-            <Descriptions.Item label="Tên trang phục" span={2}>{costume.name}</Descriptions.Item>
-            <Descriptions.Item label="Mô tả" span={2}>{costume.description || '—'}</Descriptions.Item>
-            <Descriptions.Item label="Kích cỡ">{costume.size}</Descriptions.Item>
-            <Descriptions.Item label="Số lượng">{costume.numberOfItems}</Descriptions.Item>
-            <Descriptions.Item label="Giá / ngày">
-              {costume.pricePerDay.toLocaleString('vi-VN')}VNĐ
-            </Descriptions.Item>
-            <Descriptions.Item label="Tiền đặt cọc">
-              {costume.depositAmount.toLocaleString('vi-VN')} VNĐ
-            </Descriptions.Item>
-            <Descriptions.Item label="Trạng thái" span={2}>
-              <Tag color={getStatusTagColor(costume.status)}>{getStatusLabel(costume.status)}</Tag>
-            </Descriptions.Item>
-          </Descriptions>
-
-          {costume.surcharges && costume.surcharges.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <Text strong>Phụ phí</Text>
-              <List
-                size="small"
-                dataSource={costume.surcharges}
-                renderItem={(s) => (
-                  <List.Item>
-                    <Text>{s.name}</Text>
-                    <Text type="secondary" style={{ marginLeft: 8 }}>
-                      {s.price.toLocaleString('vi-VN')}VNĐ — {s.description}
-                    </Text>
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-
-          {costume.accessories && costume.accessories.length > 0 && (
-            <div style={{ marginBottom: 16 }}>
-              <Text strong>Phụ kiện</Text>
-              <List
-                size="small"
-                dataSource={costume.accessories}
-                renderItem={(a) => (
-                  <List.Item>
-                    <Text>{a.name}</Text>
-                    <Text type="secondary" style={{ marginLeft: 8 }}>
-                      {a.price.toLocaleString('vi-VN')} VNĐ
-                      {a.isRequired ? ' (bắt buộc)' : ''}— {a.description}
-                    </Text>
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-
-          {costume.rentalOptions && costume.rentalOptions.length > 0 && (
-            <div>
-              <Text strong>Gói thuê</Text>
-              <List
-                size="small"
-                dataSource={costume.rentalOptions}
-                renderItem={(r) => (
-                  <List.Item>
-                    <Text>{r.name}</Text>
-                    <Text type="secondary" style={{ marginLeft: 8 }}>
-                      {r.price.toLocaleString('vi-VN')} VNĐ — {r.description}
-                    </Text>
-                  </List.Item>
-                )}
-              />
-            </div>
-          )}
-        </div>
+                  <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small">
+                    <Descriptions.Item label="Tên trang phục" span={2}>
+                      {costume.name}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Mô tả" span={2}>
+                      {costume.description || '—'}
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Kích cỡ">{costume.size}</Descriptions.Item>
+                    <Descriptions.Item label="Số lượng">{costume.numberOfItems}</Descriptions.Item>
+                    <Descriptions.Item label="Giá / ngày">
+                      {costume.pricePerDay.toLocaleString('vi-VN')} VNĐ
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Tiền đặt cọc">
+                      {costume.depositAmount.toLocaleString('vi-VN')} VNĐ
+                    </Descriptions.Item>
+                    <Descriptions.Item label="Trạng thái" span={2}>
+                      <Tag color={getStatusTagColor(costume.status)}>{getStatusLabel(costume.status)}</Tag>
+                    </Descriptions.Item>
+                  </Descriptions>
+                </div>
+              ),
+            },
+            {
+              key: 'extras',
+              label: 'Phụ phí & phụ kiện',
+              children: (
+                <div className="space-y-4 pt-1">
+                  {extrasEmpty ? (
+                    <Empty description="Chưa có phụ phí, phụ kiện hay gói thuê" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                  ) : (
+                    <>
+                      {costume.surcharges && costume.surcharges.length > 0 && (
+                        <div>
+                          <Text strong className="mb-2 block">
+                            Phụ phí
+                          </Text>
+                          <List
+                            size="small"
+                            bordered
+                            dataSource={costume.surcharges}
+                            renderItem={(s) => (
+                              <List.Item>
+                                <Text>{s.name}</Text>
+                                <Text type="secondary" style={{ marginLeft: 8 }}>
+                                  {s.price.toLocaleString('vi-VN')} VNĐ — {s.description}
+                                </Text>
+                              </List.Item>
+                            )}
+                          />
+                        </div>
+                      )}
+                      {costume.accessories && costume.accessories.length > 0 && (
+                        <div>
+                          <Text strong className="mb-2 block">
+                            Phụ kiện
+                          </Text>
+                          <List
+                            size="small"
+                            bordered
+                            dataSource={costume.accessories}
+                            renderItem={(a) => (
+                              <List.Item>
+                                <Text>{a.name}</Text>
+                                <Text type="secondary" style={{ marginLeft: 8 }}>
+                                  {a.price.toLocaleString('vi-VN')} VNĐ
+                                  {a.isRequired ? ' (bắt buộc)' : ''} — {a.description}
+                                </Text>
+                              </List.Item>
+                            )}
+                          />
+                        </div>
+                      )}
+                      {costume.rentalOptions && costume.rentalOptions.length > 0 && (
+                        <div>
+                          <Text strong className="mb-2 block">
+                            Gói thuê
+                          </Text>
+                          <List
+                            size="small"
+                            bordered
+                            dataSource={costume.rentalOptions}
+                            renderItem={(r) => (
+                              <List.Item>
+                                <Text>{r.name}</Text>
+                                <Text type="secondary" style={{ marginLeft: 8 }}>
+                                  {r.price.toLocaleString('vi-VN')} VNĐ — {r.description}
+                                </Text>
+                              </List.Item>
+                            )}
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              ),
+            },
+          ]}
+        />
       )}
-    </Drawer>
+    </Modal>
   )
 }
 
@@ -376,11 +424,11 @@ export default function ProviderCostumeListPage() {
               />
             </div>
             <div className="flex flex-wrap gap-2">
-              <UiButton variant="outline" disabled={isLoading} onClick={() => void refetch()}>
+              <UiButton variant="cosmateOutline" disabled={isLoading} onClick={() => void refetch()}>
                 <ReloadOutlined className={isLoading ? 'animate-spin' : ''} />
                 Làm mới
               </UiButton>
-              <UiButton onClick={() => navigate('/provider-rental/costumes/create')}>
+              <UiButton variant="cosmate" onClick={() => navigate('/provider-rental/costumes/create')}>
                 <PlusOutlined />
                 Tạo trang phục mới
               </UiButton>
@@ -411,7 +459,7 @@ export default function ProviderCostumeListPage() {
               ]}
             />
             <UiButton
-              variant="outline"
+              variant="cosmateOutline"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             >
               {sortOrder === 'asc' ? <UpOutlined /> : <DownOutlined />}
@@ -485,6 +533,10 @@ export default function ProviderCostumeListPage() {
         setCreateAccessoryModalOpen={editModal.setCreateAccessoryModalOpen}
         onCreateAccessory={editModal.handleCreateAccessory}
         onUpdateAccessory={editModal.handleUpdateAccessory}
+        onGenerateDescription={editModal.onGenerateDescription}
+        isGeneratingDescription={editModal.isGeneratingDescription}
+        descriptionPrompt={editModal.descriptionPrompt}
+        setDescriptionPrompt={editModal.setDescriptionPrompt}
         mainImages={editModal.mainImages}
         detailImages={editModal.detailImages}
         imagesLoading={editModal.imagesLoading}

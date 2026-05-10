@@ -6,7 +6,7 @@
  * Data flow: Page → hook → service → API → axiosInstance
  */
 import { useState } from 'react';
-import { Alert, Input, Table, Tag, Tooltip, Modal } from 'antd';
+import { Alert, Input, Table, Tag, Tooltip, Modal, Tabs, Descriptions, Empty } from 'antd';
 import type { TableProps } from 'antd';
 import {
   SearchOutlined,
@@ -23,7 +23,7 @@ import { useProviderServiceOrders, type ProviderServiceOrderTab } from '../hooks
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
-import type { ServiceOrder } from '../api/booking.api';
+import type { ServiceOrder, ServiceOrderBooking } from '../api/booking.api';
 import { ORDER_STATUS_UI, type OrderStatusValue } from '@/constants/orderStatus';
 import { Button as UiButton } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -283,7 +283,7 @@ export default function ProviderServiceOrdersPage() {
             />
           </div>
 
-          <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+          <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
             <ReloadOutlined className={loading ? 'animate-spin' : ''} />
             Làm mới
           </UiButton>
@@ -341,6 +341,7 @@ export default function ProviderServiceOrdersPage() {
               ? VI.profile.serviceOrders.completeServiceModalTitle
               : VI.profile.serviceOrders.setWaitingModalTitle
         }
+        centered
         open={confirmModal.open}
         onOk={handleConfirmAction}
         onCancel={handleCancelConfirm}
@@ -365,37 +366,108 @@ export default function ProviderServiceOrdersPage() {
 
       <Modal
         open={detailModal.open}
-        title={VI.profile.serviceOrders.orderTitle}
+        title={
+          detailModal.order
+            ? `${VI.profile.serviceOrders.orderTitle} · #${detailModal.order.id}`
+            : VI.profile.serviceOrders.orderTitle
+        }
+        centered
         onCancel={() => setDetailModal({ open: false, order: null })}
         footer={null}
-        width={680}
+        width={720}
+        destroyOnClose
+        styles={{
+          body: { maxHeight: 'min(72vh, 600px)', overflowY: 'auto', paddingTop: 8 },
+        }}
       >
         {detailModal.order && (
-          <div className="space-y-3">
-            <p>
-              <strong>{VI.provider.orders.table.orderId}:</strong> #{detailModal.order.id}
-            </p>
-            <p>
-              <strong>{VI.provider.orders.table.cosplayer}:</strong>{' '}
-              {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}
-            </p>
-            <p>
-              <strong>{VI.provider.orders.table.total}:</strong> {formatCurrency(detailModal.order.totalAmount)}
-            </p>
-            <p>
-              <strong>{VI.provider.orders.table.createdAt}:</strong> {formatDate(detailModal.order.createdAt)}
-            </p>
-            <div>
-              <strong>{VI.profile.serviceOrders.cardBookings}:</strong>
-              <ul className="mt-2 list-disc pl-4.5">
-                {detailModal.order.bookings.map((b) => (
-                  <li key={b.id}>
-                    {formatDate(b.bookingDate)} - {b.timeSlot} - {b.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
+          <Tabs
+            defaultActiveKey="summary"
+            items={[
+              {
+                key: 'summary',
+                label: 'Thông tin đơn',
+                children: (
+                  <div className="pt-1">
+                    <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small">
+                      <Descriptions.Item label={VI.provider.orders.table.orderId}>
+                        #{detailModal.order.id}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.provider.orders.table.status}>
+                        {(() => {
+                          const ui =
+                            ORDER_STATUS_UI[detailModal.order!.status as OrderStatusValue];
+                          return ui ? (
+                            <Tag className={ui.badgeClass}>{ui.label}</Tag>
+                          ) : (
+                            <Tag>{detailModal.order.status}</Tag>
+                          );
+                        })()}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.provider.orders.table.cosplayer} span={2}>
+                        {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.provider.orders.table.total}>
+                        {formatCurrency(detailModal.order.totalAmount)}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.provider.orders.table.createdAt}>
+                        {formatDate(detailModal.order.createdAt)}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.profile.serviceOrders.cardBookings}>
+                        {detailModal.order.bookings.length}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </div>
+                ),
+              },
+              {
+                key: 'slots',
+                label: `${VI.profile.serviceOrders.cardBookings} (${detailModal.order.bookings.length})`,
+                children:
+                  detailModal.order.bookings.length === 0 ? (
+                    <Empty
+                      image={Empty.PRESENTED_IMAGE_SIMPLE}
+                      description={VI.common.status.noData}
+                      className="py-6"
+                    />
+                  ) : (
+                    <div className="pt-1">
+                      <Table<ServiceOrderBooking>
+                        size="small"
+                        pagination={false}
+                        rowKey="id"
+                        dataSource={detailModal.order.bookings}
+                        scroll={{ x: 'max-content' }}
+                        columns={[
+                          {
+                            title: VI.profile.serviceOrders.cardBookingDate,
+                            dataIndex: 'bookingDate',
+                            key: 'bookingDate',
+                            render: (d: string) => formatDate(d),
+                          },
+                          {
+                            title: VI.profile.serviceOrders.cardTimeSlot,
+                            dataIndex: 'timeSlot',
+                            key: 'timeSlot',
+                          },
+                          {
+                            title: VI.profile.serviceOrders.cardPeopleCount,
+                            dataIndex: 'numberOfHuman',
+                            key: 'numberOfHuman',
+                          },
+                          {
+                            title: 'Thành tiền slot',
+                            dataIndex: 'rentSlotAmount',
+                            key: 'rentSlotAmount',
+                            render: (v: number) => formatCurrency(v),
+                          },
+                        ]}
+                      />
+                    </div>
+                  ),
+              },
+            ]}
+          />
         )}
       </Modal>
     </DashboardLayout>

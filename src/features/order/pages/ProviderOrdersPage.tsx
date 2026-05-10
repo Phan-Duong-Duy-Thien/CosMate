@@ -57,8 +57,8 @@ export default function ProviderOrdersPage() {
   const [shipModalOpen, setShipModalOpen] = useState(false);
   const [shipOrderId, setShipOrderId] = useState<number | null>(null);
 
-  // Detail drawer state
-  const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
+  // Order detail modal
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   // Dispute modal state
@@ -235,7 +235,7 @@ export default function ProviderOrdersPage() {
             <EyeOutlined
               onClick={() => {
                 setSelectedOrderId(record.id);
-                setDetailDrawerOpen(true);
+                setDetailModalOpen(true);
               }}
               style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
@@ -307,7 +307,7 @@ export default function ProviderOrdersPage() {
             />
           </div>
 
-          <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+          <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
             <ReloadOutlined className={loading ? 'animate-spin' : ''} />
             Làm mới
           </UiButton>
@@ -356,7 +356,7 @@ export default function ProviderOrdersPage() {
         onRow={(record) => ({
           onClick: () => {
             setSelectedOrderId(record.id);
-            setDetailDrawerOpen(true);
+            setDetailModalOpen(true);
           },
           style: { cursor: 'pointer' },
         })}
@@ -372,10 +372,10 @@ export default function ProviderOrdersPage() {
         onSubmit={handleShipSubmit}
       />
       <OrderDetailDrawer
-        open={detailDrawerOpen}
+        open={detailModalOpen}
         orderId={selectedOrderId}
         onClose={() => {
-          setDetailDrawerOpen(false);
+          setDetailModalOpen(false);
           setSelectedOrderId(null);
         }}
       />

@@ -77,7 +77,7 @@ export default function AdminAuditLogsPage() {
         </div>
 
         <div className="mb-2 flex flex-wrap justify-end gap-4">
-          <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+          <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
             <ReloadOutlined className={loading ? 'animate-spin' : ''} />
             Làm mới
           </UiButton>

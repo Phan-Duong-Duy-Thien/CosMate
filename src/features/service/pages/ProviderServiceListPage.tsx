@@ -252,11 +252,11 @@ export default function ProviderServiceListPage() {
           {error && <Alert type="error" message={error} className="mb-4" />}
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
-            <UiButton variant="outline" disabled={loading} type="button" onClick={() => void refetch()}>
+            <UiButton variant="cosmateOutline" disabled={loading} type="button" onClick={() => void refetch()}>
               <ReloadOutlined className={loading ? 'animate-spin' : ''} />
               {VI.service.list.messages.refresh}
             </UiButton>
-            <UiButton type="button" onClick={() => navigate(createPath)}>
+            <UiButton variant="cosmate" type="button" onClick={() => navigate(createPath)}>
               <PlusOutlined />
               {VI.service.list.createButton}
             </UiButton>
