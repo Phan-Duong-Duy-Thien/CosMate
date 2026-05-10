@@ -1,15 +1,21 @@
 /**
  * Provider Service Orders Page
  *
- * Displays all service orders for the provider (photographer/event-staff)
- * with server-side status filtering.
+ * Layout aligned with ProviderOrdersPage (rental): search + refresh, status chips, Table.
  *
  * Data flow: Page → hook → service → API → axiosInstance
  */
 import { useState } from 'react';
-import { Table, Tabs, Tag, Tooltip, Modal, Input } from 'antd';
+import { Alert, Input, Table, Tag, Tooltip, Modal } from 'antd';
 import type { TableProps } from 'antd';
-import { SearchOutlined, EyeOutlined, ClockCircleOutlined, PlayCircleOutlined, CheckCircleOutlined } from '@ant-design/icons';
+import {
+  SearchOutlined,
+  EyeOutlined,
+  ClockCircleOutlined,
+  PlayCircleOutlined,
+  CheckCircleOutlined,
+  ReloadOutlined,
+} from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
@@ -19,6 +25,8 @@ import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
 import type { ServiceOrder } from '../api/booking.api';
 import { ORDER_STATUS_UI, type OrderStatusValue } from '@/constants/orderStatus';
+import { Button as UiButton } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 // ─── Sidebar / Layout Helpers ─────────────────────────────────────────────────
 
@@ -38,7 +46,7 @@ function deriveBrandName(): string {
   return roles.includes(ROLE.PROVIDER_PHOTOGRAPH) ? 'CosMate Photographer' : 'CosMate Event Staff';
 }
 
-// ─── Status Tabs ───────────────────────────────────────────────────────────────
+// ─── Status Tabs (keys + i18n labels) ───────────────────────────────────────
 
 const STATUS_TABS: Array<{ key: ProviderServiceOrderTab; label: string }> = [
   { key: 'all', label: VI.profile.orders.tabAll },
@@ -52,6 +60,20 @@ const STATUS_TABS: Array<{ key: ProviderServiceOrderTab; label: string }> = [
   { key: 'CANCELLED', label: VI.profile.serviceOrders.statusCancelled },
 ];
 
+/** Map ORDER_STATUS_UI `color` string to Ant Design Tag preset */
+function antTagPresetFromUiColor(color: string): string {
+  const map: Record<string, string> = {
+    slate: 'default',
+    orange: 'orange',
+    blue: 'blue',
+    purple: 'purple',
+    green: 'green',
+    red: 'red',
+    dark: 'default',
+  };
+  return map[color] ?? 'default';
+}
+
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 function formatDate(dateString: string | undefined | null): string {
@@ -62,6 +84,8 @@ function formatDate(dateString: string | undefined | null): string {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
   });
 }
 
@@ -80,6 +104,7 @@ export default function ProviderServiceOrdersPage() {
     orders,
     loading,
     error,
+    refetch,
     selectedStatus,
     setStatus,
     setWaitingStatus,
@@ -94,7 +119,11 @@ export default function ProviderServiceOrdersPage() {
     order: null,
   });
 
-  const [confirmModal, setConfirmModal] = useState<{ open: boolean; orderId: number | null; type: 'setWaiting' | 'startService' | 'completeService' }>({
+  const [confirmModal, setConfirmModal] = useState<{
+    open: boolean;
+    orderId: number | null;
+    type: 'setWaiting' | 'startService' | 'completeService';
+  }>({
     open: false,
     orderId: null,
     type: 'setWaiting',
@@ -173,7 +202,7 @@ export default function ProviderServiceOrdersPage() {
       dataIndex: 'createdAt',
       key: 'createdAt',
       render: (date: string) => formatDate(date),
-      width: 160,
+      width: 180,
     },
     {
       title: VI.provider.orders.table.status,
@@ -196,7 +225,7 @@ export default function ProviderServiceOrdersPage() {
         const canStartService = uiConfig?.actions.includes('START_SERVICE');
         const canCompleteService = uiConfig?.actions.includes('COMPLETE_SERVICE');
         return (
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+          <div className="flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
             <Tooltip title={VI.order.actions.viewDetail}>
               <EyeOutlined
                 onClick={() => setDetailModal({ open: true, order: record })}
@@ -233,17 +262,64 @@ export default function ProviderServiceOrdersPage() {
     },
   ];
 
-  const tabItems = STATUS_TABS.map((tab) => ({
-    key: tab.key,
-    label: (
-      <span>
-        {tab.label}
-        <span style={{ marginLeft: 4, opacity: 0.6 }}>
-          ({tabCounts[tab.key] ?? 0})
-        </span>
-      </span>
-    ),
-    children: (
+  return (
+    <DashboardLayout
+      title={VI.provider.serviceOrders.title}
+      sidebarItems={sidebarItems}
+      showChatButton={false}
+      brandName={brandName}
+    >
+      {error && <Alert type="error" message={error} className="mb-4" />}
+
+      <div className="mb-4 flex flex-col gap-4">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="w-full max-w-sm">
+            <Input
+              placeholder={VI.provider.orders.searchPlaceholder}
+              prefix={<SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              allowClear
+            />
+          </div>
+
+          <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+            <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+            Làm mới
+          </UiButton>
+        </div>
+      </div>
+
+      <div className="mb-4 -mx-1 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+        {STATUS_TABS.map((tab) => {
+          const count = tabCounts[tab.key] ?? 0;
+          const isActive = selectedStatus === tab.key;
+          const meta = tab.key === 'all' ? null : ORDER_STATUS_UI[tab.key as OrderStatusValue];
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setStatus(tab.key)}
+              className={cn(
+                'inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm shadow-sm transition-colors',
+                isActive
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                  : 'border-border bg-card hover:bg-muted/60',
+              )}
+            >
+              {tab.key === 'all' ? (
+                <span className="font-medium">{tab.label}</span>
+              ) : (
+                <Tag color={meta ? antTagPresetFromUiColor(meta.color) : 'default'} style={{ margin: 0 }}>
+                  {tab.label}
+                </Tag>
+              )}
+              <span className="text-muted-foreground">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
       <Table<ServiceOrder>
         dataSource={filteredBySearch}
         columns={columns}
@@ -251,12 +327,12 @@ export default function ProviderServiceOrdersPage() {
         rowKey="id"
         pagination={{ pageSize: 10 }}
         locale={{ emptyText: VI.common.status.noData }}
+        onRow={(record) => ({
+          onClick: () => setDetailModal({ open: true, order: record }),
+          style: { cursor: 'pointer' },
+        })}
       />
-    ),
-  }));
 
-  return (
-    <>
       <Modal
         title={
           confirmModal.type === 'startService'
@@ -287,36 +363,6 @@ export default function ProviderServiceOrdersPage() {
         </p>
       </Modal>
 
-      <DashboardLayout
-        title={VI.provider.serviceOrders.title}
-        sidebarItems={sidebarItems}
-        showChatButton={false}
-        brandName={brandName}
-      >
-        {error && (
-          <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {error}
-          </div>
-        )}
-
-        <div style={{ marginBottom: 16 }}>
-          <Input.Search
-            placeholder={VI.provider.orders.searchPlaceholder}
-            allowClear
-            enterButton={<SearchOutlined />}
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onSearch={setSearchTerm}
-            style={{ maxWidth: 400 }}
-          />
-        </div>
-        <Tabs
-          activeKey={selectedStatus}
-          onChange={(key) => setStatus(key as ProviderServiceOrderTab)}
-          items={tabItems}
-        />
-      </DashboardLayout>
-
       <Modal
         open={detailModal.open}
         title={VI.profile.serviceOrders.orderTitle}
@@ -326,13 +372,22 @@ export default function ProviderServiceOrdersPage() {
       >
         {detailModal.order && (
           <div className="space-y-3">
-            <p><strong>{VI.provider.orders.table.orderId}:</strong> #{detailModal.order.id}</p>
-            <p><strong>{VI.provider.orders.table.cosplayer}:</strong> {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}</p>
-            <p><strong>{VI.provider.orders.table.total}:</strong> {formatCurrency(detailModal.order.totalAmount)}</p>
-            <p><strong>{VI.provider.orders.table.createdAt}:</strong> {formatDate(detailModal.order.createdAt)}</p>
+            <p>
+              <strong>{VI.provider.orders.table.orderId}:</strong> #{detailModal.order.id}
+            </p>
+            <p>
+              <strong>{VI.provider.orders.table.cosplayer}:</strong>{' '}
+              {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}
+            </p>
+            <p>
+              <strong>{VI.provider.orders.table.total}:</strong> {formatCurrency(detailModal.order.totalAmount)}
+            </p>
+            <p>
+              <strong>{VI.provider.orders.table.createdAt}:</strong> {formatDate(detailModal.order.createdAt)}
+            </p>
             <div>
               <strong>{VI.profile.serviceOrders.cardBookings}:</strong>
-              <ul style={{ marginTop: 8, paddingLeft: 18 }}>
+              <ul className="mt-2 list-disc pl-4.5">
                 {detailModal.order.bookings.map((b) => (
                   <li key={b.id}>
                     {formatDate(b.bookingDate)} - {b.timeSlot} - {b.numberOfHuman} {VI.profile.serviceOrders.cardPeopleCount}
@@ -343,6 +398,6 @@ export default function ProviderServiceOrdersPage() {
           </div>
         )}
       </Modal>
-    </>
+    </DashboardLayout>
   );
 }

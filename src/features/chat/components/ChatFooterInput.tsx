@@ -92,8 +92,8 @@ export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled
             placeholder="Type a message..."
             disabled={disabled}
             rows={1}
-            className="flex-1 resize-none bg-transparent text-sm text-slate-700 outline-none placeholder:text-slate-400 whitespace-pre-wrap wrap-break-word overflow-y-auto"
-            style={{ maxHeight: "120px" }}
+            className="flex-1 resize-none overflow-y-auto bg-transparent text-sm text-slate-700 outline-none whitespace-pre-wrap wrap-break-word placeholder:text-slate-400"
+            style={{ maxHeight: "120px", resize: "none" }}
           />
         </div>
 

@@ -1,12 +1,18 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Plus } from "lucide-react"
 import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
+import type { SearchUserResult } from "../services/user.service"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
+import {
+  getChatMessagesService,
+  getOrCreateChatRoomService,
+  markRoomAsReadService,
+  uploadImageService,
+} from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
-import { ChatRoomList } from "../components/ChatRoomList"
+import { ChatInboxSidebar } from "../components/ChatInboxSidebar"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
 import {
@@ -54,7 +60,7 @@ export default function ProviderMessagesPage() {
   const [form] = Form.useForm()
 
   const currentUserId = getUserId()
-  const { rooms, loading: roomsLoading } = useChatRooms()
+  const { rooms, loading: roomsLoading, refetch: refetchRooms } = useChatRooms()
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Provider profile (needed for providerId to fetch services) ────────
@@ -128,6 +134,32 @@ export default function ProviderMessagesPage() {
 
   const handleSelectRoom = (room: ChatRoomListItem) => {
     setActiveRoom(room)
+  }
+
+  const handlePickUser = async (user: SearchUserResult) => {
+    if (currentUserId === null) {
+      message.warning(VI.common.messages.chatNeedLogin)
+      throw new Error("not logged in")
+    }
+    const existingRoom = rooms.find((r) => r.partnerId === user.id)
+    if (existingRoom) {
+      setActiveRoom(existingRoom)
+      return
+    }
+    try {
+      const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
+      refetchRooms()
+      setActiveRoom({
+        roomId: newRoom.id,
+        partnerId: user.id,
+        partnerName: user.fullName,
+        partnerAvatar: user.avatarUrl ?? null,
+        lastMessageAt: newRoom.lastMessageAt,
+      })
+    } catch {
+      message.error(VI.common.messages.chatStartFailed)
+      throw new Error("create room failed")
+    }
   }
 
   const handleSend = (content: string) => {
@@ -220,39 +252,22 @@ export default function ProviderMessagesPage() {
     <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
 
-        {/* LEFT: Conversation List */}
-        <div className="flex w-72 shrink-0 flex-col border-r border-slate-100">
-          <div className="flex h-14 shrink-0 items-center border-b border-slate-100 px-4">
-            <h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>
-          </div>
-          <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
-            {roomsLoading ? (
-              <div className="flex flex-col gap-2 p-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 animate-pulse" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-full rounded bg-slate-100 animate-pulse" />
-                      <div className="h-2.5 w-1/2 rounded bg-slate-100 animate-pulse" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <ChatRoomList
-                rooms={rooms}
-                activeRoomId={activeRoom?.roomId ?? null}
-                onSelectRoom={handleSelectRoom}
-              />
-            )}
-          </div>
-        </div>
+        <ChatInboxSidebar
+          variant="comfortable"
+          headerStart={<h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
+          rooms={rooms}
+          roomsLoading={roomsLoading}
+          activeRoomId={activeRoom?.roomId ?? null}
+          onSelectRoom={handleSelectRoom}
+          currentUserId={currentUserId}
+          onPickUser={handlePickUser}
+        />
 
         {/* RIGHT: Chat Window */}
         <div className="flex flex-1 min-h-0 flex-col">
           {/* Header */}
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4">
-            <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 pt-3.5 pb-3">
+            <div className="flex items-start gap-3">
               {activeRoom ? (
                 <>
                   <div className="relative shrink-0">
@@ -272,11 +287,11 @@ export default function ProviderMessagesPage() {
                       isConnected ? "bg-green-400" : "bg-slate-300"
                     )} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-800">
+                  <div className="flex min-w-0 flex-col">
+                    <p className="truncate text-sm font-semibold leading-tight text-slate-800">
                       {activeRoom.partnerName || VI.common.status.noData}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="truncate text-xs leading-none text-slate-400">
                       {isConnected ? VI.common.status.online : VI.common.status.offline}
                     </p>
                   </div>
@@ -284,7 +299,7 @@ export default function ProviderMessagesPage() {
               ) : (
                 <>
                   <div className="h-9 w-9 rounded-full bg-slate-100" />
-                  <div className="space-y-1">
+                  <div className="flex flex-col gap-0.5">
                     <div className="h-3.5 w-24 rounded bg-slate-100" />
                     <div className="h-2.5 w-16 rounded bg-slate-100" />
                   </div>

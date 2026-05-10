@@ -198,7 +198,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         initialValues={{ characterIds: [] }}
         onFinish={handleFinish}
         disabled={disabled || loading}
-        style={{ maxWidth: 640 }}
+        style={{ maxWidth: 640, margin: '0 auto' }}
       >
         {error && (
           <Form.Item>

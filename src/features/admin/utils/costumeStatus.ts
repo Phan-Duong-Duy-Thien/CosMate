@@ -6,6 +6,19 @@
 export type CostumeStatus = 'ACTIVE' | 'INACTIVE' | 'PENDING' | 'DELETED' | 'RENTED' | 'AVAILABLE' | string;
 
 /**
+ * Stable filter options for admin costume list (Tier B filter).
+ * Prefer this over deriving options only from the current page of rows.
+ */
+export const COSTUME_STATUS_FILTER_VALUES: readonly string[] = [
+  'ACTIVE',
+  'INACTIVE',
+  'PENDING',
+  'DELETED',
+  'RENTED',
+  'AVAILABLE',
+];
+
+/**
  * Get Tag color and label for a given costume status
  */
 export function getCostumeStatusTagProps(status?: string): { color: string; label: string } {

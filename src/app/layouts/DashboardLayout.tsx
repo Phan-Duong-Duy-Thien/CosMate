@@ -143,6 +143,38 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerCostumes, to: '/provider-rental/costumes' },
         { label: VI.common.breadcrumb.create },
       ]);
+    } else if (path === '/provider-rental/orders') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.orders.title },
+      ]);
+    } else if (path === '/provider/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.reviews },
+      ]);
+    } else if (path === '/provider/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings },
+      ]);
+    } else if (path === '/provider/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings, to: '/provider/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings, to: '/provider/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.messages },
+      ]);
     } else if (path === '/provider-rental/wallet') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
@@ -162,8 +194,6 @@ export function DashboardLayout({
       ]);
     } else if (path === '/provider-photograph') {
       setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
-    } else if (path.startsWith('/provider-photograph/')) {
-      setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
     } else if (path === '/provider-photograph/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
@@ -181,6 +211,50 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-photograph/wallet' },
         { label: VI.wallet.topup },
       ]);
+    } else if (path === '/provider-photograph/services') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.service.sidebar.serviceList },
+      ]);
+    } else if (path === '/provider-photograph/serviceCreate') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.service.sidebar.createService },
+      ]);
+    } else if (path === '/provider-photograph/service-orders') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-photograph/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings },
+      ]);
+    } else if (path === '/provider-photograph/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings, to: '/provider-photograph/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider-photograph/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings, to: '/provider-photograph/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider-photograph/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.messages },
+      ]);
+    } else if (path.startsWith('/provider-photograph/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.common.breadcrumb.serviceDetail },
+      ]);
+    } else if (path === '/provider-event-staff') {
+      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
     } else if (path === '/provider-event-staff/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
@@ -198,10 +272,48 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-event-staff/wallet' },
         { label: VI.wallet.topup },
       ]);
-    } else if (path === '/provider-event-staff') {
-      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
+    } else if (path === '/provider-event-staff/services') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.service.sidebar.serviceList },
+      ]);
+    } else if (path === '/provider-event-staff/serviceCreate') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.service.sidebar.createService },
+      ]);
+    } else if (path === '/provider-event-staff/service-orders') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-event-staff/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings },
+      ]);
+    } else if (path === '/provider-event-staff/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings, to: '/provider-event-staff/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider-event-staff/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings, to: '/provider-event-staff/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider-event-staff/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.messages },
+      ]);
     } else if (path.startsWith('/provider-event-staff/')) {
-      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.common.breadcrumb.serviceDetail },
+      ]);
     } else if (path === '/staff') {
       setItems([{ label: VI.staff.layout.title, to: '/staff' }]);
     } else if (path === '/staff/withdraw') {
@@ -217,9 +329,9 @@ export function DashboardLayout({
     }
   }, [location.pathname, setItems]);
 
-  // Fetch user profile for header avatar
+  // Fetch account profile for header: need avatar even when fullName was cached without photo
   useEffect(() => {
-    if (userProfile.avatarUrl || userProfile.fullName) return;
+    if (userProfile.avatarUrl) return;
 
     const userId = getUserId();
     if (!userId) return;
@@ -239,7 +351,7 @@ export function DashboardLayout({
     };
 
     fetchProfile();
-  }, [userProfile.avatarUrl, userProfile.fullName, setUserProfile]);
+  }, [userProfile.avatarUrl, setUserProfile]);
 
   const userName = userProfile.fullName || 'Admin';
   const currentPath = location.pathname;
@@ -358,9 +470,9 @@ export function DashboardLayout({
             zIndex: 1,
           }}
         >
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
+          <h1 className="m-0 text-xl font-semibold text-foreground">{displayTitle}</h1>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="flex items-center gap-3">
             {showChatButton && (
               <button
                 type="button"
@@ -405,22 +517,13 @@ export function DashboardLayout({
               </button>
             )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  borderRadius: 8,
-                }}
-              >
+              <div className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1 text-foreground hover:bg-accent/60">
                 {userProfile.avatarUrl ? (
                   <Avatar src={userProfile.avatarUrl} />
                 ) : (
-                  <Avatar className="!bg-primary !text-primary-foreground">{userName.charAt(0)}</Avatar>
+                  <Avatar className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
                 )}
-                <span style={{ fontWeight: 500 }}>{userName}</span>
+                <span className="font-medium">{userName}</span>
               </div>
             </Dropdown>
           </div>

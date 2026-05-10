@@ -5,13 +5,14 @@
  * Shows shop info, stats, and an Edit button to navigate to the completion page.
  */
 import { useLocation } from 'react-router-dom';
-import { Card, Spin, Button, Avatar, Tag, Row, Col, Statistic, Descriptions, Typography } from 'antd';
+import { Card, Spin, Button, Avatar, Row, Col, Statistic, Descriptions, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { Edit, Star, CheckCircle, ShoppingBag } from 'lucide-react';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
 import { useCurrentProviderProfile } from '../hooks/useCurrentProviderProfile';
+import { VI } from '@/shared/i18n/vi';
 
 const { Title, Paragraph, Text } = Typography;
 
@@ -81,62 +82,42 @@ export default function ProviderProfileViewPage() {
             bodyStyle={{ padding: 0 }}
           >
             <div
+              className="relative h-[200px] bg-cover bg-center"
               style={{
-                height: 200,
                 backgroundImage: `url(${coverBg})`,
-                backgroundSize: 'cover',
-                backgroundPosition: 'center',
-                position: 'relative',
               }}
             >
               <div
-                style={{
-                  position: 'absolute',
-                  inset: 0,
-                  background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.3) 50%, transparent 100%)',
-                }}
+                className="absolute inset-0 bg-linear-to-t from-black/60 via-black/25 to-transparent"
+                aria-hidden
               />
-              <div
-                style={{
-                  position: 'absolute',
-                  bottom: -48,
-                  left: 24,
-                  display: 'flex',
-                  alignItems: 'flex-end',
-                  gap: 16,
-                }}
-              >
-                <Avatar
-                  size={96}
-                  src={provider.avatarUrl}
-                  style={{
-                    border: "4px solid var(--card)",
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
-                  }}
-                />
-                <div style={{ paddingBottom: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <Title
-                      level={4}
-                      style={{ margin: 0, color: "var(--primary-foreground)", textShadow: "0 1px 4px color-mix(in oklch, var(--foreground) 45%, transparent)" }}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 border-b border-border px-6 pb-5 pt-2">
+              <Avatar
+                size={96}
+                src={provider.avatarUrl}
+                className="-mt-12 shrink-0 border-4 border-card shadow-md"
+              />
+              <div className="flex min-w-0 flex-1 items-center">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Title level={4} className="mb-0! text-foreground">
+                    {provider.shopName ?? 'Chưa có tên cửa hàng'}
+                  </Title>
+                  {provider.verified && (
+                    <span
+                      className="inline-flex shrink-0 text-cosmate-success"
+                      title={VI.provider.shop.verified}
+                      aria-label={VI.provider.shop.verified}
                     >
-                      {provider.shopName ?? 'Chưa có tên cửa hàng'}
-                    </Title>
-                    {provider.verified && (
-                      <Tag
-                        color="blue"
-                        icon={<CheckCircle size={12} />}
-                        style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}
-                      >
-                        Đã xác minh
-                      </Tag>
-                    )}
-                  </div>
+                      <CheckCircle className="h-6 w-6" aria-hidden strokeWidth={2} />
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: '60px 24px 24px', display: 'flex', justifyContent: 'flex-end' }}>
+            <div className="flex justify-end px-6 py-6">
               <Button
                 type="primary"
                 icon={<Edit size={14} />}

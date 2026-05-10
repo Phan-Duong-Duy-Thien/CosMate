@@ -1,109 +1,54 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Card, Descriptions, Drawer, Input, Result, Select, Space, Table, Tooltip, Typography, message } from 'antd';
+import { useState } from 'react';
+import { Descriptions, Drawer, Input, Result, Select, Table, Tag, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { ReloadOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
-import { getOrders } from '../api/adminOrders.api';
-import { getUserById } from '../api/adminUsers.api';
+import { Button as UiButton } from '@/components/ui/button';
+import { useAdminOrders } from '../hooks/useAdminOrders';
+import { ORDER_STATUS } from '@/constants/orderStatus';
 import { COSTUME_ORDER_STATUS_UI, getCostumeOrderStatusProps } from '../utils/orderStatus';
+import type { AdminOrderRow } from '../services/adminOrders.service';
 
-interface OrderRow {
-  id: number;
-  code?: string;
-  userName?: string;
-  cosplayerName?: string;
-  providerName?: string;
-  status?: string;
-  total?: number;
+/** Costume rental + photography/service order keys (reports & filters stay in sync). */
+const ALL_ORDER_STATUSES = Array.from(
+  new Set([...Object.keys(COSTUME_ORDER_STATUS_UI), ...Object.values(ORDER_STATUS)])
+).sort((a, b) => a.localeCompare(b));
+
+function getOrderStatusTagColor(status: string): string {
+  const normalized = status.toUpperCase();
+  if (['UNPAID', 'PREPARING', 'WAITING_SERVICE_DATE'].includes(normalized)) return 'gold';
+  if (['PAID', 'SHIPPING_OUT'].includes(normalized)) return 'blue';
+  if (['IN_USE', 'IN_SERVICE'].includes(normalized)) return 'purple';
+  if (['RETURNED', 'COMPLETED'].includes(normalized)) return 'green';
+  if (['DISPUTE', 'SHIPPING_BACK'].includes(normalized)) return 'red';
+  if (normalized === 'CANCELLED') return 'default';
+  return 'default';
 }
 
-const ALL_ORDER_STATUSES = Object.keys(COSTUME_ORDER_STATUS_UI);
-
 export default function AdminOrdersPage() {
-  const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [allRows, setAllRows] = useState<OrderRow[]>([]);
-  const [total, setTotal] = useState(0);
+  const {
+    search,
+    setSearch,
+    statusFilter,
+    setStatusFilter,
+    loading,
+    filteredRows,
+    paginatedRows,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    refetch,
+  } = useAdminOrders();
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const [selected, setSelected] = useState<OrderRow | null>(null);
+  const [selected, setSelected] = useState<AdminOrderRow | null>(null);
   const [open, setOpen] = useState(false);
-
-  const fetchOrders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getOrders(1, 9999);
-
-      // Batch resolve missing cosplayerName from cosplayerId
-      const rowsNeedingName = data.content.filter((r: OrderRow) => !r.cosplayerName && (r as any).cosplayerId);
-      if (rowsNeedingName.length > 0) {
-        const uniqueIds = [...new Set(rowsNeedingName.map((r: OrderRow) => (r as any).cosplayerId))];
-        const userResults = await Promise.all(
-          uniqueIds.map((id: number) => getUserById(id).catch(() => null))
-        );
-        const cosplayerMap = Object.fromEntries(
-          userResults
-            .filter((u): u is NonNullable<typeof u> => u !== null)
-            .map((u) => [u.id, u.fullName ?? '—'])
-        );
-        data.content = data.content.map((r: OrderRow) => {
-          if (!r.cosplayerName && (r as any).cosplayerId) {
-            return { ...r, cosplayerName: cosplayerMap[(r as any).cosplayerId] ?? r.cosplayerName };
-          }
-          return r;
-        });
-      }
-
-      setAllRows(data.content);
-      setTotal(data.totalElements);
-    } catch {
-      message.error('Không thể tải danh sách đơn hàng');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchOrders();
-  }, [fetchOrders]);
-
-  // Client-side filter
-  const filteredRows = useMemo(() => {
-    let rows = allRows;
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
-      rows = rows.filter(
-        (r) =>
-          `${r.code ?? ''} ${r.userName ?? ''} ${r.cosplayerName ?? ''} ${r.providerName ?? ''} ${r.id ?? ''}`
-            .toLowerCase()
-            .includes(q)
-      );
-    }
-    if (statusFilter) {
-      rows = rows.filter((r) => r.status === statusFilter);
-    }
-    return rows;
-  }, [allRows, search, statusFilter]);
-
-  // Client-side pagination
-  const paginatedRows = useMemo(() => {
-    const start = (page - 1) * pageSize;
-    return filteredRows.slice(start, start + pageSize);
-  }, [filteredRows, page, pageSize]);
-
-  // Reset page when filter changes
-  useEffect(() => {
-    setPage(1);
-  }, [search, statusFilter]);
 
   const formatCurrency = (amount: number | undefined): string => {
     if (amount == null) return '—';
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
   };
 
-  const columns: TableProps<OrderRow>['columns'] = [
+  const columns: TableProps<AdminOrderRow>['columns'] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -116,7 +61,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'code',
       key: 'code',
       render: (v: string | undefined) => (
-        <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{v ?? '—'}</span>
+        <span className="font-semibold text-foreground">{v ?? '—'}</span>
       ),
     },
     {
@@ -124,7 +69,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'userName',
       key: 'userName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span className={v ? 'text-foreground' : 'text-muted-foreground italic'}>{v ?? '—'}</span>
       ),
     },
     {
@@ -132,7 +77,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'cosplayerName',
       key: 'cosplayerName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span className={v ? 'text-foreground' : 'text-muted-foreground italic'}>{v ?? '—'}</span>
       ),
     },
     {
@@ -140,7 +85,7 @@ export default function AdminOrdersPage() {
       dataIndex: 'providerName',
       key: 'providerName',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? 'var(--foreground)' : 'var(--muted-foreground)', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span className={v ? 'text-foreground' : 'text-muted-foreground italic'}>{v ?? '—'}</span>
       ),
     },
     {
@@ -149,7 +94,7 @@ export default function AdminOrdersPage() {
       key: 'total',
       align: 'right',
       render: (v: number | undefined) => (
-        <span style={{ color: "var(--primary)", fontWeight: 600 }}>{formatCurrency(v)}</span>
+        <span className="font-semibold text-primary">{formatCurrency(v)}</span>
       ),
     },
     {
@@ -159,46 +104,29 @@ export default function AdminOrdersPage() {
       width: 160,
       align: 'center',
       render: (v: string | undefined) => {
-        if (!v) return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
-        const { bg, text, label } = getCostumeOrderStatusProps(v);
-        return (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '2px 10px',
-              borderRadius: 9999,
-              backgroundColor: bg,
-              color: text,
-              fontSize: 12,
-              fontWeight: 600,
-              letterSpacing: '0.02em',
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {label}
-          </span>
-        );
+        if (!v) return <span className="text-muted-foreground italic">—</span>;
+        const { label } = getCostumeOrderStatusProps(v);
+        return <Tag color={getOrderStatusTagColor(v)} style={{ margin: 0 }}>{label}</Tag>;
       },
     },
     {
       title: 'Hành động',
       key: 'actions',
-      width: 100,
+      width: 90,
       align: 'center',
       render: (_, r) => (
-        <Space size={8} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center" role="presentation" onClick={(e) => e.stopPropagation()}>
           <Tooltip title="Chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
+            <EyeOutlined
+              className="cursor-pointer text-base"
+              style={{ color: 'var(--cosmate-info)' }}
               onClick={() => {
                 setSelected(r);
                 setOpen(true);
               }}
             />
           </Tooltip>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -206,41 +134,36 @@ export default function AdminOrdersPage() {
   return (
     <>
       <style>{`
-        .admin-user-row:hover {
-          background-color: var(--muted) !important;
-        }
+        .admin-user-row:hover { background-color: var(--muted) !important; }
       `}</style>
 
-      <div className="w-full h-full">
-        {/* Toolbar */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16 }}>
-          {/* TẦNG 1: Tìm kiếm + nút bấm */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', gap: 16 }}>
-            <Input
-              placeholder="Tìm đơn hàng"
-              prefix={<SearchOutlined />}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              style={{ width: 320, maxWidth: '100%' }}
-              allowClear
-            />
+      <div className="flex h-full w-full flex-col">
+        <div className="mb-4 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="w-full max-w-sm">
+              <Input
+                placeholder="Tìm đơn hàng"
+                prefix={<SearchOutlined />}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                allowClear
+              />
+            </div>
 
-            <Space wrap>
-              <Button icon={<ReloadOutlined />} onClick={fetchOrders} loading={loading}>
-                Làm mới
-              </Button>
-            </Space>
+            <UiButton variant="outline" disabled={loading} onClick={() => void refetch()}>
+              <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+              Làm mới
+            </UiButton>
           </div>
 
-          {/* TẦNG 2: Bộ lọc */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16 }}>
+          <div className="flex flex-wrap gap-4">
             <Select
               placeholder="Lọc theo trạng thái"
               value={statusFilter || undefined}
               onChange={(val) => setStatusFilter(val ?? null)}
-              style={{ width: 220, maxWidth: '100%' }}
+              className="min-w-[220px]"
               options={ALL_ORDER_STATUSES.map((s) => ({
-                label: COSTUME_ORDER_STATUS_UI[s]?.label ?? s,
+                label: getCostumeOrderStatusProps(s).label,
                 value: s,
               }))}
               allowClear
@@ -248,8 +171,7 @@ export default function AdminOrdersPage() {
           </div>
         </div>
 
-        {/* Table */}
-        <Table<OrderRow>
+        <Table<AdminOrderRow>
           columns={columns}
           dataSource={paginatedRows}
           rowKey="id"
@@ -275,17 +197,18 @@ export default function AdminOrdersPage() {
           })}
           rowClassName={() => 'admin-user-row'}
         />
+
         {!loading && filteredRows.length === 0 && (
-          <Result status="404" title="Không có đơn hàng" subTitle="Danh sách đơn hàng đang trống hoặc chưa tải được dữ liệu." />
+          <div className="mt-6">
+            <Result
+              status="404"
+              title="Không có đơn hàng"
+              subTitle="Danh sách đơn hàng đang trống hoặc chưa tải được dữ liệu."
+            />
+          </div>
         )}
 
-        <Drawer
-          open={open}
-          onClose={() => setOpen(false)}
-          title="Chi tiết đơn hàng"
-          width={560}
-          destroyOnClose
-        >
+        <Drawer open={open} onClose={() => setOpen(false)} title="Chi tiết đơn hàng" width={560} destroyOnClose>
           {selected && (
             <Descriptions bordered column={1}>
               <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
@@ -296,20 +219,9 @@ export default function AdminOrdersPage() {
               <Descriptions.Item label="Tổng">{formatCurrency(selected.total)}</Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
                 {selected.status ? (
-                  <span
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      padding: '2px 10px',
-                      borderRadius: 9999,
-                      backgroundColor: getCostumeOrderStatusProps(selected.status).bg,
-                      color: getCostumeOrderStatusProps(selected.status).text,
-                      fontSize: 12,
-                      fontWeight: 600,
-                    }}
-                  >
+                  <Tag color={getOrderStatusTagColor(selected.status)} style={{ margin: 0 }}>
                     {getCostumeOrderStatusProps(selected.status).label}
-                  </span>
+                  </Tag>
                 ) : (
                   '—'
                 )}

@@ -7,9 +7,24 @@
  * No direct API calls in this file.
  */
 
-import { Button, Table, Tag, Space, Modal, Image, Descriptions, List, Alert, Spin, Input, Select, Typography, Popconfirm } from 'antd'
+import {
+  Table,
+  Tag,
+  Space,
+  Drawer,
+  Image,
+  Descriptions,
+  List,
+  Alert,
+  Spin,
+  Input,
+  Select,
+  Typography,
+  Popconfirm,
+  Tooltip,
+} from 'antd'
 import type { TableProps }from 'antd'
-import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined, DeleteOutlined }from '@ant-design/icons'
+import { ReloadOutlined, EyeOutlined, PlusOutlined, EditOutlined, SearchOutlined, DeleteOutlined, UpOutlined, DownOutlined }from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout'
@@ -21,6 +36,7 @@ import type { Costume, CostumeStatus }from '../types'
 import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
 import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
 import { VI } from '@/shared/i18n/vi'
+import { Button as UiButton } from '@/components/ui/button'
 
 const { Text } = Typography
 
@@ -29,6 +45,7 @@ const { Text } = Typography
 function getStatusTagColor(status: CostumeStatus): string {
   if (status === 'AVAILABLE') return 'green'
   if (status === 'RENTED') return 'orange'
+  if (status === 'MAINTENANCE') return 'blue'
   return 'blue'
 }
 
@@ -63,10 +80,9 @@ interface DetailModalProps {
 
 function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProps) {
   return (
-    <Modal
+    <Drawer
       open={open}
-      onCancel={onClose}
-      footer={<Button onClick={onClose}>Đóng</Button>}
+      onClose={onClose}
       title="Chi tiết trang phục"
       width={720}
       destroyOnClose
@@ -168,7 +184,7 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
           )}
         </div>
       )}
-    </Modal>
+    </Drawer>
   )
 }
 
@@ -263,14 +279,14 @@ export default function ProviderCostumeListPage() {
     dataIndex: 'pricePerDay',
     key: 'pricePerDay',
       width: 140,
-    render: (v: number) => `${v.toLocaleString('vi-VN')} VNĐ`,
+    render: (v: number) => <span className="font-semibold text-foreground">{`${v.toLocaleString('vi-VN')} VNĐ`}</span>,
   },
     {
       title: 'Tiền đặt cọc',
       dataIndex: 'depositAmount',
       key: 'depositAmount',
       width: 140,
-      render: (v: number) => `${v.toLocaleString('vi-VN')}VNĐ`,
+      render: (v: number) => `${v.toLocaleString('vi-VN')} VNĐ`,
     },
   {
     title: 'Trạng thái',
@@ -284,23 +300,22 @@ export default function ProviderCostumeListPage() {
     {
       title: 'Thao tác',
       key: 'actions',
-      width: 240,
+      width: 120,
+      align: 'center',
       render: (_, record) => (
-        <Space>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => openDetail(record.id)}
-          >
-            Xem
-          </Button>
-          <Button
-            type="link"
-            icon={<EditOutlined />}
-            onClick={() => editModal.openModal(record.id)}
-          >
-            Sửa
-          </Button>
+        <Space size={10} onClick={(e) => e.stopPropagation()}>
+          <Tooltip title="Xem chi tiết">
+            <EyeOutlined
+              onClick={() => openDetail(record.id)}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
+            />
+          </Tooltip>
+          <Tooltip title="Sửa trang phục">
+            <EditOutlined
+              onClick={() => editModal.openModal(record.id)}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-warning)' }}
+            />
+          </Tooltip>
           <Popconfirm
             title="Xóa trang phục này?"
             description="Hành động này không thể hoàn tác."
@@ -309,9 +324,9 @@ export default function ProviderCostumeListPage() {
             okButtonProps={{ danger: true, loading: deletingId === record.id }}
             onConfirm={() => void removeCostume(record.id)}
           >
-            <Button type="link" danger icon={<DeleteOutlined />}>
-              Xóa
-            </Button>
+            <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
+              <DeleteOutlined />
+            </span>
           </Popconfirm>
         </Space>
     ),
@@ -348,59 +363,60 @@ export default function ProviderCostumeListPage() {
           />
         )}
         {!gate.profileLoading && gate.verified === true && (<>
-        {/* Sort/Filter Toolbar */}
-        <div style={{ marginBottom: 16 }}>
-          <Space wrap style={{ marginBottom: 8 }}>
-            <Input
-              placeholder="Tìm kiếm tên trang phục..."
-              prefix={<SearchOutlined />}
-              value={searchText}
-              onChange={(e) => setSearchText(e.target.value)}
-              style={{ width: 240 }}
-              allowClear
-            />
+        {/* Toolbar: Tier 1 (search/actions) + Tier 2 (filters/sort) */}
+        <div className="mb-4 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="w-full max-w-sm">
+              <Input
+                placeholder="Tìm kiếm tên trang phục..."
+                prefix={<SearchOutlined />}
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                allowClear
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <UiButton variant="outline" disabled={isLoading} onClick={() => void refetch()}>
+                <ReloadOutlined className={isLoading ? 'animate-spin' : ''} />
+                Làm mới
+              </UiButton>
+              <UiButton onClick={() => navigate('/provider-rental/costumes/create')}>
+                <PlusOutlined />
+                Tạo trang phục mới
+              </UiButton>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-3">
             <Select
               placeholder="Lọc theo trạng thái"
               value={statusFilter}
               onChange={setStatusFilter}
-              style={{ width: 160 }}
-            >
-              <Select.Option value="ALL">Tất cả trạng thái</Select.Option>
-              <Select.Option value="AVAILABLE">Có sẵn</Select.Option>
-              <Select.Option value="RENTED">Đang thuê</Select.Option>
-              <Select.Option value="MAINTENANCE">Bảo trì</Select.Option>
-            </Select>
+              className="min-w-[180px]"
+              options={[
+                { label: 'Tất cả trạng thái', value: 'ALL' },
+                { label: 'Có sẵn', value: 'AVAILABLE' },
+                { label: 'Đang thuê', value: 'RENTED' },
+                { label: 'Bảo trì', value: 'MAINTENANCE' },
+              ]}
+            />
             <Select
               value={sortKey}
               onChange={(val) => setSortKey(val as CostumeSortKey)}
-              style={{ width: 160 }}
-            >
-              <Select.Option value="name">Tên</Select.Option>
-              <Select.Option value="pricePerDay">Giá / ngày</Select.Option>
-              <Select.Option value="status">Trạng thái</Select.Option>
-            </Select>
-            <Button
-              icon={
-                <span style={{ fontSize: 12, fontWeight: 'bold' }}>
-                  {sortOrder === 'asc' ? '↑' : '↓'}
-                </span>
-              }
+              className="min-w-[160px]"
+              options={[
+                { label: 'Tên', value: 'name' },
+                { label: 'Giá / ngày', value: 'pricePerDay' },
+                { label: 'Trạng thái', value: 'status' },
+              ]}
+            />
+            <UiButton
+              variant="outline"
               onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             >
+              {sortOrder === 'asc' ? <UpOutlined /> : <DownOutlined />}
               {sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'}
-            </Button>
-          </Space>
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
-            <Button icon={<ReloadOutlined />} onClick={refetch} loading={isLoading}>
-              Làm mới
-            </Button>
-            <Button
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() => navigate('/provider-rental/costumes/create')}
-            >
-              Tạo trang phục mới
-            </Button>
+            </UiButton>
           </div>
         </div>
 
@@ -421,9 +437,13 @@ export default function ProviderCostumeListPage() {
           dataSource={filteredCostumes}
           rowKey="id"
           loading={isLoading}
+          onRow={(record) => ({
+            onClick: () => openDetail(record.id),
+            style: { cursor: 'pointer' },
+          })}
           pagination={{
             pageSize: 10,
-            showTotal: (total) => `Tổng ${total}trang phục`,
+            showTotal: (total) => `Tổng ${total} trang phục`,
             showSizeChanger: true,
             pageSizeOptions: ['10', '20', '50'],
           }}

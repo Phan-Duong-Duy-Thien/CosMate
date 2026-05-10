@@ -39,6 +39,13 @@ export interface ProviderReview {
   }[];
 }
 
+/** Detail payload (GET by id) — may include reviewer fields from backend */
+export type ProviderReviewDetail = ProviderReview & {
+  username?: string | null;
+  avatarUrl?: string | null;
+  cosplayerName?: string | null;
+};
+
 /**
  * GET /api/reviews/provider/{providerId}
  * Returns reviews for a specific provider.
@@ -48,6 +55,20 @@ export async function getReviewsByProvider(providerId: number): Promise<Provider
     `/api/reviews/provider/${providerId}`
   );
   return response.data.result;
+}
+
+/**
+ * GET /api/reviews/{reviewId}
+ * Full review for detail modal (images + optional reviewer info). Safe no-op if route missing.
+ */
+export async function getProviderReviewByReviewId(reviewId: number): Promise<ProviderReviewDetail | null> {
+  try {
+    const response = await axiosInstance.get<ApiResponse<ProviderReviewDetail>>(`/api/reviews/${reviewId}`);
+    if (response.data.code !== 0) return null;
+    return response.data.result ?? null;
+  } catch {
+    return null;
+  }
 }
 
 /**

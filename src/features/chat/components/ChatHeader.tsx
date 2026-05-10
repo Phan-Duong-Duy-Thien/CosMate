@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 import type { ChatPartner } from "../types"
 
 interface ChatHeaderProps {
@@ -16,17 +17,17 @@ function computeInitials(fullName: string): string {
 
 export function ChatHeader({ partner, loading, isConnected = true }: ChatHeaderProps) {
   return (
-    <div className="flex items-center gap-3">
+    <div className="flex items-start gap-3">
       {loading ? (
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-full bg-slate-100 animate-pulse" />
-          <div className="space-y-1.5">
+          <div className="flex flex-col gap-0.5">
             <div className="h-4 w-24 rounded bg-slate-100 animate-pulse" />
             <div className="h-3 w-16 rounded bg-slate-100 animate-pulse" />
           </div>
         </div>
       ) : partner ? (
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           {/* Avatar with online status */}
           <div className="relative shrink-0">
             {partner.avatarUrl ? (
@@ -47,15 +48,18 @@ export function ChatHeader({ partner, loading, isConnected = true }: ChatHeaderP
             )} />
           </div>
 
-          {/* Name */}
-          <div className="min-w-0">
-            <p className="truncate font-semibold text-slate-800">
+          {/* Name + status */}
+          <div className="flex min-w-0 flex-col">
+            <p className="truncate font-semibold leading-tight text-slate-800">
               {partner.fullName}
+            </p>
+            <p className="truncate text-xs leading-none text-slate-400">
+              {isConnected ? VI.common.status.online : VI.common.status.offline}
             </p>
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-3">
+        <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-full bg-slate-100" />
           <div className="h-4 w-24 rounded bg-slate-100 animate-pulse" />
         </div>

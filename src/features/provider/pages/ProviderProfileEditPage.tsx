@@ -8,6 +8,7 @@ import { useLocation } from 'react-router-dom';
 import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
@@ -22,6 +23,7 @@ export default function ProviderProfileEditPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
   const [addressForm] = Form.useForm<UpsertUserAddressPayload>();
+  const { items: breadcrumbItems } = useBreadcrumb();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -62,6 +64,9 @@ export default function ProviderProfileEditPage() {
     : 'CosMate Provider';
 
   const settingsPath = location.pathname.replace('/edit', '');
+
+  const isRentalProviderEdit = location.pathname === '/provider/settings/edit';
+  const showBackButton = !isRentalProviderEdit && breadcrumbItems.length < 2;
 
   const handleSave = async () => {
     const ok = await save();
@@ -115,14 +120,12 @@ export default function ProviderProfileEditPage() {
       showChatButton={false}
       brandName={brandName}
     >
-      <Button
-        type="text"
-        icon={<ArrowLeft size={16} />}
-        onClick={() => navigate(settingsPath)}
-        style={{ marginBottom: 16, paddingLeft: 4 }}
-      >
-        Quay lại
-      </Button>
+      <div className="mx-auto w-full max-w-2xl space-y-4">
+      {showBackButton && (
+        <Button type="link" icon={<ArrowLeft size={16} />} onClick={() => navigate(settingsPath)} className="px-0 text-foreground hover:text-muted-foreground">
+          Quay lại
+        </Button>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60 }}>
@@ -146,7 +149,7 @@ export default function ProviderProfileEditPage() {
             Cập nhật thông tin cửa hàng và thông tin thanh toán của bạn.
           </Paragraph>
 
-          <Form layout="vertical" style={{ maxWidth: 600 }}>
+          <Form layout="vertical" className="w-full">
             {/* Shop Name */}
             <Form.Item label="Tên cửa hàng" required>
               <Input
@@ -458,6 +461,8 @@ export default function ProviderProfileEditPage() {
           </div>
         </Card>
       )}
+
+      </div>
 
       <Modal
         open={isAddressModalOpen}
