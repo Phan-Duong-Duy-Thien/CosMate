@@ -1,7 +1,9 @@
-import * as React from 'react'
-import { Modal, Form, Input, Button } from 'antd'
-import { useChangePassword } from '@/features/auth/hooks/useChangePassword'
-import { VI } from '@/shared/i18n/vi'
+import * as React from "react"
+import { Loader2 } from "lucide-react"
+import { Modal, Form, Input } from "antd"
+import { Button } from "@/components/ui/button"
+import { useChangePassword } from "@/features/auth/hooks/useChangePassword"
+import { VI } from "@/shared/i18n/vi"
 
 interface ChangePasswordModalProps {
   open: boolean
@@ -48,33 +50,52 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
 
   return (
     <Modal
-      title={VI.auth.changePassword.title}
+      title={
+        <span className="text-lg font-semibold tracking-tight text-foreground">
+          {VI.auth.changePassword.title}
+        </span>
+      }
       open={open}
       onCancel={() => handleOpenChange(false)}
       footer={null}
       destroyOnClose
-      width={420}
+      width={440}
+      centered
+      classNames={{
+        content: "overflow-hidden rounded-2xl border border-border shadow-lg",
+        header: "border-b border-border pb-3",
+        body: "pt-1",
+      }}
     >
       <Form
         form={form}
         layout="vertical"
-        className="mt-4"
+        className="change-password-form mt-2 [&_.ant-form-item-explain-error]:text-xs [&_.ant-form-item-explain-error]:text-destructive [&_.ant-input-affix-wrapper]:rounded-xl [&_.ant-input-affix-wrapper]:!border [&_.ant-input-affix-wrapper]:!border-border [&_.ant-input-affix-wrapper]:!shadow-none [&_.ant-form-item-has-error_.ant-input-affix-wrapper]:!border-destructive"
         requiredMark={false}
       >
         <Form.Item
           name="oldPassword"
-          label={VI.auth.changePassword.oldPassword}
+          label={
+            <span className="text-sm font-medium text-foreground">
+              {VI.auth.changePassword.oldPassword}
+            </span>
+          }
           rules={[{ required: true, message: VI.auth.changePassword.error.required }]}
         >
           <Input.Password
             placeholder={VI.auth.changePassword.placeholders.oldPassword}
             autoComplete="current-password"
+            className="rounded-xl"
           />
         </Form.Item>
 
         <Form.Item
           name="newPassword"
-          label={VI.auth.changePassword.newPassword}
+          label={
+            <span className="text-sm font-medium text-foreground">
+              {VI.auth.changePassword.newPassword}
+            </span>
+          }
           rules={[
             { required: true, message: VI.auth.changePassword.error.required },
             { min: 6, message: VI.auth.changePassword.error.minLength },
@@ -83,18 +104,23 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
           <Input.Password
             placeholder={VI.auth.changePassword.placeholders.newPassword}
             autoComplete="new-password"
+            className="rounded-xl"
           />
         </Form.Item>
 
         <Form.Item
           name="confirmPassword"
-          label={VI.auth.changePassword.confirmPassword}
-          dependencies={['newPassword']}
+          label={
+            <span className="text-sm font-medium text-foreground">
+              {VI.auth.changePassword.confirmPassword}
+            </span>
+          }
+          dependencies={["newPassword"]}
           rules={[
             { required: true, message: VI.auth.changePassword.error.required },
             ({ getFieldValue }) => ({
               validator(_, value) {
-                if (!value || getFieldValue('newPassword') === value) {
+                if (!value || getFieldValue("newPassword") === value) {
                   return Promise.resolve()
                 }
                 return Promise.reject(new Error(VI.auth.changePassword.error.passwordMismatch))
@@ -105,21 +131,44 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
           <Input.Password
             placeholder={VI.auth.changePassword.placeholders.confirmPassword}
             autoComplete="new-password"
+            className="rounded-xl"
           />
         </Form.Item>
 
-        {localError && (
-          <p className="mb-3 rounded-lg border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700">
+        {localError ? (
+          <p
+            role="alert"
+            className="mb-4 rounded-xl border border-destructive/25 bg-destructive/5 px-3 py-2.5 text-sm text-destructive"
+          >
             {localError}
           </p>
-        )}
+        ) : null}
 
-        <div className="flex justify-end gap-3">
-          <Button onClick={() => handleOpenChange(false)} disabled={loading}>
+        <div className="flex flex-col-reverse gap-3 pt-1 sm:flex-row sm:justify-end">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full sm:w-auto"
+            disabled={loading}
+            onClick={() => handleOpenChange(false)}
+          >
             {VI.common.actions.cancel}
           </Button>
-          <Button type="primary" onClick={handleSubmit} loading={loading}>
-            {VI.auth.changePassword.submit}
+          <Button
+            type="button"
+            variant="cosmate"
+            className="w-full sm:w-auto"
+            disabled={loading}
+            onClick={() => void handleSubmit()}
+          >
+            {loading ? (
+              <>
+                <Loader2 className="size-4 shrink-0 animate-spin" aria-hidden />
+                <span>{VI.common.toast.loading}</span>
+              </>
+            ) : (
+              VI.auth.changePassword.submit
+            )}
           </Button>
         </div>
       </Form>

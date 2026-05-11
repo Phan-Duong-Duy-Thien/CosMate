@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { Button } from "@/shared/components/Button"
-import { Card } from "@/shared/components/Card"
+import { Button } from "@/components/ui/button"
+import { Card } from "@/components/ui/card"
 import { VI } from "@/shared/i18n/vi"
 
 const PROFILE_BIO_STORAGE_KEY = "cosmate.profile.bio"
@@ -43,9 +43,9 @@ export function ProfileBioCard() {
   }
 
   return (
-    <Card className="border-rose-300/85 bg-gradient-to-br from-white to-pink-200/55 p-5 shadow-[0_10px_30px_rgba(244,114,182,0.1)]">
+    <Card className="border-cosmate-pink/25 bg-gradient-to-br from-card to-cosmate-soft-pink/40 p-5 shadow-md shadow-cosmate-pink/10">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-slate-900">{VI.profile.bio.title}</h2>
+        <h2 className="text-base font-semibold text-foreground">{VI.profile.bio.title}</h2>
         {!isEditing ? (
           <Button
             type="button"
@@ -65,7 +65,7 @@ export function ProfileBioCard() {
             value={draftBio}
             onChange={(event) => setDraftBio(event.target.value)}
             placeholder={VI.profile.bio.placeholder}
-            className="min-h-28 w-full rounded-2xl border border-fuchsia-300 bg-white/90 px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2"
+            className="min-h-28 w-full rounded-2xl border border-cosmate-pink/30 bg-background/90 px-4 py-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
           />
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
@@ -77,7 +77,7 @@ export function ProfileBioCard() {
           </div>
         </div>
       ) : (
-        <p className="mt-3 min-h-16 whitespace-pre-wrap rounded-2xl border border-fuchsia-300 bg-white/90 px-4 py-3 text-sm text-slate-600">
+        <p className="mt-3 min-h-16 whitespace-pre-wrap rounded-2xl border border-cosmate-pink/30 bg-background/90 px-4 py-3 text-sm text-muted-foreground">
           {bio || VI.profile.bio.placeholder}
         </p>
       )}

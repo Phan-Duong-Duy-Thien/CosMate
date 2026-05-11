@@ -1,4 +1,4 @@
-import { Button } from "@/shared/components/Button"
+import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
 interface ProfileActionsProps {
@@ -28,7 +28,7 @@ export function ProfileActions({
       <Button
         variant="ghost"
         size="sm"
-        className={cn("text-slate-600", buttonBase)}
+        className={cn("text-muted-foreground", buttonBase)}
         onClick={onLogout}
       >
         Logout

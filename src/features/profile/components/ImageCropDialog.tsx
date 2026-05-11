@@ -2,7 +2,7 @@ import * as React from "react"
 import Cropper, { type Area } from "react-easy-crop"
 import "react-easy-crop/react-easy-crop.css"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@/shared/components/Button"
+import { Button } from "@/components/ui/button"
 import { VI } from "@/shared/i18n/vi"
 
 interface CropResult {
@@ -127,8 +127,8 @@ export function ImageCropDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950">
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-black">
           <div className="relative h-[340px] w-full">
             {imageSrc ? (
               <Cropper
@@ -147,7 +147,7 @@ export function ImageCropDialog({
         </div>
 
         <div className="mt-4 space-y-2">
-          <label className="text-sm font-medium text-slate-700">{VI.profile.crop.zoom}</label>
+          <label className="text-sm font-medium text-foreground">{VI.profile.crop.zoom}</label>
           <input
             type="range"
             min={1}
@@ -155,7 +155,7 @@ export function ImageCropDialog({
             step={0.05}
             value={zoom}
             onChange={(event) => setZoom(Number(event.target.value))}
-            className="w-full accent-pink-500"
+            className="w-full accent-cosmate-pink"
           />
         </div>
 

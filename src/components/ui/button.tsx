@@ -4,20 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/40 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-sm hover:bg-primary/90",
+          "border-0 bg-primary text-primary-foreground shadow-sm ring-0 hover:bg-primary/90",
         /** CosMate brand — use on dashboard toolbars & primary CTAs */
         cosmate:
-          "border-0 bg-cosmate-soft-pink text-foreground shadow-sm hover:bg-cosmate-pink/35 focus-visible:ring-cosmate-pink/45",
+          "border-0 bg-cosmate-soft-pink text-foreground shadow-none ring-0 hover:bg-cosmate-pink/35 focus-visible:ring-cosmate-pink/40",
         cosmateOutline:
-          "border-2 border-cosmate-soft-pink bg-background text-foreground hover:bg-cosmate-soft-pink/80 hover:border-cosmate-pink/40 focus-visible:ring-cosmate-pink/35",
+          "border-0 bg-background text-foreground shadow-none ring-1 ring-inset ring-cosmate-pink/22 hover:bg-cosmate-soft-pink/40 hover:ring-cosmate-pink/32 focus-visible:ring-cosmate-pink/35",
         outline:
-          "border border-border bg-background text-foreground hover:bg-accent hover:text-accent-foreground",
-        ghost: "text-foreground hover:bg-accent hover:text-accent-foreground",
+          "border-0 bg-background text-foreground shadow-none ring-1 ring-inset ring-border/55 hover:bg-accent hover:ring-border/80 focus-visible:ring-ring/35",
+        ghost: "border-0 text-foreground ring-0 hover:bg-accent hover:text-accent-foreground",
       },
       size: {
         default: "h-11 px-4 py-2",
@@ -41,7 +41,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => (
     <button
       ref={ref}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   )
