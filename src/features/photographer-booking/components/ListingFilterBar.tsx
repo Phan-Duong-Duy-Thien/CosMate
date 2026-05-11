@@ -1,95 +1,118 @@
-import { Search, MapPin, DollarSign, Calendar, ChevronDown } from 'lucide-react';
-import { Input } from '@/features/photographer-booking/components/ui/input';
-import { Button } from '@/features/photographer-booking/components/ui/button';
+import { Search, MapPin, DollarSign, Calendar, ChevronDown } from "lucide-react"
+
+import { Input } from "@/features/photographer-booking/components/ui/input"
+import { Button } from "@/features/photographer-booking/components/ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/features/photographer-booking/components/ui/dropdown-menu';
+} from "@/features/photographer-booking/components/ui/dropdown-menu"
+import { cn } from "@/lib/utils"
 
-export function ListingFilterBar() {
+const menuContentClass =
+  "rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-1 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] font-semibold"
+
+const menuItemClass =
+  "cursor-pointer rounded-lg font-semibold text-indigo-950 focus:bg-pink-100 focus:text-indigo-950"
+
+const triggerClass =
+  "h-11 rounded-xl border-[3px] border-indigo-950 bg-white px-3 font-bold text-indigo-950 shadow-[4px_4px_0_0_rgba(30,27,75,0.22)] hover:bg-pink-50"
+
+interface ListingFilterBarProps {
+  className?: string
+}
+
+export function ListingFilterBar({ className }: ListingFilterBarProps) {
   return (
-    <div className="bg-white/80 backdrop-blur-md border border-gray-100 rounded-3xl p-3 shadow-sm mb-12 flex flex-col lg:flex-row items-center gap-3">
-      {/* Search Input */}
-      <div className="relative flex-1 w-full lg:w-auto">
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-        <Input 
+    <div
+      className={cn(
+        "flex flex-col items-stretch gap-3 rounded-[1.15rem] border-[4px] border-indigo-950 bg-[#fffbeb]/95 p-3 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)] backdrop-blur-sm md:flex-row md:items-center md:gap-3 md:p-4",
+        className
+      )}
+    >
+      <div className="relative min-w-0 flex-1">
+        <Search
+          className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-indigo-950/55"
+          aria-hidden
+        />
+        <Input
           placeholder="Tìm theo tên hoặc phong cách..."
-          className="pl-11 pr-4 h-12 rounded-2xl border-none bg-gray-50/50 focus:bg-white focus:ring-2 focus:ring-cosmate-lavender-hover-border transition-all"
+          className="h-11 rounded-xl border-[3px] border-indigo-950/25 bg-white pl-10 pr-3 text-sm font-semibold text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.12)] placeholder:text-slate-500 focus:border-indigo-950 focus:ring-2 focus:ring-pink-300"
         />
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-        {/* Location Dropdown - Khu vực */}
+      <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <MapPin className="w-4 h-4 text-cosmate-lavender" />
+            <Button variant="outline" className={cn(triggerClass, "gap-2")}>
+              <MapPin className="h-4 w-4 shrink-0 text-pink-600" />
               Khu vực
-              <ChevronDown className="w-4 h-4 opacity-50" />
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48 rounded-xl border-gray-100">
-            <DropdownMenuItem>Hà Nội</DropdownMenuItem>
-            <DropdownMenuItem>TP. Hồ Chí Minh</DropdownMenuItem>
-            <DropdownMenuItem>Đà Nẵng</DropdownMenuItem>
+          <DropdownMenuContent align="start" className={cn(menuContentClass, "w-52")}>
+            <DropdownMenuItem className={menuItemClass}>Hà Nội</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>TP. Hồ Chí Minh</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>Đà Nẵng</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Price Dropdown - Mức giá (Đổi sang VND) */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <DollarSign className="w-4 h-4 text-cosmate-selection-bg" />
+            <Button variant="outline" className={cn(triggerClass, "gap-2")}>
+              <DollarSign className="h-4 w-4 shrink-0 text-fuchsia-600" />
               Mức giá
-              <ChevronDown className="w-4 h-4 opacity-50" />
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48 rounded-xl border-gray-100">
-            <DropdownMenuItem>Dưới 500.000đ</DropdownMenuItem>
-            <DropdownMenuItem>500k - 1.5 Triệu</DropdownMenuItem>
-            <DropdownMenuItem>Trên 1.5 Triệu</DropdownMenuItem>
+          <DropdownMenuContent align="start" className={cn(menuContentClass, "w-52")}>
+            <DropdownMenuItem className={menuItemClass}>Dưới 500.000đ</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>500k – 1,5 triệu</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>Trên 1,5 triệu</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        {/* Date Dropdown - Lịch trống */}
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="h-12 rounded-2xl border-gray-100 px-4 flex gap-2 font-medium text-gray-600 hover:bg-gray-50">
-              <Calendar className="w-4 h-4 text-cosmate-success" />
+            <Button variant="outline" className={cn(triggerClass, "gap-2")}>
+              <Calendar className="h-4 w-4 shrink-0 text-emerald-700" />
               Lịch trống
-              <ChevronDown className="w-4 h-4 opacity-50" />
+              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start" className="w-48 rounded-xl border-gray-100">
-            <DropdownMenuItem>Cuối tuần này</DropdownMenuItem>
-            <DropdownMenuItem>Tuần tới</DropdownMenuItem>
-            <DropdownMenuItem>Chọn ngày cụ thể</DropdownMenuItem>
+          <DropdownMenuContent align="start" className={cn(menuContentClass, "w-52")}>
+            <DropdownMenuItem className={menuItemClass}>Cuối tuần này</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>Tuần tới</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass}>Chọn ngày cụ thể</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
-        <div className="h-8 w-px bg-gray-100 mx-2 hidden lg:block" />
+        <div className="mx-1 hidden h-8 w-[3px] bg-indigo-950/15 md:block" aria-hidden />
 
-        {/* Sort By - Sắp xếp */}
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-gray-400 whitespace-nowrap">Sắp xếp:</span>
+        <div className="flex min-w-[10rem] flex-1 items-center justify-end gap-2 text-xs md:flex-initial md:justify-start">
+          <span className="font-extrabold uppercase tracking-wide text-indigo-800/65">
+            Sắp xếp:
+          </span>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
-              <button className="flex items-center gap-1 font-bold text-cosmate-ink hover:text-cosmate-lavender transition-colors">
+              <button
+                type="button"
+                className={cn(triggerClass, "inline-flex items-center gap-1 px-3 text-xs")}
+              >
                 Đề xuất
-                <ChevronDown className="w-4 h-4" />
+                <ChevronDown className="h-3.5 w-3.5" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 rounded-xl border-gray-100">
-              <DropdownMenuItem>Đề xuất</DropdownMenuItem>
-              <DropdownMenuItem>Đánh giá cao nhất</DropdownMenuItem>
-              <DropdownMenuItem>Giá: Thấp đến Cao</DropdownMenuItem>
-              <DropdownMenuItem>Giá: Cao đến Thấp</DropdownMenuItem>
+            <DropdownMenuContent align="end" className={cn(menuContentClass, "w-56")}>
+              <DropdownMenuItem className={menuItemClass}>Đề xuất</DropdownMenuItem>
+              <DropdownMenuItem className={menuItemClass}>Đánh giá cao nhất</DropdownMenuItem>
+              <DropdownMenuItem className={menuItemClass}>Giá: thấp → cao</DropdownMenuItem>
+              <DropdownMenuItem className={menuItemClass}>Giá: cao → thấp</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
       </div>
     </div>
-  );
+  )
 }

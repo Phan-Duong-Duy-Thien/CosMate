@@ -80,6 +80,7 @@ export interface ServiceItem {
   slotDurationHours: number;
   pricePerSlot: number;
   equipmentDepreciationCost: number;
+  depositAmount?: number;
   status: string;
   providerId: number;
   userId: number;
@@ -101,6 +102,7 @@ export interface PublicServiceItem {
   slotDurationHours: number;
   pricePerSlot: number;
   equipmentDepreciationCost: number;
+  depositAmount?: number;
   status: string;
   providerId: number;
   userId: number;

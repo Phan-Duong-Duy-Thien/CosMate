@@ -12,18 +12,20 @@ import { bannerSlides, shops as mockShops, tagList } from "../mocks/home.mock"
 import type { BannerSlide, Product, TagKey, UIState } from "./home.types"
 import { useFeaturedCostumes } from "@/features/costume-rental/hooks/useFeaturedCostumes"
 import { useTrustedShops } from "../hooks/useTrustedShops"
+import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
 const HomePage = () => {
   const navigate = useNavigate()
   const [activeTag, setActiveTag] = React.useState<TagKey>("anime")
-  const [wishlistIds, setWishlistIds] = React.useState<string[]>([])
+  const [wishlistTogglingId, setWishlistTogglingId] = React.useState<string | null>(null)
   const [isQuizOpen, setIsQuizOpen] = React.useState(false)
   const productSectionRef = React.useRef<HTMLDivElement>(null)
 
   const { items, isLoading, error } = useFeaturedCostumes()
   const { shops: trustedShops, loading: shopsLoading, error: shopsError } = useTrustedShops()
+  const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
 
   const filteredProducts = React.useMemo(() => {
     return items.map<Product>((costume) => ({
@@ -72,12 +74,28 @@ const HomePage = () => {
     }
   }
 
-  const handleToggleWishlist = (productId: string) => {
-    setWishlistIds((prev) =>
-      prev.includes(productId)
-        ? prev.filter((id) => id !== productId)
-        : [...prev, productId]
-    )
+  const wishlistIds = React.useMemo(
+    () => wishlistItems.map((w) => String(w.costumeId)),
+    [wishlistItems]
+  )
+
+  const handleToggleWishlist = async (productId: string) => {
+    if (wishlistTogglingId === productId) return
+
+    const costumeId = Number(productId)
+    if (!Number.isFinite(costumeId)) return
+
+    setWishlistTogglingId(productId)
+    try {
+      if (isInWishlist(costumeId)) {
+        const item = wishlistItems.find((w) => w.costumeId === costumeId)
+        if (item) await removeFromWishlist(item.id)
+      } else {
+        await addToWishlist(costumeId)
+      }
+    } finally {
+      setWishlistTogglingId(null)
+    }
   }
 
   return (
@@ -136,6 +154,7 @@ const HomePage = () => {
                 products={filteredProducts}
                 wishlistIds={wishlistIds}
                 onToggleWishlist={handleToggleWishlist}
+                wishlistLoadingId={wishlistTogglingId}
                 sectionRef={productSectionRef}
                 onViewDetail={(productId) => navigate(`/costumes/${productId}`)}
                 onViewAll={() => navigate("/costumes")}
