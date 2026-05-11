@@ -11,6 +11,7 @@ interface ProductSectionProps {
   products: Product[]
   wishlistIds: string[]
   onToggleWishlist: (productId: string) => void
+  wishlistLoadingId?: string | null
   sectionRef: React.RefObject<HTMLDivElement | null>
   onViewDetail: (productId: number) => void
   onViewAll: () => void
@@ -20,6 +21,7 @@ export const ProductSection = ({
   products,
   wishlistIds,
   onToggleWishlist,
+  wishlistLoadingId,
   sectionRef,
   onViewDetail,
   onViewAll,
@@ -51,6 +53,7 @@ export const ProductSection = ({
           key={product.id}
           product={product}
           isWishlisted={wishlistIds.includes(String(product.id))}
+          wishlistLoading={wishlistLoadingId === String(product.id)}
           onToggleWishlist={onToggleWishlist}
           onViewDetail={onViewDetail}
         />

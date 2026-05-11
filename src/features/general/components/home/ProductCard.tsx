@@ -10,6 +10,7 @@ import { VI } from "@/shared/i18n/vi"
 interface ProductCardProps {
   product: Product
   isWishlisted: boolean
+  wishlistLoading?: boolean
   onToggleWishlist: (productId: string) => void
   onViewDetail: (productId: number) => void
 }
@@ -24,6 +25,7 @@ const statusLabelVi: Record<string, string> = {
 export const ProductCard = ({
   product,
   isWishlisted,
+  wishlistLoading,
   onToggleWishlist,
   onViewDetail,
 }: ProductCardProps) => (
@@ -63,7 +65,8 @@ export const ProductCard = ({
         aria-label={VI.general.home.featured.wishlist}
         className={cn(
           "absolute right-3 top-3 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-2 text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:scale-105 hover:bg-pink-100",
-          isWishlisted && "border-pink-600 bg-pink-500 text-white hover:bg-pink-600"
+          isWishlisted && "border-pink-600 bg-pink-500 text-white hover:bg-pink-600",
+          wishlistLoading && "pointer-events-none opacity-70"
         )}
         onClick={(event) => {
           event.stopPropagation()
@@ -95,9 +98,10 @@ export const ProductCard = ({
           </span>
         </span>
       </h3>
-      <div className="text-lg font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
-        {product.pricePerDay.toLocaleString("vi-VN")}{" "}
-        <span className="text-indigo-950">VNĐ</span>
+      <div className="text-lg font-extrabold">
+        <span className="text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
+          {product.pricePerDay.toLocaleString("vi-VN")} <span>VNĐ</span>
+        </span>
         <span className="text-xs font-bold text-indigo-800/70">/ngày</span>
       </div>
       <Button
