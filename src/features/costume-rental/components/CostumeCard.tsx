@@ -13,23 +13,18 @@ interface CostumeCardProps {
   onViewDetail: (costumeId: string) => void
 }
 
-export const CostumeCard = ({
-  costume,
-  onViewDetail,
-}: CostumeCardProps) => {
+export const CostumeCard = ({ costume, onViewDetail }: CostumeCardProps) => {
   const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
   const costumeId = Number(costume.id)
   const liked = isInWishlist(costumeId)
   const displayName = costume.name?.trim() || "-"
-  const displayShopName = costume.shopName?.trim() || "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
+  const statusLabel = costume.isAvailable ? "Sẵn sàng cho thuê" : "Đang được thuê"
 
   const handleToggleWishlist = () => {
     if (liked) {
       const item = wishlistItems.find((w) => w.costumeId === costumeId)
-      if (item) {
-        removeFromWishlist(item.id)
-      }
+      if (item) removeFromWishlist(item.id)
     } else {
       addToWishlist(costumeId)
     }
@@ -46,26 +41,28 @@ export const CostumeCard = ({
           onViewDetail(costume.id)
         }
       }}
-      className="group flex h-full flex-col overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.05rem] border-[4px] border-indigo-950 bg-[#fffbe8] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]"
     >
       <div className="relative">
         <img
           src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
           alt={costume.name}
           loading="lazy"
-          className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className="h-48 w-full border-b-[4px] border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           <Badge
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-semibold text-white",
+              "rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold text-white shadow-sm",
               costume.isAvailable ? "bg-emerald-600" : "bg-slate-700"
             )}
           >
             {costume.isAvailable ? "Có sẵn" : "Đã thuê"}
           </Badge>
           {costume.isAdult18 && (
-            <Badge className="bg-pink-500 text-white">18+</Badge>
+            <Badge className="rounded-full border-2 border-indigo-950 bg-pink-500 px-3 py-1 text-xs font-bold text-white">
+              18+
+            </Badge>
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
@@ -79,7 +76,7 @@ export const CostumeCard = ({
           type="button"
           aria-label={liked ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
           className={cn(
-            "absolute right-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
+            "absolute right-3 rounded-xl border-[3px] border-indigo-950 bg-[#fffbe8] p-1.5 text-slate-600 shadow-sm transition hover:scale-105",
             typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
             liked && "text-pink-500"
           )}
@@ -90,19 +87,17 @@ export const CostumeCard = ({
         >
           <Heart className={cn("h-4 w-4", liked && "fill-pink-500")} />
         </button>
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-white/80 px-2 py-1 text-xs text-slate-600">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg border-2 border-indigo-950 bg-[#fffbe8]/95 px-2 py-0.5 text-[11px] font-semibold text-indigo-900">
           <ImageIcon className="h-3 w-3" />
           {costume.images.length} ảnh
         </div>
       </div>
-      <div className="flex min-h-[196px] flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-1 text-xs text-slate-600">
-          {displayShopName}
+
+      <div className="flex min-h-[124px] flex-1 flex-col gap-2 p-3">
+        <p className="inline-flex w-fit rounded-full border-2 border-indigo-950 bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
+          {statusLabel}
         </p>
-        <h3
-          className="overflow-hidden text-sm font-semibold text-slate-800"
-          title={displayName}
-        >
+        <h3 className="overflow-hidden text-sm font-semibold text-slate-800" title={displayName}>
           <span className="block truncate group-hover:hidden">{displayName}</span>
           <span className="hidden group-hover:block">
             <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
@@ -111,19 +106,13 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          Shop: {displayShopName}
-        </p>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          Nhân vật: {costume.characterName?.trim() || "-"}
-        </p>
-        <div className="min-h-7 text-sm font-semibold leading-tight text-pink-600">
+        <div className="min-h-7 text-base font-semibold leading-tight text-[#d61f91]">
           {hasPrice ? (
             <>
               <span className="whitespace-nowrap">
-                {costume.priceMin.toLocaleString("vi-VN")} VND
+                {costume.priceMin.toLocaleString("vi-VN")} VNĐ
               </span>
-              <span className="ml-1 text-[11px] font-normal text-slate-400">/ngày</span>
+              <span className="ml-1 text-xs font-normal text-slate-400">/ngày</span>
             </>
           ) : (
             "-"
@@ -132,7 +121,7 @@ export const CostumeCard = ({
         <Button
           variant="soft"
           size="sm"
-          className="mt-auto w-full rounded-md bg-pink-50 text-slate-700 hover:bg-pink-100"
+          className="mt-auto h-9 w-full rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 text-[18px] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] hover:brightness-105"
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)

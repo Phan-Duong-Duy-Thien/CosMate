@@ -59,8 +59,22 @@ export default function CosplayerSiteLayout() {
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
+  const isNotificationsPage = location.pathname === "/notifications"
+  const isPhotographersListingPage = location.pathname === "/photographers"
+  const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
+  const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
+  const isFullWidthEdgeListing =
+    isNotificationsPage ||
+    isPhotographersListingPage ||
+    isPhotographerDetailPage ||
+    isPublicServiceDetailPage
   const isWideContentPage =
-    location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
+    location.pathname === "/costumes" ||
+    location.pathname === "/guidelines-rules" ||
+    location.pathname === "/notifications" ||
+    location.pathname === "/photographers" ||
+    isPhotographerDetailPage ||
+    isPublicServiceDetailPage
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
@@ -582,7 +596,14 @@ export default function CosplayerSiteLayout() {
 
       <main className="min-w-0 flex-1 pt-[56px]">
         {!isHomePage && items.length > 0 && (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+          <div
+            className={cn(
+              "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
+              isFullWidthEdgeListing
+                ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
+                : "max-w-7xl"
+            )}
+          >
             <Breadcrumbs items={items} />
           </div>
         )}
@@ -613,10 +634,13 @@ export default function CosplayerSiteLayout() {
         ) : (
           <div
             className={cn(
-              "mx-auto w-full",
-              isWideContentPage
-                ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
-                : "max-w-7xl px-4 lg:px-6"
+              "mx-auto w-full min-w-0",
+              isFullWidthEdgeListing &&
+                "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
+              isWideContentPage &&
+                !isFullWidthEdgeListing &&
+                "max-w-screen-2xl px-4 md:px-6 xl:px-8",
+              !isWideContentPage && "max-w-7xl px-4 lg:px-6"
             )}
           >
             <div className="min-w-0">

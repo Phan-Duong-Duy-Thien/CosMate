@@ -22,8 +22,35 @@ export const VI = {
    */
   notification: {
     empty: "Không có thông báo nào",
+    emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
     title: "Thông báo",
+    filterLabel: "Lọc nhanh",
+    filterUnread: "Chưa đọc",
+    filterRead: "Đã đọc",
+    filterOrders: "Đơn hàng",
+    filterMessages: "Tin nhắn",
+    filterHintSidebar:
+      "Chọn mục bên trái để lọc danh sách. Đơn hàng = loại từ hệ thống đơn hàng; Tin nhắn gồm chat và thông báo có nội dung gửi tin nhắn.",
+    filterEmptyHintMobile: "Thử chọn mục khác ở thanh bên hoặc kéo ngang trên điện thoại.",
+    railQuizBadge: "AI · Quiz",
+    railQuizTitle: "Khám phá phong cách của bạn",
+    railQuizCta: "Làm quiz ngay",
+    railTipsBadge: "Mẹo nhanh",
+    railTipsTitle: "Đừng để inbox chất đống!",
+    railTipsBody:
+      "Đánh dấu đọc và lọc theo \"Đơn hàng\" / \"Tin nhắn\" để xử lý tin quan trọng trước.",
+    railShopBadge: "Khám phá",
+    railShopTitle: "Trang phục mới mỗi tuần",
+    railShopCta: "Xem danh sách",
+    railChatBadge: "Chat CosMate",
+    railChatTitle: "Trao đổi trực tiếp",
+    railChatBody: "Mở hộp chat để nói chuyện với shop hoặc hỗ trợ.",
+    railChatCta: "Mở tin nhắn",
+    railHelpBadge: "Hỗ trợ",
+    railHelpTitle: "Quy định & hướng dẫn",
+    railHelpBody: "Thuê đồ, hoàn tiền, khiếu nại — đọc nhanh trước khi đặt.",
+    railHelpCta: "Đọc hướng dẫn",
   },
 
   /**
