@@ -6,29 +6,27 @@ import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { cn } from "@/lib/utils"
-import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 
 interface CostumeCardProps {
   costume: CostumeItem
   onViewDetail: (costumeId: string) => void
+  isWishlisted: boolean
+  wishlistLoading?: boolean
+  onToggleWishlist: (costumeId: number) => void
 }
 
-export const CostumeCard = ({ costume, onViewDetail }: CostumeCardProps) => {
-  const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
+export const CostumeCard = ({
+  costume,
+  onViewDetail,
+  isWishlisted,
+  wishlistLoading,
+  onToggleWishlist,
+}: CostumeCardProps) => {
   const costumeId = Number(costume.id)
-  const liked = isInWishlist(costumeId)
+  const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
   const statusLabel = costume.isAvailable ? "Sẵn sàng cho thuê" : "Đang được thuê"
-
-  const handleToggleWishlist = () => {
-    if (liked) {
-      const item = wishlistItems.find((w) => w.costumeId === costumeId)
-      if (item) removeFromWishlist(item.id)
-    } else {
-      addToWishlist(costumeId)
-    }
-  }
 
   return (
     <Card
@@ -78,11 +76,12 @@ export const CostumeCard = ({ costume, onViewDetail }: CostumeCardProps) => {
           className={cn(
             "absolute right-3 rounded-xl border-[3px] border-indigo-950 bg-[#fffbe8] p-1.5 text-slate-600 shadow-sm transition hover:scale-105",
             typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
-            liked && "text-pink-500"
+            liked && "text-pink-500",
+            wishlistLoading && "pointer-events-none opacity-70"
           )}
           onClick={(event) => {
             event.stopPropagation()
-            handleToggleWishlist()
+            onToggleWishlist(costumeId)
           }}
         >
           <Heart className={cn("h-4 w-4", liked && "fill-pink-500")} />
@@ -110,7 +109,8 @@ export const CostumeCard = ({ costume, onViewDetail }: CostumeCardProps) => {
           {hasPrice ? (
             <>
               <span className="whitespace-nowrap">
-                {costume.priceMin.toLocaleString("vi-VN")} VNĐ
+                <span>{costume.priceMin.toLocaleString("vi-VN")}</span>
+                <span className="ml-1">VNĐ</span>
               </span>
               <span className="ml-1 text-xs font-normal text-slate-400">/ngày</span>
             </>

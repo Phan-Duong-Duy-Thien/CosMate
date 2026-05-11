@@ -10,6 +10,7 @@ import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
 import AISearchBar from "@/features/search/components/AISearchBar"
 import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
+import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 
 const PAGE_SIZE = 16
 
@@ -49,9 +50,11 @@ export default function CostumeListPage() {
   const [currentPage, setCurrentPage] = React.useState(1)
   const [heroVisible, setHeroVisible] = React.useState(false)
   const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
+  const [wishlistTogglingId, setWishlistTogglingId] = React.useState<number | null>(null)
   const navigate = useNavigate()
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
+  const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
 
   const brands = React.useMemo(
     () => Array.from(new Set(allItems.map((item) => item.brand).filter(Boolean))).sort(),
@@ -170,8 +173,24 @@ export default function CostumeListPage() {
     navigate(`/costumes/${costumeId}`)
   }
 
+  const handleToggleWishlist = async (costumeId: number) => {
+    if (wishlistTogglingId === costumeId) return
+
+    setWishlistTogglingId(costumeId)
+    try {
+      if (isInWishlist(costumeId)) {
+        const item = wishlistItems.find((w) => w.costumeId === costumeId)
+        if (item) await removeFromWishlist(item.id)
+      } else {
+        await addToWishlist(costumeId)
+      }
+    } finally {
+      setWishlistTogglingId(null)
+    }
+  }
+
   return (
-    <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
+    <section className="home-anime min-h-screen bg-transparent pb-20">
       <style>{`
         @keyframes softSparkle {
           0% { opacity: 0.6; transform: translateY(0px); }
@@ -250,6 +269,9 @@ export default function CostumeListPage() {
                 <CostumeGrid
                   costumes={aiGridItems}
                   onViewDetail={handleViewDetail}
+                  isWishlisted={isInWishlist}
+                  wishlistLoadingId={wishlistTogglingId}
+                  onToggleWishlist={handleToggleWishlist}
                 />
               </div>
             )}
@@ -283,6 +305,9 @@ export default function CostumeListPage() {
                 <CostumeGrid
                   costumes={pagedItems}
                   onViewDetail={handleViewDetail}
+                  isWishlisted={isInWishlist}
+                  wishlistLoadingId={wishlistTogglingId}
+                  onToggleWishlist={handleToggleWishlist}
                 />
                 <Pagination
                   currentPage={displayPage}

@@ -16,7 +16,6 @@ import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
 import { useReviewPermission } from "../hooks/useReviewPermission"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
-import { useStartChat } from "@/features/chat/hooks/useStartChat"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
@@ -217,8 +216,7 @@ export default function CostumeDetailPage() {
     setShowNoAddressModal(false)
   }
 
-  const pageShellClass =
-    "home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fce7f3_48%,#dbeafe_100%)] pb-16"
+  const pageShellClass = "home-anime min-h-screen bg-transparent pb-16"
 
   if (isLoading) {
     return (
