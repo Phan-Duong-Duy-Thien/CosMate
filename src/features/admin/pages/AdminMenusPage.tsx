@@ -14,6 +14,7 @@ const routeOptions = [
     { label: '/admin/reports (Báo cáo)', value: '/admin/reports' },
     { label: '/admin/characters (Quản lý Nhân vật)', value: '/admin/characters' },
     { label: '/admin/audit-logs (Nhật ký hệ thống)', value: '/admin/audit-logs' },
+    { label: '/admin/subscription-plans (Gói đăng ký)', value: '/admin/subscription-plans' },
     { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' },
   ]},
 ];
@@ -26,6 +27,7 @@ const iconOptions = [
   { label: '🛍️ Đơn hàng', value: 'bookings' },
   { label: '👕 Trang phục', value: 'costumes' },
   { label: '📈 Báo cáo', value: 'reports' },
+  { label: '💳 Gói đăng ký', value: 'subscription' },
 ];
 
 export default function AdminMenusPage() {

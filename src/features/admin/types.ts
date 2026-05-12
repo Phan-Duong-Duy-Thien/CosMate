@@ -51,3 +51,35 @@ export interface ApiResponseVoid {
  * User action types
  */
 export type UserActionType = 'ban' | 'unban' | 'lock' | 'unlock';
+
+/**
+ * Subscription plan from GET /api/subscription-plans (admin catalog)
+ */
+export interface AdminSubscriptionPlan {
+  id: number;
+  name: string;
+  billingCycle: string;
+  cycleMonths: number;
+  price: number;
+  isActive: boolean;
+  monthlyToken: number;
+  description: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/**
+ * POST /api/subscription-plans — tạo gói mới
+ */
+export interface CreateSubscriptionPlanRequest {
+  name: string;
+  billingCycle: string;
+  cycleMonths: number;
+  price: number;
+  isActive: boolean;
+  monthlyToken: number;
+  description: string;
+}
+
+/** PUT /api/subscription-plans/{id} — cùng schema với tạo mới */
+export type UpdateSubscriptionPlanRequest = CreateSubscriptionPlanRequest;
