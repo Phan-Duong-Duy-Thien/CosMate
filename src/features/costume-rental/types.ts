@@ -201,6 +201,8 @@ export interface Costume {
   accessories: CostumeAccessory[]
   rentalOptions: CostumeRentalOption[]
   rentalsCount?: number
+  /** Khi backend gửi true — hiển thị tag "Bán chạy"; không suy từ trạng thái cho thuê */
+  bestSeller?: boolean
   /** Optional; when present, list UI shows first entry; detail shows full list */
   characters?: CostumeCharacter[]
 }

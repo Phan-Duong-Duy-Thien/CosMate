@@ -21,6 +21,7 @@ import { getUserAddresses } from "@/features/profile/services/userAddress.servic
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
+import { publicCostumeStatusLabel } from "../utils/publicCostumeStatusLabel"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
@@ -260,7 +261,7 @@ export default function CostumeDetailPage() {
     )
   }
 
-  const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
+  const accessoryListCount = costume.accessories?.length ?? 0
 
   return (
     <section className={pageShellClass}>
@@ -273,10 +274,10 @@ export default function CostumeDetailPage() {
           <MediaGallery
             images={resolvedImages}
             isAdult18={false}
-            bestSeller={costume.status !== "RENTED"}
-            rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
-            hasAccessories={accessoryCount > 0}
-            accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
+            bestSeller={costume.bestSeller === true}
+            rentalsCount={costume.rentalsCount}
+            hasAccessories={accessoryListCount > 0}
+            accessoryCount={accessoryListCount > 0 ? accessoryListCount : undefined}
             isWishlisted={isCostumeWishlisted}
             onToggleWishlist={handleToggleWishlist}
             wishlistLoading={wishlistToggling}
@@ -338,7 +339,16 @@ export default function CostumeDetailPage() {
           <ProductInfoSections
             details={[
               { label: VI.costumeRental.costumeName, value: costume.name },
-              { label: VI.costumeRental.status, value: costume.status },
+              {
+                label: VI.costumeRental.status,
+                value: publicCostumeStatusLabel(costume.status),
+                valueTone:
+                  costume.status === "AVAILABLE"
+                    ? "available"
+                    : costume.status === "RENTED"
+                      ? "rented"
+                      : "neutral",
+              },
               { label: VI.costumeRental.size, value: costume.size },
               { label: VI.costumeRental.numberOfItems, value: String(costume.numberOfItems) },
               { label: VI.costumeRental.pricePerDay, value: `${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ` },

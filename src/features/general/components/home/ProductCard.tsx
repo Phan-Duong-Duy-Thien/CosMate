@@ -56,8 +56,8 @@ export const ProductCard = ({
         className="pointer-events-none absolute inset-0 bg-gradient-to-t from-indigo-950/25 to-transparent opacity-70"
       />
       {product.status === "RENTED" && (
-        <Badge className="absolute left-3 top-3 border-[3px] border-indigo-950 bg-slate-800 font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b]">
-          Đã thuê
+        <Badge className="absolute left-3 top-3 border-[3px] border-indigo-950 bg-cosmate-warning font-extrabold text-foreground shadow-[4px_4px_0_0_#1e1b4b]">
+          {VI.costumeRental.costumeStatus.rented}
         </Badge>
       )}
       <button

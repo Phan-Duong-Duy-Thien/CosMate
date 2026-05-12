@@ -1,10 +1,15 @@
 import { Card } from "@/components/ui/card"
+import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
+
+export type ProductDetailValueTone = "available" | "rented" | "neutral"
 
 interface ProductInfoSectionsProps {
   details: {
     label: string
     value: string
+    /** Màu nền/chữ theo design token (vd. trạng thái cho thuê) */
+    valueTone?: ProductDetailValueTone
   }[]
   description: string
 }
@@ -28,7 +33,18 @@ export function ProductInfoSections({ details, description }: ProductInfoSection
                 className="rounded-xl border-[3px] border-indigo-950 bg-white px-3 py-2 shadow-[3px_3px_0_0_rgba(30,27,75,0.25)]"
               >
                 <p className="label-caps text-xs font-semibold text-indigo-900/70">{detail.label}</p>
-                <p className="mt-0.5 text-sm font-bold text-indigo-950">{detail.value}</p>
+                <p
+                  className={cn(
+                    "mt-0.5 text-sm font-bold",
+                    detail.valueTone === "available" &&
+                      "inline-flex w-fit rounded-lg border border-cosmate-success/35 bg-cosmate-success/15 px-2 py-0.5 text-cosmate-success",
+                    detail.valueTone === "rented" &&
+                      "inline-flex w-fit rounded-lg border border-cosmate-warning/40 bg-cosmate-warning/15 px-2 py-0.5 text-cosmate-warning",
+                    (!detail.valueTone || detail.valueTone === "neutral") && "text-indigo-950"
+                  )}
+                >
+                  {detail.value}
+                </p>
               </div>
             ))}
           </div>

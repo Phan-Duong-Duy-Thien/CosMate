@@ -40,8 +40,8 @@ export function ShopProductCard({ product, onClick, onWishlist }: ShopProductCar
 
       {/* Status Badge */}
       {product.status === 'RENTED' && (
-        <div className="absolute left-2 top-2 z-10 rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-600">
-          Đã thuê
+        <div className="absolute left-2 top-2 z-10 rounded-full border border-cosmate-warning/40 bg-cosmate-warning/15 px-2 py-0.5 text-xs font-semibold text-cosmate-warning">
+          {VI.costumeRental.costumeStatus.rented}
         </div>
       )}
 

@@ -37,16 +37,8 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     setIsLoading(true)
     setError(null)
     try {
-      // Call real API
       const data = await getCostumeById(numId)
-
-      // Mock rentalsCount for testing (API chua tra ve truong nay)
-      const dataWithRentalsCount = {
-        ...data,
-        rentalsCount: 150, // Mock value for testing
-      }
-
-      setCostume(dataWithRentalsCount)
+      setCostume(data)
       const firstOption = data.rentalOptions?.[0] ?? null
       setSelectedRentalOptionId(firstOption?.id ?? null)
       setCheckedOptionalIds(new Set())

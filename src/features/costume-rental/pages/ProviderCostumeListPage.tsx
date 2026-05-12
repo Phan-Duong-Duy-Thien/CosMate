@@ -39,21 +39,28 @@ import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
 import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
 import { VI } from '@/shared/i18n/vi'
 import { Button as UiButton } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 const { Text } = Typography
 
 // ── Status tag helpers ────────────────────────────────────────────────────────
 
-function getStatusTagColor(status: CostumeStatus): string {
-  if (status === 'AVAILABLE') return 'green'
-  if (status === 'RENTED') return 'orange'
-  if (status === 'MAINTENANCE') return 'blue'
-  return 'blue'
+function getStatusTagClassName(status: CostumeStatus): string {
+  if (status === 'AVAILABLE') {
+    return 'border-cosmate-success/35 bg-cosmate-success/15 text-cosmate-success'
+  }
+  if (status === 'RENTED') {
+    return 'border-cosmate-warning/40 bg-cosmate-warning/15 text-cosmate-warning'
+  }
+  if (status === 'MAINTENANCE') {
+    return 'border-cosmate-info/35 bg-cosmate-info/15 text-cosmate-info'
+  }
+  return 'border-border bg-muted text-muted-foreground'
 }
 
 function getStatusLabel(status: CostumeStatus): string {
   if (status === 'AVAILABLE') return 'Có sẵn'
-  if (status === 'RENTED') return 'Đang thuê'
+  if (status === 'RENTED') return 'Đang được thuê'
   return status
 }
 
@@ -148,7 +155,9 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
                       {costume.depositAmount.toLocaleString('vi-VN')} VNĐ
                     </Descriptions.Item>
                     <Descriptions.Item label="Trạng thái" span={2}>
-                      <Tag color={getStatusTagColor(costume.status)}>{getStatusLabel(costume.status)}</Tag>
+                      <Tag className={cn('m-0 border font-semibold', getStatusTagClassName(costume.status))}>
+                        {getStatusLabel(costume.status)}
+                      </Tag>
                     </Descriptions.Item>
                   </Descriptions>
                 </div>
@@ -342,7 +351,7 @@ export default function ProviderCostumeListPage() {
     key: 'status',
       width: 120,
       render: (status: CostumeStatus) => (
-        <Tag color={getStatusTagColor(status)}>{getStatusLabel(status)}</Tag>
+        <Tag className={cn('m-0 border font-semibold', getStatusTagClassName(status))}>{getStatusLabel(status)}</Tag>
       ),
     },
     {
@@ -444,7 +453,7 @@ export default function ProviderCostumeListPage() {
               options={[
                 { label: 'Tất cả trạng thái', value: 'ALL' },
                 { label: 'Có sẵn', value: 'AVAILABLE' },
-                { label: 'Đang thuê', value: 'RENTED' },
+                { label: 'Đang được thuê', value: 'RENTED' },
                 { label: 'Bảo trì', value: 'MAINTENANCE' },
               ]}
             />

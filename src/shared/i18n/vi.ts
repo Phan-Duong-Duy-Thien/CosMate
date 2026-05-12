@@ -1375,6 +1375,13 @@ export const VI = {
     rentDiscount: "Giảm giá thuê",
     depositAmount: "Tiền cọc",
     status: "Trạng thái",
+    /** Trạng thái hiển thị công khai (chi tiết / danh sách trang phục) */
+    costumeStatus: {
+      available: "Có sẵn",
+      rented: "Đang được thuê",
+      maintenance: "Bảo trì",
+      disabled: "Tạm ngừng",
+    },
     providerId: "ID nhà cung cấp",
     imageUrls: "Danh sách ảnh",
     isRequired: "Bắt buộc",
