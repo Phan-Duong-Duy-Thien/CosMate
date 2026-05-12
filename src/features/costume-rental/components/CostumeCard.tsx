@@ -27,9 +27,6 @@ export const CostumeCard = ({
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
-  const statusLabel = costume.isAvailable
-    ? VI.costumeRental.costumeStatus.available
-    : VI.costumeRental.costumeStatus.rented
 
   return (
     <Card
@@ -102,16 +99,6 @@ export const CostumeCard = ({
       </div>
 
       <div className="flex min-h-[124px] flex-1 flex-col gap-2 p-3">
-        <p
-          className={cn(
-            "inline-flex w-fit rounded-full border-2 border-indigo-950 px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide",
-            costume.isAvailable
-              ? "bg-cosmate-success/15 text-cosmate-success"
-              : "bg-cosmate-warning/15 text-cosmate-warning"
-          )}
-        >
-          {statusLabel}
-        </p>
         <h3
           className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
           title={displayName}
