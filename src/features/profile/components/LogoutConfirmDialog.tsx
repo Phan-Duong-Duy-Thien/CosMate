@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/Button"
 
 interface LogoutConfirmDialogProps {
   open: boolean

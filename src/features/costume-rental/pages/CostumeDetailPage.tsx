@@ -2,7 +2,7 @@ import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
 import { AlertCircle } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"

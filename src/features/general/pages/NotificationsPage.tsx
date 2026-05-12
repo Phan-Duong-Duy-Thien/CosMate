@@ -417,7 +417,7 @@ function NotificationRow({
               )}
             </div>
             <NotificationContentPreview content={n.content} />
-            <div className="mt-3 flex flex-wrap items-center gap-2 border-t-[2px] border-dashed border-indigo-950/15 pt-3">
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t-2 border-indigo-950/10 pt-3">
               <span
                 className={cn(
                   "rounded-lg border-[2px] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide",
@@ -544,7 +544,7 @@ export default function NotificationsPage() {
 
   if (!loggedIn) {
     return (
-      <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
+      <section className="home-anime min-h-screen bg-transparent pb-20">
         <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-16 text-center md:pt-24">
           <div className="w-full rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-8 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
             <div className="mb-5 flex justify-center">
@@ -568,30 +568,11 @@ export default function NotificationsPage() {
   }
 
   return (
-    <section className="relative isolate min-h-screen overflow-x-clip pb-24 home-anime bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
-      {/* Nền chấm + sọc full màn để hai bên layout không còn “trơn” */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 -z-10 w-screen opacity-85 [margin-inline:calc(50%-50vw)] bg-[linear-gradient(90deg,#fff7fb_0%,#fce7f3_22%,#fff7fb_50%,#e0e7ff_78%,#f8fafc_100%)]"
-      />
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-y-0 -z-10 w-screen [margin-inline:calc(50%-50vw)] opacity-[0.45]"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at center, rgba(76, 29, 149, 0.1) 1px, transparent 1px)",
-          backgroundSize: "13px 13px",
-        }}
-      />
+    <section className="relative min-h-screen overflow-x-clip pb-24 home-anime bg-transparent">
 
       <div className="relative z-[1] w-full min-w-0 pt-2 md:pt-4">
         <div className="lg:grid lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] lg:items-start lg:gap-4 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,280px)] xl:gap-5 2xl:grid-cols-[minmax(0,310px)_minmax(0,1fr)_minmax(0,310px)] 2xl:gap-6">
           <div className="relative hidden min-w-0 lg:block">
-            {/* Trang trí — chấm / thanh pastel để hai bên bớt trơn */}
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-10 -left-2 w-[110%] rounded-2xl border-y-[3px] border-indigo-950/15 bg-[repeating-linear-gradient(-12deg,#fdf2f8_0,#fdf2f8_10px,#fce7f3_10px,#fce7f3_20px)] opacity-85"
-            />
             <div className="sticky top-[88px] z-[1]">
               <NotificationsRailLeft />
             </div>
@@ -599,11 +580,6 @@ export default function NotificationsPage() {
 
           <div className="min-w-0 lg:py-1">
             <div className="relative">
-              {/* Viền mềm tách nhẹ khỏi rail khi có 3 cột */}
-              <div
-                aria-hidden
-                className="pointer-events-none absolute -inset-x-4 -top-4 bottom-8 hidden rounded-[1.5rem] border-[3px] border-dashed border-indigo-950/12 bg-white/35 lg:block"
-              />
               <div className="relative z-[1]">
         <div className="mb-6 flex flex-wrap items-center gap-3">
           <button
@@ -688,7 +664,7 @@ export default function NotificationsPage() {
               })}
             </nav>
 
-            <div className="mt-5 hidden rounded-xl border-[3px] border-dashed border-indigo-950/25 bg-white/60 p-4 text-xs font-semibold leading-relaxed text-indigo-900/80 shadow-[4px_4px_0_0_rgba(30,27,75,0.12)] lg:block">
+            <div className="mt-5 hidden rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 text-xs font-semibold leading-relaxed text-indigo-900/85 shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] lg:block">
               {VI.notification.filterHintSidebar}
             </div>
           </aside>
@@ -746,10 +722,6 @@ export default function NotificationsPage() {
           </div>
 
           <div className="relative hidden min-w-0 lg:block">
-            <div
-              aria-hidden
-              className="pointer-events-none absolute inset-y-10 -right-2 w-[110%] rounded-2xl border-y-[3px] border-indigo-950/15 bg-[repeating-linear-gradient(12deg,#eff6ff_0,#eff6ff_10px,#e0e7ff_10px,#e0e7ff_20px)] opacity-90"
-            />
             <div className="sticky top-[88px] z-[1]">
               <NotificationsRailRight />
             </div>

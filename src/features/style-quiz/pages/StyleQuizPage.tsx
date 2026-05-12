@@ -2,7 +2,7 @@ import { Alert, Input, Modal, Progress, Select, Spin, Tooltip } from "antd"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
-import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import ResultCostumeGrid from "../components/ResultCostumeGrid"
 import { useStyleQuiz } from "../hooks/useStyleQuiz"
@@ -49,7 +49,10 @@ const SWATCH_CLASS_BY_HEX: Record<string, string> = {
 } as const
 
 const QUIZ_PRIMARY_CTA_CLASSNAME =
-  "group relative rounded-2xl border border-cosmate-pink/30 bg-gradient-to-br from-background via-cosmate-soft-pink/35 to-cosmate-soft-pink/70 text-foreground shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-cosmate-pink/45 hover:from-cosmate-soft-pink/45 hover:to-cosmate-soft-pink hover:shadow-md"
+  "group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-6 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(236,72,153,0.35)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 disabled:pointer-events-none disabled:opacity-50 motion-safe:hover:-translate-y-0.5"
+
+const QUIZ_GRADIENT_CTA_CLASSNAME =
+  "group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-6 text-sm font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 disabled:pointer-events-none disabled:opacity-50 motion-safe:hover:-translate-y-0.5"
 
 export default function StyleQuizPage() {
   const navigate = useNavigate()
@@ -74,14 +77,14 @@ export default function StyleQuizPage() {
       {quiz.error && <Alert type="error" description={quiz.error} showIcon />}
 
       {quiz.surveyLoading && (
-        <div className="rounded-3xl border border-cosmate-pink/25 bg-card p-10 text-center shadow-sm">
+        <div className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-10 text-center shadow-[8px_8px_0_0_rgba(30,27,75,0.35)]">
           <Spin />
           <p className="mt-3 text-sm text-cosmate-pink">Đang tải dữ liệu câu hỏi...</p>
         </div>
       )}
 
       {!quiz.surveyLoading && quiz.screen === "quiz" && quiz.currentQuestion && (
-        <div className="space-y-5 rounded-3xl border border-cosmate-pink/25 bg-card p-6 shadow-sm md:p-8">
+        <div className="space-y-5 rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-8">
           <div className="flex items-center justify-between text-lg font-semibold text-cosmate-pink">
             <span>Câu {quiz.globalQuestionIndex}</span>
             <span>{quiz.globalQuestionIndex} / {quiz.totalQuestions}</span>
@@ -118,24 +121,41 @@ export default function StyleQuizPage() {
           </div>
 
           <div className="flex justify-center">
-            <Button type="button" onClick={quiz.next} disabled={quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()} variant="cosmateOutline" className={`h-11 px-6 text-sm font-normal ${QUIZ_PRIMARY_CTA_CLASSNAME}`}>
-              <span aria-hidden="true" className="pointer-events-none absolute right-2 top-1 text-xs text-cosmate-pink/80 transition-all duration-300 group-hover:scale-110 group-hover:text-cosmate-pink">✦</span>
+            <button
+              type="button"
+              onClick={quiz.next}
+              disabled={quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()}
+              className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}
+            >
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-2 top-1 text-xs text-white/90 transition-all duration-300 group-hover:scale-110"
+              >
+                ✦
+              </span>
               Tiếp theo
-            </Button>
+            </button>
           </div>
         </div>
       )}
 
       {!quiz.surveyLoading && quiz.screen === "checkpoint" && (
-        <div className="space-y-6 rounded-3xl border border-cosmate-pink/25 bg-gradient-to-r from-cosmate-soft-pink/65 via-cosmate-soft-pink/35 to-cosmate-soft-pink/65 p-6 shadow-sm md:p-8">
+        <div className="space-y-6 rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-100/90 via-[#fffbeb] to-violet-100/80 p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cosmate-pink">Checkpoint 70%</p>
           <h2 className="text-2xl font-semibold leading-snug text-foreground md:text-3xl">Hệ thống đã quét được <span className="font-extrabold text-cosmate-pink">70%</span> bản ngã của bạn và xếp bạn vào nhóm <span className="font-extrabold text-cosmate-pink">{quiz.archetypeProfile.name}</span>. Bạn muốn xem kết quả ngay hay test thêm 7 câu để phân tích chi tiết <span className="font-extrabold text-cosmate-pink">100%</span>?</h2>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Button type="button" onClick={quiz.viewResultNow} variant="cosmateOutline" className="h-11 rounded-2xl px-6 text-sm font-normal">Xem kết quả ngay</Button>
-            <Button type="button" onClick={quiz.continueDeepAnalysis} variant="cosmateOutline" className={`h-11 px-6 text-sm font-normal ${QUIZ_PRIMARY_CTA_CLASSNAME}`}>
-              <span aria-hidden="true" className="pointer-events-none absolute right-2 top-1 text-xs text-cosmate-pink/80 transition-all duration-300 group-hover:scale-110 group-hover:text-cosmate-pink">✦</span>
+            <button type="button" onClick={quiz.viewResultNow} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}>
+              Xem kết quả ngay
+            </button>
+            <button type="button" onClick={quiz.continueDeepAnalysis} className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}>
+              <span
+                aria-hidden
+                className="pointer-events-none absolute right-2 top-1 text-xs text-white/90 transition-all duration-300 group-hover:scale-110"
+              >
+                ✦
+              </span>
               Tiếp tục phân tích sâu
-            </Button>
+            </button>
           </div>
         </div>
       )}
@@ -144,7 +164,7 @@ export default function StyleQuizPage() {
 
       {quiz.screen === "result" && quiz.results.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="h-full rounded-3xl border border-cosmate-pink/25 bg-gradient-to-br from-cosmate-soft-pink/35 to-card p-6 shadow-sm">
+          <section className="h-full rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-50 to-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
             <p className="text-xs font-semibold uppercase tracking-wide text-cosmate-pink">Thẻ Bản Ngã (Archetype Card)</p>
             <h3 className="mt-3 text-2xl font-bold text-cosmate-pink">{quiz.archetypeProfile.name}</h3>
             <p className="mt-3 text-sm leading-6 text-slate-700">{quiz.archetypeProfile.coreDesire}</p>
@@ -152,9 +172,17 @@ export default function StyleQuizPage() {
             <div className="mt-5"><p className="text-sm font-semibold text-cosmate-pink">Bảng màu phù hợp:</p><div className="mt-2 flex flex-wrap items-center gap-2">{quiz.archetypeProfile.color_palette.map((hex) => (<span key={hex} title={hex} className={["h-7 w-7 rounded-full border border-background shadow ring-1 ring-cosmate-pink/18", SWATCH_CLASS_BY_HEX[hex.toUpperCase()] ?? "bg-cosmate-soft-pink"].join(" ")} />))}</div></div>
             <div className="mt-5"><p className="text-sm font-semibold text-cosmate-pink">Nhân vật nổi bật:</p><div className="mt-2 flex flex-wrap gap-2">{quiz.archetypeProfile.famousCharacters.map((name) => { const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${name} anime character`)}`; return (<Tooltip key={name} title="Mở Google Images để xem nhân vật"><a href={searchUrl} target="_blank" rel="noreferrer" className="rounded-full border border-cosmate-pink/30 bg-card px-3 py-1 text-xs font-semibold text-cosmate-pink transition hover:border-cosmate-pink/55 hover:bg-cosmate-soft-pink/30">{name}</a></Tooltip>) })}</div></div>
           </section>
-          <section className="rounded-3xl border border-cosmate-pink/25 bg-card p-6 shadow-sm">
+          <section className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
             <div className="mb-4 flex flex-col gap-3">
-              <div className="flex items-start justify-between gap-3"><div><h3 className="text-xl font-bold text-cosmate-pink">Trang phục gợi ý cho bạn</h3><span className="text-xs text-muted-foreground">{filteredResults.length} gợi ý phù hợp</span></div><Button type="button" onClick={quiz.restart} variant="cosmateOutline" className={`px-4 py-2 text-sm font-normal ${QUIZ_PRIMARY_CTA_CLASSNAME}`}>Làm lại quiz</Button></div>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-xl font-extrabold text-indigo-950">Trang phục gợi ý cho bạn</h3>
+                  <span className="text-xs font-medium text-indigo-900/70">{filteredResults.length} gợi ý phù hợp</span>
+                </div>
+                <button type="button" onClick={quiz.restart} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-auto px-4 py-2")}>
+                  Làm lại quiz
+                </button>
+              </div>
               <div className="grid gap-3 md:grid-cols-2"><Select value={sortBy} onChange={(value) => setSortBy(value)} options={[{ value: "similarity", label: "Khớp nhất (Similarity)" }, { value: "price_asc", label: "Giá thấp → cao" }, { value: "price_desc", label: "Giá cao → thấp" }]} className="w-full" /><Search allowClear value={nameFilter} onChange={(event) => setNameFilter(event.target.value)} placeholder="Filter: tìm tên nhân vật" /></div>
             </div>
             <div className="max-h-[70vh] overflow-y-auto pr-1"><ResultCostumeGrid items={filteredResults} onView={(id) => navigate(`/costumes/${id}`)} /></div>

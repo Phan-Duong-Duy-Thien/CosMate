@@ -4,6 +4,11 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Inter first: full Vietnamese coverage. M PLUS for optional display via font-display. */
+  --font-sans:
+    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol";
+  --font-display: "M PLUS Rounded 1c", "Inter", ui-sans-serif, system-ui, sans-serif;
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -250,7 +255,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
   }
 }
 
@@ -274,4 +279,17 @@
 }
 
 /* Ant Design Message — use default animations, no custom overrides */
+
+/* Product card title marquee (used on hover when title is truncated).
+   The inner track contains TWO copies of the text. Each copy ends with
+   a trailing right-padding so translating by -50% positions copy #2
+   exactly where copy #1 was → seamless loop. */
+@keyframes home-title-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
 

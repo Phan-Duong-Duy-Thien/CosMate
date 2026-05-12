@@ -1,8 +1,7 @@
 import { useNavigate, useLocation } from "react-router-dom"
 import { ChevronDown, History } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useWallet } from "../hooks/useWallet"
@@ -101,10 +100,10 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
   }
 
   return (
-    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-cosmate-soft-pink/25 via-wallet-from to-wallet-to px-4 py-10">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-3xl">
-        <Card className="overflow-hidden border-cosmate-pink/20 shadow-md shadow-cosmate-pink/5">
-          <CardContent className="p-6 sm:p-8">
+        <Card className="overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
+          <div className="p-6 sm:p-8">
           <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {VI.wallet.title}
@@ -163,15 +162,15 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
             </Button>
             <Button
               type="button"
-              variant="cosmate"
-              className="w-full sm:w-auto"
+              variant="soft"
+              className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-105 sm:w-auto"
               onClick={() => navigate(`${walletBase}/topup`)}
             >
               {VI.wallet.topup}
             </Button>
           </div>
 
-          <Separator className="my-8 bg-border" />
+          <div className="my-8 h-px w-full bg-indigo-950/15" aria-hidden />
 
           {/* Transaction history — disclosure control */}
           <div>
@@ -255,7 +254,7 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
               </div>
             )}
           </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </section>

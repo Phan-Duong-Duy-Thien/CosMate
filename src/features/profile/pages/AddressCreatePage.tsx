@@ -4,8 +4,8 @@
  */
 import React, { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { VI } from '@/shared/i18n/vi';
 import { useCreateAddress } from '../hooks/useCreateAddress';
 import { getUserId } from '@/features/auth/services/tokenStorage';
@@ -71,10 +71,10 @@ export default function AddressCreatePage() {
   };
 
   return (
-    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-2xl px-4 pt-10">
-        <Card className="border-border bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-6">
+        <Card className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
+          <div className="p-6">
           {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-semibold text-foreground">
@@ -215,7 +215,7 @@ export default function AddressCreatePage() {
               </Button>
             </div>
           </form>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </section>

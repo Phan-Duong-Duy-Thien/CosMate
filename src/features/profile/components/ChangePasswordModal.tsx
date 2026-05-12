@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Loader2 } from "lucide-react"
 import { Modal, Form, Input } from "antd"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/Button"
 import { useChangePassword } from "@/features/auth/hooks/useChangePassword"
 import { VI } from "@/shared/i18n/vi"
 
@@ -156,8 +156,8 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
           </Button>
           <Button
             type="button"
-            variant="cosmate"
-            className="w-full sm:w-auto"
+            variant="soft"
+            className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-105 sm:w-auto"
             disabled={loading}
             onClick={() => void handleSubmit()}
           >

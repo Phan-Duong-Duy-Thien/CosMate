@@ -1,6 +1,7 @@
 import type { FormInstance } from "antd"
 import { Link } from "react-router-dom"
 
+import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
 import { AuthLayout } from "../layout/AuthLayout"
@@ -36,6 +37,24 @@ export function RegisterSplitLayout({
         <div className="space-y-2 text-center">
           <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-foreground">{title}</h1>
           <p className="text-sm text-muted-foreground sm:text-base">{subtitle}</p>
+        </div>
+
+        <div className="space-y-3">
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full rounded-xl border-[3px] border-indigo-950/40 bg-[#fffbeb] font-semibold text-indigo-950 shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]"
+            disabled
+          >
+            {VI.common.actions.continueWithGoogle}{" "}
+            <span className="text-indigo-900/60">({VI.auth.register.googleComingSoon})</span>
+          </Button>
+        </div>
+
+        <div className="flex items-center gap-4 text-xs font-semibold text-indigo-900/70">
+          <div className="h-px min-w-0 flex-1 bg-indigo-950/20" aria-hidden />
+          <span className="whitespace-nowrap">{VI.auth.register.continueWithForm}</span>
+          <div className="h-px min-w-0 flex-1 bg-indigo-950/20" aria-hidden />
         </div>
 
         <RegisterForm onSubmit={onRegister} submitting={submitting} formError={formError} />

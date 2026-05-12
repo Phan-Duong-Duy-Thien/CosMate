@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { VI } from "@/shared/i18n/vi"
 
 interface ProfileCoverProps {

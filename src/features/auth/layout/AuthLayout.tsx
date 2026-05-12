@@ -23,7 +23,7 @@ export function AuthLayout({ left, children, variant = "split" }: AuthLayoutProp
         <div className="hidden w-full items-stretch justify-center lg:flex">
           {left}
         </div>
-        <div className="flex w-full min-h-dvh items-stretch justify-center bg-white">
+        <div className="flex w-full min-h-dvh items-stretch justify-center bg-[#fffbeb]">
           {children}
         </div>
       </div>

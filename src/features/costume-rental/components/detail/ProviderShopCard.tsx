@@ -1,6 +1,6 @@
-import { MessageCircle, Eye, Star } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { MessageCircle, Eye, Star, Loader2 } from "lucide-react"
+import { Card } from "@/shared/components/Card"
+import { Button } from "@/shared/components/Button"
 import { getMockRentalCount } from "../../mocks/rentalCount.mock"
 import { VI } from "@/shared/i18n/vi"
 import { useStartChat } from "@/features/chat/hooks/useStartChat"
@@ -68,13 +68,13 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
         </Button>
         <Button
           type="button"
-          variant="default"
+          variant="soft"
           size="sm"
+          disabled={chatLoading}
           className="gap-1 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110"
           onClick={() => startChat(provider.userId, shopNameSafe)}
-          loading={chatLoading}
         >
-          <MessageCircle className="h-4 w-4" />
+          {chatLoading ? <Loader2 className="h-4 w-4 shrink-0 animate-spin" aria-hidden /> : <MessageCircle className="h-4 w-4" />}
           {VI.costumeRental.detail.chatNow}
         </Button>
       </div>
