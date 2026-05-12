@@ -5,10 +5,11 @@ description: >-
   primitives, Tailwind-first layout, and Ant Design rules for legacy vs new
   surfaces. Use when implementing or reviewing UI, tokens, buttons, forms,
   Ant usage boundaries, feature component placement, pink vs primary accents,
-  or PR checklist for design consistency in CosMate_FE.
+  home-anime / cosplayer marketing shell (neobrutal) rules, or PR checklist
+  for design consistency in CosMate_FE.
 disable-model-invocation: true
 ---
-# CosMate Design System — SKILL v2.3.3
+# CosMate Design System — SKILL v2.4.0
 
 ## Objective
 
@@ -62,9 +63,57 @@ When refactoring or building UI:
 
 - Pages and flows that are **policy, guidelines, onboarding hero, marketing**, or any surface that was **pink-first by design**: MUST keep **pink accents** using only mapped Tailwind classes (e.g. `text-cosmate-pink`, `bg-cosmate-soft-pink/…`, `border-cosmate-pink/…`, gradients composed from these tokens). MUST NOT replace those accents wholesale with `text-primary` / `bg-primary` / `border-primary` in a way that **drops the pink brand** and reads as “generic default theme”.
 - Technical CTAs on neutral dashboards may still use `@/components/ui/button` defaults where product convention uses `primary`.
-- Still **FORBIDDEN**: hardcoded hex, non-token color class names, inline color styles (except the narrow animation/dynamic exceptions in this skill).
+- Still **FORBIDDEN** by default: hardcoded hex, non-token color class names, inline color styles (except the narrow animation/dynamic exceptions in this skill). **Cosplayer `home-anime` shell:** see [dedicated section](#cosplayer--home-anime-marketing-shell) for transitional rules.
 
 Reference: `src/features/general/pages/GuidelinesRulesPage.tsx` (`/guidelines-rules`); cosplayer order history `src/features/profile/pages/PurchaseHistoryPage.tsx` (`/profile/purchase-history`).
+
+---
+
+## Cosplayer / home-anime marketing shell
+
+Many cosplayer-facing routes share a **playful neobrutal + pink/lavender marketing** look (thick outlines, offset shadows, soft gradients). The wrapper class **`home-anime`** appears on pages such as:
+
+- `src/features/general/pages/HomePage.tsx` (`/`)
+- `src/features/costume-rental/pages/CostumeListPage.tsx`, `CostumeDetailPage.tsx` (`/costumes`, `/costumes/:id`)
+- `WishlistPage`, `NotificationsPage`, parts of `Photographer` / `Service` listings, `QuizModal`, etc.
+
+This is **legacy-by-design debt** relative to strict “tokens only” rules. Use this section to **stop drift** and **converge** without blocking shipping.
+
+### Approved semantics (until tokens land in `index.css`)
+
+- **Neo outline (“mực viền”)**: `border-indigo-950` (and opacity variants like `border-indigo-950/20`) is an **accepted semantic** for this shell. Prefer it consistently for card/hero outlines. Long-term, map to a single CSS variable (e.g. `--cosmate-neo-ink`) in `src/index.css` and Tailwind `@theme` when added.
+- **Offset shadows**: Patterns like `shadow-[12px_12px_0_0_rgba(30,27,75,0.33)]` are **allowed only inside this shell** while migrating. When touching styling, **do not invent new arbitrary RGBA families**; reuse the same indigo-ink family or consolidate into shared utilities in `index.css`.
+
+### Page backgrounds (reduce drift)
+
+Prefer one of these **documented** approaches for new or refactored cosplayer pages:
+
+1. **Gradient page wash** (good default for full-height cosplayer flows):  
+   `bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]` — already used on e.g. Wishlist / Notifications. When refactoring, replace hex stops with **`cosmate-soft-pink` / `cosmate-page` / `background`-family tokens** if equivalent stops exist or are added to `@theme`.
+2. **Transparent shell**: `home-anime` + `bg-transparent` when the **parent layout** supplies the wash (list pages).
+3. **Home hero base**: `bg-[#fff7fb]` on `HomePage` — **do not copy to new pages**; new surfaces should use (1) or tokens.
+
+### Color & gradients inside the shell
+
+- **MUST** keep pink / lavender **brand personality**; do not flatten to generic `primary`-only chrome.
+- **SHOULD** prefer `cosmate-pink`, `cosmate-soft-pink`, `cosmate-lavender-*`, `cosmate-mauve`, `cosmate-ink` over raw Tailwind `pink-200` / `fuchsia-400` / ad-hoc hex **when editing or adding UI** in these files.
+- Decorative blobs (e.g. `bg-fuchsia-400/40`) are **migration debt** — do not spread to unrelated features; prefer token-based soft blobs when refactoring.
+
+### Motion
+
+- Avoid inline `<style>` keyframes in pages when adding new animation; **prefer** `@keyframes` in `src/index.css` (or a single feature CSS entry) with a one-line comment for purpose.
+
+### Buttons on these routes
+
+These areas still use **`@/shared/components/Button`** (migration target): e.g. `HomePage`, `CostumeListPage`, `SortBar`, `FilterSidebar`, parts of costume cards. When editing:
+
+- **Prefer** swapping to `@/components/ui/button` if variants align with existing CosMate button recipes (`cosmate`, `cosmateOutline`, etc.).
+- **Do not** extend `shared/Button` or add parallel button primitives.
+
+### Transitional rule vs “no hex”
+
+- **New UI outside** this shell: hex and non-token palette shortcuts remain **forbidden** per [Styling Rules](#styling-rules).
+- **Inside** `home-anime` surfaces: **do not add new hardcoded hex** without a plan to tokenize; when changing existing lines, **replace hex / one-off palette with design tokens** where feasible.
 
 ---
 
@@ -236,9 +285,11 @@ Avoid:
 bg-purple-500  
 text-pink-300  
 
-STRICTLY FORBIDDEN:
+STRICTLY FORBIDDEN (default):
 - Hardcoded hex (#xxxxxx)
 - Inline color styles
+
+**Exception:** [Cosplayer / home-anime marketing shell](#cosplayer--home-anime-marketing-shell) — transitional rules apply; still avoid introducing **new** hex when tokens or existing patterns suffice.
 
 ---
 
@@ -288,7 +339,7 @@ MUST:
 - Follow Ant usage rules
 
 MUST NOT:
-- Use hex colors
+- Use hex colors (except per [home-anime shell rules](#cosplayer--home-anime-marketing-shell) — prefer tokens when touching those files)
 - Create new primitives
 - Duplicate UI into feature folders
 
@@ -314,10 +365,11 @@ MUST NOT:
 - Button usage is correct
 
 ### Color & Styling
-- No hex colors
-- No inline color styles
+- No **new** hex outside `home-anime` cosplayer shell; inside shell, prefer tokens when editing ([Cosplayer / home-anime](#cosplayer--home-anime-marketing-shell))
+- No inline color styles (unless justified in [Inline Styles](#3-inline-styles))
 - Uses tokens correctly (only if styling is touched)
 - Pink-first / marketing surfaces keep `cosmate-pink` / `cosmate-soft-pink` (etc.) accents; do not collapse them to `primary`-only
+- Neo shell: consistent `border-indigo-950` / shared shadow vocabulary; no one-off outline colors
 
 ### Ant Usage
 - Only allowed components used in new UI
@@ -339,6 +391,7 @@ MUST NOT:
 ### Phase 1 (Now)
 - Stop new inconsistency
 - Enforce rules on new/touched UI
+- Converge `home-anime` surfaces toward tokens + `@/components/ui/button` when files are touched ([Cosplayer / home-anime](#cosplayer--home-anime-marketing-shell))
 
 ### Phase 2
 - Merge shared/Button → ui/button
