@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { VI } from "@/shared/i18n/vi"
 
 const PROFILE_BIO_STORAGE_KEY = "cosmate.profile.bio"

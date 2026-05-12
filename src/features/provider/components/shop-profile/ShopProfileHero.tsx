@@ -1,6 +1,6 @@
-import { MessageCircle, Star } from 'lucide-react'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
+import { MessageCircle, Star, Loader2 } from 'lucide-react'
+import { Card } from '@/shared/components/Card'
+import { Button } from '@/shared/components/Button'
 import type { ProviderShop } from '../../types'
 import { VI } from '@/shared/i18n/vi'
 
@@ -15,9 +15,9 @@ export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroPr
   const coverUrl = shop.coverImageUrl || 'https://via.placeholder.com/1200x300'
 
   return (
-    <Card className="overflow-hidden border-pink-100">
+    <Card className="overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
       {/* Cover Image */}
-      <div className="relative h-40 w-full bg-gradient-to-r from-pink-200 to-purple-200 sm:h-48">
+      <div className="relative h-40 w-full border-b-[4px] border-indigo-950 bg-gradient-to-r from-pink-200 to-violet-200 sm:h-48">
         <img
           src={coverUrl}
           alt="Cover"
@@ -34,7 +34,7 @@ export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroPr
             <img
               src={avatarUrl}
               alt={shop.shopName}
-              className="h-24 w-24 rounded-full border-4 border-white object-cover shadow-lg sm:h-28 sm:w-28"
+              className="h-24 w-24 rounded-2xl border-[4px] border-indigo-950 object-cover shadow-[6px_6px_0_0_#1e1b4b] sm:h-28 sm:w-28"
             />
             {shop.verified && (
               <div className="absolute bottom-1 right-1 flex h-6 w-6 items-center justify-center rounded-full bg-blue-500 text-white">
@@ -48,46 +48,52 @@ export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroPr
           {/* Shop Name & Badges */}
           <div className="flex-1">
             <div className="flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-slate-900">{shop.shopName}</h1>
+              <h1 className="text-2xl font-extrabold text-indigo-950">{shop.shopName}</h1>
               {shop.verified && (
-                <span className="rounded-full bg-blue-100 px-2.5 py-0.5 text-xs font-medium text-blue-600">
+                <span className="rounded-xl border-[2px] border-indigo-950 bg-sky-100 px-2.5 py-0.5 text-xs font-bold text-indigo-950">
                   {VI.provider.shop.verified}
                 </span>
               )}
               {shop.isFeatured && (
-                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-600">
+                <span className="rounded-xl border-[2px] border-indigo-950 bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-indigo-950">
                   {VI.provider.shop.featured}
                 </span>
               )}
             </div>
             {shop.bio && (
-              <p className="mt-1 max-w-xl text-sm text-slate-600">{shop.bio}</p>
+              <p className="mt-1 max-w-xl text-sm font-medium text-indigo-900/80">{shop.bio}</p>
             )}
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2">
             <Button
+              type="button"
+              variant="soft"
+              disabled={chatLoading}
               onClick={onChat}
-              loading={chatLoading}
-              className="rounded-full bg-pink-500 hover:bg-pink-600"
+              className="rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-105"
             >
-              <MessageCircle className="mr-2 h-4 w-4" />
+              {chatLoading ? (
+                <Loader2 className="mr-2 h-4 w-4 shrink-0 animate-spin" aria-hidden />
+              ) : (
+                <MessageCircle className="mr-2 h-4 w-4" />
+              )}
               {VI.provider.shop.chat}
             </Button>
           </div>
         </div>
 
         {/* Quick Stats */}
-        <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-600">
+        <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-indigo-900/75">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-amber-400" />
-            <span className="font-semibold">{shop.rating?.toFixed(1) || '0'}/10</span>
-            <span className="text-slate-400">({shop.totalReviews || 0} {VI.provider.shop.stats.reviews})</span>
+            <span className="font-extrabold text-indigo-950">{shop.rating?.toFixed(1) || '0'}/10</span>
+            <span className="text-indigo-900/55">({shop.totalReviews || 0} {VI.provider.shop.stats.reviews})</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="font-semibold">{(shop.totalRentals || 0).toLocaleString()}</span>
-            <span className="text-slate-400">{VI.provider.shop.stats.rentals}</span>
+            <span className="font-extrabold text-indigo-950">{(shop.totalRentals || 0).toLocaleString()}</span>
+            <span className="text-indigo-900/55">{VI.provider.shop.stats.rentals}</span>
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { FileText } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/shared/components/Card'
 import { getMockShopPolicies, type ShopPolicy } from '../../mocks/shopPolicies.mock'
 import { VI } from '@/shared/i18n/vi'
 
@@ -11,10 +11,10 @@ export function ShopPoliciesSection({ providerId }: ShopPoliciesSectionProps) {
   const policies = getMockShopPolicies()
 
   return (
-    <Card className="border-pink-200 bg-pink-50/50 p-5">
+    <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
       <div className="mb-4 flex items-center gap-2">
-        <FileText className="h-5 w-5 text-pink-500" />
-        <h3 className="text-lg font-semibold text-slate-900">
+        <FileText className="h-5 w-5 text-indigo-950" />
+        <h3 className="text-lg font-extrabold text-indigo-950">
           {VI.provider.shop.policies.title}
         </h3>
       </div>
@@ -30,9 +30,9 @@ export function ShopPoliciesSection({ providerId }: ShopPoliciesSectionProps) {
 
 function PolicyCard({ policy }: { policy: ShopPolicy }) {
   return (
-    <div className="rounded-xl border border-pink-100 bg-white p-4">
-      <h4 className="mb-2 font-semibold text-pink-600">{policy.title}</h4>
-      <p className="whitespace-pre-line text-sm text-slate-600">{policy.content}</p>
+    <div className="rounded-xl border-[3px] border-indigo-950 bg-white p-4 shadow-[4px_4px_0_0_rgba(30,27,75,0.25)]">
+      <h4 className="mb-2 font-extrabold text-indigo-950">{policy.title}</h4>
+      <p className="whitespace-pre-line text-sm font-medium text-indigo-900/80">{policy.content}</p>
     </div>
   )
 }

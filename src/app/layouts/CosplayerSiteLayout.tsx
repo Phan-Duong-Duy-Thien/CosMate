@@ -61,17 +61,31 @@ export default function CosplayerSiteLayout() {
   const isPhotographersListingPage = location.pathname === "/photographers"
   const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
   const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
+  const isPublicShopPage = /^\/shop\/[^/]+\/?$/.test(location.pathname)
+  const isCostumeDetailPage = /^\/costumes\/[^/]+\/?$/.test(location.pathname)
   const isFullWidthEdgeListing = false
   const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
   const isNotificationsPage = location.pathname === "/notifications"
+  const isProfilePage =
+    location.pathname === "/profile" ||
+    location.pathname.startsWith("/profile/") ||
+    location.pathname === "/wishlist" ||
+    location.pathname === "/purchase-history"
+  const isWalletPage = /^\/wallet(\/.*)?$/.test(location.pathname)
+  const isCheckoutPage = location.pathname.startsWith("/rent/checkout")
   const isExtraWideContentPage =
     isNotificationsPage ||
     isGuidelinesRulesPage ||
     isPhotographersListingPage ||
     isPhotographerDetailPage ||
-    isPublicServiceDetailPage
+    isPublicServiceDetailPage ||
+    isPublicShopPage ||
+    isCostumeDetailPage
   const isWideContentPage =
     location.pathname === "/costumes" ||
+    isProfilePage ||
+    isWalletPage ||
+    isCheckoutPage ||
     isExtraWideContentPage
 
   const loggedIn = isAuthenticated()

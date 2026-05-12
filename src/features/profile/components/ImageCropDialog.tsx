@@ -2,7 +2,7 @@ import * as React from "react"
 import Cropper, { type Area } from "react-easy-crop"
 import "react-easy-crop/react-easy-crop.css"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@/components/ui/button"
+import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
 interface CropResult {

@@ -98,26 +98,28 @@ export const CostumeCard = ({
         <p className="inline-flex w-fit rounded-full border-2 border-indigo-950 bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
           {statusLabel}
         </p>
-        <h3 className="overflow-hidden text-sm font-semibold text-slate-800" title={displayName}>
+        <h3
+          className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
+          title={displayName}
+        >
           <span className="block truncate group-hover:hidden">{displayName}</span>
-          <span className="hidden group-hover:block">
-            <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
-              <span>{displayName}</span>
-              <span aria-hidden="true">{displayName}</span>
+          <span className="hidden w-full overflow-hidden group-hover:flex">
+            <span className="flex shrink-0 whitespace-nowrap group-hover:animate-[home-title-marquee_10s_linear_infinite]">
+              <span className="pr-8">{displayName}</span>
+              <span className="pr-8" aria-hidden="true">{displayName}</span>
             </span>
           </span>
         </h3>
-        <div className="min-h-7 text-base font-semibold leading-tight text-[#d61f91]">
+        <div className="flex min-h-7 items-baseline gap-1 text-base font-extrabold leading-tight">
           {hasPrice ? (
             <>
-              <span className="whitespace-nowrap">
-                <span>{costume.priceMin.toLocaleString("vi-VN")}</span>
-                <span className="ml-1">VNĐ</span>
+              <span className="bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-transparent">
+                {costume.priceMin.toLocaleString("vi-VN")} VNĐ
               </span>
-              <span className="ml-1 text-xs font-normal text-slate-400">/ngày</span>
+              <span className="text-xs font-semibold text-indigo-900/60">/ngày</span>
             </>
           ) : (
-            "-"
+            <span className="text-slate-400">-</span>
           )}
         </div>
         <Button

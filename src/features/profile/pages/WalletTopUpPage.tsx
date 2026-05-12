@@ -1,9 +1,8 @@
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom"
 import { ArrowLeft, Building2, Check, Smartphone, type LucideIcon } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { Input } from "@/shared/components/Input"
-import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useWalletTopUp, type PaymentMethod } from "../hooks/useWalletTopUp"
@@ -57,16 +56,15 @@ export default function WalletTopUpPage() {
   ]
 
   return (
-    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-cosmate-soft-pink/25 via-wallet-from to-wallet-to px-4 py-10">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-3xl">
-        <Card className="overflow-hidden border-cosmate-pink/20 shadow-md shadow-cosmate-pink/5">
-          <CardContent className="p-6 sm:p-8">
+        <Card className="overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
+          <div className="p-6 sm:p-8">
             <div className="flex items-start gap-3">
               <Button
                 type="button"
                 variant="ghost"
-                size="icon"
-                className="mt-0.5 shrink-0 rounded-full text-muted-foreground hover:bg-cosmate-soft-pink/40 hover:text-cosmate-pink"
+                className="mt-0.5 h-10 w-10 shrink-0 rounded-xl border-[2px] border-transparent p-0 text-indigo-900/70 hover:border-indigo-950/20 hover:bg-pink-100 hover:text-indigo-950"
                 onClick={() => navigate(walletBase)}
                 aria-label={VI.common.actions.back}
               >
@@ -105,7 +103,7 @@ export default function WalletTopUpPage() {
                 />
               </div>
 
-              <Separator className="bg-border" />
+              <div className="h-px w-full bg-indigo-950/15" aria-hidden />
 
               <div>
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
@@ -184,8 +182,8 @@ export default function WalletTopUpPage() {
                 </Button>
                 <Button
                   type="button"
-                  variant="cosmate"
-                  className="w-full min-w-[9rem] sm:w-auto"
+                  variant="soft"
+                  className="w-full min-w-[9rem] rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-105 sm:w-auto"
                   disabled={isSubmitDisabled}
                   onClick={() => handleSubmit(redirectUrl)}
                 >
@@ -193,7 +191,7 @@ export default function WalletTopUpPage() {
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </section>

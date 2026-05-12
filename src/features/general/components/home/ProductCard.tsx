@@ -91,18 +91,18 @@ export const ProductCard = ({
         title={product.name}
       >
         <span className="block truncate group-hover:hidden">{product.name}</span>
-        <span className="hidden group-hover:block">
-          <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
-            <span>{product.name}</span>
-            <span aria-hidden="true">{product.name}</span>
+        <span className="hidden w-full overflow-hidden group-hover:flex">
+          <span className="flex shrink-0 whitespace-nowrap group-hover:animate-[home-title-marquee_10s_linear_infinite]">
+            <span className="pr-8">{product.name}</span>
+            <span className="pr-8" aria-hidden="true">{product.name}</span>
           </span>
         </span>
       </h3>
-      <div className="text-lg font-extrabold">
-        <span className="text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
-          {product.pricePerDay.toLocaleString("vi-VN")} <span>VNĐ</span>
+      <div className="flex items-baseline gap-1 text-base font-extrabold leading-tight">
+        <span className="bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-transparent">
+          {product.pricePerDay.toLocaleString("vi-VN")} VNĐ
         </span>
-        <span className="text-xs font-bold text-indigo-800/70">/ngày</span>
+        <span className="text-xs font-semibold text-indigo-900/60">/ngày</span>
       </div>
       <Button
         variant="soft"

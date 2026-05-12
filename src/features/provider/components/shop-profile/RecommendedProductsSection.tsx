@@ -19,13 +19,13 @@ export function RecommendedProductsSection({
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex items-center rounded-2xl border-2 border-cosmate-soft-pink bg-white px-4 py-2">
-        <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+      <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+        <h3 className="text-sm font-extrabold uppercase tracking-wide text-indigo-950">
           {VI.provider.shop.recommended.title}
         </h3>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {products.map(product => (
           <ShopProductCard
             key={product.id}

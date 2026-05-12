@@ -189,7 +189,7 @@ export default function WishlistPage() {
 
   if (loading && wishlistItems.length === 0) {
     return (
-      <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] px-4 pb-20">
+      <div className="home-anime flex min-h-[calc(100vh-64px)] items-center justify-center bg-transparent px-3 pb-16 md:px-4">
         <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] px-10 py-12 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
           <Loader2 className="mx-auto h-10 w-10 animate-spin text-pink-600" aria-hidden />
           <p className="mt-4 text-center text-sm font-extrabold text-indigo-950">
@@ -201,7 +201,7 @@ export default function WishlistPage() {
   }
 
   return (
-    <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent pb-16 pt-2">
       <div className="mx-auto w-full max-w-[min(1680px,100%)] min-w-0 px-4 pt-6 md:px-6">
         <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-[1.2rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-5">
           <div className="flex min-w-0 flex-wrap items-center gap-3">

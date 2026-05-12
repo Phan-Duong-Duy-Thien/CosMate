@@ -1,4 +1,4 @@
-import { Card } from "@/components/ui/card"
+import { Card } from "@/shared/components/Card"
 import { VI } from "@/shared/i18n/vi"
 
 interface ProductInfoSectionsProps {

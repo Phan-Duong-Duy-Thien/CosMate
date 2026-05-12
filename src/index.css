@@ -280,3 +280,16 @@
 
 /* Ant Design Message — use default animations, no custom overrides */
 
+/* Product card title marquee (used on hover when title is truncated).
+   The inner track contains TWO copies of the text. Each copy ends with
+   a trailing right-padding so translating by -50% positions copy #2
+   exactly where copy #1 was → seamless loop. */
+@keyframes home-title-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+

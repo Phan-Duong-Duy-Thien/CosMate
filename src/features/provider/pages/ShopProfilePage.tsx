@@ -47,13 +47,13 @@ export default function ShopProfilePage() {
     // Future: call wishlist API
   }
 
+  const shellClass = "home-anime min-h-[calc(100vh-64px)] bg-transparent pb-16 pt-2"
+
   if (loading) {
     return (
-      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10">
-          <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
-            {VI.common.status.loading}
-          </div>
+      <section className={shellClass}>
+        <div className="rounded-3xl border-[3px] border-dashed border-indigo-950/40 bg-[#fffbeb]/80 p-10 text-center text-sm font-semibold text-indigo-900/75 shadow-[6px_6px_0_0_rgba(30,27,75,0.18)]">
+          {VI.common.status.loading}
         </div>
       </section>
     )
@@ -61,19 +61,17 @@ export default function ShopProfilePage() {
 
   if (error || !shop) {
     return (
-      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-10">
-          <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
-            <p>{error || 'Không tìm thấy shop'}</p>
-          </div>
+      <section className={shellClass}>
+        <div className="rounded-3xl border-[3px] border-indigo-950 bg-red-50 p-10 text-center text-sm font-bold text-red-700 shadow-[6px_6px_0_0_rgba(220,38,38,0.25)]">
+          <p>{error || 'Không tìm thấy shop'}</p>
         </div>
       </section>
     )
   }
 
   return (
-    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
-      <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-8">
+    <section className={shellClass}>
+      <div className="space-y-6">
         {/* Shop Hero */}
         <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
 
@@ -88,8 +86,8 @@ export default function ShopProfilePage() {
 
         {/* Products Section */}
         <div className="space-y-4">
-          <div className="inline-flex items-center rounded-2xl border-2 border-cosmate-soft-pink bg-white px-4 py-2">
-            <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+          <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+            <h3 className="text-sm font-extrabold uppercase tracking-wide text-indigo-950">
               {VI.provider.shop.products.title}
             </h3>
           </div>

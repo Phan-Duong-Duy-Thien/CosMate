@@ -8,7 +8,7 @@
 import { Table, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { Eye, Star } from 'lucide-react';
-import { Button as UiButton } from '@/components/ui/button';
+import { Button } from '@/shared/components/Button';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { ProviderReviewDetailModal } from '../components/ProviderReviewDetailModal';
@@ -130,16 +130,15 @@ export default function ProviderReviewsPage() {
       render: (_: unknown, record: ProviderReview) => (
         <div className="flex justify-center" onClick={(e) => e.stopPropagation()}>
           <Tooltip title={VI.provider.reviews.viewDetail}>
-            <UiButton
+            <Button
               type="button"
               variant="ghost"
-              size="icon"
-              className="text-cosmate-info! hover:bg-accent [&_svg]:text-cosmate-info"
+              className="h-9 w-9 shrink-0 p-0 text-cosmate-info hover:bg-accent [&_svg]:text-cosmate-info"
               aria-label={VI.provider.reviews.viewDetail}
               onClick={() => void openDetail(record)}
             >
               <Eye className="h-4 w-4 shrink-0 text-cosmate-info" strokeWidth={2} aria-hidden />
-            </UiButton>
+            </Button>
           </Tooltip>
         </div>
       ),

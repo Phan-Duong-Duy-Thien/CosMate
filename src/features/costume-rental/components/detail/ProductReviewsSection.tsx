@@ -1,5 +1,5 @@
 import { Star } from "lucide-react"
-import { Card } from "@/components/ui/card"
+import { Card } from "@/shared/components/Card"
 import { useCostumeReviews } from "../../hooks/useCostumeReviews"
 import { VI } from "@/shared/i18n/vi"
 import type { ReviewItem } from "../../api/review.api"

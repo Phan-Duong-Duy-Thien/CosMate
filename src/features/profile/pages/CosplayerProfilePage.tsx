@@ -4,8 +4,8 @@ import { useUserProfile } from "../hooks/useUserProfile"
 import { useUserAddresses } from "../hooks/useUserAddresses"
 import { usePurchaseOrders } from "../hooks/usePurchaseOrders"
 import { useWallet } from "../hooks/useWallet"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { VI } from "@/shared/i18n/vi"
 import EditProfileModal from "../components/EditProfileModal"
@@ -114,26 +114,26 @@ export default function CosplayerProfilePage() {
 
         {loading ? (
           <div className="space-y-4">
-            <Card className="border-border">
-              <CardContent className="space-y-4 p-6">
+            <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+              <div className="space-y-4 p-6">
                 <div className="h-40 animate-pulse rounded-2xl bg-muted" />
                 <div className="h-8 w-52 animate-pulse rounded-xl bg-muted" />
-              </CardContent>
+              </div>
             </Card>
-            <Card className="border-border">
-              <CardContent className="space-y-3 p-6">
+            <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+              <div className="space-y-3 p-6">
                 <div className="h-20 animate-pulse rounded-2xl bg-muted" />
                 <div className="h-20 animate-pulse rounded-2xl bg-muted" />
-              </CardContent>
+              </div>
             </Card>
           </div>
         ) : error ? (
-          <Card className="border-border">
-            <CardContent className="p-6">
+          <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+            <div className="p-6">
               <p className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
                 {error}
               </p>
-            </CardContent>
+            </div>
           </Card>
         ) : profile ? (
           <>
@@ -154,7 +154,7 @@ export default function CosplayerProfilePage() {
                 <ProfileBioCard />
 
                 <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <CardContent className="p-5">
+                  <div className="p-5">
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <h2 className="text-base font-extrabold text-indigo-950">{VI.wallet.title}</h2>
@@ -167,11 +167,11 @@ export default function CosplayerProfilePage() {
                         {VI.wallet.manage}
                       </Button>
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
 
                 <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]">
-                  <CardContent className="p-5">
+                  <div className="p-5">
                     <p className="text-base font-extrabold text-indigo-950">{VI.profile.title}</p>
                     <div className="mt-3 space-y-2">
                       <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
@@ -193,13 +193,13 @@ export default function CosplayerProfilePage() {
                         </div>
                       </div>
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
               </div>
 
               <div className="space-y-4 lg:col-span-7">
                 <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <CardContent className="p-5">
+                  <div className="p-5">
                     <div className="flex items-center justify-between gap-2">
                       <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.orders.title}</h2>
                       <button
@@ -231,11 +231,11 @@ export default function CosplayerProfilePage() {
                         )
                       })}
                     </div>
-                  </CardContent>
+                  </div>
                 </Card>
 
                 <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <CardContent className="p-5">
+                  <div className="p-5">
                   <div className="mb-3 flex items-center justify-between">
                     <p className="text-base font-extrabold text-indigo-950">{VI.profile.addresses.title}</p>
                     <Button
@@ -289,18 +289,18 @@ export default function CosplayerProfilePage() {
                         : VI.profile.addresses.showMore}
                     </Button>
                   )}
-                  </CardContent>
+                  </div>
                 </Card>
               </div>
             </div>
           </>
         ) : (
-          <Card className="border-border">
-            <CardContent className="p-6">
+          <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+            <div className="p-6">
               <p className="rounded-2xl border border-border bg-muted/50 px-4 py-3 text-center text-sm text-muted-foreground">
                 {VI.common.status.noData}
               </p>
-            </CardContent>
+            </div>
           </Card>
         )}
       </div>

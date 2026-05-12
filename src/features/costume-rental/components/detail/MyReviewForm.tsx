@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { Star, Upload, X } from "lucide-react"
-import { Card } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { Card } from "@/shared/components/Card"
+import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 import { message } from "antd"
 
@@ -137,6 +137,8 @@ export function MyReviewForm({ canReview, orderId, cosplayerId, onSubmit, loadin
 
       {/* Submit Button */}
       <Button
+        type="button"
+        variant="soft"
         onClick={handleSubmit}
         disabled={loading || rating === 0 || !comment.trim()}
         className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] hover:brightness-110"
