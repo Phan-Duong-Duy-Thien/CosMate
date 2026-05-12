@@ -412,10 +412,10 @@ export default function PurchaseHistoryPage() {
     return (
       <div
         key={order.id}
-        className="flex gap-4 rounded-xl border border-border bg-card p-4 transition-shadow hover:shadow-md hover:border-cosmate-soft-pink/80"
+        className="flex gap-4 rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.28)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.36)]"
       >
         {/* Left: Thumbnail */}
-        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl bg-slate-100">
+        <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-xl border-[3px] border-indigo-950 bg-slate-100">
           {costumeImageMap[order.costumeId] ? (
             <img
               src={costumeImageMap[order.costumeId]}
@@ -433,17 +433,17 @@ export default function PurchaseHistoryPage() {
         <div className="flex min-w-0 flex-1 flex-col justify-between">
           {/* Title + order code — badge ở cột phải */}
           <div className="min-w-0">
-            <h3 className="truncate font-semibold text-slate-900">
+            <h3 className="truncate text-base font-extrabold text-indigo-950">
               {order.costumeName || VI.profile.orders.cardCostumeName}
             </h3>
-            <p className="mt-0.5 text-sm font-medium text-slate-500">
+            <p className="mt-0.5 text-sm font-semibold text-slate-600">
               {VI.profile.orders.orderCodeLabel}:{' '}
-              <span className="font-semibold text-cosmate-pink">{orderCode}</span>
+              <span className="font-bold text-[#d61f91]">{orderCode}</span>
             </p>
           </div>
 
           {/* Middle row: rental period + item count */}
-          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-500">
+          <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm font-medium text-slate-600">
             <span>
               {VI.profile.orders.cardRentPeriod}: {formatDate(order.rentStart) || '-'} - {formatDate(order.rentEnd) || '-'}
             </span>
@@ -463,7 +463,7 @@ export default function PurchaseHistoryPage() {
                 setDetailOrderId(order.id)
                 setDetailDrawerOpen(true)
               }}
-              className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm font-medium text-foreground transition-colors hover:bg-accent hover:text-cosmate-pink"
+              className="rounded-xl border-[2px] border-indigo-950 bg-white px-3 py-1.5 text-sm font-bold text-indigo-900 transition-colors hover:bg-indigo-50"
             >
               {VI.order.actions.viewDetail}
             </button>
@@ -474,7 +474,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleCancelOrder(order.id)}
                 disabled={cancellingOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-xl border-[2px] border-red-400 bg-white px-3 py-1.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
               >
                 <Ban className="h-3.5 w-3.5" />
                 {cancellingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionCancel}
@@ -488,7 +488,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => handleConfirmDelivery(order.id)}
                   disabled={confirmingDeliveryId === order.id}
-                  className="rounded-lg bg-green-600 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-green-700 disabled:opacity-50"
+                  className="rounded-xl border-[2px] border-green-900 bg-green-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                 >
                   {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
                 </button>
@@ -496,7 +496,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => handleCreateDispute(order.id, order.status)}
                   disabled={disputingOrderId === order.id}
-                  className="flex items-center gap-1 rounded-lg border border-red-300 bg-white px-3 py-1.5 text-sm font-medium text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-xl border-[2px] border-red-400 bg-white px-3 py-1.5 text-sm font-bold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50"
                 >
                   <Flag className="h-3.5 w-3.5" />
                   {disputingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.dispute.button}
@@ -509,7 +509,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => handleReturnOrder(order.id)}
                   disabled={returningOrderId === order.id}
-                  className="rounded-lg bg-orange-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
+                  className="rounded-xl border-[2px] border-orange-900 bg-orange-500 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-orange-600 disabled:opacity-50"
                 >
                   {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
                 </button>
@@ -520,7 +520,7 @@ export default function PurchaseHistoryPage() {
                     setExtendModalOpen(true)
                   }}
                   disabled={isExtending}
-                  className="flex items-center gap-1 rounded-lg bg-cosmate-pink px-3 py-1.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
+                  className="flex items-center gap-1 rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:brightness-110 disabled:opacity-50"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   {VI.provider.orders.tabs.extending}
@@ -532,7 +532,7 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
                 disabled={isReviewSubmitting && reviewOrderId === order.id}
-                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                className="flex items-center gap-1 rounded-xl border-[2px] border-amber-900 bg-amber-500 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
               >
                 <Star className="h-3.5 w-3.5" />
                 {isReviewSubmitting && reviewOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
@@ -543,12 +543,10 @@ export default function PurchaseHistoryPage() {
 
         {/* Right: status + total — căn sát viền phải thẻ */}
         <div className="flex shrink-0 flex-col items-end justify-between gap-2 text-right">
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${badgeColorClass}`}
-          >
+          <span className={`rounded-full border border-white/80 px-2.5 py-0.5 text-xs font-bold shadow-sm ${badgeColorClass}`}>
             {statusLabel}
           </span>
-          <span className="text-base font-bold text-cosmate-pink">
+          <span className="text-base font-extrabold text-[#d61f91]">
             {order.totalAmount.toLocaleString('vi-VN')} ₫
           </span>
         </div>
@@ -669,7 +667,7 @@ export default function PurchaseHistoryPage() {
     countsObj: Readonly<Record<string, number>>,
     onTabClick: (tab: string) => void
   ) => (
-    <div className="mt-4 flex flex-wrap justify-center gap-2">
+    <div className="mt-4 flex flex-wrap justify-center gap-2 rounded-2xl border-[3px] border-indigo-950/25 bg-white/80 p-3">
       {(Object.keys(tabLabels) as (OrderTab | ServiceOrderTab)[]).map((tabKey) => {
         const Icon = tabIcons[tabKey]
         const isActive = activeTab === tabKey
@@ -679,17 +677,17 @@ export default function PurchaseHistoryPage() {
             <button
               type="button"
               onClick={() => onTabClick(tabKey)}
-              className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-colors ${
+              className={`relative flex h-10 w-10 items-center justify-center rounded-full border-2 transition-colors ${
                 isActive
-                  ? 'bg-cosmate-pink text-primary-foreground shadow-sm'
-                  : 'bg-muted/60 text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
+                  ? 'border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white shadow-[3px_3px_0_0_#1e1b4b]'
+                  : 'border-indigo-900/30 bg-white text-slate-600 hover:bg-pink-50 hover:text-[#d61f91]'
               }`}
             >
               <Icon className="h-4 w-4" />
               {count > 0 && (
                 <span
                   className={`absolute -right-1.5 -top-1.5 flex h-4 min-w-[16px] items-center justify-center rounded-full px-1 text-[10px] font-bold leading-none ${
-                    isActive ? 'bg-primary-foreground text-cosmate-pink' : 'bg-cosmate-pink text-primary-foreground'
+                    isActive ? 'bg-white text-[#d61f91]' : 'bg-[#d61f91] text-white'
                   }`}
                 >
                   {count > 99 ? VI.common.status.countOverflow : count}
@@ -728,17 +726,17 @@ export default function PurchaseHistoryPage() {
 
     return (
       <div className="mt-6 flex flex-col items-center gap-2">
-        <p className="text-sm text-slate-500">
+        <p className="text-sm font-medium text-slate-600">
           {label} {VI.profile.orders.paginationShow}{' '}
-          <span className="font-medium text-slate-700">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, total)}</span>{' '}
-          {VI.profile.orders.paginationOf} <span className="font-medium text-slate-700">{total}</span>
+          <span className="font-bold text-indigo-900">{(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, total)}</span>{' '}
+          {VI.profile.orders.paginationOf} <span className="font-bold text-indigo-900">{total}</span>
         </p>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 rounded-xl border-[3px] border-indigo-950/25 bg-white p-1.5">
           <button
             type="button"
             onClick={() => onPageChange(currentPage - 1)}
             disabled={currentPage === 1}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-cosmate-pink disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-indigo-900/30 text-sm font-bold text-slate-600 transition-colors hover:bg-pink-50 hover:text-[#d61f91] disabled:cursor-not-allowed disabled:opacity-40"
           >
             ‹
           </button>
@@ -750,10 +748,10 @@ export default function PurchaseHistoryPage() {
                 key={p}
                 type="button"
                 onClick={() => onPageChange(p)}
-                className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border text-sm transition-colors ${
+                className={`flex h-8 min-w-[32px] items-center justify-center rounded-lg border-2 text-sm font-bold transition-colors ${
                   p === currentPage
-                    ? 'border-cosmate-pink bg-cosmate-pink text-primary-foreground'
-                    : 'border-border text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
+                    ? 'border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white'
+                    : 'border-indigo-900/30 text-slate-600 hover:bg-pink-50 hover:text-[#d61f91]'
                 }`}
               >
                 {p}
@@ -764,7 +762,7 @@ export default function PurchaseHistoryPage() {
             type="button"
             onClick={() => onPageChange(currentPage + 1)}
             disabled={currentPage === totalPages}
-            className="flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-cosmate-pink disabled:cursor-not-allowed disabled:opacity-40"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border-2 border-indigo-900/30 text-sm font-bold text-slate-600 transition-colors hover:bg-pink-50 hover:text-[#d61f91] disabled:cursor-not-allowed disabled:opacity-40"
           >
             ›
           </button>
@@ -785,24 +783,24 @@ export default function PurchaseHistoryPage() {
   ): React.ReactNode {
     if (isLoading) {
       return (
-        <div className="flex items-center justify-center py-8">
-          <div className="h-6 w-6 animate-spin rounded-full border-2 border-cosmate-pink border-t-transparent" />
-          <span className="ml-2 text-muted-foreground">{VI.common.status.loading}</span>
+        <div className="flex items-center justify-center rounded-2xl border-[3px] border-indigo-950/20 bg-white/80 py-10">
+          <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#d61f91] border-t-transparent" />
+          <span className="ml-2 text-sm font-semibold text-slate-600">{VI.common.status.loading}</span>
         </div>
       )
     }
     if (hasError) {
       return (
-        <p className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-center text-sm text-rose-600">
+        <p className="rounded-2xl border-[3px] border-rose-300 bg-rose-50 px-4 py-4 text-center text-sm font-semibold text-rose-700">
           {loadErrorLabel}
         </p>
       )
     }
     if (isEmpty) {
       return (
-        <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-8 text-center">
-          <PackageCheck className="mx-auto h-12 w-12 text-slate-300" />
-          <p className="mt-3 text-sm text-slate-500">{emptyLabel}</p>
+        <div className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/80 px-4 py-10 text-center">
+          <PackageCheck className="mx-auto h-12 w-12 text-indigo-300" />
+          <p className="mt-3 text-sm font-semibold text-slate-600">{emptyLabel}</p>
         </div>
       )
     }
@@ -811,13 +809,13 @@ export default function PurchaseHistoryPage() {
 
 
   return (
-    <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-wallet-from via-wallet-via to-wallet-to px-4 py-10">
-      <div className="mx-auto w-full max-w-3xl">
-        <Card className="p-6">
-          <h1 className="text-2xl font-bold text-slate-900">{VI.profile.serviceOrders.title}</h1>
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
+      <div className="mx-auto w-full max-w-[min(1460px,100%)]">
+        <Card className="rounded-[1.5rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fff7fb] via-[#fffaf0] to-[#f5f3ff] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.34)] md:p-6">
+          <h1 className="text-2xl font-extrabold text-indigo-950">{VI.profile.serviceOrders.title}</h1>
 
           {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
-          <div className="mt-4 flex gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {(Object.keys(PARENT_TAB_LABELS) as ParentTab[]).map((tabKey) => {
               const Icon = PARENT_TAB_ICONS[tabKey]
               const isActive = parentTab === tabKey
@@ -826,10 +824,10 @@ export default function PurchaseHistoryPage() {
                   key={tabKey}
                   type="button"
                   onClick={() => handleParentTabClick(tabKey)}
-                  className={`flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-2 rounded-xl border-[2px] px-4 py-2 text-sm font-bold transition-colors ${
                     isActive
-                      ? 'bg-cosmate-pink text-primary-foreground shadow-sm'
-                      : 'bg-muted/60 text-muted-foreground hover:bg-accent hover:text-cosmate-pink'
+                      ? 'border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white shadow-[3px_3px_0_0_#1e1b4b]'
+                      : 'border-indigo-900/25 bg-white text-slate-700 hover:bg-pink-50 hover:text-[#d61f91]'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -853,9 +851,9 @@ export default function PurchaseHistoryPage() {
 
               {/* Current filter info */}
               {costumeTab !== "all" && (
-                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-medium text-slate-500">{VI.profile.orders.filterLabel}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                <div className="mt-4 rounded-2xl border-[3px] border-indigo-950/15 bg-white/85 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.profile.orders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-extrabold text-indigo-900">{currentFilterLabel}</p>
                 </div>
               )}
 
@@ -897,9 +895,9 @@ export default function PurchaseHistoryPage() {
 
               {/* Current filter info */}
               {selectedStatus !== 'all' && (
-                <div className="mt-4 rounded-xl bg-slate-50 px-4 py-3">
-                  <p className="text-xs font-medium text-slate-500">{VI.profile.serviceOrders.filterLabel}</p>
-                  <p className="mt-1 text-sm font-semibold text-slate-800">{currentFilterLabel}</p>
+                <div className="mt-4 rounded-2xl border-[3px] border-indigo-950/15 bg-white/85 px-4 py-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.profile.serviceOrders.filterLabel}</p>
+                  <p className="mt-1 text-sm font-extrabold text-indigo-900">{currentFilterLabel}</p>
                 </div>
               )}
 

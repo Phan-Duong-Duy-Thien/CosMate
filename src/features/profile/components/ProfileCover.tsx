@@ -26,12 +26,12 @@ export function ProfileCover({
   onEditProfile,
 }: ProfileCoverProps) {
   return (
-    <Card className="relative overflow-hidden border-border bg-card p-0 shadow-lg shadow-cosmate-pink/10">
+    <Card className="relative overflow-hidden rounded-[1.5rem] border-[4px] border-indigo-950 bg-[#fffaf0] p-0 shadow-[10px_10px_0_0_rgba(30,27,75,0.3)]">
       <button
         type="button"
         aria-label={VI.profile.cover.coverPreviewTitle}
         onClick={onPreviewCover}
-        className="block h-[200px] w-full cursor-zoom-in bg-gradient-to-r from-cosmate-soft-pink via-cosmate-lavender-surface to-cosmate-soft-pink text-left transition-opacity duration-200 hover:opacity-95 focus-visible:outline-none md:h-[280px]"
+        className="block h-[200px] w-full cursor-zoom-in bg-gradient-to-r from-pink-200 via-violet-100 to-pink-200 text-left transition-opacity duration-200 hover:opacity-95 focus-visible:outline-none md:h-[280px]"
         style={
           coverImageUrl
             ? {
@@ -53,10 +53,10 @@ export function ProfileCover({
             <img
               src={avatarUrl}
               alt={displayName}
-              className="h-28 w-28 rounded-full border border-white object-cover shadow-lg transition-opacity group-hover:opacity-90 md:h-40 md:w-40"
+              className="h-28 w-28 rounded-full border-[4px] border-indigo-950 bg-white object-cover transition-opacity group-hover:opacity-90 md:h-40 md:w-40"
             />
           ) : (
-            <div className="flex h-28 w-28 items-center justify-center rounded-full border border-border bg-cosmate-soft-pink text-3xl font-bold text-cosmate-pink shadow-lg md:h-40 md:w-40">
+            <div className="flex h-28 w-28 items-center justify-center rounded-full border-[4px] border-indigo-950 bg-pink-100 text-3xl font-bold text-indigo-900 md:h-40 md:w-40">
               {initials}
             </div>
           )}
@@ -66,11 +66,11 @@ export function ProfileCover({
       <div className="relative px-5 pb-2 pt-2 md:px-8 md:pb-3 md:pt-3">
         <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div className="min-w-0 pl-[7.75rem] pt-1 text-left md:pl-44 md:pt-0">
-            <p className="truncate text-2xl font-semibold leading-tight text-foreground">
+            <p className="truncate text-2xl font-extrabold leading-tight text-indigo-950">
               {displayName}
             </p>
-            <p className="mt-0.5 truncate text-sm text-cosmate-pink">{handle}</p>
-            <span className="mt-1.5 inline-flex w-fit rounded-full bg-cosmate-soft-pink px-2.5 py-0.5 text-xs font-semibold text-cosmate-pink">
+            <p className="mt-0.5 truncate text-sm font-semibold text-[#d61f91]">{handle}</p>
+            <span className="mt-1.5 inline-flex w-fit rounded-full border-2 border-indigo-950 bg-pink-100 px-2.5 py-0.5 text-xs font-extrabold text-indigo-900">
               {VI.profile.cover.accountCosplayer}
             </span>
           </div>
@@ -79,7 +79,7 @@ export function ProfileCover({
               type="button"
               size="sm"
               variant="outline"
-              className="transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+              className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-50 active:scale-[0.98]"
               onClick={onUploadCover}
             >
               {VI.profile.cover.uploadCover}
@@ -88,7 +88,7 @@ export function ProfileCover({
               type="button"
               size="sm"
               variant="outline"
-              className="transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98]"
+              className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-50 active:scale-[0.98]"
               onClick={onEditProfile}
             >
               {VI.profile.cover.editProfile}

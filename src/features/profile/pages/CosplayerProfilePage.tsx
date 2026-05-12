@@ -99,11 +99,11 @@ export default function CosplayerProfilePage() {
 
   return (
     <div
-      className={`min-h-[calc(100vh-64px)] bg-gradient-to-b from-cosmate-soft-pink/20 via-background to-background px-4 py-10 transition-all duration-500 ${
+      className={`home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 transition-all duration-500 md:px-4 md:py-10 ${
         isPageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       }`}
     >
-      <div className="mx-auto w-full max-w-6xl space-y-4">
+      <div className="mx-auto w-full max-w-[min(1460px,100%)] space-y-4">
         <input
           ref={coverInputRef}
           type="file"
@@ -153,40 +153,40 @@ export default function CosplayerProfilePage() {
               <div className="space-y-4 lg:col-span-5">
                 <ProfileBioCard />
 
-                <Card className="border-cosmate-lavender-border bg-gradient-to-br from-cosmate-soft-pink/50 via-card to-card shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <h2 className="text-base font-semibold text-foreground">{VI.wallet.title}</h2>
-                        <p className="mt-1 text-sm text-muted-foreground">{VI.wallet.balance}</p>
-                        <p className="mt-2 text-2xl font-bold text-cosmate-pink">
+                        <h2 className="text-base font-extrabold text-indigo-950">{VI.wallet.title}</h2>
+                        <p className="mt-1 text-sm font-medium text-slate-500">{VI.wallet.balance}</p>
+                        <p className="mt-2 text-2xl font-extrabold text-[#d61f91]">
                           {walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫
                         </p>
                       </div>
-                      <Button type="button" variant="outline" size="sm" onClick={() => navigate("/profile/wallet")}>
+                      <Button type="button" variant="outline" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50" onClick={() => navigate("/profile/wallet")}>
                         {VI.wallet.manage}
                       </Button>
                     </div>
                   </CardContent>
                 </Card>
 
-                <Card className="border-cosmate-pink/30 bg-gradient-to-br from-cosmate-soft-pink/40 to-card shadow-md">
+                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]">
                   <CardContent className="p-5">
-                    <p className="text-base font-semibold text-foreground">{VI.profile.title}</p>
+                    <p className="text-base font-extrabold text-indigo-950">{VI.profile.title}</p>
                     <div className="mt-3 space-y-2">
-                      <div className="rounded-xl border border-border bg-card/90 px-4 py-3">
-                        <p className="text-xs font-medium text-muted-foreground">{VI.admin.users.columns.email}</p>
-                        <p className="mt-1 text-sm font-medium text-foreground">{profile.email}</p>
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.email}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">{profile.email}</p>
                       </div>
-                      <div className="rounded-xl border border-cosmate-lavender-border bg-cosmate-lavender-surface/50 px-4 py-3">
-                        <p className="text-xs font-medium text-muted-foreground">{VI.admin.users.columns.phone}</p>
-                        <p className="mt-1 text-sm font-medium text-foreground">{profile.phone}</p>
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.phone}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">{profile.phone}</p>
                       </div>
-                      <div className="rounded-xl border border-cosmate-pink/25 bg-cosmate-soft-pink/35 px-4 py-3">
-                        <p className="text-xs font-medium text-muted-foreground">{VI.admin.users.columns.status}</p>
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.status}</p>
                         <div className="mt-1">
                           <span
-                            className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${STATUS_BADGE_CLASS[statusTone]}`}
+                            className={`inline-flex rounded-full border border-white/80 px-2.5 py-0.5 text-xs font-bold shadow-sm ${STATUS_BADGE_CLASS[statusTone]}`}
                           >
                             {profile.status}
                           </span>
@@ -198,13 +198,13 @@ export default function CosplayerProfilePage() {
               </div>
 
               <div className="space-y-4 lg:col-span-7">
-                <Card className="border-cosmate-lavender-border bg-gradient-to-br from-card via-cosmate-soft-pink/30 to-card shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between gap-2">
-                      <h2 className="text-base font-semibold text-foreground">{VI.profile.orders.title}</h2>
+                      <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.orders.title}</h2>
                       <button
                         type="button"
-                        className="text-sm font-medium text-cosmate-pink underline-offset-2 transition-colors hover:text-cosmate-pink/90 hover:underline"
+                        className="text-sm font-bold text-[#d61f91] underline-offset-2 transition-colors hover:text-[#b0177a] hover:underline"
                         onClick={() => navigate("/profile/purchase-history")}
                       >
                         {VI.profile.orders.history}
@@ -219,14 +219,14 @@ export default function CosplayerProfilePage() {
                           <button
                             key={item.key}
                             type="button"
-                            className="rounded-2xl border border-cosmate-lavender-border bg-card/95 px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-cosmate-pink/40 hover:bg-cosmate-soft-pink/40 active:scale-[0.98]"
+                            className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-pink-50 active:scale-[0.98]"
                             onClick={() => navigate(`/profile/purchase-history?tab=${tabKey}`)}
                           >
                             <div className="flex items-center justify-between">
-                              <Icon className="h-4 w-4 text-cosmate-pink" />
-                              <span className="text-xs font-semibold text-muted-foreground">{count}</span>
+                              <Icon className="h-4 w-4 text-[#d61f91]" />
+                              <span className="text-xs font-bold text-slate-500">{count}</span>
                             </div>
-                            <p className="mt-2 text-xs font-medium text-foreground">{item.label}</p>
+                            <p className="mt-2 text-xs font-semibold text-slate-700">{item.label}</p>
                           </button>
                         )
                       })}
@@ -234,14 +234,15 @@ export default function CosplayerProfilePage() {
                   </CardContent>
                 </Card>
 
-                <Card className="border-cosmate-lavender-border bg-gradient-to-br from-cosmate-lavender-surface/40 to-card shadow-md transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg">
+                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
                   <CardContent className="p-5">
                   <div className="mb-3 flex items-center justify-between">
-                    <p className="text-base font-semibold text-foreground">{VI.profile.addresses.title}</p>
+                    <p className="text-base font-extrabold text-indigo-950">{VI.profile.addresses.title}</p>
                     <Button
                       type="button"
                       size="sm"
                       variant="outline"
+                      className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50"
                       onClick={() => setIsAddressModalOpen(true)}
                     >
                       + {VI.profile.address.button.add}
@@ -264,11 +265,11 @@ export default function CosplayerProfilePage() {
                         return (
                           <div
                             key={item.id}
-                            className="rounded-2xl border border-cosmate-lavender-border bg-cosmate-soft-pink/20 px-4 py-3"
+                            className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-4 py-3"
                           >
-                            <p className="text-sm font-semibold text-foreground">{item.name}</p>
-                            <p className="mt-0.5 text-sm text-muted-foreground">{item.phone}</p>
-                            <p className="mt-0.5 text-sm text-muted-foreground">{fullAddress}</p>
+                            <p className="text-sm font-bold text-indigo-950">{item.name}</p>
+                            <p className="mt-0.5 text-sm font-medium text-slate-600">{item.phone}</p>
+                            <p className="mt-0.5 text-sm font-medium text-slate-600">{fullAddress}</p>
                           </div>
                         )
                       })}
@@ -280,7 +281,7 @@ export default function CosplayerProfilePage() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      className="mt-3 rounded-full border-cosmate-pink/40 bg-cosmate-soft-pink/30 px-4 text-cosmate-pink transition-all duration-200 hover:-translate-y-0.5 hover:bg-cosmate-soft-pink/50 active:scale-[0.98]"
+                      className="mt-3 rounded-full border-[2px] border-indigo-950 bg-white px-4 font-bold text-[#d61f91] transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-50 active:scale-[0.98]"
                       onClick={() => setShowAllAddresses((prev) => !prev)}
                     >
                       {showAllAddresses

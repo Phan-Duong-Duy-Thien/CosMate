@@ -43,15 +43,15 @@ export function ProfileBioCard() {
   }
 
   return (
-    <Card className="border-cosmate-pink/25 bg-gradient-to-br from-card to-cosmate-soft-pink/40 p-5 shadow-md shadow-cosmate-pink/10">
+    <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 p-5 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-foreground">{VI.profile.bio.title}</h2>
+        <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.bio.title}</h2>
         {!isEditing ? (
           <Button
             type="button"
             variant="ghost"
             size="sm"
-            className="decoration-1 underline-offset-2 hover:underline"
+            className="rounded-lg border border-transparent text-sm font-bold text-[#d61f91] decoration-1 underline-offset-2 hover:bg-pink-50 hover:underline"
             onClick={handleEdit}
           >
             {VI.profile.bio.edit}
@@ -65,19 +65,19 @@ export function ProfileBioCard() {
             value={draftBio}
             onChange={(event) => setDraftBio(event.target.value)}
             placeholder={VI.profile.bio.placeholder}
-            className="min-h-28 w-full rounded-2xl border border-cosmate-pink/30 bg-background/90 px-4 py-3 text-sm text-foreground shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            className="min-h-28 w-full rounded-2xl border-[2px] border-indigo-950/20 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
           />
           <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" onClick={handleCancel}>
+            <Button type="button" variant="outline" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50" onClick={handleCancel}>
               {VI.profile.bio.cancel}
             </Button>
-            <Button type="button" size="sm" onClick={handleSave}>
+            <Button type="button" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-bold text-white hover:brightness-110" onClick={handleSave}>
               {VI.profile.bio.save}
             </Button>
           </div>
         </div>
       ) : (
-        <p className="mt-3 min-h-16 whitespace-pre-wrap rounded-2xl border border-cosmate-pink/30 bg-background/90 px-4 py-3 text-sm text-muted-foreground">
+        <p className="mt-3 min-h-16 whitespace-pre-wrap rounded-2xl border-[2px] border-indigo-950/15 bg-white px-4 py-3 text-sm font-medium text-slate-600">
           {bio || VI.profile.bio.placeholder}
         </p>
       )}
