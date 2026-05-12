@@ -527,62 +527,66 @@ export default function CosplayerSiteLayout() {
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <SearchBar className="hidden md:flex" />
 
-            <button
-              type="button"
-              aria-label="Tin nhắn"
-              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => openChat(0, 0)}
-            >
-              <MessageCircle className="h-6 w-6" />
-              {chatUnreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                </span>
-              )}
-            </button>
+            {loggedIn && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Tin nhắn"
+                  className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                  onClick={() => openChat(0, 0)}
+                >
+                  <MessageCircle className="h-6 w-6" />
+                  {chatUnreadCount > 0 && (
+                    <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                      {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                    </span>
+                  )}
+                </button>
 
-            <button
-              type="button"
-              aria-label="Giỏ hàng"
-              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => navigate('/profile/purchase-history')}
-            >
-              <ShoppingCart className="h-6 w-6" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
-            </button>
+                <button
+                  type="button"
+                  aria-label="Giỏ hàng"
+                  className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                  onClick={() => navigate('/profile/purchase-history')}
+                >
+                  <ShoppingCart className="h-6 w-6" />
+                  <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
+                </button>
 
-            <Tooltip title="Wishlist">
-              <button
-                type="button"
-                aria-label="Wishlist"
-                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-                onClick={() => navigate('/wishlist')}
-              >
-                <Heart className="h-6 w-6" />
-              </button>
-            </Tooltip>
+                <Tooltip title="Wishlist">
+                  <button
+                    type="button"
+                    aria-label="Wishlist"
+                    className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                    onClick={() => navigate('/wishlist')}
+                  >
+                    <Heart className="h-6 w-6" />
+                  </button>
+                </Tooltip>
 
-            <Popover
-              content={notifPopoverContent}
-              trigger="click"
-              open={notifOpen}
-              onOpenChange={setNotifOpen}
-              placement="bottomRight"
-              arrow={false}
-            >
-              <button
-                type="button"
-                aria-label="Thông báo"
-                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              >
-                <Bell className="h-6 w-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            </Popover>
+                <Popover
+                  content={notifPopoverContent}
+                  trigger="click"
+                  open={notifOpen}
+                  onOpenChange={setNotifOpen}
+                  placement="bottomRight"
+                  arrow={false}
+                >
+                  <button
+                    type="button"
+                    aria-label="Thông báo"
+                    className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                  >
+                    <Bell className="h-6 w-6" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </Popover>
+              </>
+            )}
 
             {loggedIn ? (
               <Dropdown 
