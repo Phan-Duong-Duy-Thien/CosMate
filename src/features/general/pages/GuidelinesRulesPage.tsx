@@ -1,9 +1,8 @@
 import * as React from "react"
-import { Sparkles } from "lucide-react"
+import { BookOpen, Sparkles } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card } from "@/shared/components/Card"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 
@@ -31,6 +30,18 @@ const SECTION_ID_FROM_TYPE: Record<string, string> = {
   refund: "orders-returns",
   dispute: "complaints-disputes",
 }
+
+const stickerTabActive =
+  "border-[3px] border-indigo-950 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#1e1b4b] active:translate-y-0 active:shadow-[3px_3px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-0.5"
+
+const stickerTabInactive =
+  "border-[3px] border-indigo-950 rounded-full bg-[#fffbeb] px-5 py-2.5 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition-all duration-200 hover:bg-pink-100 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#1e1b4b] active:translate-y-0 active:shadow-[3px_3px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-0.5"
+
+const sectionCardBase =
+  "group relative rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-4 text-left shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.45)] active:scale-[0.99] xl:min-h-32"
+
+const sectionCardSelected =
+  "bg-gradient-to-br from-pink-100 via-[#fffbeb] to-fuchsia-50 shadow-[10px_10px_0_0_rgba(168,85,247,0.35)] motion-safe:hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.45)]"
 
 export default function GuidelinesRulesPage() {
   const [searchParams] = useSearchParams()
@@ -84,20 +95,27 @@ export default function GuidelinesRulesPage() {
   ]
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-cosmate-soft-pink/45 via-background to-background py-8 md:py-10">
-      <div className="mx-auto w-full max-w-6xl px-4">
+    <section className="min-h-screen bg-transparent py-8 font-sans md:py-10">
+      <div className="mx-auto w-full max-w-none">
         <Card
           className={cn(
-            "rounded-2xl border-cosmate-lavender-border bg-card/95 shadow-lg backdrop-blur-sm transition-all duration-300 ease-out",
+            "rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 ease-out",
             pageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
           )}
         >
-          <CardContent className="space-y-8 p-6 md:p-8">
-            <header className="space-y-4 text-center md:space-y-5">
-              <h1 className="text-balance bg-gradient-to-r from-cosmate-pink via-cosmate-mauve to-cosmate-pink bg-clip-text text-3xl font-bold tracking-tight text-transparent md:text-4xl">
-                {VI.general.guidelinesRules.pageTitle}
-              </h1>
-              <p className="mx-auto max-w-2xl text-pretty text-base leading-relaxed text-muted-foreground md:text-lg">
+          <div className="space-y-8 p-6 md:p-8">
+            <header className="flex flex-col items-center gap-5 text-center">
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-amber-300 via-orange-400 to-pink-400 text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b]">
+                  <BookOpen className="h-5 w-5" aria-hidden />
+                </span>
+                <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+                  <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                    {VI.general.guidelinesRules.pageTitle}
+                  </span>
+                </h1>
+              </div>
+              <p className="max-w-2xl text-pretty rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] px-4 py-3 text-sm font-semibold leading-relaxed text-indigo-950 shadow-[6px_6px_0_0_rgba(30,27,75,0.75)] md:text-base">
                 {VI.general.guidelinesRules.pageSubtitle}
               </p>
             </header>
@@ -110,13 +128,7 @@ export default function GuidelinesRulesPage() {
                   <button
                     key={section.id}
                     type="button"
-                    className={cn(
-                      "group relative rounded-2xl border p-4 text-left transition-all duration-200 active:scale-[0.98] xl:min-h-32",
-                      "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                      selected
-                        ? "border-cosmate-pink bg-cosmate-soft-pink/55 shadow-md ring-1 ring-cosmate-pink/20"
-                        : "border-cosmate-lavender-border bg-card hover:border-cosmate-pink/40 hover:bg-cosmate-soft-pink/30"
-                    )}
+                    className={cn(sectionCardBase, selected && sectionCardSelected)}
                     onClick={() => {
                       setActiveSectionId(section.id)
                       setActiveView("guide")
@@ -125,14 +137,14 @@ export default function GuidelinesRulesPage() {
                     <Sparkles
                       aria-hidden
                       className={cn(
-                        "pointer-events-none absolute right-3 top-3 h-4 w-4 text-cosmate-pink/80 transition-transform duration-200 motion-safe:animate-pulse",
-                        "group-hover:scale-110 group-hover:text-cosmate-pink"
+                        "pointer-events-none absolute right-3 top-3 h-4 w-4 text-indigo-950/70 transition-transform duration-200 motion-safe:group-hover:scale-110",
+                        selected && "text-fuchsia-600"
                       )}
                     />
-                    <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                    <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-indigo-950/70">
                       {VI.general.guidelinesRules.cardSmallTitle}
                     </p>
-                    <h2 className="text-lg font-semibold leading-snug tracking-tight text-foreground md:text-xl">
+                    <h2 className="text-lg font-extrabold leading-snug tracking-tight text-indigo-950 md:text-xl">
                       {getI18nValue(section.cardMainKey)}
                     </h2>
                   </button>
@@ -140,25 +152,18 @@ export default function GuidelinesRulesPage() {
               })}
             </div>
 
-            <Card className="border-cosmate-lavender-border bg-cosmate-soft-pink/15 shadow-sm">
-              <CardContent className="space-y-4 p-4 md:p-6">
+            <Card className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)]">
+              <div className="space-y-4 p-4 md:p-6">
                 <div className="flex flex-wrap gap-2">
                   {tabButtons.map((tab) => (
-                    <Button
+                    <button
                       key={tab.key}
                       type="button"
-                      variant="outline"
-                      size="sm"
-                      className={cn(
-                        "rounded-full border-cosmate-lavender-border px-5",
-                        activeView === tab.key
-                          ? "border-cosmate-pink bg-cosmate-pink text-primary-foreground shadow-sm hover:bg-cosmate-pink/90 hover:text-primary-foreground"
-                          : "bg-card/80 hover:border-cosmate-pink/35 hover:bg-cosmate-soft-pink/40"
-                      )}
+                      className={cn(activeView === tab.key ? stickerTabActive : stickerTabInactive)}
                       onClick={() => setActiveView(tab.key)}
                     >
                       {tab.label}
-                    </Button>
+                    </button>
                   ))}
                 </div>
 
@@ -174,9 +179,9 @@ export default function GuidelinesRulesPage() {
                     <RulesList section={activeSection} />
                   )}
                 </div>
-              </CardContent>
+              </div>
             </Card>
-          </CardContent>
+          </div>
         </Card>
       </div>
     </section>
@@ -198,27 +203,31 @@ function GuideList({ section }: { section: GuidelinesSection }) {
               : `${VI.general.guidelinesRules.tabs.guide} ${getI18nValue(section.titleKey)}`
 
   return (
-    <Card className="mt-1 border-cosmate-lavender-border bg-cosmate-soft-pink/25">
-      <CardContent className="space-y-3 p-4 md:p-5">
-        <h3 className="text-lg font-semibold leading-snug text-cosmate-pink md:text-xl">{title}</h3>
-        <ul className="space-y-2.5">
+    <Card className="mt-1 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.55)]">
+      <div className="space-y-4 p-4 md:p-5">
+        <h3 className="text-lg font-extrabold leading-snug text-indigo-950 md:text-xl">
+          <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+            {title}
+          </span>
+        </h3>
+        <ul className="space-y-3">
           {section.guides.map((stepKey, index) => (
-            <li key={stepKey} className="flex items-start gap-3 text-base leading-relaxed text-muted-foreground">
+            <li key={stepKey} className="flex items-start gap-3 text-base leading-relaxed">
               <span
-                className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-cosmate-pink"
+                className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 rounded border-2 border-indigo-950 bg-pink-400 shadow-[2px_2px_0_0_#1e1b4b]"
                 aria-hidden
               />
-              <p className="text-foreground/90">
-                <span className="font-semibold text-cosmate-pink">
+              <p className="text-indigo-950">
+                <span className="font-extrabold text-fuchsia-700">
                   {VI.general.guidelinesRules.stepLabel} {index + 1}
                 </span>
                 {": "}
-                <span className="text-muted-foreground">{getI18nValue(stepKey)}</span>
+                <span className="font-medium text-indigo-950/85">{getI18nValue(stepKey)}</span>
               </p>
             </li>
           ))}
         </ul>
-      </CardContent>
+      </div>
     </Card>
   )
 }
@@ -231,14 +240,19 @@ function RulesList({ section }: { section: GuidelinesSection }) {
   return (
     <div className="mt-1 space-y-3">
       {section.rules.map((rule) => (
-        <Card key={`${section.id}-${rule.code}`} className="border-cosmate-lavender-border bg-cosmate-soft-pink/15">
-          <CardContent className="p-4 md:p-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-cosmate-pink">
+        <Card
+          key={`${section.id}-${rule.code}`}
+          className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.55)]"
+        >
+          <div className="p-4 md:p-5">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-fuchsia-700">
               {VI.general.guidelinesRules.rulePrefix} {rule.code}
             </p>
-            <h3 className="mt-1 text-lg font-semibold text-foreground">{getI18nValue(rule.titleKey)}</h3>
-            <p className="mt-2 text-base leading-relaxed text-muted-foreground">{getI18nValue(rule.descKey)}</p>
-          </CardContent>
+            <h3 className="mt-1 text-lg font-extrabold text-indigo-950">{getI18nValue(rule.titleKey)}</h3>
+            <p className="mt-2 text-base font-medium leading-relaxed text-indigo-950/85">
+              {getI18nValue(rule.descKey)}
+            </p>
+          </div>
         </Card>
       ))}
     </div>
@@ -284,25 +298,25 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
     setActiveGroupId(ruleGroups[0]?.id ?? "")
   }, [ruleGroups])
 
+  const tocButtonActive =
+    "w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-100 to-fuchsia-50 px-3 py-2.5 text-left text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition-all duration-200 hover:bg-pink-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 md:text-base"
+
+  const tocButtonInactive =
+    "w-full rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-2.5 text-left text-sm font-semibold text-indigo-950/80 shadow-[3px_3px_0_0_rgba(30,27,75,0.35)] transition-all duration-200 hover:bg-pink-50 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 md:text-base"
+
   return (
     <div className="mt-1 grid gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:items-start">
-      <Card className="border-cosmate-lavender-border bg-cosmate-soft-pink/20 lg:sticky lg:top-28 lg:self-start">
-        <CardContent className="space-y-3 p-4 md:p-5">
-          <p className="text-sm font-semibold uppercase tracking-wide text-cosmate-pink md:text-base">
+      <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] lg:sticky lg:top-28 lg:self-start">
+        <div className="space-y-3 p-4 md:p-5">
+          <p className="text-sm font-extrabold uppercase tracking-wide text-fuchsia-700 md:text-base">
             {VI.general.guidelinesRules.cosplayRules.tocTitle}
           </p>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             {ruleGroups.map((group) => (
               <button
                 key={group.id}
                 type="button"
-                className={cn(
-                  "block w-full rounded-lg border-l-2 px-3 py-2 text-left text-sm leading-relaxed transition-colors md:text-base",
-                  "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
-                  activeGroupId === group.id
-                    ? "border-cosmate-pink bg-cosmate-soft-pink/50 font-medium text-foreground shadow-sm"
-                    : "border-transparent text-muted-foreground hover:border-cosmate-pink/25 hover:bg-cosmate-soft-pink/30 hover:text-foreground"
-                )}
+                className={cn(activeGroupId === group.id ? tocButtonActive : tocButtonInactive)}
                 aria-current={activeGroupId === group.id ? "true" : undefined}
                 onClick={() => {
                   setActiveGroupId(group.id)
@@ -314,64 +328,69 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
               </button>
             ))}
           </div>
-        </CardContent>
+        </div>
       </Card>
 
       <div className="space-y-4">
-        <Card className="border-cosmate-pink/25 bg-gradient-to-br from-cosmate-soft-pink/50 via-card to-cosmate-lavender-surface/60">
-          <CardContent className="space-y-2 p-4 md:p-5">
-            <h3 className="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-tight text-cosmate-pink md:text-2xl">
-              <span>{heroTitleText}</span>
+        <Card className="rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-100 via-[#fffbeb] to-blue-100 shadow-[8px_8px_0_0_rgba(30,27,75,0.55)]">
+          <div className="space-y-3 p-4 md:p-5">
+            <h3 className="flex flex-wrap items-center gap-2 text-xl font-extrabold tracking-tight text-indigo-950 md:text-2xl">
+              <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                {heroTitleText}
+              </span>
               {section.id === "cosplay-rental" ? (
                 <Sparkles
                   aria-hidden
-                  className="h-5 w-5 shrink-0 text-cosmate-pink/90 motion-safe:animate-pulse md:h-6 md:w-6"
+                  className="h-5 w-5 shrink-0 text-indigo-950 motion-safe:animate-pulse md:h-6 md:w-6"
                 />
               ) : null}
             </h3>
-            <p className="text-base leading-relaxed text-muted-foreground">{mainDescription}</p>
+            <p className="rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-2 text-base font-medium leading-relaxed text-indigo-950/90 shadow-[4px_4px_0_0_#1e1b4b]">
+              {mainDescription}
+            </p>
             {section.ruleIntroKeys?.length ? (
-              <div className="space-y-1.5 text-base leading-relaxed text-muted-foreground">
+              <div className="space-y-2 text-base font-medium leading-relaxed text-indigo-950/85">
                 {section.ruleIntroKeys.map((introKey) => (
                   <p key={introKey}>{getI18nValue(introKey)}</p>
                 ))}
               </div>
             ) : null}
-          </CardContent>
+          </div>
         </Card>
 
         {ruleGroups.map((group) => (
           <Card
             key={group.id}
             id={`rules-${group.id}`}
-            className="scroll-mt-24 border-cosmate-lavender-border bg-card shadow-sm"
+            className="scroll-mt-24 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-[10px_10px_0_0_rgba(236,72,153,0.35)]"
           >
-            <CardContent className="space-y-3 p-4 md:p-5">
-              <h4 className="text-xl font-bold text-cosmate-pink md:text-2xl">{getI18nValue(group.titleKey)}</h4>
-              <ul className="space-y-2">
+            <div className="space-y-3 p-4 md:p-5">
+              <h4 className="text-xl font-extrabold text-indigo-950 md:text-2xl">
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                  {getI18nValue(group.titleKey)}
+                </span>
+              </h4>
+              <ul className="space-y-2.5">
                 {group.ruleCodes.map((code) => {
                   const rule = ruleByCode[code]
                   if (!rule) return null
 
                   return (
-                    <li
-                      key={`${group.id}-${code}`}
-                      className="flex items-start gap-3 text-base leading-relaxed text-muted-foreground"
-                    >
+                    <li key={`${group.id}-${code}`} className="flex items-start gap-3 text-base leading-relaxed">
                       <span
-                        className="mt-2 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-cosmate-pink/55"
+                        className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 rounded border-2 border-indigo-950 bg-pink-300 shadow-[2px_2px_0_0_#1e1b4b]"
                         aria-hidden
                       />
-                      <p>
-                        <span className="font-semibold text-foreground">{getI18nValue(rule.titleKey)}</span>
+                      <p className="text-indigo-950/90">
+                        <span className="font-extrabold text-indigo-950">{getI18nValue(rule.titleKey)}</span>
                         {": "}
-                        {getI18nValue(rule.descKey)}
+                        <span className="font-medium">{getI18nValue(rule.descKey)}</span>
                       </p>
                     </li>
                   )
                 })}
               </ul>
-            </CardContent>
+            </div>
           </Card>
         ))}
       </div>

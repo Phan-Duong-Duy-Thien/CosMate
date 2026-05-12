@@ -68,6 +68,7 @@ export default function CosplayerSiteLayout() {
     isPhotographersListingPage ||
     isPhotographerDetailPage ||
     isPublicServiceDetailPage
+  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
   const isWideContentPage =
     location.pathname === "/costumes" ||
     location.pathname === "/guidelines-rules" ||
@@ -605,7 +606,9 @@ export default function CosplayerSiteLayout() {
               "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
               isFullWidthEdgeListing
                 ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
-                : "max-w-7xl"
+                : isGuidelinesRulesPage
+                  ? "max-w-[min(1680px,100%)] xl:px-8"
+                  : "max-w-7xl"
             )}
           >
             <Breadcrumbs items={items} />
@@ -643,7 +646,9 @@ export default function CosplayerSiteLayout() {
                 "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
               isWideContentPage &&
                 !isFullWidthEdgeListing &&
-                "max-w-screen-2xl px-4 md:px-6 xl:px-8",
+                (isGuidelinesRulesPage
+                  ? "max-w-[min(1680px,100%)] px-4 md:px-6 xl:px-8"
+                  : "max-w-screen-2xl px-4 md:px-6 xl:px-8"),
               !isWideContentPage && "max-w-7xl px-4 lg:px-6"
             )}
           >
