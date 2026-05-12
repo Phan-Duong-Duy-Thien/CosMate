@@ -10,12 +10,10 @@ interface PurchasePanelProps {
   costume: Costume
   days: number
   startDate: string
-  selectedRentalOptionId: number | null
   checkedOptionalIds: Set<number>
   quote: QuoteBreakdown
   onDaysChange: (days: number) => void
   onStartDateChange: (date: string) => void
-  onSelectRentalOption: (id: number) => void
   onToggleOptionalAccessory: (id: number) => void
   onRentNow: () => void
 }
@@ -24,12 +22,10 @@ export const PurchasePanel = ({
   costume,
   days,
   startDate,
-  selectedRentalOptionId,
   checkedOptionalIds,
   quote,
   onDaysChange,
   onStartDateChange,
-  onSelectRentalOption,
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
@@ -38,7 +34,6 @@ export const PurchasePanel = ({
     d.setDate(d.getDate() + 3)
     return d.toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
   })()
-  const hasRentalOptions = (costume.rentalOptions ?? []).length > 0
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
   const isRented = costume.status === 'RENTED'
@@ -66,36 +61,6 @@ export const PurchasePanel = ({
       )}
 
       <div className="space-y-3 text-sm text-indigo-900/85">
-        {hasRentalOptions ? (
-          <div>
-            <p className="font-extrabold text-indigo-950">{VI.costumeRental.rentalOptions.title}</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {costume.rentalOptions.map((opt) => (
-                <button
-                  key={opt.id}
-                  type="button"
-                  disabled={isRented}
-                  onClick={() => onSelectRentalOption(opt.id)}
-                  className={cn(
-                    "rounded-xl border-[3px] px-3.5 py-2 text-xs font-extrabold transition",
-                    selectedRentalOptionId === opt.id
-                      ? "border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white shadow-[4px_4px_0_0_#1e1b4b]"
-                      : "border-indigo-950 bg-white text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.3)]",
-                    isRented && "cursor-not-allowed opacity-50"
-                  )}
-                >
-                  {opt.name} ({opt.price.toLocaleString("vi-VN")} VNĐ)
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div>
-            <p className="font-extrabold text-indigo-950">{VI.costumeRental.rentalOptions.title}</p>
-            <p className="mt-1 text-xs text-indigo-900/65">{VI.costumeRental.rentalOptions.empty}</p>
-          </div>
-        )}
-
         <div>
           <p className="font-extrabold text-indigo-950">Thời gian thuê</p>
           <p className="mt-1 rounded-xl border-[3px] border-[#DC2626] bg-[#FEE2E2] px-2 py-1 text-xs font-semibold text-[#991B1B]">

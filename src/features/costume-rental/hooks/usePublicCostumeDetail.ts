@@ -47,8 +47,7 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
       }
 
       setCostume(dataWithRentalsCount)
-      const firstOption = data.rentalOptions?.[0] ?? null
-      setSelectedRentalOptionId(firstOption?.id ?? null)
+      setSelectedRentalOptionId(null)
       setCheckedOptionalIds(new Set())
       setDays(1)
       setStartDate("")
@@ -80,16 +79,14 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     }
     const baseDaily = costume.pricePerDay ?? 0
     const deposit = costume.depositAmount ?? 0
-    const selectedOption = (costume.rentalOptions ?? []).find((o) => o.id === selectedRentalOptionId)
-    const rentalOptionPrice = selectedOption?.price ?? 0
     const requiredSum = (costume.accessories ?? []).filter((a) => a.isRequired).reduce((sum, a) => sum + (a.price ?? 0), 0)
     const optionalSum = (costume.accessories ?? []).filter((a) => !a.isRequired && checkedOptionalIds.has(a.id)).reduce((sum, a) => sum + (a.price ?? 0), 0)
     const accessoryTotal = requiredSum + optionalSum
     const surchargesTotal = (costume.surcharges ?? []).reduce((sum, s) => sum + (s.price ?? 0), 0)
     const rentalPrice = baseDaily * days
-    const total = rentalPrice + deposit + rentalOptionPrice + accessoryTotal + surchargesTotal
-    return { rentalPrice, accessoryTotal, surchargesTotal, rentalOptionPrice, deposit, laundryFee: 0, total }
-  }, [costume, days, selectedRentalOptionId, checkedOptionalIds])
+    const total = rentalPrice + deposit + accessoryTotal + surchargesTotal
+    return { rentalPrice, accessoryTotal, surchargesTotal, rentalOptionPrice: 0, deposit, laundryFee: 0, total }
+  }, [costume, days, checkedOptionalIds])
 
   return {
     costume, isLoading, error, resolvedImages,

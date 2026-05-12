@@ -3,7 +3,8 @@ import * as React from "react"
 import { Button } from "@/shared/components/Button"
 import { Input } from "@/shared/components/Input"
 import { cn } from "@/lib/utils"
-import type { FilterState, RegionKey, TagKey } from "../../types"
+import type { FilterState, RegionKey } from "../../types"
+import { DualPriceRangeSlider } from "./DualPriceRangeSlider"
 
 const ratingOptions = [
   { label: "Từ 4.0 sao", value: 4.0 },
@@ -15,7 +16,7 @@ interface FilterSidebarProps {
   filters: FilterState
   regions: { key: RegionKey; label: string }[]
   brands: string[]
-  tags: { key: TagKey; label: string }[]
+  priceBounds: { min: number; max: number }
   resultCount: number
   onUpdate: (next: Partial<FilterState>) => void
   onReset: () => void
@@ -28,30 +29,23 @@ export const FilterSidebar = ({
   filters,
   regions,
   brands,
-  tags,
+  priceBounds,
   resultCount,
   onUpdate,
   onReset,
 }: FilterSidebarProps) => {
-  const [minInput, setMinInput] = React.useState(
-    filters.priceMin?.toString() ?? ""
-  )
-  const [maxInput, setMaxInput] = React.useState(
-    filters.priceMax?.toString() ?? ""
-  )
+  const { min: boundMin, max: boundMax } = priceBounds
 
-  React.useEffect(() => {
-    setMinInput(filters.priceMin?.toString() ?? "")
-    setMaxInput(filters.priceMax?.toString() ?? "")
-  }, [filters.priceMin, filters.priceMax])
+  const rawLow = filters.priceMin ?? boundMin
+  const rawHigh = filters.priceMax ?? boundMax
+  let displayLow = Math.min(Math.max(rawLow, boundMin), boundMax)
+  let displayHigh = Math.min(Math.max(rawHigh, boundMin), boundMax)
+  if (displayHigh < displayLow) displayHigh = displayLow
 
-  const handleApplyPrice = () => {
-    const nextMin = minInput ? Number(minInput) : null
-    const nextMax = maxInput ? Number(maxInput) : null
-    onUpdate({
-      priceMin: Number.isNaN(nextMin) ? null : nextMin,
-      priceMax: Number.isNaN(nextMax) ? null : nextMax,
-    })
+  const handlePriceRange = (low: number, high: number) => {
+    const nextMin = low <= boundMin ? null : low
+    const nextMax = high >= boundMax ? null : high
+    onUpdate({ priceMin: nextMin, priceMax: nextMax })
   }
 
   return (
@@ -154,68 +148,15 @@ export const FilterSidebar = ({
         </div>
 
         <div className="space-y-3">
-          <p className="font-extrabold text-indigo-900">Khoảng giá (nghìn VND)</p>
-          <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="Min"
-              value={minInput}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setMinInput(event.target.value)
-              }
-              className="h-9"
-            />
-            <span className="text-slate-400">-</span>
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="Max"
-              value={maxInput}
-              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
-                setMaxInput(event.target.value)
-              }
-              className="h-9"
-            />
-            <Button
-              variant="soft"
-              size="sm"
-              className="whitespace-nowrap rounded-xl border-2 border-indigo-950/25"
-              onClick={handleApplyPrice}
-            >
-              Áp dụng
-            </Button>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <p className="font-extrabold text-indigo-900">Tags</p>
-          <div className="flex flex-wrap gap-2">
-            {tags.map((tag) => {
-              const isActive = filters.tagKeys.includes(tag.key)
-              return (
-                <Button
-                  key={tag.key}
-                  type="button"
-                  variant={isActive ? "soft" : "outline"}
-                  size="sm"
-                  className={cn(
-                    "rounded-xl border-[2px]",
-                    isActive
-                      ? "border-indigo-950 bg-pink-500 text-white"
-                      : "border-indigo-950/20 bg-white text-slate-600"
-                  )}
-                  onClick={() =>
-                    onUpdate({
-                      tagKeys: toggleFromList(filters.tagKeys, tag.key),
-                    })
-                  }
-                >
-                  {tag.label}
-                </Button>
-              )
-            })}
-          </div>
+          <p className="font-extrabold text-indigo-900">Khoảng giá</p>
+          <DualPriceRangeSlider
+            min={boundMin}
+            max={boundMax}
+            low={displayLow}
+            high={displayHigh}
+            step={boundMax >= 1_000_000 ? 50_000 : boundMax >= 100_000 ? 10_000 : 1_000}
+            onChange={handlePriceRange}
+          />
         </div>
 
         <div className="space-y-3">

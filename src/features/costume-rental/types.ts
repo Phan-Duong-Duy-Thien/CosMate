@@ -100,7 +100,6 @@ export interface FilterState {
   minRating: number | null
   priceMin: number | null
   priceMax: number | null
-  tagKeys: TagKey[]
   hasAccessories: boolean
   onlyAvailable: boolean
   onlyBestSeller: boolean
