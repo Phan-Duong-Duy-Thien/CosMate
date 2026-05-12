@@ -6,18 +6,18 @@
  */
 
 export interface VietnamWard {
-  code: string;
+  code: string | number;
   name: string;
 }
 
 export interface VietnamDistrict {
-  code: string;
+  code: string | number;
   name: string;
   wards?: VietnamWard[];
 }
 
 export interface VietnamCity {
-  code: string;
+  code: string | number;
   name: string;
   districts: VietnamDistrict[];
 }

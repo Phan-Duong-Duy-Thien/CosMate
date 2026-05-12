@@ -8,6 +8,7 @@
  * of the currently active filter tab.
  */
 import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
 import { message } from 'antd';
 import { setWaitingStatus, fetchProviderServiceOrders, startService } from '../services/serviceOrder.service';
 import { completeService } from '../services/serviceOrder.service';
@@ -36,6 +37,7 @@ export interface UseProviderServiceOrdersResult {
   startService: (orderId: number) => Promise<void>;
   completeService: (orderId: number) => Promise<void>;
   loadingAction: number | null;
+  tabCounts: Record<ProviderServiceOrderTab, number>;
 }
 
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
@@ -177,6 +179,21 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
 
   // Return allOrders for counts, filteredOrders for display
   const orders = selectedStatus === 'all' ? allOrders : filteredOrders;
+  const tabCounts = useMemo<Record<ProviderServiceOrderTab, number>>(() => {
+    const countByStatus = (status: ProviderServiceOrderTab) =>
+      allOrders.filter((o) => o.status === status).length;
+    return {
+      all: allOrders.length,
+      UNCONFIRM: countByStatus('UNCONFIRM'),
+      UNPAID: countByStatus('UNPAID'),
+      PAID: countByStatus('PAID'),
+      WAITING_SERVICE_DATE: countByStatus('WAITING_SERVICE_DATE'),
+      IN_SERVICE: countByStatus('IN_SERVICE'),
+      COMPLETED: countByStatus('COMPLETED'),
+      DISPUTE: countByStatus('DISPUTE'),
+      CANCELLED: countByStatus('CANCELLED'),
+    };
+  }, [allOrders]);
 
   return {
     orders,
@@ -189,5 +206,6 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
     startService: handleStartService,
     completeService: handleCompleteService,
     loadingAction,
+    tabCounts,
   };
 }

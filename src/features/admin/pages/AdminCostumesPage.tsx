@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Input, Space, Table, Tag, Tooltip, Drawer, Descriptions, Select } from 'antd';
+import { useCallback, useEffect, useState } from 'react';
+import { Input, Table, Tag, Tooltip, Drawer, Descriptions, Select, message } from 'antd';
 import type { TableProps } from 'antd';
 import {
   SearchOutlined,
@@ -8,7 +8,8 @@ import {
 } from '@ant-design/icons';
 import { getCostumes } from '../api/adminCostumes.api';
 import { VI } from '@/shared/i18n/vi';
-import { getCostumeStatusTagProps } from '../utils/costumeStatus';
+import { COSTUME_STATUS_FILTER_VALUES, getCostumeStatusTagProps } from '../utils/costumeStatus';
+import { Button as UiButton } from '@/components/ui/button';
 
 interface CostumeRow {
   id: number;
@@ -47,7 +48,7 @@ export default function AdminCostumesPage() {
       setRows(content);
       setTotal(totalElements);
     } catch {
-      // silent
+      message.error(VI.admin.costumes.messages.fetchError);
     } finally {
       setLoading(false);
     }
@@ -56,11 +57,6 @@ export default function AdminCostumesPage() {
   useEffect(() => {
     fetchCostumes();
   }, [fetchCostumes]);
-
-  const allStatuses = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.status).filter(Boolean))).sort(),
-    [rows]
-  );
 
   const handleViewDetail = (costume: CostumeRow) => {
     setSelectedCostume(costume);
@@ -86,7 +82,7 @@ export default function AdminCostumesPage() {
       key: 'name',
       width: 260,
       render: (name: string | undefined) => (
-        <span style={{ fontWeight: 600, color: '#1f2937' }}>{name ?? '—'}</span>
+        <span style={{ fontWeight: 600, color: 'var(--foreground)' }}>{name ?? '—'}</span>
       ),
     },
     {
@@ -95,7 +91,7 @@ export default function AdminCostumesPage() {
       key: 'providerName',
       width: 200,
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>
+        <span style={{ color: v ? "var(--foreground)" : "var(--muted-foreground)", fontStyle: v ? "normal" : "italic" }}>
           {v ?? '—'}
         </span>
       ),
@@ -107,7 +103,7 @@ export default function AdminCostumesPage() {
       width: 140,
       align: 'right',
       render: (v: number | undefined) => (
-        <span style={{ color: '#7c3aed', fontWeight: 600 }}>{formatCurrency(v)}</span>
+        <span style={{ color: 'var(--foreground)', fontWeight: 600 }}>{formatCurrency(v)}</span>
       ),
     },
     {
@@ -117,7 +113,7 @@ export default function AdminCostumesPage() {
       width: 140,
       align: 'center',
       render: (status: string | undefined) => {
-        if (!status) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        if (!status) return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         const { color, label } = getCostumeStatusTagProps(status);
         return <Tag color={color} style={{ margin: 0 }}>{label}</Tag>;
       },
@@ -132,7 +128,7 @@ export default function AdminCostumesPage() {
           <Tooltip title={VI.admin.costumes.actions.viewDetail}>
             <EyeOutlined
               onClick={() => handleViewDetail(costume)}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
           </Tooltip>
         </div>
@@ -144,7 +140,7 @@ export default function AdminCostumesPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 
@@ -165,11 +161,10 @@ export default function AdminCostumesPage() {
               allowClear
             />
 
-            <Space wrap>
-              <Button icon={<ReloadOutlined />} onClick={fetchCostumes} loading={loading}>
-                {VI.admin.costumes.toolbar.refresh}
-              </Button>
-            </Space>
+            <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void fetchCostumes()}>
+              <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+              {VI.admin.costumes.toolbar.refresh}
+            </UiButton>
           </div>
 
           {/* TẦNG 2: Bộ lọc */}
@@ -182,7 +177,7 @@ export default function AdminCostumesPage() {
                 setPage(1);
               }}
               style={{ width: 180 }}
-              options={allStatuses.map((s) => {
+              options={COSTUME_STATUS_FILTER_VALUES.map((s) => {
                 const { label } = getCostumeStatusTagProps(s);
                 return { label, value: s };
               })}
@@ -230,7 +225,7 @@ export default function AdminCostumesPage() {
           {selectedCostume && (
             <>
               <div style={{ marginBottom: 12 }}>
-                <span style={{ color: '#9ca3af', fontSize: 13 }}>#{selectedCostume.id}</span>
+                <span style={{ color: 'var(--muted-foreground)', fontSize: 13 }}>#{selectedCostume.id}</span>
                 <Tag
                   color={getCostumeStatusTagProps(selectedCostume.status).color}
                   style={{ marginLeft: 8 }}
@@ -264,7 +259,7 @@ export default function AdminCostumesPage() {
 
               {selectedCostume.imageUrls && selectedCostume.imageUrls.length > 0 && (
                 <div style={{ marginTop: 16 }}>
-                  <p style={{ fontWeight: 600, marginBottom: 8, color: '#374151' }}>Hình ảnh</p>
+                  <p style={{ fontWeight: 600, marginBottom: 8, color: 'var(--foreground)' }}>Hình ảnh</p>
                   <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                     {selectedCostume.imageUrls.slice(0, 4).map((url, i) => (
                       <img
@@ -276,7 +271,7 @@ export default function AdminCostumesPage() {
                           height: 80,
                           objectFit: 'cover',
                           borderRadius: 8,
-                          border: '1px solid #e5e7eb',
+                          border: '1px solid var(--border)',
                         }}
                       />
                     ))}

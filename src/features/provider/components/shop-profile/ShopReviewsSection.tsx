@@ -1,5 +1,5 @@
 import { Star } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/shared/components/Card'
 import type { ShopReview } from '../../mocks/shopReviews.mock'
 import { VI } from '@/shared/i18n/vi'
 
@@ -27,19 +27,19 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
 
   return (
     <div className="space-y-4">
-      <div className="inline-flex items-center rounded-2xl border-2 border-[#FDCCD7] bg-white px-4 py-2">
-        <h3 className="text-lg font-semibold tracking-wide text-slate-800">
+      <div className="inline-flex items-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+        <h3 className="text-sm font-extrabold uppercase tracking-wide text-indigo-950">
           {VI.provider.shop.reviews.title}
         </h3>
       </div>
 
       {/* Rating Summary */}
-      <Card className="border-pink-100 p-5">
+      <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
             <div className="text-center">
-              <p className="text-4xl font-bold text-pink-600">{rating10}</p>
-              <p className="text-sm text-slate-500">/ 10</p>
+              <p className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">{rating10}</p>
+              <p className="text-sm font-semibold text-indigo-900/60">/ 10</p>
             </div>
             <div>
               <div className="flex text-amber-400">
@@ -50,7 +50,7 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
                   />
                 ))}
               </div>
-              <p className="mt-1 text-sm text-slate-500">
+              <p className="mt-1 text-sm font-semibold text-indigo-900/65">
                 {stats.totalReviews} {VI.provider.shop.reviews.title.toLowerCase()}
               </p>
             </div>
@@ -81,7 +81,7 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
 
       {/* Reviews List */}
       {reviews.length === 0 ? (
-        <Card className="border-pink-100 p-5 text-center text-slate-500">
+        <Card className="rounded-2xl border-[3px] border-indigo-950/30 bg-white p-5 text-center text-sm font-semibold text-indigo-900/75 shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
           {VI.provider.shop.reviews.noReviews}
         </Card>
       ) : (
@@ -97,20 +97,20 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
 
 function ReviewCard({ review }: { review: ShopReview }) {
   return (
-    <Card className="border-pink-100 p-4">
+    <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-pink-100 text-sm font-semibold text-pink-600">
+        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-extrabold text-indigo-950">
           {review.userName.charAt(0).toUpperCase()}
         </div>
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-semibold text-slate-700">{review.userName}</p>
+              <p className="font-extrabold text-indigo-950">{review.userName}</p>
               {review.productName && (
-                <p className="text-xs text-slate-400">đã thuê: {review.productName}</p>
+                <p className="text-xs font-semibold text-indigo-900/55">đã thuê: {review.productName}</p>
               )}
             </div>
-            <span className="text-xs text-slate-400">{formatDate(review.createdAt)}</span>
+            <span className="text-xs font-semibold text-indigo-900/60">{formatDate(review.createdAt)}</span>
           </div>
           <div className="mt-1 flex items-center gap-1 text-amber-400">
             {[1, 2, 3, 4, 5].map(star => (
@@ -120,7 +120,7 @@ function ReviewCard({ review }: { review: ShopReview }) {
               />
             ))}
           </div>
-          <p className="mt-2 text-sm text-slate-600">{review.comment}</p>
+          <p className="mt-2 text-sm font-semibold text-indigo-900/85">{review.comment}</p>
           {review.images && review.images.length > 0 && (
             <div className="mt-2 flex gap-2">
               {review.images.map((img, idx) => (
@@ -128,7 +128,7 @@ function ReviewCard({ review }: { review: ShopReview }) {
                   key={idx}
                   src={img}
                   alt={`Review ${idx + 1}`}
-                  className="h-16 w-16 rounded-lg object-cover"
+                  className="h-16 w-16 rounded-xl border-[3px] border-indigo-950 object-cover"
                 />
               ))}
             </div>

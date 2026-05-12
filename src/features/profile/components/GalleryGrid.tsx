@@ -19,7 +19,7 @@ export function GalleryGrid({
 }: GalleryGridProps) {
   if (items.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50/50 py-16 text-center text-sm text-slate-500">
+      <div className="rounded-2xl border border-dashed border-border bg-muted/40 py-16 text-center text-sm text-muted-foreground">
         {emptyMessage}
       </div>
     )
@@ -33,7 +33,7 @@ export function GalleryGrid({
         <div
           key={item.id}
           className={cn(
-            "group overflow-hidden rounded-2xl bg-white shadow-sm transition-all duration-300 hover:shadow-lg",
+            "group overflow-hidden rounded-2xl border border-transparent bg-card shadow-sm transition-all duration-300 hover:border-cosmate-pink/25 hover:shadow-lg",
             SPAN_CLASSES[item.spanPreset]
           )}
         >

@@ -5,21 +5,42 @@
  * Form is pre-filled with current data. Saves via PUT /api/providers/{id}.
  */
 import { useLocation } from 'react-router-dom';
-import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio } from 'antd';
+import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
 import { useProviderProfileEdit } from '../hooks/useProviderProfileEdit';
+import { useState } from 'react';
+import type { UpsertUserAddressPayload, UserAddress } from '@/features/profile/types';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
 
 export default function ProviderProfileEditPage() {
+  const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
+  const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
+  const [addressForm] = Form.useForm<UpsertUserAddressPayload>();
+  const { items: breadcrumbItems } = useBreadcrumb();
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, addresses, loading, saving, error, formData, updateField, save, refetch, uploadAvatar, uploadCoverImage } =
+  const {
+    profile,
+    addresses,
+    loading,
+    saving,
+    error,
+    formData,
+    updateField,
+    save,
+    uploadAvatar,
+    uploadCoverImage,
+    addressSaving,
+    updateAddress,
+    removeAddress,
+  } =
     useProviderProfileEdit();
 
   const isPhotograph = location.pathname.startsWith('/provider-photograph');
@@ -44,10 +65,51 @@ export default function ProviderProfileEditPage() {
 
   const settingsPath = location.pathname.replace('/edit', '');
 
+  const isRentalProviderEdit = location.pathname === '/provider/settings/edit';
+  const showBackButton = !isRentalProviderEdit && breadcrumbItems.length < 2;
+
   const handleSave = async () => {
     const ok = await save();
     if (ok) {
       navigate(settingsPath);
+    }
+  };
+
+  const handleOpenEditAddress = (address: UserAddress) => {
+    setEditingAddress(address);
+    addressForm.setFieldsValue({
+      name: address.name,
+      phone: address.phone,
+      city: address.city,
+      district: address.district,
+      address: address.address,
+      addressName: '',
+    });
+    setIsAddressModalOpen(true);
+  };
+
+  const handleSubmitAddress = async () => {
+    if (!editingAddress) return;
+    const values = await addressForm.validateFields();
+    const ok = await updateAddress(editingAddress.id, {
+      name: values.name.trim(),
+      phone: values.phone.trim(),
+      city: values.city.trim(),
+      district: values.district.trim(),
+      address: values.address.trim(),
+      addressName: values.addressName?.trim() ?? '',
+    });
+    if (!ok) return;
+    setIsAddressModalOpen(false);
+    setEditingAddress(null);
+    addressForm.resetFields();
+  };
+
+  const handleDeleteAddress = async (addressId: number) => {
+    const ok = await removeAddress(addressId);
+    if (!ok) return;
+    if (formData.shopAddressId === addressId) {
+      updateField('shopAddressId', null);
     }
   };
 
@@ -58,14 +120,12 @@ export default function ProviderProfileEditPage() {
       showChatButton={false}
       brandName={brandName}
     >
-      <Button
-        type="text"
-        icon={<ArrowLeft size={16} />}
-        onClick={() => navigate(settingsPath)}
-        style={{ marginBottom: 16, paddingLeft: 4 }}
-      >
-        Quay lại
-      </Button>
+      <div className="mx-auto w-full max-w-2xl space-y-4">
+      {showBackButton && (
+        <Button type="link" icon={<ArrowLeft size={16} />} onClick={() => navigate(settingsPath)} className="px-0 text-foreground hover:text-muted-foreground">
+          Quay lại
+        </Button>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60 }}>
@@ -89,7 +149,7 @@ export default function ProviderProfileEditPage() {
             Cập nhật thông tin cửa hàng và thông tin thanh toán của bạn.
           </Paragraph>
 
-          <Form layout="vertical" style={{ maxWidth: 600 }}>
+          <Form layout="vertical" className="w-full">
             {/* Shop Name */}
             <Form.Item label="Tên cửa hàng" required>
               <Input
@@ -126,10 +186,10 @@ export default function ProviderProfileEditPage() {
                             borderRadius: 8,
                             border:
                               formData.shopAddressId === addr.id
-                                ? '2px solid #7C3AED'
-                                : '1px solid #E5E7EB',
+                                ? "2px solid var(--primary)"
+                                : "1px solid var(--border)",
                             background:
-                              formData.shopAddressId === addr.id ? '#F5F3FF' : '#fff',
+                              formData.shopAddressId === addr.id ? "var(--cosmate-lavender-surface)" : "var(--card)",
                           }}
                           onClick={() => updateField('shopAddressId', addr.id)}
                         >
@@ -144,6 +204,22 @@ export default function ProviderProfileEditPage() {
                               <Text type="secondary" style={{ fontSize: 12 }}>
                                 {addr.phone}
                               </Text>
+                              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                <Button size="small" onClick={() => handleOpenEditAddress(addr)}>
+                                  Sửa
+                                </Button>
+                                <Popconfirm
+                                  title="Xóa địa chỉ này?"
+                                  okText="Xóa"
+                                  cancelText="Hủy"
+                                  okButtonProps={{ danger: true }}
+                                  onConfirm={() => void handleDeleteAddress(addr.id)}
+                                >
+                                  <Button size="small" danger loading={addressSaving}>
+                                    Xóa
+                                  </Button>
+                                </Popconfirm>
+                              </div>
                             </div>
                           </Radio>
                         </Card>
@@ -213,9 +289,9 @@ export default function ProviderProfileEditPage() {
                 <Col xs={24} md={12}>
                   <Card
                     style={{
-                      border: '1px solid #f1f5f9',
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
-                      background: '#f8fafc',
+                      background: "var(--cosmate-page)",
                     }}
                     bodyStyle={{ padding: 16 }}
                   >
@@ -229,7 +305,7 @@ export default function ProviderProfileEditPage() {
                             height: 72,
                             borderRadius: '50%',
                             objectFit: 'cover',
-                            border: '3px solid #e2e8f0',
+                            border: "3px solid var(--border)",
                             marginBottom: 12,
                           }}
                         />
@@ -239,13 +315,13 @@ export default function ProviderProfileEditPage() {
                             width: 72,
                             height: 72,
                             borderRadius: '50%',
-                            background: '#ddd6fe',
+                            background: "color-mix(in oklch, var(--primary) 30%, var(--background))",
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 24,
                             fontWeight: 700,
-                            color: '#7c3aed',
+                            color: "var(--primary)",
                             margin: '0 auto 12px',
                           }}
                         >
@@ -269,8 +345,8 @@ export default function ProviderProfileEditPage() {
                         style={{
                           display: 'inline-block',
                           borderRadius: 9999,
-                          background: '#fce7f3',
-                          color: '#be185d',
+                          background: "color-mix(in oklch, var(--cosmate-pink) 14%, var(--background))",
+                          color: "var(--cosmate-rose-tag-text)",
                           padding: '6px 14px',
                           fontSize: 12,
                           fontWeight: 500,
@@ -293,9 +369,9 @@ export default function ProviderProfileEditPage() {
                 <Col xs={24} md={12}>
                   <Card
                     style={{
-                      border: '1px solid #f1f5f9',
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
-                      background: '#f8fafc',
+                      background: "var(--cosmate-page)",
                     }}
                     bodyStyle={{ padding: 16 }}
                   >
@@ -309,7 +385,7 @@ export default function ProviderProfileEditPage() {
                             height: 72,
                             objectFit: 'cover',
                             borderRadius: 6,
-                            border: '2px solid #e2e8f0',
+                            border: "2px solid var(--border)",
                             marginBottom: 12,
                           }}
                         />
@@ -319,12 +395,12 @@ export default function ProviderProfileEditPage() {
                             width: '100%',
                             height: 72,
                             borderRadius: 6,
-                            background: '#ede9fe',
+                            background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 12,
-                            color: '#7c3aed',
+                            color: "var(--primary)",
                             marginBottom: 12,
                           }}
                         >
@@ -348,8 +424,8 @@ export default function ProviderProfileEditPage() {
                         style={{
                           display: 'inline-block',
                           borderRadius: 9999,
-                          background: '#ede9fe',
-                          color: '#7c3aed',
+                          background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
+                          color: "var(--primary)",
                           padding: '6px 14px',
                           fontSize: 12,
                           fontWeight: 500,
@@ -385,6 +461,50 @@ export default function ProviderProfileEditPage() {
           </div>
         </Card>
       )}
+
+      </div>
+
+      <Modal
+        open={isAddressModalOpen}
+        title="Cập nhật địa chỉ"
+        okText="Lưu địa chỉ"
+        cancelText="Hủy"
+        onCancel={() => {
+          setIsAddressModalOpen(false);
+          setEditingAddress(null);
+          addressForm.resetFields();
+        }}
+        confirmLoading={addressSaving}
+        onOk={() => void handleSubmitAddress()}
+      >
+        <Form form={addressForm} layout="vertical">
+          <Form.Item name="name" label="Người nhận" rules={[{ required: true, message: 'Vui lòng nhập tên người nhận' }]}>
+            <Input placeholder="Người nhận" />
+          </Form.Item>
+          <Form.Item
+            name="phone"
+            label="Số điện thoại"
+            rules={[
+              { required: true, message: 'Vui lòng nhập số điện thoại' },
+              { pattern: /^\+?[0-9]{9,15}$/, message: 'Số điện thoại không hợp lệ' },
+            ]}
+          >
+            <Input placeholder="Số điện thoại" />
+          </Form.Item>
+          <Form.Item name="city" label="Tỉnh/Thành phố" rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}>
+            <Input placeholder="VD: TP.HCM" />
+          </Form.Item>
+          <Form.Item name="district" label="Quận/Huyện" rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}>
+            <Input placeholder="VD: Quận 1" />
+          </Form.Item>
+          <Form.Item name="address" label="Địa chỉ chi tiết" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}>
+            <Input placeholder="Số nhà, đường..." />
+          </Form.Item>
+          <Form.Item name="addressName" label="Tên địa chỉ">
+            <Input placeholder="VD: Nhà riêng" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </DashboardLayout>
   );
 }

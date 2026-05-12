@@ -1,5 +1,5 @@
 import { Facebook, MessageCircle, Globe, Phone, Mail } from 'lucide-react'
-import { Card } from '@/components/ui/card'
+import { Card } from '@/shared/components/Card'
 import type { ProviderShop } from '../../types'
 import { VI } from '@/shared/i18n/vi'
 
@@ -51,8 +51,8 @@ export function ShopContactsSection({ shop }: ShopContactsSectionProps) {
   }
 
   return (
-    <Card className="border-pink-100 p-5">
-      <h3 className="mb-4 text-lg font-semibold text-slate-900">
+    <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
+      <h3 className="mb-4 text-lg font-extrabold text-indigo-950">
         {VI.provider.shop.contact}
       </h3>
       <div className="flex flex-wrap gap-3">

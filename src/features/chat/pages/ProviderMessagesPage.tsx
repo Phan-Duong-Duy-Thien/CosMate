@@ -1,23 +1,28 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Plus } from "lucide-react"
 import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
+import type { SearchUserResult } from "../services/user.service"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
 import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService, markRoomAsReadService } from "../services/chat.service"
+import {
+  getChatMessagesService,
+  getOrCreateChatRoomService,
+  markRoomAsReadService,
+  uploadImageService,
+} from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
-import { ChatRoomList } from "../components/ChatRoomList"
+import { ChatInboxSidebar } from "../components/ChatInboxSidebar"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
 import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from "@/features/provider/constants/sidebar"
 import { useLocation } from "react-router-dom"
-import { getUserId } from "@/features/auth/services/tokenStorage"
+import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { useCreateServiceBooking } from "@/features/service/hooks/useCreateServiceBooking"
 import { useProviderServices } from "@/features/service/hooks/useProviderServices"
@@ -27,6 +32,7 @@ import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
+import { ROLE } from "@/types/auth"
 
 function mapSidebar(items: typeof providerSidebarItems): DashboardSidebarItem[] {
   return items.map((item) => {
@@ -44,6 +50,7 @@ export default function ProviderMessagesPage() {
   const location = useLocation()
   const [activeRoom, setActiveRoom] = useState<ChatRoomListItem | null>(null)
   const [inputValue, setInputValue] = useState("")
+  const [isUploading, setIsUploading] = useState(false)
   const [showBookingModal, setShowBookingModal] = useState(false)
   const [selectedServiceId, setSelectedServiceId] = useState<number | null>(null)
   const [bookingDate, setBookingDate] = useState<dayjs.Dayjs | null>(null)
@@ -53,7 +60,7 @@ export default function ProviderMessagesPage() {
   const [form] = Form.useForm()
 
   const currentUserId = getUserId()
-  const { rooms, loading: roomsLoading } = useChatRooms()
+  const { rooms, loading: roomsLoading, refetch: refetchRooms } = useChatRooms()
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Provider profile (needed for providerId to fetch services) ────────
@@ -69,7 +76,14 @@ export default function ProviderMessagesPage() {
   const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
 
   // ── Message store (single source of truth) ────────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages } = useChatMessageStore()
+  const {
+    messages,
+    setMessages,
+    mergeServerMessage,
+    clearMessages,
+    addOptimisticMessage,
+    removeOptimisticMessage,
+  } = useChatMessageStore()
   const [isLoadingHistory, setIsLoadingHistory] = useState(false)
   const [isConnected, setIsConnected] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
@@ -93,8 +107,8 @@ export default function ProviderMessagesPage() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
-    return () => disconnectChatSocket()
+    const release = connectChatSocket(() => setIsConnected(true))
+    return () => release()
   }, [])
 
   // Subscribe to room channel
@@ -122,10 +136,74 @@ export default function ProviderMessagesPage() {
     setActiveRoom(room)
   }
 
+  const handlePickUser = async (user: SearchUserResult) => {
+    if (currentUserId === null) {
+      message.warning(VI.common.messages.chatNeedLogin)
+      throw new Error("not logged in")
+    }
+    const existingRoom = rooms.find((r) => r.partnerId === user.id)
+    if (existingRoom) {
+      setActiveRoom(existingRoom)
+      return
+    }
+    try {
+      const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
+      refetchRooms()
+      setActiveRoom({
+        roomId: newRoom.id,
+        partnerId: user.id,
+        partnerName: user.fullName,
+        partnerAvatar: user.avatarUrl ?? null,
+        lastMessageAt: newRoom.lastMessageAt,
+      })
+    } catch {
+      message.error(VI.common.messages.chatStartFailed)
+      throw new Error("create room failed")
+    }
+  }
+
   const handleSend = (content: string) => {
     if (!content.trim() || activeRoom === null || currentUserId === null) return
     sendChatMessage({ roomId: activeRoom.roomId, senderId: currentUserId, content: content.trim() })
     setInputValue("")
+  }
+
+  const handleSendImage = async (file: File) => {
+    if (activeRoom?.roomId == null || currentUserId == null) return
+    if (!file.type.startsWith("image/")) return
+    if (file.size > 5 * 1024 * 1024) return
+
+    const objectUrl = URL.createObjectURL(file)
+    const tempId = addOptimisticMessage({
+      roomId: activeRoom.roomId,
+      senderId: currentUserId,
+      content: objectUrl,
+      messageType: "IMAGE",
+      createdAt: new Date().toISOString(),
+      isRead: true,
+    })
+
+    setIsUploading(true)
+    try {
+      const url = await uploadImageService(activeRoom.roomId, file)
+      URL.revokeObjectURL(objectUrl)
+      if (!url) {
+        removeOptimisticMessage(tempId)
+        return
+      }
+      sendChatMessage({
+        roomId: activeRoom.roomId,
+        senderId: currentUserId,
+        content: url,
+        messageType: "IMAGE",
+      })
+      removeOptimisticMessage(tempId)
+    } catch {
+      URL.revokeObjectURL(objectUrl)
+      removeOptimisticMessage(tempId)
+    } finally {
+      setIsUploading(false)
+    }
   }
 
   const handleOpenBookingModal = () => {
@@ -167,44 +245,29 @@ export default function ProviderMessagesPage() {
   }
 
   const canBooking = activeRoom != null && provider != null
+  const roles = getRoles()
+  const canCreateBooking = canBooking && !roles.includes(ROLE.PROVIDER_RENTAL)
 
   return (
     <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
       <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
 
-        {/* LEFT: Conversation List */}
-        <div className="flex w-72 shrink-0 flex-col border-r border-slate-100">
-          <div className="flex h-14 shrink-0 items-center border-b border-slate-100 px-4">
-            <h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>
-          </div>
-          <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
-            {roomsLoading ? (
-              <div className="flex flex-col gap-2 p-3">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-3">
-                    <div className="h-10 w-10 shrink-0 rounded-full bg-slate-100 animate-pulse" />
-                    <div className="flex-1 space-y-1.5">
-                      <div className="h-3.5 w-full rounded bg-slate-100 animate-pulse" />
-                      <div className="h-2.5 w-1/2 rounded bg-slate-100 animate-pulse" />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <ChatRoomList
-                rooms={rooms}
-                activeRoomId={activeRoom?.roomId ?? null}
-                onSelectRoom={handleSelectRoom}
-              />
-            )}
-          </div>
-        </div>
+        <ChatInboxSidebar
+          variant="comfortable"
+          headerStart={<h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
+          rooms={rooms}
+          roomsLoading={roomsLoading}
+          activeRoomId={activeRoom?.roomId ?? null}
+          onSelectRoom={handleSelectRoom}
+          currentUserId={currentUserId}
+          onPickUser={handlePickUser}
+        />
 
         {/* RIGHT: Chat Window */}
         <div className="flex flex-1 min-h-0 flex-col">
           {/* Header */}
-          <div className="flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4">
-            <div className="flex items-center gap-3">
+          <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 pt-3.5 pb-3">
+            <div className="flex items-start gap-3">
               {activeRoom ? (
                 <>
                   <div className="relative shrink-0">
@@ -224,11 +287,11 @@ export default function ProviderMessagesPage() {
                       isConnected ? "bg-green-400" : "bg-slate-300"
                     )} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold text-slate-800">
+                  <div className="flex min-w-0 flex-col">
+                    <p className="truncate text-sm font-semibold leading-tight text-slate-800">
                       {activeRoom.partnerName || VI.common.status.noData}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="truncate text-xs leading-none text-slate-400">
                       {isConnected ? VI.common.status.online : VI.common.status.offline}
                     </p>
                   </div>
@@ -236,7 +299,7 @@ export default function ProviderMessagesPage() {
               ) : (
                 <>
                   <div className="h-9 w-9 rounded-full bg-slate-100" />
-                  <div className="space-y-1">
+                  <div className="flex flex-col gap-0.5">
                     <div className="h-3.5 w-24 rounded bg-slate-100" />
                     <div className="h-2.5 w-16 rounded bg-slate-100" />
                   </div>
@@ -245,7 +308,7 @@ export default function ProviderMessagesPage() {
             </div>
 
             {/* Create Booking button — only shown when a room is active */}
-            {canBooking && (
+            {canCreateBooking && (
               <button
                 type="button"
                 onClick={handleOpenBookingModal}
@@ -287,6 +350,8 @@ export default function ProviderMessagesPage() {
               value={inputValue}
               onChange={setInputValue}
               onSend={handleSend}
+              onSendImage={handleSendImage}
+              isUploading={isUploading}
               disabled={!isConnected}
             />
           )}

@@ -1,6 +1,6 @@
 import { useState, useEffect, createElement, type ReactNode } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { Layout, Menu, Dropdown, Avatar } from 'antd';
+import { ConfigProvider, Layout, Menu, Dropdown, Avatar } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
@@ -13,6 +13,57 @@ import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
 const { Header, Sider, Content } = Layout;
+
+/**
+ * Ant Design theme uses @ant-design/fast-color, which does not parse `oklch(...)`/`var(...)`.
+ * That breaks `colorPrimary` and primary buttons can render black. Resolve `--cosmate-pink` to
+ * `#rrggbb` via the browser (same visual as CSS everywhere else).
+ */
+const FALLBACK_COSMATE_PINK_HEX = '#e84a90';
+
+function cssColorToHexForAntd(cssColor: string): string {
+  const trimmed = cssColor.trim();
+  if (typeof document === 'undefined') return FALLBACK_COSMATE_PINK_HEX;
+  if (/^#[0-9a-f]{6}$/i.test(trimmed)) return trimmed;
+  const probe = document.createElement('span');
+  probe.setAttribute('aria-hidden', 'true');
+  probe.style.position = 'absolute';
+  probe.style.left = '-9999px';
+  probe.style.visibility = 'hidden';
+  probe.style.color = trimmed;
+  document.body.appendChild(probe);
+  const rgb = getComputedStyle(probe).color;
+  probe.remove();
+  const rgbaMatch = /^rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i.exec(rgb);
+  if (!rgbaMatch) return FALLBACK_COSMATE_PINK_HEX;
+  const toHex = (n: number) => n.toString(16).padStart(2, '0');
+  return `#${toHex(Number(rgbaMatch[1]))}${toHex(Number(rgbaMatch[2]))}${toHex(Number(rgbaMatch[3]))}`;
+}
+
+function useSyncedCosmatePrimaryForAntd(): string {
+  const readToken = (): string => {
+    if (typeof document === 'undefined') return FALLBACK_COSMATE_PINK_HEX;
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--cosmate-pink').trim();
+    if (!raw) return FALLBACK_COSMATE_PINK_HEX;
+    return cssColorToHexForAntd(raw);
+  };
+
+  const [colorPrimary, setColorPrimary] = useState(() =>
+    typeof document !== 'undefined' ? readToken() : FALLBACK_COSMATE_PINK_HEX
+  );
+
+  useEffect(() => {
+    setColorPrimary(readToken());
+    const el = document.documentElement;
+    const obs = new MutationObserver(() => {
+      setColorPrimary(readToken());
+    });
+    obs.observe(el, { attributes: true, attributeFilter: ['class'] });
+    return () => obs.disconnect();
+  }, []);
+
+  return colorPrimary;
+}
 
 type LucideComponentLike = LucideIcon & {
   displayName?: string;
@@ -143,6 +194,38 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerCostumes, to: '/provider-rental/costumes' },
         { label: VI.common.breadcrumb.create },
       ]);
+    } else if (path === '/provider-rental/orders') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.orders.title },
+      ]);
+    } else if (path === '/provider/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.reviews },
+      ]);
+    } else if (path === '/provider/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings },
+      ]);
+    } else if (path === '/provider/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings, to: '/provider/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.settings, to: '/provider/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.sidebar.messages },
+      ]);
     } else if (path === '/provider-rental/wallet') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
@@ -162,8 +245,6 @@ export function DashboardLayout({
       ]);
     } else if (path === '/provider-photograph') {
       setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
-    } else if (path.startsWith('/provider-photograph/')) {
-      setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
     } else if (path === '/provider-photograph/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
@@ -181,6 +262,50 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-photograph/wallet' },
         { label: VI.wallet.topup },
       ]);
+    } else if (path === '/provider-photograph/services') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.service.sidebar.serviceList },
+      ]);
+    } else if (path === '/provider-photograph/serviceCreate') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.service.sidebar.createService },
+      ]);
+    } else if (path === '/provider-photograph/service-orders') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-photograph/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings },
+      ]);
+    } else if (path === '/provider-photograph/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings, to: '/provider-photograph/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider-photograph/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographSettings, to: '/provider-photograph/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider-photograph/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.messages },
+      ]);
+    } else if (path.startsWith('/provider-photograph/')) {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.common.breadcrumb.serviceDetail },
+      ]);
+    } else if (path === '/provider-event-staff') {
+      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
     } else if (path === '/provider-event-staff/wallet') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
@@ -198,23 +323,66 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-event-staff/wallet' },
         { label: VI.wallet.topup },
       ]);
-    } else if (path === '/provider-event-staff') {
-      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
+    } else if (path === '/provider-event-staff/services') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.service.sidebar.serviceList },
+      ]);
+    } else if (path === '/provider-event-staff/serviceCreate') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.service.sidebar.createService },
+      ]);
+    } else if (path === '/provider-event-staff/service-orders') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-event-staff/settings') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings },
+      ]);
+    } else if (path === '/provider-event-staff/settings/edit') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings, to: '/provider-event-staff/settings' },
+        { label: VI.common.breadcrumb.edit },
+      ]);
+    } else if (path === '/provider-event-staff/settings/completion') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffSettings, to: '/provider-event-staff/settings' },
+        { label: VI.provider.profileCompletion.pageTitle },
+      ]);
+    } else if (path === '/provider-event-staff/messages') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.messages },
+      ]);
     } else if (path.startsWith('/provider-event-staff/')) {
-      setItems([{ label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' }]);
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.common.breadcrumb.serviceDetail },
+      ]);
     } else if (path === '/staff') {
       setItems([{ label: VI.staff.layout.title, to: '/staff' }]);
-    } else if (path.startsWith('/staff/')) {
+    } else if (path === '/staff/withdraw') {
       setItems([
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.withdraw.title },
       ]);
+    } else if (path === '/staff/disputes') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.disputes.title },
+      ]);
     }
   }, [location.pathname, setItems]);
 
-  // Fetch user profile for header avatar
+  // Fetch account profile for header: need avatar even when fullName was cached without photo
   useEffect(() => {
-    if (userProfile.avatarUrl || userProfile.fullName) return;
+    if (userProfile.avatarUrl) return;
 
     const userId = getUserId();
     if (!userId) return;
@@ -234,7 +402,7 @@ export function DashboardLayout({
     };
 
     fetchProfile();
-  }, [userProfile.avatarUrl, userProfile.fullName, setUserProfile]);
+  }, [userProfile.avatarUrl, setUserProfile]);
 
   const userName = userProfile.fullName || 'Admin';
   const currentPath = location.pathname;
@@ -294,8 +462,17 @@ export function DashboardLayout({
   ];
 
   const displayTitle = breadcrumbItems.length > 0 ? breadcrumbItems[breadcrumbItems.length - 1].label : title;
+  const antdColorPrimary = useSyncedCosmatePrimaryForAntd();
 
   return (
+    <ConfigProvider
+      theme={{
+        token: {
+          colorPrimary: antdColorPrimary,
+          colorLink: antdColorPrimary,
+        },
+      }}
+    >
     <Layout style={{ minHeight: '100vh' }}>
       <Sider
         collapsible
@@ -310,7 +487,7 @@ export function DashboardLayout({
           left: 0,
           top: 0,
           bottom: 0,
-          borderRight: '1px solid #f0f0f0',
+          borderRight: "1px solid var(--border)",
         }}
       >
         <div
@@ -320,10 +497,10 @@ export function DashboardLayout({
             alignItems: 'center',
             justifyContent: collapsed ? 'center' : 'flex-start',
             paddingLeft: collapsed ? 0 : 24,
-            borderBottom: '1px solid #f0f0f0',
+            borderBottom: "1px solid var(--border)",
             fontWeight: 700,
             fontSize: 18,
-            color: '#7C3AED',
+            color: "var(--cosmate-pink)",
           }}
         >
           {collapsed ? brandShort : brandName}
@@ -343,8 +520,8 @@ export function DashboardLayout({
         <Header
           style={{
             padding: '0 24px',
-            background: '#fff',
-            borderBottom: '1px solid #f0f0f0',
+            background: "var(--card)",
+            borderBottom: "1px solid var(--border)",
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
@@ -353,9 +530,9 @@ export function DashboardLayout({
             zIndex: 1,
           }}
         >
-          <h1 style={{ margin: 0, fontSize: 20, fontWeight: 600 }}>{displayTitle}</h1>
+          <h1 className="m-0 text-xl font-semibold text-foreground">{displayTitle}</h1>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div className="flex items-center gap-3">
             {showChatButton && (
               <button
                 type="button"
@@ -373,7 +550,7 @@ export function DashboardLayout({
                   justifyContent: 'center',
                 }}
               >
-                <MessageCircle size={22} style={{ color: '#64748b' }} />
+                <MessageCircle size={22} style={{ color: "var(--muted-foreground)" }} />
                 {chatUnreadCount > 0 && (
                   <span
                     style={{
@@ -384,8 +561,8 @@ export function DashboardLayout({
                       height: 16,
                       padding: '0 3px',
                       borderRadius: 8,
-                      backgroundColor: '#ef4444',
-                      color: '#fff',
+                      backgroundColor: "var(--destructive)",
+                      color: "var(--primary-foreground)",
                       fontSize: 9,
                       fontWeight: 700,
                       display: 'flex',
@@ -400,22 +577,13 @@ export function DashboardLayout({
               </button>
             )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: 12,
-                  cursor: 'pointer',
-                  padding: '4px 8px',
-                  borderRadius: 8,
-                }}
-              >
+              <div className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1 text-foreground hover:bg-accent/60">
                 {userProfile.avatarUrl ? (
                   <Avatar src={userProfile.avatarUrl} />
                 ) : (
-                  <Avatar style={{ backgroundColor: '#7C3AED' }}>{userName.charAt(0)}</Avatar>
+                  <Avatar className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
                 )}
-                <span style={{ fontWeight: 500 }}>{userName}</span>
+                <span className="font-medium">{userName}</span>
               </div>
             </Dropdown>
           </div>
@@ -425,7 +593,7 @@ export function DashboardLayout({
           style={{
             margin: 16,
             padding: 20,
-            background: '#fff',
+            background: "var(--card)",
             borderRadius: 8,
             minHeight: 280,
           }}
@@ -441,15 +609,15 @@ export function DashboardLayout({
                         e.preventDefault();
                         navigate(item.to!);
                       }}
-                      style={{ color: '#64748b', textDecoration: 'none', fontSize: 14 }}
+                      style={{ color: "var(--muted-foreground)", textDecoration: "none", fontSize: 14 }}
                     >
                       {item.label}
                     </a>
                   ) : (
-                    <span style={{ color: '#1e293b', fontWeight: 500, fontSize: 14 }}>{item.label}</span>
+                    <span style={{ color: "var(--foreground)", fontWeight: 500, fontSize: 14 }}>{item.label}</span>
                   )}
                   {index < breadcrumbItems.length - 1 && (
-                    <ChevronRight size={14} style={{ margin: '0 8px', color: '#94a3b8' }} />
+                    <ChevronRight size={14} style={{ margin: "0 8px", color: "var(--muted-foreground)" }} />
                   )}
                 </span>
               ))}
@@ -459,5 +627,6 @@ export function DashboardLayout({
         </Content>
       </Layout>
     </Layout>
+    </ConfigProvider>
   );
 }

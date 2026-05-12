@@ -50,17 +50,19 @@ export async function createReview(params: CreateReviewParams): Promise<CreateRe
 }
 
 export interface ReviewImage {
-  id: number
+  id?: number
   url: string
 }
 
 export interface ReviewItem {
   id: number
   orderId: number
+  username?: string
+  avatarUrl?: string
   rating: number
   comment: string
   createdAt: string
-  images: ReviewImage[]
+  images: Array<ReviewImage | string>
 }
 
 export async function getReviewsByCostumeId(costumeId: number): Promise<ReviewItem[]> {
@@ -77,10 +79,15 @@ export async function getReviewsByCostumeId(costumeId: number): Promise<ReviewIt
  */
 export async function getReviewByOrderId(orderId: number): Promise<ReviewItem | null> {
   try {
-    const res = await axiosInstance.get<ApiResponse<ReviewItem | null>>(
+    const res = await axiosInstance.get<ApiResponse<ReviewItem | ReviewItem[] | null>>(
       `/api/reviews/order/${orderId}`
     )
-    return res.data.result
+    const payload = res.data.result
+    if (!payload) return null
+    if (Array.isArray(payload)) {
+      return payload[0] ?? null
+    }
+    return payload
   } catch {
     // 404 means no review exists yet — this is expected
     return null

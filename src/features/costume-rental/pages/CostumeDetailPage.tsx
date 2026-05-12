@@ -1,6 +1,8 @@
 import * as React from "react"
 import { Link, useNavigate, useParams } from "react-router-dom"
 
+import { AlertCircle } from "lucide-react"
+import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
@@ -14,12 +16,12 @@ import { useProviderInfo } from "../hooks/useProviderInfo"
 import { useCreateReview } from "../hooks/useCreateReview"
 import { useReviewPermission } from "../hooks/useReviewPermission"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
-import { useStartChat } from "@/features/chat/hooks/useStartChat"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
+import { publicCostumeStatusLabel } from "../utils/publicCostumeStatusLabel"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
@@ -53,10 +55,7 @@ export default function CostumeDetailPage() {
   const currentUserId = getUserId()
 
   // Fetch provider info
-  const { provider, loading: providerLoading } = useProviderInfo(costume?.providerId)
-
-  // Start chat
-  const { startChat } = useStartChat()
+  const { provider } = useProviderInfo(costume?.providerId)
 
   // Review permission and submission
   const { submit: submitReview, loading: reviewSubmitting } = useCreateReview()
@@ -82,13 +81,6 @@ export default function CostumeDetailPage() {
       }
     } finally {
       setWishlistToggling(false)
-    }
-  }
-
-  // Handlers for shop actions
-  const handleChat = async () => {
-    if (provider?.userId) {
-      await startChat(provider.userId, provider.shopName)
     }
   }
 
@@ -127,6 +119,11 @@ export default function CostumeDetailPage() {
       ])
     }
   }, [costume, setItems])
+
+  const characterRows = React.useMemo(
+    () => (costume?.characters ?? []).filter((c) => c.name?.trim() || c.anime?.trim()),
+    [costume],
+  )
 
   // Convert date string to YYYY-MM-DD for storage
   // The backend appends T00:00:00 at submission time (order.service.ts)
@@ -220,11 +217,13 @@ export default function CostumeDetailPage() {
     setShowNoAddressModal(false)
   }
 
+  const pageShellClass = "home-anime min-h-screen bg-transparent pb-16"
+
   if (isLoading) {
     return (
-      <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
-          <div className="rounded-2xl border border-dashed border-pink-200 bg-white/70 p-8 text-center text-sm text-slate-500">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6">
+          <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-8 text-center text-sm font-semibold text-indigo-950 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
             Đang tải chi tiết trang phục...
           </div>
         </div>
@@ -234,11 +233,11 @@ export default function CostumeDetailPage() {
 
   if (error) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6">
-          <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6">
+          <div className="rounded-2xl border-[4px] border-[#B91C1C] bg-[#FEE2E2] p-6 text-center text-sm font-semibold text-[#991B1B] shadow-[8px_8px_0_0_rgba(127,29,29,0.3)]">
             <p>{error}</p>
-            <Button variant="soft" size="sm" className="mt-3 rounded-full" onClick={refetch}>
+            <Button variant="soft" size="sm" className="mt-3 rounded-xl border-[3px] border-[#991B1B]" onClick={refetch}>
               Thử lại
             </Button>
           </div>
@@ -249,12 +248,12 @@ export default function CostumeDetailPage() {
 
   if (!costume) {
     return (
-      <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-        <div className="mx-auto w-full max-w-6xl px-4 pt-6 text-center">
-          <div className="rounded-2xl border border-pink-100 bg-white/80 p-6 text-sm text-slate-600">
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-6 text-center">
+          <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 text-sm font-semibold text-indigo-950 shadow-[8px_8px_0_0_rgba(30,27,75,0.45)]">
             Không tìm thấy trang phục bạn yêu cầu.
             <div className="mt-3">
-              <Link to="/costumes" className="text-pink-600 underline">Quay lại danh sách</Link>
+              <Link to="/costumes" className="font-bold text-fuchsia-700 underline">Quay lại danh sách</Link>
             </div>
           </div>
         </div>
@@ -262,61 +261,94 @@ export default function CostumeDetailPage() {
     )
   }
 
-  const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
+  const accessoryListCount = costume.accessories?.length ?? 0
 
   return (
-    <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
-      <div className="mx-auto w-full max-w-6xl px-4 pt-5">
+    <section className={pageShellClass}>
+      <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-5">
+        <div className="rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] via-[#f9a8d4] to-[#c4b5fd] px-4 py-2 text-xs font-extrabold text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b] sm:text-sm">
+          Thuê trang phục theo style homepage anime: bo tròn, dễ nhìn, nổi bật CTA.
+        </div>
 
-        <div className="mt-4 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
+        <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <MediaGallery
             images={resolvedImages}
             isAdult18={false}
-            bestSeller={costume.status !== "RENTED"}
-            rentalsCount={(costume as { rentalsCount?: number }).rentalsCount}
-            hasAccessories={accessoryCount > 0}
-            accessoryCount={accessoryCount > 0 ? accessoryCount : undefined}
+            bestSeller={costume.bestSeller === true}
+            rentalsCount={costume.rentalsCount}
+            hasAccessories={accessoryListCount > 0}
+            accessoryCount={accessoryListCount > 0 ? accessoryListCount : undefined}
             isWishlisted={isCostumeWishlisted}
             onToggleWishlist={handleToggleWishlist}
             wishlistLoading={wishlistToggling}
           />
-          <PurchasePanel
-            costume={costume}
-            days={days}
-            startDate={startDate}
-            selectedRentalOptionId={selectedRentalOptionId}
-            checkedOptionalIds={checkedOptionalIds}
-            quote={quote}
-            onDaysChange={setDays}
-            onStartDateChange={setStartDate}
-            onSelectRentalOption={setSelectedRentalOptionId}
-            onToggleOptionalAccessory={toggleOptionalAccessory}
-            onRentNow={handleRentNow}
-          />
-
-          {/* Validation Error */}
-          {validationError && (
-            <div className="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-600">
-              {validationError}
-            </div>
-          )}
+          <div className="lg:sticky lg:top-[84px] lg:self-start">
+            <PurchasePanel
+              costume={costume}
+              days={days}
+              startDate={startDate}
+              selectedRentalOptionId={selectedRentalOptionId}
+              checkedOptionalIds={checkedOptionalIds}
+              quote={quote}
+              onDaysChange={setDays}
+              onStartDateChange={setStartDate}
+              onSelectRentalOption={setSelectedRentalOptionId}
+              onToggleOptionalAccessory={toggleOptionalAccessory}
+              onRentNow={handleRentNow}
+            />
+          </div>
         </div>
+
+        {/* Validation Error */}
+        {validationError && (
+          <div className="mt-3 flex items-start gap-2 rounded-xl border-[4px] border-[#B91C1C] bg-[#FEE2E2] p-3 text-sm font-semibold text-[#991B1B] shadow-[6px_6px_0_0_rgba(127,29,29,0.25)] lg:ml-auto lg:w-[44%]">
+            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+            {validationError}
+          </div>
+        )}
 
         {/* Shop Info Card */}
         {provider && (
           <div className="mt-5">
-            <ProviderShopCard
-              provider={provider}
-            />
+            <ProviderShopCard provider={provider} onViewShop={handleViewShop} />
           </div>
         )}
 
         {/* Product Info Sections */}
         <div className="mt-5 space-y-5">
+          {characterRows.length > 0 && (
+            <div>
+              <div className="inline-flex rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#c4b5fd] px-4 py-1.5 shadow-[4px_4px_0_0_#1e1b4b]">
+                <h3 className="text-sm font-extrabold uppercase tracking-wide text-indigo-950">
+                  {VI.costumeRental.charactersHeading}
+                </h3>
+              </div>
+              <Card className="mt-2 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
+                <ul className="list-inside list-disc space-y-1 text-sm font-semibold text-indigo-950/90">
+                  {characterRows.map((c) => {
+                    const name = c.name?.trim() ?? ""
+                    const anime = c.anime?.trim() ?? ""
+                    const line =
+                      name && anime ? `${name} (${anime})` : name || anime
+                    return <li key={c.id}>{line}</li>
+                  })}
+                </ul>
+              </Card>
+            </div>
+          )}
           <ProductInfoSections
             details={[
               { label: VI.costumeRental.costumeName, value: costume.name },
-              { label: VI.costumeRental.status, value: costume.status },
+              {
+                label: VI.costumeRental.status,
+                value: publicCostumeStatusLabel(costume.status),
+                valueTone:
+                  costume.status === "AVAILABLE"
+                    ? "available"
+                    : costume.status === "RENTED"
+                      ? "rented"
+                      : "neutral",
+              },
               { label: VI.costumeRental.size, value: costume.size },
               { label: VI.costumeRental.numberOfItems, value: String(costume.numberOfItems) },
               { label: VI.costumeRental.pricePerDay, value: `${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ` },
@@ -360,18 +392,18 @@ export default function CostumeDetailPage() {
         {/* No Address Confirmation Modal */}
         {showNoAddressModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-            <div className="w-full max-w-md rounded-3xl border border-white/80 bg-white p-6 shadow-xl">
-              <h3 className="text-lg font-semibold text-slate-900">
+            <div className="w-full max-w-md rounded-3xl border-[5px] border-indigo-950 bg-gradient-to-b from-[#fffbeb] via-[#fce7f3] to-[#dbeafe] p-6 shadow-[12px_12px_0_0_rgba(30,27,75,0.65)]">
+              <h3 className="text-lg font-extrabold text-indigo-950">
                 {VI.checkout.noAddress.title}
               </h3>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-2 text-sm font-semibold text-indigo-900/85">
                 {VI.checkout.noAddress.message}
               </p>
               <div className="mt-6 flex gap-3">
-                <Button variant="outline" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressCancel}>
+                <Button variant="outline" size="lg" className="flex-1 rounded-xl border-[3px] border-indigo-950 bg-white font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] hover:bg-[#fffbeb]" onClick={handleNoAddressCancel}>
                   {VI.checkout.noAddress.cancel}
                 </Button>
-                <Button variant="default" size="lg" className="flex-1 rounded-full" onClick={handleNoAddressConfirm}>
+                <Button variant="default" size="lg" className="flex-1 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] hover:brightness-110" onClick={handleNoAddressConfirm}>
                   {VI.checkout.noAddress.confirm}
                 </Button>
               </div>
@@ -380,39 +412,5 @@ export default function CostumeDetailPage() {
         )}
       </div>
     </section>
-  )
-}
-
-function ApiField({
-  label,
-  value,
-  fullWidth,
-  preWrap,
-}: {
-  label: string
-  value: string
-  fullWidth?: boolean
-  preWrap?: boolean
-}) {
-  return (
-    <div className={fullWidth ? "md:col-span-2" : undefined}>
-      <p className="text-xs uppercase tracking-wide text-slate-400">{label}</p>
-      <p className={`mt-1 text-sm text-slate-700${preWrap ? " whitespace-pre-line" : ""}`}>{value}</p>
-    </div>
-  )
-}
-
-function ApiListSection({
-  title,
-  children,
-}: {
-  title: string
-  children: React.ReactNode
-}) {
-  return (
-    <div>
-      <h3 className="text-base font-semibold text-slate-900">{title}</h3>
-      <ul className="mt-2 space-y-2">{children}</ul>
-    </div>
   )
 }

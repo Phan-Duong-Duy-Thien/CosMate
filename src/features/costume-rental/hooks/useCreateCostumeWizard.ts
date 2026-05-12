@@ -9,7 +9,7 @@ import { useState } from 'react'
 import { message } from 'antd'
 import axios from 'axios'
 import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
-import { validateRentalOptions, validateAccessories } from '../services/validateCostumeConstraints'
+import { validateAccessories } from '../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
 import { getUserId } from '@/features/auth/services/tokenStorage'
 import { getProviderByUserId } from '@/features/provider/api/provider.api'
@@ -123,13 +123,6 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase2Error(null)
     setIsPhase2Loading(true)
     try {
-      const roResult = validateRentalOptions(rentalOptions)
-      if (!roResult.valid) {
-        const msg = VI.costumeRental.rentalOptions[roResult.errorKey!.split('.').pop() as keyof typeof VI.costumeRental.rentalOptions] as string
-        setPhase2Error(msg)
-        message.error(msg)
-        throw new Error(msg)
-      }
       const accResult = validateAccessories(accessories, numberOfItems)
       if (!accResult.valid) {
         const msg = VI.costumeRental.accessories.reachedMaxItems
@@ -137,7 +130,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         message.error(msg)
         throw new Error(msg)
       }
-      await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions })
+      await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions: [] })
     }catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Luu thong tin bo sung that bai.'
       setPhase2Error(msg)

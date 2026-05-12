@@ -20,7 +20,8 @@ import {
   UserRound,
   Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip } from "antd"
+import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
+import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
@@ -36,11 +37,6 @@ import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
-import bgImage from "@/assets/background.jpg"
-import sideBannerImage1 from "@/assets/anh1.jpg"
-import sideBannerImage2 from "@/assets/quiz1.jpg"
-import sideBannerImage3 from "@/assets/quiz2.jpg"
-import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
 import siteLogo from "@/assets/cosmate.png"
 import type { MenuProps } from 'antd'
@@ -57,27 +53,43 @@ export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isScrolled, setIsScrolled] = React.useState(false)
-  const [bannerIndex, setBannerIndex] = React.useState(0)
-
-  const bannerImages = [sideBannerImage1, sideBannerImage2, sideBannerImage3, sideBannerImage4]
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerIndex((prev) => (prev + 1) % bannerImages.length)
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [bannerImages.length])
-
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
+  const isPhotographersListingPage = location.pathname === "/photographers"
+  const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
+  const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
+  const isPublicShopPage = /^\/shop\/[^/]+\/?$/.test(location.pathname)
+  const isCostumeDetailPage = /^\/costumes\/[^/]+\/?$/.test(location.pathname)
+  const isFullWidthEdgeListing = false
+  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
+  const isNotificationsPage = location.pathname === "/notifications"
+  const isProfilePage =
+    location.pathname === "/profile" ||
+    location.pathname.startsWith("/profile/") ||
+    location.pathname === "/wishlist" ||
+    location.pathname === "/purchase-history"
+  const isWalletPage = /^\/wallet(\/.*)?$/.test(location.pathname)
+  const isCheckoutPage = location.pathname.startsWith("/rent/checkout")
+  const isExtraWideContentPage =
+    isNotificationsPage ||
+    isGuidelinesRulesPage ||
+    isPhotographersListingPage ||
+    isPhotographerDetailPage ||
+    isPublicServiceDetailPage ||
+    isPublicShopPage ||
+    isCostumeDetailPage
   const isWideContentPage =
-    location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
+    location.pathname === "/costumes" ||
+    isProfilePage ||
+    isWalletPage ||
+    isCheckoutPage ||
+    isExtraWideContentPage
 
   const loggedIn = isAuthenticated()
-  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
+  const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
   const userId = getUserId()
   const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null)
 
@@ -113,8 +125,8 @@ export default function CosplayerSiteLayout() {
       const userId = getUserId()
       if (!userId) return
 
-      // Skip if already loaded
-      if (userProfile.avatarUrl || userProfile.fullName) return
+      // Skip only when we already have a user photo (fullName alone is not enough)
+      if (userProfile.avatarUrl) return
 
       try {
         const profile = await getUserProfile(userId)
@@ -130,7 +142,7 @@ export default function CosplayerSiteLayout() {
     }
 
     fetchProfile()
-  }, [loggedIn, userProfile.avatarUrl, userProfile.fullName, setUserProfile])
+  }, [loggedIn, userProfile.avatarUrl, setUserProfile])
 
   React.useEffect(() => {
     const path = location.pathname
@@ -288,30 +300,43 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
-      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
+    <div className="w-[320px] rounded-xl bg-card text-card-foreground shadow-lg ring-1 ring-border/80">
+      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
+        <p className="m-0 text-sm font-semibold text-foreground">{VI.notification.title}</p>
         {unreadCount > 0 && (
           <button
+            type="button"
             onClick={() => markAllRead()}
-            style={{ fontSize: 12, color: "#ec4899", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 500 }}
+            className="border-0 bg-transparent p-0 text-xs font-medium text-cosmate-pink hover:underline"
           >
             Đánh dấu đã đọc
           </button>
         )}
       </div>
-      <div style={{ maxHeight: 360, overflowY: "auto" }}>
+      <div className="max-h-[360px] overflow-y-auto">
         {notifLoading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+          <div className="flex items-center justify-center p-8">
             <Spin size="small" />
           </div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: 32, textAlign: "center", color: "#64748b", fontSize: 14 }}>{VI.notification.empty}</div>
+          <div className="p-8 text-center text-sm text-muted-foreground">{VI.notification.empty}</div>
         ) : (
           <>
             {notifications.slice(0, 10).map((n) => (
               <div
                 key={n.id}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault()
+                    void (async () => {
+                      if (!n.isRead) await markNotificationRead(n.id)
+                      if (n.link) navigate(n.link)
+                      setNotifOpen(false)
+                    })()
+                  }
+                }}
                 onClick={async () => {
                   if (!n.isRead) {
                     await markNotificationRead(n.id)
@@ -319,16 +344,35 @@ export default function CosplayerSiteLayout() {
                   if (n.link) navigate(n.link)
                   setNotifOpen(false)
                 }}
-                style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                className="cursor-pointer border-b border-border/60 px-4 py-2.5 transition-colors last:border-b-0 hover:bg-accent"
               >
-                <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
-                  {n.header}
-                </p>
-                <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {n.content}
-                </p>
+                <div className="flex items-start gap-2">
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={`m-0 text-sm ${n.isRead ? "font-normal text-muted-foreground" : "font-semibold text-foreground"}`}
+                    >
+                      {n.header}
+                    </p>
+                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{n.content}</p>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="Xóa thông báo"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      Modal.confirm({
+                        title: "Xóa thông báo này?",
+                        okText: VI.common.actions.delete,
+                        cancelText: VI.common.actions.cancel,
+                        okButtonProps: { danger: true },
+                        onOk: () => void deleteNotification(n.id),
+                      })
+                    }}
+                    className="cursor-pointer border-0 bg-transparent p-0.5 leading-none text-muted-foreground hover:text-foreground"
+                  >
+                    <DeleteOutlined />
+                  </button>
+                </div>
               </div>
             ))}
           </>
@@ -336,7 +380,7 @@ export default function CosplayerSiteLayout() {
       </div>
       {notifications.length > 0 && (
         <div
-          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9" }}
+          className="cursor-pointer border-t border-border px-4 py-2.5 text-center text-sm font-medium text-cosmate-pink hover:underline"
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)
@@ -349,15 +393,19 @@ export default function CosplayerSiteLayout() {
   )
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-[#111827]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-foreground">
+      {/* Site-wide soft gradient + dot-grid background (replaces curtain image) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_0%,#fff7fb_0%,#fdf2f8_36%,#eef2ff_72%,#f8fafc_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.55]"
         style={{
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          backgroundImage:
+            "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+          backgroundSize: "14px 14px",
         }}
       />
 
@@ -547,7 +595,7 @@ export default function CosplayerSiteLayout() {
                   {userProfile.avatarUrl ? (
                     <Avatar size={36} src={userProfile.avatarUrl} />
                   ) : (
-                    <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
+                    <Avatar size={36} className="!bg-cosmate-pink !text-white">
                       {computeInitials(userProfile.fullName)}
                     </Avatar>
                   )}
@@ -566,82 +614,57 @@ export default function CosplayerSiteLayout() {
         </div>
       </header>
 
-      <main className="flex-1 pt-[56px]">
+      <main className="min-w-0 flex-1 pt-[56px]">
         {!isHomePage && items.length > 0 && (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+          <div
+            className={cn(
+              "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
+              isFullWidthEdgeListing
+                ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
+                : isExtraWideContentPage
+                  ? "max-w-[min(1760px,100%)] xl:px-10"
+                  : "max-w-7xl"
+            )}
+          >
             <Breadcrumbs items={items} />
           </div>
         )}
         {isHomePage ? (
-          <div className="relative">
+          <div className="relative isolate">
+            {/* Dot grid + tint across full main width (not limited by max-w column) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1] bg-[#fff7fb]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+                backgroundSize: "14px 14px",
+              }}
+            />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
+              className="pointer-events-none absolute inset-0 z-[2] bg-white/12 backdrop-blur-[1px]"
             />
 
-            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-2 lg:px-3 xl:px-4">
-              <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-5 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben trai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Bạn là nhân vật nào?
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/style-quiz")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Làm quiz ngay
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
-
-                <div className="min-w-0">
-                  <Outlet />
-                </div>
-
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben phai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Tìm trang phục qua ảnh
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/costumes")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Tìm bằng hình ảnh
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
+            {/* Wide column on large screens so side margins feel less empty (no side-banner grid) */}
+            <div className="relative z-10 mx-auto w-full min-w-0 max-w-[min(1800px,100%)] px-3 pb-3 pt-2 sm:px-4 md:px-6 lg:px-8 xl:px-10">
+              <div className="min-w-0">
+                <Outlet />
               </div>
             </div>
           </div>
         ) : (
           <div
             className={cn(
-              "mx-auto w-full",
-              isWideContentPage
-                ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
-                : "max-w-7xl px-4 lg:px-6"
+              "mx-auto w-full min-w-0",
+              isFullWidthEdgeListing &&
+                "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
+              isWideContentPage &&
+                !isFullWidthEdgeListing &&
+                (isExtraWideContentPage
+                  ? "max-w-[min(1760px,100%)] px-4 md:px-6 xl:px-10"
+                  : "max-w-screen-2xl px-4 md:px-6 xl:px-8"),
+              !isWideContentPage && "max-w-7xl px-4 lg:px-6"
             )}
           >
             <div className="min-w-0">

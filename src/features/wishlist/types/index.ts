@@ -12,7 +12,7 @@ export interface WishlistItem {
   userId: number
   costumeId: number
   createdAt: string
-  costume: WishlistCostume
+  costume: WishlistCostume | null
 }
 
 export interface AddToWishlistRequest {

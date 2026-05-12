@@ -13,13 +13,15 @@ export interface ButtonProps
 
 const variantClasses: Record<ButtonVariant, string> = {
   default:
-    "bg-[#FDCCD7] text-slate-900 hover:bg-pink-300 focus-visible:ring-pink-300",
-  ghost: "bg-transparent hover:bg-pink-50 text-slate-700",
+    "bg-cosmate-soft-pink text-foreground hover:bg-cosmate-pink/35 focus-visible:ring-cosmate-pink/50",
+  ghost:
+    "bg-transparent hover:bg-cosmate-soft-pink/50 text-foreground",
   outline:
-    "border-2 border-[#FDCCD7] bg-transparent hover:bg-[#FDCCD7] text-slate-700",
-  soft: "bg-pink-100 text-pink-700 hover:bg-pink-200",
+    "border-2 border-cosmate-soft-pink bg-transparent hover:bg-cosmate-soft-pink text-foreground",
+  soft:
+    "bg-cosmate-rose-tag-bg text-cosmate-rose-tag-text hover:bg-cosmate-pink/25",
   link:
-    "bg-transparent text-pink-600 hover:text-pink-700 decoration-1 underline-offset-2 hover:underline",
+    "bg-transparent text-cosmate-pink hover:text-cosmate-pink/80 decoration-1 underline-offset-2 hover:underline",
 }
 
 const sizeClasses: Record<ButtonSize, string> = {

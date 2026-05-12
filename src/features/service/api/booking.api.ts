@@ -150,17 +150,61 @@ export async function payServiceOrder(
   orderId: number,
   paymentMethod: PaymentMethod,
   returnUrl: string
-): Promise<string> {
-  console.log('[booking.api] payServiceOrder → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
-  const response = await axiosInstance.post<ApiResponse<{ paymentUrl: string }>>(
-    `/api/service-orders/${orderId}/pay`,
+): Promise<string | null> {
+  // ── Debug: log exact payload sent to BE ────────────────────────────────
+  console.log('SERVICE PAY PAYLOAD:', {
+    id: orderId,
+    paymentMethod,
+    returnUrl,
+  });
+
+  const baseUrl = axiosInstance.defaults.baseURL || '';
+  const endpoint = `/api/service-orders/${orderId}/pay`;
+  const finalUrl = `${baseUrl}${endpoint}?paymentMethod=${encodeURIComponent(paymentMethod)}&returnUrl=${encodeURIComponent(returnUrl)}`;
+  console.log('FINAL REQUEST URL:', finalUrl);
+
+  const response = await axiosInstance.post<
+    ApiResponse<{ paymentUrl?: string | null } | string | null> | { paymentUrl?: string | null } | string | null
+  >(
+    endpoint,
     null,
     {
       params: { paymentMethod, returnUrl },
     }
   );
   console.log('[booking.api] payServiceOrder ← response:', response.data);
-  return response.data.result.paymentUrl;
+
+  const data = response.data as
+    | ApiResponse<{ paymentUrl?: string | null } | string | null>
+    | { paymentUrl?: string | null }
+    | string
+    | null;
+
+  const hasResultWrapper =
+    typeof data === 'object' &&
+    data !== null &&
+    'result' in data;
+  const rawResult = hasResultWrapper
+    ? (data as ApiResponse<{ paymentUrl?: string | null } | string | null>).result
+    : data;
+
+  // Case 1: result is URL string directly
+  if (typeof rawResult === 'string') {
+    return rawResult;
+  }
+
+  // Case 2: result is object containing paymentUrl
+  if (
+    typeof rawResult === 'object' &&
+    rawResult !== null &&
+    'paymentUrl' in rawResult
+  ) {
+    const url = (rawResult as { paymentUrl?: string | null }).paymentUrl;
+    return typeof url === 'string' ? url : null;
+  }
+
+  // Case 3: wallet/no redirect or empty response body
+  return null;
 }
 
 /**

@@ -7,7 +7,7 @@
  */
 
 import { useState } from 'react';
-import { Table, Tabs, Tag, Tooltip, message, Input } from 'antd';
+import { Alert, Input, Table, Tag, Tooltip, message } from 'antd';
 import type { TableProps } from 'antd';
 import {
   SearchOutlined,
@@ -16,6 +16,7 @@ import {
   SendOutlined,
   EyeOutlined,
   FlagOutlined,
+  ReloadOutlined,
 } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -27,6 +28,8 @@ import { CreateDisputeModal } from '../components/CreateDisputeModal';
 import { useCreateDispute } from '../hooks/useCreateDispute';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderItem } from '../types';
+import { Button as UiButton } from '@/components/ui/button';
+import { cn } from '@/lib/utils';
 
 export default function ProviderOrdersPage() {
   const {
@@ -54,8 +57,8 @@ export default function ProviderOrdersPage() {
   const [shipModalOpen, setShipModalOpen] = useState(false);
   const [shipOrderId, setShipOrderId] = useState<number | null>(null);
 
-  // Detail drawer state
-  const [detailDrawerOpen, setDetailDrawerOpen] = useState(false);
+  // Order detail modal
+  const [detailModalOpen, setDetailModalOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
 
   // Dispute modal state
@@ -92,8 +95,7 @@ export default function ProviderOrdersPage() {
     });
   };
 
-  // Get status tag color
-  const getStatusTag = (status: string) => {
+  const getStatusMeta = (status: string) => {
     const statusConfig: Record<string, { color: string; text: string }> = {
       UNPAID: { color: 'default', text: VI.provider.orders.tabs.unpaid },
       PAID: { color: 'orange', text: VI.provider.orders.tabs.paid },
@@ -109,7 +111,11 @@ export default function ProviderOrdersPage() {
       EXTENDING: { color: 'gold', text: VI.provider.orders.tabs.extending },
     };
 
-    const config = statusConfig[status] || { color: 'default', text: status };
+    return statusConfig[status] || { color: 'default', text: status };
+  };
+
+  const getStatusTag = (status: string) => {
+    const config = getStatusMeta(status);
     return <Tag color={config.color}>{config.text}</Tag>;
   };
 
@@ -150,7 +156,10 @@ export default function ProviderOrdersPage() {
   };
 
   // Handle dispute
-  const handleDispute = (orderId: number) => {
+  const handleDispute = (orderId: number, status: string) => {
+    if (status !== 'SHIPPING_BACK') {
+      return;
+    }
     setDisputeOrderId(orderId);
     setDisputeModalOpen(true);
   };
@@ -221,21 +230,21 @@ export default function ProviderOrdersPage() {
       width: 220,
       align: 'center',
       render: (_: unknown, record: OrderItem) => (
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+        <div className="flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
           <Tooltip title={VI.order.actions.viewDetail}>
             <EyeOutlined
               onClick={() => {
                 setSelectedOrderId(record.id);
-                setDetailDrawerOpen(true);
+                setDetailModalOpen(true);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
           </Tooltip>
           {record.status === 'PAID' && (
             <Tooltip title={VI.provider.orders.actions.prepare}>
               <CheckCircleOutlined
                 onClick={() => handlePrepare(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: preparingOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: preparingOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -243,7 +252,7 @@ export default function ProviderOrdersPage() {
             <Tooltip title={VI.provider.orders.actions.ship}>
               <SendOutlined
                 onClick={() => handleShip(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: shippingOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: shippingOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -251,15 +260,7 @@ export default function ProviderOrdersPage() {
             <Tooltip title={VI.provider.orders.actions.deliverOut}>
               <CarOutlined
                 onClick={() => handleDeliverOut(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff', opacity: deliveringOutOrderId === record.id ? 0.5 : 1 }}
-              />
-            </Tooltip>
-          )}
-          {record.status === 'DELIVERY_OUT' && (
-            <Tooltip title={VI.dispute.button}>
-              <FlagOutlined
-                onClick={() => handleDispute(record.id)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)', opacity: deliveringOutOrderId === record.id ? 0.5 : 1 }}
               />
             </Tooltip>
           )}
@@ -268,13 +269,13 @@ export default function ProviderOrdersPage() {
               <Tooltip title={VI.provider.orders.actions.complete}>
                 <CheckCircleOutlined
                   onClick={() => handleComplete(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a', opacity: completingOrderId === record.id ? 0.5 : 1 }}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)', opacity: completingOrderId === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
               <Tooltip title={VI.dispute.button}>
                 <FlagOutlined
-                  onClick={() => handleDispute(record.id)}
-                  style={{ cursor: 'pointer', fontSize: 16, color: '#ff4d4f', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
+                  onClick={() => handleDispute(record.id, record.status)}
+                  style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)', opacity: disputingOrderId === record.id ? 0.5 : 1 }}
                 />
               </Tooltip>
             </>
@@ -284,29 +285,6 @@ export default function ProviderOrdersPage() {
     },
   ];
 
-  // Tab items - generated from fixed configuration
-  const tabItems = ORDER_STATUS_TABS.map((tab) => ({
-    key: tab.key,
-    label: (
-      <span>
-        {VI.provider.orders.tabs[tab.label as keyof typeof VI.provider.orders.tabs]}
-        <span style={{ marginLeft: 4, opacity: 0.6 }}>
-          ({tabCounts[tab.key] ?? 0})
-        </span>
-      </span>
-    ),
-    children: (
-      <Table
-        dataSource={orders}
-        columns={columns}
-        loading={loading}
-        rowKey="id"
-        pagination={{ pageSize: 10 }}
-        locale={{ emptyText: VI.common.status.noData }}
-      />
-    ),
-  }));
-
   return (
     <DashboardLayout
       title={VI.provider.orders.title}
@@ -314,26 +292,74 @@ export default function ProviderOrdersPage() {
       showChatButton={false}
       brandName="CosMate Provider"
     >
-      {error && (
-        <div style={{ color: '#ff4d4f', marginBottom: 16 }}>
-          {error}
+      {error && <Alert type="error" message={error} className="mb-4" />}
+
+      <div className="mb-4 flex flex-col gap-4">
+        {/* Tier 1: Search + global actions */}
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="w-full max-w-sm">
+            <Input
+              placeholder={VI.provider.orders.searchPlaceholder}
+              prefix={<SearchOutlined />}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              allowClear
+            />
+          </div>
+
+          <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
+            <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+            Làm mới
+          </UiButton>
         </div>
-      )}
-      <div style={{ marginBottom: 16 }}>
-        <Input.Search
-          placeholder={VI.provider.orders.searchPlaceholder}
-          allowClear
-          enterButton={<SearchOutlined />}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          onSearch={setSearchTerm}
-          style={{ maxWidth: 400 }}
-        />
       </div>
-      <Tabs
-        activeKey={activeTab}
-        onChange={(key) => setActiveTab(key as typeof activeTab)}
-        items={tabItems}
+
+      {/* Tier 2: Status filter — inline chips (no dropdown) */}
+      <div className="mb-4 -mx-1 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+        {ORDER_STATUS_TABS.map((tab) => {
+          const labelText = VI.provider.orders.tabs[tab.label as keyof typeof VI.provider.orders.tabs];
+          const count = tabCounts[tab.key] ?? 0;
+          const isActive = activeTab === tab.key;
+          const meta = tab.key === 'ALL' ? null : getStatusMeta(tab.key);
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={cn(
+                'inline-flex shrink-0 items-center gap-2 rounded-lg border px-3 py-2 text-left text-sm shadow-sm transition-colors',
+                isActive
+                  ? 'border-primary bg-primary/10 ring-1 ring-primary/30'
+                  : 'border-border bg-card hover:bg-muted/60',
+              )}
+            >
+              {tab.key === 'ALL' ? (
+                <span className="font-medium">{labelText}</span>
+              ) : (
+                <Tag color={meta?.color} style={{ margin: 0 }}>
+                  {meta?.text}
+                </Tag>
+              )}
+              <span className="text-muted-foreground">({count})</span>
+            </button>
+          );
+        })}
+      </div>
+
+      <Table
+        dataSource={orders}
+        columns={columns}
+        loading={loading}
+        rowKey="id"
+        pagination={{ pageSize: 10 }}
+        locale={{ emptyText: VI.common.status.noData }}
+        onRow={(record) => ({
+          onClick: () => {
+            setSelectedOrderId(record.id);
+            setDetailModalOpen(true);
+          },
+          style: { cursor: 'pointer' },
+        })}
       />
       <ShipOrderModal
         open={shipModalOpen}
@@ -346,10 +372,10 @@ export default function ProviderOrdersPage() {
         onSubmit={handleShipSubmit}
       />
       <OrderDetailDrawer
-        open={detailDrawerOpen}
+        open={detailModalOpen}
         orderId={selectedOrderId}
         onClose={() => {
-          setDetailDrawerOpen(false);
+          setDetailModalOpen(false);
           setSelectedOrderId(null);
         }}
       />

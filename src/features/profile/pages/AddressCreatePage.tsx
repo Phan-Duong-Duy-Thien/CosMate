@@ -4,7 +4,8 @@
  */
 import React, { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/shared/components/Button';
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { VI } from '@/shared/i18n/vi';
 import { useCreateAddress } from '../hooks/useCreateAddress';
 import { getUserId } from '@/features/auth/services/tokenStorage';
@@ -70,15 +71,16 @@ export default function AddressCreatePage() {
   };
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-2xl px-4 pt-10">
-        <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm">
+        <Card className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
+          <div className="p-6">
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold text-slate-900">
+            <h1 className="text-2xl font-semibold text-foreground">
               {VI.profile.address.createPage.title}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {VI.profile.address.createPage.subtitle}
             </p>
           </div>
@@ -87,7 +89,7 @@ export default function AddressCreatePage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name (recipient) */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.recipientName}
               </label>
               <input
@@ -95,13 +97,13 @@ export default function AddressCreatePage() {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={VI.profile.address.form.recipientNamePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.phone}
               </label>
               <input
@@ -109,13 +111,13 @@ export default function AddressCreatePage() {
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder={VI.profile.address.form.phonePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
             {/* Address Name */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.addressName}
               </label>
               <input
@@ -123,20 +125,20 @@ export default function AddressCreatePage() {
                 value={addressName}
                 onChange={(e) => setAddressName(e.target.value)}
                 placeholder={VI.profile.address.form.addressNamePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
             {/* City/Province */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.city}
               </label>
               <select
                 value={provinceCode ?? ''}
                 onChange={(e) => setProvinceCode(e.target.value ? Number(e.target.value) : null)}
                 disabled={isLoadingProvinces}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 disabled:opacity-50"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 disabled:opacity-50"
               >
                 <option value="">
                   {isLoadingProvinces
@@ -153,14 +155,14 @@ export default function AddressCreatePage() {
 
             {/* District */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.district}
               </label>
               <select
                 value={districtCode ?? ''}
                 onChange={(e) => setDistrictCode(e.target.value ? Number(e.target.value) : null)}
                 disabled={!provinceCode || isLoadingDistricts}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 disabled:opacity-50"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 disabled:opacity-50"
               >
                 <option value="">
                   {isLoadingDistricts
@@ -179,7 +181,7 @@ export default function AddressCreatePage() {
 
             {/* Street Address */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <label className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.streetAddress}
               </label>
               <input
@@ -187,7 +189,7 @@ export default function AddressCreatePage() {
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
                 placeholder={VI.profile.address.form.streetAddressPlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
@@ -213,7 +215,8 @@ export default function AddressCreatePage() {
               </Button>
             </div>
           </form>
-        </div>
+          </div>
+        </Card>
       </div>
     </section>
   );

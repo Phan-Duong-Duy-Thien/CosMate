@@ -34,7 +34,7 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder={VI.auth.login.emailOrUsernamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Mail className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Mail className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>
@@ -52,7 +52,7 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder={VI.auth.login.passwordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-[#9CA3AF]" />}
+          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
           className="h-11 rounded-full px-4"
         />
       </Form.Item>

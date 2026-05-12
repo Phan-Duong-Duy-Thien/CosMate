@@ -2,11 +2,14 @@
  * Provider Service
  * Business logic layer for provider operations
  */
+import { getReviewByOrderId, type ReviewItem } from '@/features/costume-rental/api/review.api';
 import {
+  getProviderReviewByReviewId,
   getReviewsByProvider,
   updateProviderProfile,
   uploadProviderCoverImage,
   type ProviderReview,
+  type ProviderReviewDetail,
   type UpdateProviderPayload,
 } from '../api/provider.api';
 import { uploadAvatar } from '@/features/profile/services/userProfile.service';
@@ -33,6 +36,91 @@ import type { UpdateProviderProfilePayload } from '../types';
  */
 export async function fetchProviderReviews(providerId: number): Promise<ProviderReview[]> {
   return getReviewsByProvider(providerId);
+}
+
+/** Normalized detail for provider review modal (merged list row + API). */
+export interface ProviderReviewDetailNormalized {
+  id: number;
+  orderId: number;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  username: string | null;
+  cosplayerName: string | null;
+  avatarUrl: string | null;
+  imageUrls: string[];
+}
+
+function imageUrlsFromUnknown(images: unknown): string[] {
+  if (!Array.isArray(images)) return [];
+  return images
+    .map((img) => {
+      if (typeof img === 'string') return img;
+      if (
+        img &&
+        typeof img === 'object' &&
+        'url' in img &&
+        typeof (img as { url: string }).url === 'string'
+      ) {
+        return (img as { url: string }).url;
+      }
+      return '';
+    })
+    .filter(Boolean);
+}
+
+function normalizeProviderReviewDetail(
+  primary: ProviderReview | ProviderReviewDetail | ReviewItem,
+  fallback: ProviderReview,
+): ProviderReviewDetailNormalized {
+  const username =
+    'username' in primary &&
+    primary.username != null &&
+    String(primary.username).trim() !== ''
+      ? String(primary.username)
+      : null;
+  const cosplayerName =
+    'cosplayerName' in primary &&
+    primary.cosplayerName != null &&
+    String(primary.cosplayerName).trim() !== ''
+      ? String(primary.cosplayerName)
+      : null;
+  const avatarUrl =
+    'avatarUrl' in primary &&
+    primary.avatarUrl != null &&
+    String(primary.avatarUrl).trim() !== ''
+      ? String(primary.avatarUrl)
+      : null;
+  let urls = imageUrlsFromUnknown(primary.images);
+  if (urls.length === 0) urls = imageUrlsFromUnknown(fallback.images);
+  return {
+    id: primary.id ?? fallback.id,
+    orderId: primary.orderId ?? fallback.orderId,
+    rating: primary.rating ?? fallback.rating,
+    comment: primary.comment ?? fallback.comment ?? '',
+    createdAt: primary.createdAt ?? fallback.createdAt,
+    username,
+    cosplayerName,
+    avatarUrl,
+    imageUrls: urls,
+  };
+}
+
+/**
+ * Load full review for dashboard: order endpoint first, then by review id, then list row fallback.
+ */
+export async function fetchProviderReviewDetailForDashboard(
+  row: ProviderReview,
+): Promise<ProviderReviewDetailNormalized> {
+  const byOrder = await getReviewByOrderId(row.orderId);
+  if (byOrder) {
+    return normalizeProviderReviewDetail(byOrder, row);
+  }
+  const byId = await getProviderReviewByReviewId(row.id);
+  if (byId) {
+    return normalizeProviderReviewDetail(byId, row);
+  }
+  return normalizeProviderReviewDetail(row, row);
 }
 
 /**

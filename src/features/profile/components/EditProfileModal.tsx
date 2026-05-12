@@ -10,7 +10,7 @@ import { useEditProfile } from "../hooks/useEditProfile"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
 import { useVnLocation } from "../hooks/useVnLocation"
 import { ImageCropDialog } from "./ImageCropDialog"
-import { message } from "antd"
+import { message, Modal } from "antd"
 
 // ============ Location Helper Functions ============
 
@@ -288,7 +288,16 @@ export default function EditProfileModal({
   }
 
   const handleDeleteAddress = async (addressId: number) => {
-    const confirmed = window.confirm(VI.profile.address.confirm.delete)
+    const confirmed = await new Promise<boolean>((resolve) => {
+      Modal.confirm({
+        title: VI.profile.address.confirm.delete,
+        okText: VI.common.actions.delete,
+        cancelText: VI.common.actions.cancel,
+        okButtonProps: { danger: true },
+        onOk: () => resolve(true),
+        onCancel: () => resolve(false),
+      })
+    })
     if (!confirmed) return
 
     const ok = await remove(addressId)
@@ -318,7 +327,7 @@ export default function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "basic"
-                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
+                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("basic")}
@@ -330,7 +339,7 @@ export default function EditProfileModal({
             className={cn(
               "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
               activeTab === "address"
-                ? "bg-[#FDCCD7] text-slate-900 shadow-sm"
+                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
                 : "text-slate-500 hover:text-slate-700"
             )}
             onClick={() => setActiveTab("address")}

@@ -1,6 +1,10 @@
+/**
+ * useDisputes Hook (Staff Layer)
+ * Delegates to the dispute feature hook
+ */
 import { useState, useCallback, useEffect } from 'react';
 import * as disputeService from '../services/dispute.service';
-import type { Dispute, GetDisputesParams } from '@/features/order/api/dispute.api';
+import type { Dispute, GetDisputesParams } from '@/features/dispute/types/dispute.type';
 
 interface UseDisputesResult {
   disputes: Dispute[];
@@ -19,15 +23,13 @@ export function useDisputes(params?: GetDisputesParams): UseDisputesResult {
     setError(null);
     try {
       const result = await disputeService.getDisputes(params);
-      console.log('[DISPUTES]', result);
       setDisputes(result);
     } catch (err) {
-      console.error('Failed to fetch disputes:', err);
       setError(err instanceof Error ? err.message : 'Failed to load disputes');
     } finally {
       setLoading(false);
     }
-  }, [JSON.stringify(params)]);
+  }, [params?.status, params?.userId]);
 
   useEffect(() => {
     void refetch();

@@ -1,12 +1,16 @@
 /**
  * Provider Service List Page
  *
- * Lists all services created by the current provider.
+ * Lists services for photograph / event-staff dashboards.
+ * UI aligned with other provider dashboard list pages (toolbar + bordered table region).
+ *
  * Data flow: Page → hooks → services → API → axiosInstance
  */
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Table, Tag, Typography, Button, Spin, Image, Card, Modal, Tooltip as RCTooltip } from 'antd';
+import type { TableProps } from 'antd';
+import { Table, Tag, Spin, Modal, Tooltip, Popconfirm, Alert, Image } from 'antd';
+import { ReloadOutlined, PlusOutlined, EyeOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { CreateServiceForm } from '../components/CreateServiceForm';
 import { ServiceDetailModal } from '../components/ServiceDetailModal';
@@ -19,11 +23,11 @@ import { useProviderServices } from '../hooks/useProviderServices';
 import { useProviderVerification } from '@/features/provider/hooks/useProviderVerification';
 import type { ServiceItem } from '../types';
 import { SERVICE_TYPE } from '../types';
+import { getServiceTypeDisplayLabel } from '../utils/serviceTypeDisplay';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
 import { VI } from '@/shared/i18n/vi';
-
-const { Text } = Typography;
+import { Button as UiButton } from '@/components/ui/button';
 
 function deriveSidebarItems(): DashboardSidebarItem[] {
   const roles = getRoles();
@@ -69,7 +73,11 @@ function getStatusLabel(status: string): string {
 
 function formatPrice(value: number | null): string {
   if (value === null || value === 0) return '-';
-  return `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',') + ' VND';
+  return new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0,
+  }).format(value);
 }
 
 export default function ProviderServiceListPage() {
@@ -94,7 +102,14 @@ export default function ProviderServiceListPage() {
   } = useProviderGate();
 
   const { profile } = useProviderVerification();
-  const { services, loading, refetch } = useProviderServices(profile?.id ?? 0);
+  const {
+    services,
+    loading,
+    error,
+    refetch,
+    deletingId,
+    removeService,
+  } = useProviderServices(profile?.id ?? 0);
   const { serviceDetail, loading: viewLoading, error: viewError, open: openView, close: closeView } = useViewService();
 
   const sidebarItems = deriveSidebarItems();
@@ -102,36 +117,40 @@ export default function ProviderServiceListPage() {
   const createPath = deriveCreatePath();
   const serviceType = deriveServiceType();
 
-  useEffect(() => {
-    if (profile?.id) {
-      refetch();
-    }
-  }, [profile?.id]);
-
   const columns: TableProps<ServiceItem>['columns'] = [
     {
       title: VI.service.list.table.serviceName,
       key: 'serviceName',
       width: 180,
       ellipsis: true,
-      render: (_, record) => <Text>{record.serviceName || record.description || '-'}</Text>,
+      render: (_, record) => (
+        <span className="text-sm text-foreground">
+          {record.serviceName || record.description || '-'}
+        </span>
+      ),
     },
     {
       title: VI.service.list.table.serviceType,
       dataIndex: 'serviceType',
       key: 'serviceType',
-      width: 140,
-      render: (val: string) => <Tag color="purple">{val}</Tag>,
+      width: 150,
+      render: (val: string) => <Tag color="purple">{getServiceTypeDisplayLabel(val)}</Tag>,
     },
     {
       title: VI.service.list.table.coverImage,
       key: 'cover',
-      width: 80,
+      width: 90,
       render: (_, record) =>
         record.imageUrls && record.imageUrls.length > 0 ? (
-          <Image src={record.imageUrls[0]} width={60} height={60} style={{ objectFit: 'cover', borderRadius: 8 }} />
+          <Image
+            src={record.imageUrls[0]}
+            alt=""
+            width={60}
+            height={60}
+            className="rounded-lg object-cover"
+          />
         ) : (
-          <div style={{ width: 60, height: 60, background: '#f0f0f0', borderRadius: 8 }} />
+          <div className="h-[60px] w-[60px] shrink-0 rounded-lg bg-muted" aria-hidden />
         ),
     },
     {
@@ -139,54 +158,66 @@ export default function ProviderServiceListPage() {
       dataIndex: 'description',
       key: 'description',
       ellipsis: true,
-      render: (val: string) => <Text type="secondary">{val}</Text>,
+      render: (val: string) => <span className="text-sm text-muted-foreground">{val}</span>,
     },
     {
       title: VI.service.list.table.slotDuration,
       dataIndex: 'slotDurationHours',
       key: 'slotDurationHours',
-      width: 120,
-      render: (val: number) => `${val}h`,
+      width: 130,
+      render: (val: number) => <span className="text-sm text-foreground">{`${val}h`}</span>,
     },
     {
       title: VI.service.list.table.pricePerSlot,
       dataIndex: 'pricePerSlot',
       key: 'pricePerSlot',
-      width: 150,
-      render: (val: number) => formatPrice(val),
+      width: 160,
+      render: (val: number) => <span className="text-sm text-foreground">{formatPrice(val)}</span>,
     },
     {
       title: VI.service.list.table.status,
       dataIndex: 'status',
       key: 'status',
-      width: 120,
+      width: 130,
       render: (val: string) => <Tag color={getStatusTagColor(val)}>{getStatusLabel(val)}</Tag>,
     },
     {
       title: VI.service.list.table.actions,
       key: 'actions',
-      width: 80,
+      width: 130,
       align: 'center',
       render: (_, record) => (
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
-          <RCTooltip title={VI.service.list.detail.viewButton}>
+        <div className="flex justify-center gap-3" onClick={(e) => e.stopPropagation()}>
+          <Tooltip title={VI.service.list.detail.viewButton}>
             <EyeOutlined
               onClick={() => {
                 setViewModalOpen(true);
                 openView(record.id);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
             />
-          </RCTooltip>
-          <RCTooltip title={VI.common.actions.edit}>
+          </Tooltip>
+          <Tooltip title={VI.common.actions.edit}>
             <EditOutlined
               onClick={() => {
                 setEditingService(record);
                 setEditModalOpen(true);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: '#52c41a' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)' }}
             />
-          </RCTooltip>
+          </Tooltip>
+          <Popconfirm
+            title={VI.service.list.delete.confirmTitle}
+            description={VI.service.list.delete.confirmDescription}
+            okText={VI.common.actions.delete}
+            cancelText={VI.common.actions.cancel}
+            okButtonProps={{ danger: true, loading: deletingId === record.id }}
+            onConfirm={() => void removeService(record.id)}
+          >
+            <Tooltip title={VI.common.actions.delete}>
+              <DeleteOutlined style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }} />
+            </Tooltip>
+          </Popconfirm>
         </div>
       ),
     },
@@ -195,9 +226,9 @@ export default function ProviderServiceListPage() {
   return (
     <DashboardLayout title={VI.service.list.pageTitle} sidebarItems={sidebarItems} brandName={brandName} showChatButton={false}>
       {profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
+        <div className="flex flex-col items-center justify-center gap-4 py-20">
           <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+          <p className="text-sm text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
         </div>
       )}
 
@@ -217,28 +248,31 @@ export default function ProviderServiceListPage() {
       )}
 
       {!profileLoading && verified === true && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 16 }}>
-            <Button icon={<ReloadOutlined />} onClick={refetch} loading={loading}>
+        <>
+          {error && <Alert type="error" message={error} className="mb-4" />}
+
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
+            <UiButton variant="cosmateOutline" disabled={loading} type="button" onClick={() => void refetch()}>
+              <ReloadOutlined className={loading ? 'animate-spin' : ''} />
               {VI.service.list.messages.refresh}
-            </Button>
-            <Button type="primary" icon={<PlusOutlined />} onClick={() => navigate(createPath)}>
+            </UiButton>
+            <UiButton variant="cosmate" type="button" onClick={() => navigate(createPath)}>
+              <PlusOutlined />
               {VI.service.list.createButton}
-            </Button>
+            </UiButton>
           </div>
 
-          <Card style={{ borderRadius: 12 }}>
+          <div className="overflow-hidden rounded-xl border border-border bg-card">
             {loading && services.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div className="flex flex-col items-center justify-center gap-2 py-16">
                 <Spin />
               </div>
             )}
 
             {!loading && services.length === 0 && (
-              <div style={{ textAlign: 'center', padding: '60px 0' }}>
-                <Text type="secondary" style={{ fontSize: 16 }}>{VI.service.list.empty}</Text>
-                <br />
-                <Text type="secondary">{VI.service.list.emptyHint}</Text>
+              <div className="flex flex-col items-center justify-center gap-1 px-4 py-16 text-center">
+                <p className="text-base text-muted-foreground">{VI.service.list.empty}</p>
+                <p className="text-sm text-muted-foreground">{VI.service.list.emptyHint}</p>
               </div>
             )}
 
@@ -247,11 +281,13 @@ export default function ProviderServiceListPage() {
                 columns={columns}
                 dataSource={services}
                 rowKey="id"
-                pagination={false}
+                pagination={{ pageSize: 10 }}
+                loading={loading && services.length > 0}
+                locale={{ emptyText: VI.common.status.noData }}
               />
             )}
-          </Card>
-        </div>
+          </div>
+        </>
       )}
 
       <Modal
@@ -274,7 +310,7 @@ export default function ProviderServiceListPage() {
             onSuccess={() => {
               setEditModalOpen(false);
               setEditingService(null);
-              refetch();
+              void refetch();
             }}
           />
         )}

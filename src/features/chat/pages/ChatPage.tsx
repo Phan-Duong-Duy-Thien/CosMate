@@ -13,7 +13,6 @@ import {
   connectChatSocket,
   subscribeChatRoom,
   sendChatMessage,
-  disconnectChatSocket,
 } from "../services/chatSocket.service"
 import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
@@ -87,13 +86,13 @@ export default function ChatPage() {
 
   // Connect socket
   useEffect(() => {
-    connectChatSocket(() => setIsConnected(true))
+    const release = connectChatSocket(() => setIsConnected(true))
     return () => {
       if (unsubscribeRef.current) {
         unsubscribeRef.current()
         unsubscribeRef.current = null
       }
-      disconnectChatSocket()
+      release()
     }
   }, [])
 
@@ -219,7 +218,7 @@ export default function ChatPage() {
       {/* Right - Chat Container */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 shadow-sm">
+        <div className="flex items-center justify-between border-b border-slate-200 bg-white px-4 pt-3 pb-2.5 shadow-sm">
           <div className="flex items-center gap-3">
             <button
               type="button"

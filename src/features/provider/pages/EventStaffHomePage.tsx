@@ -42,19 +42,19 @@ export default function EventStaffHomePage() {
       title: VI.provider.dashboard.stats.pendingBookings,
       value: 0,
       icon: <Briefcase size={24} />,
-      color: '#7C3AED',
+      color: "var(--primary)",
     },
     {
       title: VI.provider.dashboard.stats.upcomingSchedule,
       value: 0,
       icon: <Calendar size={24} />,
-      color: '#10B981',
+      color: "var(--cosmate-success)",
     },
     {
       title: VI.provider.dashboard.stats.averageRating,
       value: 0,
       icon: <Star size={24} />,
-      color: '#F59E0B',
+      color: "var(--cosmate-warning)",
       precision: 1,
     },
   ];
@@ -64,7 +64,7 @@ export default function EventStaffHomePage() {
       {profileLoading && (
         <div style={{ textAlign: 'center', padding: '80px 0' }}>
           <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
+          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
         </div>
       )}
 
@@ -91,7 +91,7 @@ export default function EventStaffHomePage() {
         <>
           <div style={{ marginBottom: 24 }}>
             <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboardEventStaff.welcome}</h2>
-            <p style={{ color: '#6B7280', fontSize: 14 }}>
+            <p className="text-muted-foreground text-sm">
               {VI.provider.dashboardEventStaff.overview}
             </p>
           </div>
@@ -118,7 +118,7 @@ export default function EventStaffHomePage() {
                         width: 48,
                         height: 48,
                         borderRadius: 12,
-                        backgroundColor: `${stat.color}15`,
+                        backgroundColor: `color-mix(in oklch, ${stat.color} 14%, transparent)`,
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
@@ -140,7 +140,7 @@ export default function EventStaffHomePage() {
                 bordered={false}
                 style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               >
-                <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
+                <p className="py-10 text-center text-muted-foreground">
                   {VI.provider.dashboard.sections.recentBookingsPlaceholder}
                 </p>
               </Card>
@@ -151,7 +151,7 @@ export default function EventStaffHomePage() {
                 bordered={false}
                 style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
               >
-                <p style={{ color: '#6B7280', textAlign: 'center', padding: '40px 0' }}>
+                <p className="py-10 text-center text-muted-foreground">
                   {VI.provider.dashboard.sections.performancePlaceholder}
                 </p>
               </Card>

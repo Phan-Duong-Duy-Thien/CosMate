@@ -1,13 +1,11 @@
 /**
- * OrderDetailDrawer Component
+ * Order detail overlay (centered Modal + tabs).
  *
- * UI-only component to display order details in a drawer.
- * Data fetching is handled internally via useOrderDetail hook.
- * No API calls - receives orderId and callbacks via props.
+ * UI-only — data fetching via hooks inside component.
  */
 
 import { useState } from 'react';
-import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography, Button, Table, Modal } from 'antd';
+import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Avatar, Typography, Button, Table } from 'antd';
 import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined } from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
@@ -17,7 +15,7 @@ import { useExtendOrder } from '../hooks/useExtendOrder';
 import { useOrderExtends } from '../hooks/useOrderExtends';
 import { useExtendDetail } from '../hooks/useExtendDetail';
 import { VI } from '@/shared/i18n/vi';
-import type { OrderDetail, OrderStatus } from '../types';
+import type { OrderStatus } from '../types';
 import type { PaymentMethod } from '../utils/paymentReturnUrls';
 import type { ExtendPaymentStatus } from '../api/order.api';
 
@@ -71,6 +69,14 @@ const getStatusLabel = (status: OrderStatus): string => {
   };
   return statusMap[status] || status;
 };
+
+function formatTrackingDescription(trackingStatus: string, stage: string): string {
+  const statusMap = VI.order.detail.trackingStatusLabels as Record<string, string>;
+  const stageMap = VI.order.detail.trackingStageLabels as Record<string, string>;
+  const statusLabel = statusMap[trackingStatus] ?? trackingStatus;
+  const stageLabel = stageMap[stage] ?? stage;
+  return `${statusLabel} · ${stageLabel}`;
+}
 
 const getStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
@@ -152,12 +158,6 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
       '). This may indicate cross-contamination between order types.'
     );
   }
-
-  console.log('[ORDER DEBUG]', {
-    id: orderDetail?.id,
-    type: orderDetail?.orderType,
-    status: orderDetail?.status,
-  });
 
   const renderCostumeInfo = () => {
     if (costumeLoading) {
@@ -413,7 +413,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <List.Item>
             <List.Item.Meta
               title={item.trackingCode}
-              description={`${item.trackingStatus} - ${item.stage}`}
+              description={formatTrackingDescription(item.trackingStatus, item.stage)}
             />
             <Text type="secondary">{formatDate(item.createdAt)}</Text>
           </List.Item>
@@ -433,7 +433,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <div key={img.id} className="relative overflow-hidden rounded border">
             <img src={img.imageUrl} alt="" className="h-20 w-full object-cover" />
             <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5 text-xs text-white">
-              {img.stage}
+              {(VI.order.detail.trackingStageLabels as Record<string, string>)[img.stage] ?? img.stage}
             </div>
           </div>
         ))}
@@ -441,187 +441,169 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     );
   };
 
+  const overviewTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+            <AppstoreOutlined className="text-purple-600" />
+            {VI.order.detail.costumeInfo ?? 'Trang phục'}
+          </h3>
+          {renderCostumeInfo()}
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.basicInfo}</h3>
+          {renderBasicInfo()}
+        </div>
+
+        {orderDetail.status === 'IN_USE' && (
+          <div className="flex flex-wrap items-center gap-3">
+            <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => setExtendModalOpen(true)}>
+              {VI.provider.orders.tabs.extending}
+            </Button>
+          </div>
+        )}
+
+        {orderDetail.status === 'IN_USE' && (
+          <div>
+            <h3 className="mb-3 flex items-center gap-1 text-sm font-semibold text-foreground">
+              <HistoryOutlined className="text-purple-600" />
+              {VI.order.extend.extendHistory}
+            </h3>
+            {extendsLoading ? (
+              <div className="flex justify-center py-4">
+                <Spin size="small" />
+              </div>
+            ) : extendsList.length === 0 ? (
+              <p className="py-2 text-sm text-muted-foreground">{VI.order.extend.empty}</p>
+            ) : (
+              <Table
+                dataSource={extendsList}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                scroll={{ x: 400 }}
+                columns={[
+                  {
+                    title: VI.order.extend.createdAt,
+                    dataIndex: 'createdAt',
+                    key: 'createdAt',
+                    render: (val) => formatDate(val),
+                  },
+                  {
+                    title: VI.order.extend.extendDays,
+                    dataIndex: 'extendDays',
+                    key: 'extendDays',
+                    render: (val) => `${val} ${VI.order.extend.daysSuffix}`,
+                  },
+                  {
+                    title: VI.order.extend.extendPrice,
+                    dataIndex: 'extendPrice',
+                    key: 'extendPrice',
+                    render: (val) => formatCurrency(val),
+                  },
+                  {
+                    title: VI.order.extend.paymentStatus,
+                    dataIndex: 'paymentStatus',
+                    key: 'paymentStatus',
+                    render: (status: ExtendPaymentStatus) => (
+                      <Tag color={getExtendPaymentColor(status)}>{VI.order.extend.paymentStatusLabels[status]}</Tag>
+                    ),
+                  },
+                  {
+                    title: '',
+                    key: 'action',
+                    render: (_, record) => (
+                      <Button type="link" size="small" onClick={() => handleViewExtend(record.id)}>
+                        {VI.order.extend.viewDetail}
+                      </Button>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    ) : null;
+
+  const rentalTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalInfo}</h3>
+          {renderRentalInfo()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalOptions}</h3>
+          {renderRentalOptions()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.accessories}</h3>
+          {renderAccessories()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.surcharges}</h3>
+          {renderSurcharges()}
+        </div>
+      </div>
+    ) : null;
+
+  const logisticsTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+            <EnvironmentOutlined className="mr-1" />
+            {VI.order.detail.addresses}
+          </h3>
+          {renderAddresses()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.trackings}</h3>
+          {renderTrackings()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.images}</h3>
+          {renderImages()}
+        </div>
+      </div>
+    ) : null;
+
   return (
     <>
-      <Drawer
+      <Modal
         title={VI.order.detail.title}
-        placement="right"
-        width={640}
+        centered
         open={open}
-        onClose={onClose}
+        onCancel={onClose}
+        footer={null}
+        width={960}
+        destroyOnClose
+        styles={{
+          body: { maxHeight: 'min(75vh, 800px)', overflowY: 'auto', paddingTop: 8 },
+        }}
       >
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spin size="large" />
-        </div>
-      ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
-      ) : orderDetail ? (
-        <div className="space-y-4">
-          {/* Costume Info */}
-          <div>
-            <h3 className="mb-2 flex items-center gap-1 font-semibold">
-              <AppstoreOutlined className="text-purple-600" />
-              {VI.order.detail.costumeInfo ?? 'Trang phục'}
-            </h3>
-            {renderCostumeInfo()}
+        {loading ? (
+          <div className="flex h-52 items-center justify-center">
+            <Spin size="large" />
           </div>
-
-          <Divider />
-
-          {/* Basic Info */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.basicInfo}</h3>
-            {renderBasicInfo()}
-          </div>
-
-          {/* Extend Rental — only for IN_USE orders */}
-          {orderDetail?.status === 'IN_USE' && (
-            <div>
-              <Button
-                type="primary"
-                icon={<PlusCircleOutlined />}
-                onClick={() => setExtendModalOpen(true)}
-              >
-                {VI.provider.orders.tabs.extending}
-              </Button>
-            </div>
-          )}
-
-          <Divider />
-
-          {/* Extend History — only for IN_USE orders */}
-          {orderDetail?.status === 'IN_USE' && (
-            <div>
-              <h3 className="mb-3 flex items-center gap-1 font-semibold">
-                <HistoryOutlined className="text-purple-600" />
-                {VI.order.extend.extendHistory}
-              </h3>
-
-              {extendsLoading ? (
-                <div className="flex justify-center py-4">
-                  <Spin size="small" />
-                </div>
-              ) : extendsList.length === 0 ? (
-                <p className="py-2 text-sm text-slate-400">{VI.order.extend.empty}</p>
-              ) : (
-                <Table
-                  dataSource={extendsList}
-                  rowKey="id"
-                  size="small"
-                  pagination={false}
-                  scroll={{ x: 400 }}
-                  columns={[
-                    {
-                      title: VI.order.extend.createdAt,
-                      dataIndex: 'createdAt',
-                      key: 'createdAt',
-                      render: (val) => formatDate(val),
-                    },
-                    {
-                      title: VI.order.extend.extendDays,
-                      dataIndex: 'extendDays',
-                      key: 'extendDays',
-                      render: (val) => `${val} ${VI.order.extend.daysSuffix}`,
-                    },
-                    {
-                      title: VI.order.extend.extendPrice,
-                      dataIndex: 'extendPrice',
-                      key: 'extendPrice',
-                      render: (val) => formatCurrency(val),
-                    },
-                    {
-                      title: VI.order.extend.paymentStatus,
-                      dataIndex: 'paymentStatus',
-                      key: 'paymentStatus',
-                      render: (status: ExtendPaymentStatus) => (
-                        <Tag color={getExtendPaymentColor(status)}>
-                          {VI.order.extend.paymentStatusLabels[status]}
-                        </Tag>
-                      ),
-                    },
-                    {
-                      title: '',
-                      key: 'action',
-                      render: (_, record) => (
-                        <Button
-                          type="link"
-                          size="small"
-                          onClick={() => handleViewExtend(record.id)}
-                        >
-                          {VI.order.extend.viewDetail}
-                        </Button>
-                      ),
-                    },
-                  ]}
-                />
-              )}
-            </div>
-          )}
-
-          <Divider />
-
-          {/* Rental Info */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.rentalInfo}</h3>
-            {renderRentalInfo()}
-          </div>
-
-          <Divider />
-
-          {/* Rental Options */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.rentalOptions}</h3>
-            {renderRentalOptions()}
-          </div>
-
-          <Divider />
-
-          {/* Accessories */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.accessories}</h3>
-            {renderAccessories()}
-          </div>
-
-          <Divider />
-
-          {/* Surcharges */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.surcharges}</h3>
-            {renderSurcharges()}
-          </div>
-
-          <Divider />
-
-          {/* Addresses */}
-          <div>
-            <h3 className="mb-2 font-semibold">
-              <EnvironmentOutlined className="mr-1" />
-              {VI.order.detail.addresses}
-            </h3>
-            {renderAddresses()}
-          </div>
-
-          <Divider />
-
-          {/* Trackings */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.trackings}</h3>
-            {renderTrackings()}
-          </div>
-
-          <Divider />
-
-          {/* Images */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.images}</h3>
-            {renderImages()}
-          </div>
-        </div>
-      ) : (
-        <Empty description={VI.order.detail.empty} />
-      )}
-      </Drawer>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : orderDetail ? (
+          <Tabs
+            defaultActiveKey="overview"
+            items={[
+              { key: 'overview', label: 'Tổng quan', children: overviewTab },
+              { key: 'rental', label: 'Thuê & dịch vụ', children: rentalTab },
+              { key: 'logistics', label: 'Giao nhận & chứng từ', children: logisticsTab },
+            ]}
+          />
+        ) : (
+          <Empty description={VI.order.detail.empty} />
+        )}
+      </Modal>
     <ExtendRentalModal
       open={extendModalOpen}
       onClose={() => setExtendModalOpen(false)}
@@ -643,7 +625,9 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
       open={extendDetailModalOpen}
       onCancel={handleCloseExtendDetail}
       footer={null}
+      centered
       width={500}
+      styles={{ body: { paddingTop: 8 } }}
     >
       {extendDetailLoading ? (
         <div className="flex justify-center py-6">

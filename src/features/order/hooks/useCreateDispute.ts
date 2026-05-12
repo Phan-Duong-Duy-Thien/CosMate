@@ -4,11 +4,7 @@
  */
 import { useState, useCallback } from 'react';
 import { createDisputeService } from '../services/order.service';
-
-interface CreateDisputePayload {
-  reason: string;
-  files: string[];
-}
+import type { CreateDisputePayload } from '../api/dispute.api';
 
 interface UseCreateDisputeResult {
   createDispute: (orderId: number, payload: CreateDisputePayload) => Promise<boolean>;

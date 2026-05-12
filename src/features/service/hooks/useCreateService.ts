@@ -12,6 +12,7 @@ import type {
   ServiceType,
 } from '../types';
 import { VI } from '@/shared/i18n/vi';
+import { getServiceTypeLabelForForm } from '../utils/serviceTypeDisplay';
 
 interface UseCreateServiceResult {
   submitting: boolean;
@@ -82,5 +83,5 @@ export function useCreateService(): UseCreateServiceResult {
  * Derives the service type label from a role constant.
  */
 export function getServiceTypeLabel(serviceType: ServiceType): string {
-  return serviceType;
+  return getServiceTypeLabelForForm(serviceType);
 }

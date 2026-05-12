@@ -4,9 +4,10 @@ import type { NavigateFunction } from 'react-router';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
 import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
 import { submitOrderAndHandleResult } from '../services/order.service';
-import { loadDraft } from '../utils/rentalDraftStorage';
+import { loadDraft, loadCheckoutSelections, saveCheckoutSelections, clearCheckoutSelections } from '../utils/rentalDraftStorage';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
-import type { Costume, PaymentMethod } from '@/features/costume-rental/types';
+import type { Costume } from '@/features/costume-rental/types';
+import type { PaymentMethod } from '../types';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 
 interface CheckoutState {
@@ -30,6 +31,8 @@ interface CheckoutActions {
   setPaymentMethod: (method: PaymentMethod) => void;
   submitOrder: () => Promise<void>;
   refetchAddresses: () => Promise<void>;
+  /** Save current checkout selections and navigate to wallet top-up */
+  navigateToTopUp: () => void;
 }
 
 export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
@@ -65,7 +68,27 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     const init = async () => {
       const userId = getUserId();
       const draft = loadDraft();
-      setState((prev) => ({ ...prev, userId, draft }));
+
+      // Restore checkout selections if returning from wallet top-up
+      const isReturningFromTopUp = new URLSearchParams(window.location.search).get('topup') === 'success';
+      const savedSelections = isReturningFromTopUp ? loadCheckoutSelections() : null;
+
+      setState((prev) => ({
+        ...prev,
+        userId,
+        draft,
+        // Restore persisted selections (address, payment method, policy)
+        ...(savedSelections ? {
+          selectedAddressId: savedSelections.selectedAddressId,
+          paymentMethod: savedSelections.paymentMethod,
+          policyAccepted: savedSelections.policyAccepted,
+        } : {}),
+      }));
+
+      // Clean up saved selections after restore
+      if (savedSelections) {
+        clearCheckoutSelections();
+      }
 
       // Fetch addresses and costume detail in parallel
       const promises: Promise<void>[] = [];
@@ -103,11 +126,9 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('topup') === 'success' && state.userId) {
+      // Force re-fetch by resetting cached balance first
+      setState((prev) => ({ ...prev, walletBalance: null }));
       fetchWalletBalance(state.userId);
-      // Clean up param so toast only fires once (on next render)
-      const url = new URL(window.location.href);
-      url.searchParams.delete('topup');
-      window.history.replaceState({}, '', url.pathname + url.search);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.userId]);
@@ -247,5 +268,15 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     }
   }, [state, computed, navigate]);
 
-  return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses };
+  /** Save current checkout selections to sessionStorage and navigate to wallet top-up */
+  const navigateToTopUp = useCallback(() => {
+    saveCheckoutSelections({
+      selectedAddressId: state.selectedAddressId,
+      paymentMethod: state.paymentMethod,
+      policyAccepted: state.policyAccepted,
+    });
+    navigate('/profile/wallet/topup?redirect=/rent/checkout');
+  }, [state.selectedAddressId, state.paymentMethod, state.policyAccepted, navigate]);
+
+  return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses, navigateToTopUp };
 }

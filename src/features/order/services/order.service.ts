@@ -5,7 +5,7 @@
 import * as orderApi from '../api/order.api';
 import { createDispute as disputeApi, type CreateDisputePayload } from '../api/dispute.api';
 import type { CreateOrderPayload, CreateOrderResponse, CreateOrderParams, PaymentMethod, OrderDetail } from '../types';
-import { clearDraft } from '../utils/rentalDraftStorage';
+import { clearDraft, clearCheckoutSelections } from '../utils/rentalDraftStorage';
 
 /**
  * Format date to ISO string with T separator
@@ -81,6 +81,7 @@ export async function submitOrderAndHandleResult(
   // OrderId is trusted from the response regardless of status.
   if (params.paymentMethod === 'WALLET') {
     clearDraft();
+    clearCheckoutSelections();
     return { type: 'wallet', orderId, status: 'success' };
   }
 

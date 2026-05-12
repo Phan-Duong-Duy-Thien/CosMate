@@ -1,39 +1,10 @@
-import { Card, Descriptions, Empty, Space, Table, Tag, Typography } from 'antd';
-import { useCallback, useEffect, useState } from 'react';
-import { getAuditLogs } from '../api/adminReports.api';
-
-interface AuditLogRow {
-  id: number;
-  createdAt?: string;
-  actor?: string;
-  action?: string;
-  entityType?: string;
-  entityId?: number;
-  detail?: string;
-}
+import { Descriptions, Empty, Table, Tag } from 'antd';
+import { ReloadOutlined } from '@ant-design/icons';
+import { Button as UiButton } from '@/components/ui/button';
+import { useAdminAuditLogs, type AuditLogRow } from '../hooks/useAdminAuditLogs';
 
 export default function AdminAuditLogsPage() {
-  const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<AuditLogRow[]>([]);
-  const [total, setTotal] = useState(0);
-
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const fetchLogs = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { content, totalElements } = await getAuditLogs(page, pageSize);
-      setRows(content);
-      setTotal(totalElements);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize]);
-
-  useEffect(() => {
-    fetchLogs();
-  }, [fetchLogs]);
+  const { loading, rows, total, page, setPage, pageSize, setPageSize, refetch } = useAdminAuditLogs();
 
   const columns = [
     {
@@ -50,7 +21,7 @@ export default function AdminAuditLogsPage() {
       dataIndex: 'actor',
       key: 'actor',
       render: (v: string | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span className={v ? 'text-foreground' : 'text-muted-foreground italic'}>{v ?? '—'}</span>
       ),
     },
     {
@@ -58,15 +29,17 @@ export default function AdminAuditLogsPage() {
       dataIndex: 'action',
       key: 'action',
       render: (value: string | undefined) =>
-        value ? <Tag style={{ margin: 0 }}>{value}</Tag> : <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>,
+        value ? (
+          <Tag style={{ margin: 0 }}>{value}</Tag>
+        ) : (
+          <span className="text-muted-foreground italic">—</span>
+        ),
     },
     {
       title: 'Đối tượng',
       dataIndex: 'entityType',
       key: 'entityType',
-      render: (v: string | undefined) => (
-        <span style={{ color: '#4b5563' }}>{v ?? '—'}</span>
-      ),
+      render: (v: string | undefined) => <span className="text-foreground">{v ?? '—'}</span>,
     },
     {
       title: 'Entity ID',
@@ -74,9 +47,7 @@ export default function AdminAuditLogsPage() {
       key: 'entityId',
       width: 100,
       align: 'center' as const,
-      render: (v: number | undefined) => (
-        <span>{v ?? '—'}</span>
-      ),
+      render: (v: number | undefined) => <span>{v ?? '—'}</span>,
     },
     {
       title: 'Chi tiết',
@@ -84,9 +55,9 @@ export default function AdminAuditLogsPage() {
       key: 'detail',
       render: (value: string | undefined) =>
         value ? (
-          <span style={{ whiteSpace: 'pre-wrap', color: '#374151' }}>{value}</span>
+          <span className="whitespace-pre-wrap text-foreground">{value}</span>
         ) : (
-          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>
+          <span className="text-muted-foreground italic">—</span>
         ),
     },
   ];
@@ -94,55 +65,60 @@ export default function AdminAuditLogsPage() {
   return (
     <>
       <style>{`
-        .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
-        }
+        .admin-user-row:hover { background-color: var(--muted) !important; }
       `}</style>
 
-      <div className="space-y-6">
+      <div className="flex h-full w-full flex-col gap-6">
         <div>
-          <Typography.Title level={3} style={{ marginBottom: 4 }}>Nhật ký hệ thống</Typography.Title>
-          <Typography.Text type="secondary">Theo dõi các thao tác quản trị gần đây trong hệ thống.</Typography.Text>
+          <h2 className="text-lg font-semibold text-foreground">Nhật ký hệ thống</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Theo dõi các thao tác quản trị gần đây trong hệ thống.
+          </p>
         </div>
 
-        <Card bordered={false} style={{ borderRadius: 16 }}>
-          <Table
-            rowKey="id"
-            loading={loading}
-            dataSource={rows}
-            columns={columns}
-            pagination={{
-              current: page,
-              pageSize,
-              total,
-              showTotal: (t) => `Tổng ${t} nhật ký`,
-              showSizeChanger: true,
-              pageSizeOptions: ['10', '20', '50', '100'],
-              onChange: (newPage, newPageSize) => {
-                setPage(newPage);
-                setPageSize(newPageSize);
-              },
-            }}
-            rowClassName={() => 'admin-user-row'}
-            expandable={{
-              expandedRowRender: (record: AuditLogRow) => (
-                <Descriptions size="small" column={2} bordered>
-                  <Descriptions.Item label="Actor">{record.actor || '—'}</Descriptions.Item>
-                  <Descriptions.Item label="Action">{record.action || '—'}</Descriptions.Item>
-                  <Descriptions.Item label="Entity Type">{record.entityType || '—'}</Descriptions.Item>
-                  <Descriptions.Item label="Entity ID">{record.entityId ?? '—'}</Descriptions.Item>
-                  <Descriptions.Item label="Created At">
-                    {record.createdAt ? String(record.createdAt).replace('T', ' ') : '—'}
-                  </Descriptions.Item>
-                  <Descriptions.Item label="Detail" span={2}>
-                    {record.detail || '—'}
-                  </Descriptions.Item>
-                </Descriptions>
-              ),
-            }}
-            locale={{ emptyText: <Empty description="Chưa có nhật ký nào" /> }}
-          />
-        </Card>
+        <div className="mb-2 flex flex-wrap justify-end gap-4">
+          <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
+            <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+            Làm mới
+          </UiButton>
+        </div>
+
+        <Table<AuditLogRow>
+          rowKey="id"
+          loading={loading}
+          dataSource={rows}
+          columns={columns}
+          pagination={{
+            current: page,
+            pageSize,
+            total,
+            showTotal: (t) => `Tổng ${t} nhật ký`,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50', '100'],
+            onChange: (newPage, newPageSize) => {
+              setPage(newPage);
+              setPageSize(newPageSize);
+            },
+          }}
+          rowClassName={() => 'admin-user-row'}
+          expandable={{
+            expandedRowRender: (record: AuditLogRow) => (
+              <Descriptions size="small" column={2} bordered>
+                <Descriptions.Item label="Actor">{record.actor || '—'}</Descriptions.Item>
+                <Descriptions.Item label="Action">{record.action || '—'}</Descriptions.Item>
+                <Descriptions.Item label="Entity Type">{record.entityType || '—'}</Descriptions.Item>
+                <Descriptions.Item label="Entity ID">{record.entityId ?? '—'}</Descriptions.Item>
+                <Descriptions.Item label="Created At">
+                  {record.createdAt ? String(record.createdAt).replace('T', ' ') : '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="Detail" span={2}>
+                  {record.detail || '—'}
+                </Descriptions.Item>
+              </Descriptions>
+            ),
+          }}
+          locale={{ emptyText: <Empty description="Chưa có nhật ký nào" /> }}
+        />
       </div>
     </>
   );

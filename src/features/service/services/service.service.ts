@@ -4,7 +4,14 @@
  * Orchestration layer — builds FormData and calls the API.
  * Called by hooks only; never by components or pages.
  */
-import { createService, getProviderServices, getPublicServices, getServiceById, updateService as updateServiceApi } from '../api/service.api';
+import {
+  createService,
+  getProviderServices,
+  getPublicServices,
+  getServiceById,
+  updateService as updateServiceApi,
+  deleteService as deleteServiceApi,
+} from '../api/service.api';
 import type {
   CreateServiceFormData,
   CreateServicePayload,
@@ -88,4 +95,11 @@ export async function updateService(
   };
 
   return updateServiceApi(serviceId, payload);
+}
+
+/**
+ * Deletes a service by ID (provider dashboard).
+ */
+export async function deleteProviderService(serviceId: number): Promise<void> {
+  return deleteServiceApi(serviceId);
 }

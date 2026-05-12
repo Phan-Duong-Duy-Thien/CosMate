@@ -48,7 +48,7 @@ export function useServiceOrderVerification(
     setStatus('unknown');
 
     try {
-      const orders = await getServiceOrdersByCosplayer(userId);
+      const { orders } = await getServiceOrdersByCosplayer(userId);
       console.log('[useServiceOrderVerification] orders from BE:', orders);
 
       console.log('[ORDERS API]', orders);

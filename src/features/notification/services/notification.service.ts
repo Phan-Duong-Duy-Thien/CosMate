@@ -1,4 +1,9 @@
-import { getNotifications, markNotificationRead, markAllNotificationsRead } from "../api/notification.api"
+import {
+  getNotifications,
+  markNotificationRead,
+  markAllNotificationsRead,
+  deleteNotification,
+} from "../api/notification.api"
 import type { NotificationsResponse } from "../types"
 
 export async function fetchNotifications(): Promise<NotificationsResponse> {
@@ -14,4 +19,9 @@ export async function markRead(notificationId: number): Promise<void> {
 export async function markAllRead(): Promise<void> {
   console.log("[notification.service] markAllRead")
   await markAllNotificationsRead()
+}
+
+export async function removeNotification(notificationId: number): Promise<void> {
+  console.log("[notification.service] removeNotification:", notificationId)
+  await deleteNotification(notificationId)
 }

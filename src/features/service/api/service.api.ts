@@ -118,3 +118,17 @@ export async function updateService(
   );
   return response.data.result;
 }
+
+/**
+ * DELETE /api/services/{id}
+ * Success example: { code: 0, message: "Đã xóa dịch vụ!" }
+ */
+export async function deleteService(serviceId: number): Promise<void> {
+  const response = await axiosInstance.delete<{ code: number; message?: string }>(
+    `/api/services/${serviceId}`
+  );
+  const body = response.data;
+  if (body && typeof body.code === 'number' && body.code !== 0) {
+    throw new Error(body.message || 'Xóa dịch vụ thất bại');
+  }
+}

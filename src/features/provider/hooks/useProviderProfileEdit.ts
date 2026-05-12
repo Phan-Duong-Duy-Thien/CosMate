@@ -12,10 +12,11 @@ import { message } from 'antd';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getProviderByUserId, uploadProviderCoverImage } from '@/features/provider/api/provider.api';
 import { getUserAddresses } from '@/features/profile/api/userAddress.api';
+import { updateUserAddress, deleteUserAddress } from '@/features/profile/api/userAddress.api';
 import { updateProviderProfile } from '@/features/provider/api/provider.api';
-import { uploadAvatar } from '@/features/profile/services/userProfile.service';
+import { uploadAvatar as uploadUserAvatar } from '@/features/profile/services/userProfile.service';
 import type { ProviderProfile } from '@/features/provider/types';
-import type { UserAddress } from '@/features/profile/api/userAddress.api';
+import type { UserAddress, UpsertUserAddressPayload } from '@/features/profile/types';
 
 interface EditFormData {
   shopName: string;
@@ -37,6 +38,9 @@ interface UseProviderProfileEditResult {
   refetch: () => Promise<void>;
   uploadAvatar: (file: File) => Promise<void>;
   uploadCoverImage: (file: File) => Promise<void>;
+  addressSaving: boolean;
+  updateAddress: (addressId: number, payload: UpsertUserAddressPayload) => Promise<boolean>;
+  removeAddress: (addressId: number) => Promise<boolean>;
 }
 
 export function useProviderProfileEdit(): UseProviderProfileEditResult {
@@ -46,6 +50,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const [addresses, setAddresses] = useState<UserAddress[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [addressSaving, setAddressSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const [formData, setFormData] = useState<EditFormData>({
@@ -102,7 +107,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
 
     setSaving(true);
     try {
-      await updateProviderProfile(profile.userId, {
+      await updateProviderProfile(profile.id, {
         shopName: formData.shopName,
         shopAddressId: formData.shopAddressId ?? 0,
         bio: formData.bio,
@@ -124,7 +129,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const uploadAvatar = useCallback(async (file: File): Promise<void> => {
     if (!profile) return;
     try {
-      await uploadAvatar(profile.userId, file);
+      await uploadUserAvatar(profile.userId, file);
       message.success('Avatar đã được cập nhật');
       await loadData();
     } catch (err) {
@@ -145,6 +150,45 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
     }
   }, [profile, loadData]);
 
+  const updateAddress = useCallback(async (
+    addressId: number,
+    payload: UpsertUserAddressPayload
+  ): Promise<boolean> => {
+    if (!userId) return false;
+
+    setAddressSaving(true);
+    try {
+      await updateUserAddress(userId, addressId, payload);
+      message.success('Địa chỉ đã được cập nhật');
+      await loadData();
+      return true;
+    } catch (err) {
+      console.error('[useProviderProfileEdit] update address error:', err);
+      message.error('Cập nhật địa chỉ thất bại');
+      return false;
+    } finally {
+      setAddressSaving(false);
+    }
+  }, [userId, loadData]);
+
+  const removeAddress = useCallback(async (addressId: number): Promise<boolean> => {
+    if (!userId) return false;
+
+    setAddressSaving(true);
+    try {
+      await deleteUserAddress(userId, addressId);
+      message.success('Địa chỉ đã được xóa');
+      await loadData();
+      return true;
+    } catch (err) {
+      console.error('[useProviderProfileEdit] delete address error:', err);
+      message.error('Xóa địa chỉ thất bại');
+      return false;
+    } finally {
+      setAddressSaving(false);
+    }
+  }, [userId, loadData]);
+
   return {
     profile,
     addresses,
@@ -157,5 +201,8 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
     refetch: loadData,
     uploadAvatar,
     uploadCoverImage,
+    addressSaving,
+    updateAddress,
+    removeAddress,
   };
 }

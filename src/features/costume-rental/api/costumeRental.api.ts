@@ -84,6 +84,18 @@ export async function getCostumeById(id: number): Promise<CostumeApiResponse<Cos
   return response.data
 }
 
+/**
+ * DELETE /api/costumes/{id}
+ * Success example: { code: 0, message: "Xóa bộ đồ thành công!" }
+ */
+export async function deleteCostume(id: number): Promise<void> {
+  const response = await axiosInstance.delete<{ code: number; message?: string }>(`/api/costumes/${id}`)
+  const body = response.data
+  if (body && typeof body.code === 'number' && body.code !== 0) {
+    throw new Error(body.message || 'Xóa trang phục thất bại')
+  }
+}
+
 export async function updateCostumeBasic(id: number, formData: FormData): Promise<void> {
   await axiosInstance.put('/api/costumes/' + id, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
 }

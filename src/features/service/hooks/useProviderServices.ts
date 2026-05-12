@@ -5,7 +5,7 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
-import { fetchProviderServices } from '../services/service.service';
+import { fetchProviderServices, deleteProviderService } from '../services/service.service';
 import type { ServiceItem } from '../types';
 import { VI } from '@/shared/i18n/vi';
 
@@ -14,6 +14,8 @@ interface UseProviderServicesResult {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
+  deletingId: number | null;
+  removeService: (serviceId: number) => Promise<boolean>;
 }
 
 export function useProviderServices(
@@ -22,6 +24,7 @@ export function useProviderServices(
   const [services, setServices] = useState<ServiceItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
 
   const refetch = useCallback(async () => {
     if (!providerId || providerId === 0) {
@@ -50,5 +53,25 @@ export function useProviderServices(
     refetch();
   }, [refetch]);
 
-  return { services, loading, error, refetch };
+  const removeService = useCallback(
+    async (serviceId: number): Promise<boolean> => {
+      try {
+        setDeletingId(serviceId);
+        await deleteProviderService(serviceId);
+        message.success(VI.service.list.messages.deleteSuccess);
+        await refetch();
+        return true;
+      } catch (err) {
+        const msg =
+          err instanceof Error ? err.message : VI.service.list.messages.deleteError;
+        message.error(msg);
+        return false;
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [refetch],
+  );
+
+  return { services, loading, error, refetch, deletingId, removeService };
 }

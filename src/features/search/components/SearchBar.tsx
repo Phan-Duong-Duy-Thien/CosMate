@@ -70,9 +70,9 @@ export function SearchBar({ className }: SearchBarProps) {
           value={keyword}
           onChange={(e) => handleChange(e.target.value)}
           onFocus={() => keyword.trim().length > 0 && setIsOpen(true)}
-          placeholder="Search costumes..."
+          placeholder="Tìm kiếm trang phục..."
           className="pl-9! pr-8! h-9! rounded-full! text-sm!"
-          aria-label="Search costumes"
+          aria-label="Tìm kiếm trang phục"
           autoComplete="off"
         />
         {keyword && (
@@ -93,8 +93,8 @@ export function SearchBar({ className }: SearchBarProps) {
             {results.length === 0 && !isLoading ? (
               <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">
                 <span className="text-3xl">🔍</span>
-                <p className="text-sm font-medium text-slate-600">No costumes found</p>
-                <p className="text-xs text-slate-400">Try a different keyword</p>
+                <p className="text-sm font-medium text-slate-600">Không tìm thấy trang phục</p>
+                <p className="text-xs text-slate-400">Thử lại với từ khóa khác</p>
               </div>
             ) : (
               <>

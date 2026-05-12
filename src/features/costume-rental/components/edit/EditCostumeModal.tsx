@@ -129,9 +129,10 @@ export default function EditCostumeModal({
           children: (
             <FeesTab
               surcharges={detail.surcharges ?? []}
-              rentalOptions={detail.rentalOptions ?? []}
+              rentalOptions={[]}
               accessories={detail.accessories ?? []}
               numberOfItems={detail.numberOfItems ?? 1}
+              hideRentalOptions
               onUpdateSurcharge={onUpdateSurcharge}
               onUpdateRentalOption={onUpdateRentalOption}
               onUpdateAccessory={onUpdateAccessory}
@@ -192,7 +193,7 @@ export default function EditCostumeModal({
       )}
 
       {!detailLoading && !detail && (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: '#6B7280' }}>
+        <div className="py-12 text-center text-muted-foreground">
           {VI.costumeRental.editCostume.loadError}
         </div>
       )}

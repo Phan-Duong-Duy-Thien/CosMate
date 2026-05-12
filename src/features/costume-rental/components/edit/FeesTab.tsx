@@ -260,7 +260,7 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
                 key={name}
                 size="small"
                 title={`${name} - ${RENTAL_OPTION_LABELS[name]}`}
-                style={{ borderColor: '#1890ff' }}
+                style={{ borderColor: "var(--cosmate-info)" }}
               >
                 <Form form={form} layout="vertical">
                   <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price} rules={[{ required: true }]}>
@@ -299,7 +299,11 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
                   </Button>
                 )
               }
-              style={{ borderColor: hasValue ? '#52c41a' : '#ffccc7' }}
+              style={{
+                borderColor: hasValue
+                  ? "var(--cosmate-success)"
+                  : "color-mix(in oklch, var(--destructive) 22%, var(--background))",
+              }}
             >
               {item ? (
                 <>
@@ -497,6 +501,7 @@ interface FeesTabProps {
   rentalOptions: CostumeRentalOption[]
   accessories: CostumeAccessory[]
   numberOfItems: number
+  hideRentalOptions?: boolean
   onUpdateSurcharge: (id: number, values: SurchargeUpdateInput) => Promise<void>
   onUpdateRentalOption: (id: number, values: RentalOptionUpdateInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
@@ -520,6 +525,7 @@ export default function FeesTab({
   rentalOptions,
   accessories,
   numberOfItems,
+  hideRentalOptions = false,
   onUpdateSurcharge,
   onUpdateRentalOption,
   onUpdateAccessory,
@@ -536,7 +542,6 @@ export default function FeesTab({
   onCreateRentalOption,
   onCreateAccessory,
 }: FeesTabProps) {
-  const addRentalOptionDisabled = !canAddRentalOption(rentalOptions.length)
   const addAccessoryDisabled = !canAddAccessory(accessories.length, numberOfItems)
 
   return (
@@ -601,16 +606,19 @@ export default function FeesTab({
         </Space>
       )}
 
-      <Divider />
-
-      {/* Rental Options - Fixed 4 packages */}
-      <Text strong style={{ display: 'block', marginBottom: 8 }}>{VI.costumeRental.rentalOptions.title}</Text>
-      <RentalOptionSection
-        items={rentalOptions}
-        onSave={onUpdateRentalOption}
-        onCreate={onCreateRentalOption}
-        saving={rentalOptionSubmitting}
-      />
+      {!hideRentalOptions && (
+        <>
+          <Divider />
+          {/* Rental Options - Fixed 4 packages */}
+          <Text strong style={{ display: 'block', marginBottom: 8 }}>{VI.costumeRental.rentalOptions.title}</Text>
+          <RentalOptionSection
+            items={rentalOptions}
+            onSave={onUpdateRentalOption}
+            onCreate={onCreateRentalOption}
+            saving={rentalOptionSubmitting}
+          />
+        </>
+      )}
 
       {/* Create Modals */}
       <SurchargeCreateModal

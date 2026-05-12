@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { getCostumeImages, type CostumeImage } from '../api/costumeImages.api'
+import { resolveCostumeImageUrl } from '../utils/resolveCostumeImageUrl'
 
 export interface UseCostumeImagesReturn {
   mainImages: CostumeImage[]
@@ -30,7 +31,14 @@ export function useCostumeImages(costumeId: number | null): UseCostumeImagesRetu
     setError(null)
     getCostumeImages(costumeId)
       .then((imgs) => {
-        if (!cancelled) setAllImages(imgs)
+        if (!cancelled) {
+          setAllImages(
+            imgs.map((img) => ({
+              ...img,
+              url: resolveCostumeImageUrl(img.url),
+            })),
+          )
+        }
       })
       .catch((err) => {
         if (!cancelled)
