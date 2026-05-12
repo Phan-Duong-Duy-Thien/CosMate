@@ -70,16 +70,9 @@ export default function AddressCreatePage() {
   };
 
   return (
-<<<<<<< Updated upstream
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-2xl px-4 pt-10">
         <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm">
-=======
-    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
-      <div className="mx-auto w-full max-w-2xl pt-10">
-        <Card className="border-border bg-card/90 shadow-sm backdrop-blur-sm">
-          <CardContent className="p-6">
->>>>>>> Stashed changes
           {/* Header */}
           <div className="mb-6 text-center">
             <h1 className="text-2xl font-semibold text-slate-900">

@@ -14,31 +14,16 @@ export default function PhotographerProfilePage() {
 
   if (loading) {
     return (
-<<<<<<< Updated upstream
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
         <Spin size="large" />
-=======
-      <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
-        <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] px-10 py-12 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-pink-600" aria-hidden />
-          <p className="mt-4 text-center text-sm font-extrabold text-indigo-950">Đang tải hồ sơ…</p>
-        </div>
->>>>>>> Stashed changes
       </div>
     );
   }
 
   if (error || !provider) {
     return (
-<<<<<<< Updated upstream
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA] text-red-500">
         {error ?? 'Không tìm thấy nhiếp ảnh gia'}
-=======
-      <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
-        <div className="max-w-md rounded-[1.25rem] border-[4px] border-red-700/35 bg-red-50 px-8 py-10 text-center shadow-[8px_8px_0_0_rgba(127,29,29,0.2)]">
-          <p className="text-sm font-extrabold text-red-900">{error ?? "Không tìm thấy nhiếp ảnh gia"}</p>
-        </div>
->>>>>>> Stashed changes
       </div>
     );
   }

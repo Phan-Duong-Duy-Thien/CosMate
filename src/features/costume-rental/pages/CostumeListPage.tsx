@@ -179,11 +179,7 @@ export default function CostumeListPage() {
           100% { opacity: 0.6; transform: translateY(0px); }
         }
       `}</style>
-<<<<<<< Updated upstream
       <div className="mx-auto w-full pt-6">
-=======
-      <div className="w-full min-w-0 pt-6">
->>>>>>> Stashed changes
         <div
           className={
             "rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-100 to-pink-200 px-5 py-5 text-center shadow-[0_8px_20px_rgba(236,72,153,0.12)] backdrop-blur transition-all duration-300 ease-out " +

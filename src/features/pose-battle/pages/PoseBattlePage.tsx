@@ -90,7 +90,7 @@ export default function PoseBattlePage() {
   }
 
   return (
-    <section className="w-full min-w-0 space-y-4 py-3">
+    <section className="mx-auto max-w-7xl space-y-4 py-3">
       <div className="sticky top-[72px] z-20 grid gap-3 bg-white/70 pb-2 backdrop-blur-sm lg:grid-cols-2">
         <Card className="rounded-3xl border-pink-200 p-3.5">
           <h2 className="mb-2 text-base font-semibold text-pink-700">Ảnh gốc (Reference)</h2>

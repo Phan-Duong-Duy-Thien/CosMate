@@ -62,7 +62,7 @@ export default function StyleQuizPage() {
   }, [quiz.results, sortBy, nameFilter])
 
   return (
-    <section className="w-full min-w-0 space-y-4 py-4">
+    <section className="mx-auto max-w-6xl space-y-4 py-4">
       <Modal open={quiz.showResumeModal} title="Tiếp tục bài quiz đang làm dở?" okText="Tiếp tục" cancelText="Bắt đầu mới" onOk={quiz.restoreDraft} onCancel={quiz.discardDraftAndStartNew} closable={false} maskClosable={false}>
         <p>Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục không?</p>
       </Modal>

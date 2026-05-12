@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react'
 
@@ -122,7 +122,6 @@ function WishlistItemCard({
 
 export default function WishlistPage() {
   const navigate = useNavigate()
-  const [heroVisible, setHeroVisible] = useState(false)
   const {
     wishlistItems,
     loading,
@@ -133,13 +132,6 @@ export default function WishlistPage() {
   useEffect(() => {
     fetchWishlist()
   }, [fetchWishlist])
-
-  useEffect(() => {
-    const frame = window.requestAnimationFrame(() => {
-      setHeroVisible(true)
-    })
-    return () => window.cancelAnimationFrame(frame)
-  }, [])
 
   const handleViewDetail = (costumeId: number) => {
     navigate(`/costumes/${costumeId}`)
@@ -156,26 +148,16 @@ export default function WishlistPage() {
 
   if (loading && wishlistItems.length === 0) {
     return (
-<<<<<<< Updated upstream
       <div className="flex min-h-screen items-center justify-center">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
           <p className="text-sm text-slate-500">{VI.common.status.loading}</p>
-=======
-      <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-        <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] px-10 py-12 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-pink-600" aria-hidden />
-          <p className="mt-4 text-center text-sm font-extrabold text-indigo-950">
-            {VI.common.status.loading}
-          </p>
->>>>>>> Stashed changes
         </div>
       </div>
     )
   }
 
   return (
-<<<<<<< Updated upstream
     <section className="min-h-screen pb-20">
       <div className="mx-auto w-full max-w-screen-2xl px-4 pt-6">
         {/* Header */}
@@ -187,54 +169,13 @@ export default function WishlistPage() {
           <Badge className="bg-pink-100 text-pink-600">
             {wishlistItems.length} {itemCountLabel}
           </Badge>
-=======
-    <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-      <style>{`
-        @keyframes softSparkle {
-          0% { opacity: 0.6; transform: translateY(0px); }
-          50% { opacity: 1; transform: translateY(-1px); }
-          100% { opacity: 0.6; transform: translateY(0px); }
-        }
-      `}</style>
-      <div className="w-full min-w-0 pt-6">
-        <div
-          className={
-            'rounded-[1.4rem] border-[4px] border-indigo-950 bg-gradient-to-r from-pink-200 via-rose-100 to-violet-200 px-5 py-5 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.33)] backdrop-blur transition-all duration-300 ease-out ' +
-            (heroVisible ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0')
-          }
-        >
-          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-3xl font-extrabold tracking-tight text-indigo-950 md:mt-2 md:text-5xl">
-            <span className="sr-only">{VI.common.toast.wishlist.pageTitle}</span>
-            <span
-              aria-hidden="true"
-              className="text-[20px] tracking-[0.5px] text-indigo-900 motion-reduce:animate-none md:text-[40px]"
-            >
-              ･:*🌸࿔   ⋆. 𐙚˚࿔  {VI.common.toast.wishlist.pageTitle}  𝜗𝜚˚⋆   ࿔🌸*:･
-            </span>
-          </h1>
-          <p className="mt-3 text-sm font-semibold text-indigo-900/90 md:text-base">
-            <Heart
-              className="mr-1.5 inline-block h-4 w-4 fill-cosmate-pink text-cosmate-pink align-[-2px] md:h-5 md:w-5"
-              aria-hidden
-            />
-            {wishlistItems.length} {itemCountLabel}
-          </p>
->>>>>>> Stashed changes
         </div>
 
         {/* Grid */}
         {wishlistItems.length === 0 ? (
-<<<<<<< Updated upstream
           <div className="rounded-2xl border border-pink-100 bg-white/80 p-16 text-center shadow-sm">
             <Heart className="mx-auto h-14 w-14 text-pink-200" />
             <h2 className="mt-5 text-xl font-semibold text-slate-700">
-=======
-          <div className="mt-5 rounded-[1.25rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fffbeb] via-white to-pink-50/40 p-10 text-center shadow-[10px_10px_0_0_rgba(30,27,75,0.3)] md:p-16">
-            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 shadow-[5px_5px_0_0_#1e1b4b]">
-              <Heart className="h-8 w-8 text-pink-500" aria-hidden />
-            </span>
-            <h2 className="mt-6 text-xl font-extrabold text-indigo-950">
->>>>>>> Stashed changes
               {VI.common.toast.wishlist.emptyTitle}
             </h2>
             <p className="mt-2 text-sm text-slate-500">
@@ -249,11 +190,7 @@ export default function WishlistPage() {
             </Button>
           </div>
         ) : (
-<<<<<<< Updated upstream
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-=======
-          <div className="mt-5 grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
->>>>>>> Stashed changes
             {wishlistItems.map((item) => (
               <WishlistItemCard
                 key={item.id}

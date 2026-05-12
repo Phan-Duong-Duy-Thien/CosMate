@@ -83,7 +83,6 @@ export default function GuidelinesRulesPage() {
   ]
 
   return (
-<<<<<<< Updated upstream
     <section className="min-h-screen bg-transparent py-8 [font-family:'Be_Vietnam_Pro','Nunito','Inter',ui-sans-serif,system-ui] md:py-10">
       <style>{`
         @keyframes sparkleBlink {
@@ -99,11 +98,6 @@ export default function GuidelinesRulesPage() {
       `}</style>
       <div className="mx-auto w-full">
         <div
-=======
-    <section className="min-h-screen bg-gradient-to-b from-cosmate-soft-pink/45 via-background to-background py-8 md:py-10">
-      <div className="mx-auto w-full min-w-0 max-w-6xl">
-        <Card
->>>>>>> Stashed changes
           className={cn(
             "rounded-3xl border border-white/70 bg-white/68 p-6 shadow-[0_16px_40px_rgba(236,72,153,0.08)] backdrop-blur-sm transition-all duration-300 ease-out md:p-8",
             pageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"

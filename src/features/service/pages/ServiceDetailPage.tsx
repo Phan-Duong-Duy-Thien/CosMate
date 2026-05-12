@@ -20,23 +20,14 @@ export default function ServiceDetailPage() {
 
   if (loading) {
     return (
-<<<<<<< Updated upstream
       <div className="min-h-screen flex items-center justify-center bg-[#F8F9FA]">
         <Spin size="large" />
-=======
-      <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
-        <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] px-10 py-12 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
-          <Loader2 className="mx-auto h-10 w-10 animate-spin text-pink-600" aria-hidden />
-          <p className="mt-4 text-center text-sm font-extrabold text-indigo-950">Đang tải dịch vụ…</p>
-        </div>
->>>>>>> Stashed changes
       </div>
     );
   }
 
   if (error || !service) {
     return (
-<<<<<<< Updated upstream
       <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA] text-[#A090C5] gap-4">
         <p>{error ?? 'Không tìm thấy dịch vụ.'}</p>
         <button
@@ -45,19 +36,6 @@ export default function ServiceDetailPage() {
         >
           Quay lại
         </button>
-=======
-      <div className="home-anime flex min-h-screen flex-col items-center justify-center gap-4 bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
-        <div className="max-w-md rounded-[1.25rem] border-[4px] border-indigo-950/35 bg-[#fffbeb] px-8 py-10 text-center shadow-[8px_8px_0_0_rgba(30,27,75,0.25)]">
-          <p className="font-extrabold text-indigo-950">{error ?? "Không tìm thấy dịch vụ."}</p>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="mt-6 rounded-xl border-[3px] border-indigo-950 bg-white px-5 py-2.5 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] hover:bg-pink-50"
-          >
-            Quay lại
-          </button>
-        </div>
->>>>>>> Stashed changes
       </div>
     );
   }

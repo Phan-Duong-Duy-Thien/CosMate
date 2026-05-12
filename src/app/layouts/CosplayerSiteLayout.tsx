@@ -20,12 +20,7 @@ import {
   UserRound,
   Youtube,
 } from "lucide-react"
-<<<<<<< Updated upstream
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip } from "antd"
-=======
-import { Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
-import { DeleteOutlined } from "@ant-design/icons"
->>>>>>> Stashed changes
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
@@ -39,7 +34,6 @@ import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import bgImage from "@/assets/background.jpg"
@@ -58,22 +52,6 @@ function computeInitials(fullName: string | null): string {
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
-
-/** Neo card-style controls (aligned with CostumeCard / ProductCard: indigo-950 frame + offset shadow). */
-const headerAuthNeoBtnBase =
-  "rounded-xl border-[3px] border-indigo-950 font-bold shadow-[4px_4px_0_0_rgba(30,27,75,0.45)] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.35)] active:translate-y-0 active:shadow-[4px_4px_0_0_rgba(30,27,75,0.45)] focus-visible:ring-2 focus-visible:ring-indigo-950/35 focus-visible:ring-offset-0"
-
-/** Header icons — no heavy outline; hover/active use CosMate pink tokens + soft motion. */
-const headerIconBtnBase =
-  "relative flex size-10 shrink-0 items-center justify-center rounded-full border-0 bg-transparent text-muted-foreground shadow-none transition-all duration-200 ease-out hover:scale-[1.06] hover:bg-cosmate-soft-pink/65 hover:text-cosmate-pink hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35 focus-visible:ring-offset-0 active:scale-[0.96]"
-
-const headerIconBtnActive =
-  "bg-cosmate-soft-pink/70 text-cosmate-pink shadow-sm hover:bg-cosmate-soft-pink/80 hover:text-cosmate-pink"
-
-/** Side inset from viewport — generous margins like /costumes (laptop + ultrawide). */
-const cosplayerViewportGutter = "px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 2xl:px-20"
-/** Centered content column; caps width so empty bands stay visible beside the column. */
-const cosplayerContentColumn = "mx-auto box-border w-full min-w-0 max-w-[1680px]"
 
 export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
@@ -95,12 +73,8 @@ export default function CosplayerSiteLayout() {
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
-<<<<<<< Updated upstream
   const isWideContentPage =
     location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
-=======
-  const isNotificationsPage = location.pathname === "/notifications"
->>>>>>> Stashed changes
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead } = useNotifications()
@@ -393,11 +367,11 @@ export default function CosplayerSiteLayout() {
           isScrolled && "border-pink-300/80 shadow-md"
         )}
       >
-        <div className="flex h-16 w-full min-w-0 items-center gap-3 px-4 sm:px-5 md:px-6">
+        <div className="flex h-16 w-full items-center gap-3 pl-0 pr-4">
           <Link
             to="/"
             aria-label="Về trang chủ"
-            className="inline-flex shrink-0 items-center rounded-lg p-0 transition hover:bg-cosmate-soft-pink/40"
+            className="ml-4 inline-flex shrink-0 items-center rounded-lg p-0 transition hover:bg-pink-50"
           >
             <img src={siteLogo} alt="CosMate" className="h-15 w-auto object-contain" />
           </Link>
@@ -407,7 +381,10 @@ export default function CosplayerSiteLayout() {
               <button
                 type="button"
                 aria-label="Trang chủ"
-                className={cn(headerIconBtnBase, isHomePage && headerIconBtnActive)}
+                className={cn(
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  isHomePage ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                )}
                 onClick={() => navigate("/")}
               >
                 <Home className="h-6 w-6" />
@@ -419,8 +396,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê đồ Cosplay"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname.startsWith("/costumes") && headerIconBtnActive
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname.startsWith("/costumes") ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/costumes")}
               >
@@ -433,8 +410,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Quiz"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname === "/style-quiz" && headerIconBtnActive
+                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/style-quiz" ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/style-quiz")}
               >
@@ -447,8 +424,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Pose Battle"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname === "/pose-battle" && headerIconBtnActive
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/pose-battle" ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/pose-battle")}
               >
@@ -461,8 +438,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Hướng dẫn và Quy định"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname === "/guidelines-rules" && headerIconBtnActive
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/guidelines-rules" ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/guidelines-rules")}
               >
@@ -475,8 +452,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê Photographer"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname === "/photographers" && headerIconBtnActive
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/photographers" ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/photographers")}
               >
@@ -489,8 +466,8 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê Staff"
                 className={cn(
-                  headerIconBtnBase,
-                  location.pathname === "/staffs" && headerIconBtnActive
+                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
+                  location.pathname === "/staffs" ? "bg-pink-50 text-pink-600" : "text-slate-700"
                 )}
                 onClick={() => navigate("/staffs")}
               >
@@ -502,78 +479,62 @@ export default function CosplayerSiteLayout() {
           <div className="ml-auto flex shrink-0 items-center gap-2">
             <SearchBar className="hidden md:flex" />
 
-            {loggedIn && (
-              <>
-                <button
-                  type="button"
-                  aria-label="Tin nhắn"
-                  className={headerIconBtnBase}
-                  onClick={() => openChat(0, 0)}
-                >
-                  <MessageCircle className="h-6 w-6" />
-                  {chatUnreadCount > 0 && (
-                    <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-0.5 text-[9px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
-                      {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                    </span>
-                  )}
-                </button>
+            <button
+              type="button"
+              aria-label="Tin nhắn"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => openChat(0, 0)}
+            >
+              <MessageCircle className="h-6 w-6" />
+              {chatUnreadCount > 0 && (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
+                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                </span>
+              )}
+            </button>
 
-                <button
-                  type="button"
-                  aria-label="Giỏ hàng"
-                  className={cn(
-                    headerIconBtnBase,
-                    location.pathname.startsWith("/profile/purchase-history") && headerIconBtnActive
-                  )}
-                  onClick={() => navigate("/profile/purchase-history")}
-                >
-                  <ShoppingCart className="h-6 w-6" />
-                  <span
-                    aria-hidden
-                    className="absolute right-2 top-2 h-2 w-2 rounded-full bg-cosmate-pink shadow-sm ring-2 ring-background"
-                  />
-                </button>
+            <button
+              type="button"
+              aria-label="Giỏ hàng"
+              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              onClick={() => navigate('/profile/purchase-history')}
+            >
+              <ShoppingCart className="h-6 w-6" />
+              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
+            </button>
 
-                <Tooltip title="Wishlist">
-                  <button
-                    type="button"
-                    aria-label="Wishlist"
-                    className={cn(
-                      headerIconBtnBase,
-                      location.pathname.startsWith("/wishlist") && headerIconBtnActive
-                    )}
-                    onClick={() => navigate("/wishlist")}
-                  >
-                    <Heart className="h-6 w-6" />
-                  </button>
-                </Tooltip>
+            <Tooltip title="Wishlist">
+              <button
+                type="button"
+                aria-label="Wishlist"
+                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                onClick={() => navigate('/wishlist')}
+              >
+                <Heart className="h-6 w-6" />
+              </button>
+            </Tooltip>
 
-                <Popover
-                  content={notifPopoverContent}
-                  trigger="click"
-                  open={notifOpen}
-                  onOpenChange={setNotifOpen}
-                  placement="bottomRight"
-                  arrow={false}
-                >
-                  <button
-                    type="button"
-                    aria-label="Thông báo"
-                    className={cn(
-                      headerIconBtnBase,
-                      isNotificationsPage && headerIconBtnActive
-                    )}
-                  >
-                    <Bell className="h-6 w-6" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cosmate-pink px-0.5 text-[9px] font-bold text-primary-foreground shadow-sm ring-2 ring-background">
-                        {unreadCount > 9 ? "9+" : unreadCount}
-                      </span>
-                    )}
-                  </button>
-                </Popover>
-              </>
-            )}
+            <Popover
+              content={notifPopoverContent}
+              trigger="click"
+              open={notifOpen}
+              onOpenChange={setNotifOpen}
+              placement="bottomRight"
+              arrow={false}
+            >
+              <button
+                type="button"
+                aria-label="Thông báo"
+                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+              >
+                <Bell className="h-6 w-6" />
+                {unreadCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
+              </button>
+            </Popover>
 
             {loggedIn ? (
               <Dropdown 
@@ -594,30 +555,10 @@ export default function CosplayerSiteLayout() {
               </Dropdown>
             ) : (
               <>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    headerAuthNeoBtnBase,
-                    "shrink-0 bg-[#fffbeb] text-indigo-950 hover:bg-cosmate-soft-pink/50 hover:text-indigo-950"
-                  )}
-                  onClick={() => navigate("/login")}
-                >
-                  {VI.common.actions.login}
-                </Button>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className={cn(
-                    headerAuthNeoBtnBase,
-                    "shrink-0 bg-cosmate-soft-pink text-foreground hover:bg-cosmate-pink/35 hover:text-foreground"
-                  )}
-                  onClick={() => navigate("/register")}
-                >
-                  {VI.common.actions.register}
-                </Button>
+                <AntButton onClick={() => navigate("/login")}>Đăng nhập</AntButton>
+                <AntButton type="primary" onClick={() => navigate("/register")}>
+                  Đăng ký
+                </AntButton>
               </>
             )}
 
@@ -627,15 +568,8 @@ export default function CosplayerSiteLayout() {
 
       <main className="flex-1 pt-[56px]">
         {!isHomePage && items.length > 0 && (
-<<<<<<< Updated upstream
           <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
             <Breadcrumbs items={items} />
-=======
-          <div className={cosplayerViewportGutter}>
-            <div className={cn(cosplayerContentColumn, "pt-5 pb-2 md:pt-6")}>
-              <Breadcrumbs items={items} />
-            </div>
->>>>>>> Stashed changes
           </div>
         )}
         {isHomePage ? (
@@ -645,7 +579,6 @@ export default function CosplayerSiteLayout() {
               className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
             />
 
-<<<<<<< Updated upstream
             <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-2 lg:px-3 xl:px-4">
               <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-5 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
                 <aside className="hidden pt-8 lg:block">
@@ -699,19 +632,10 @@ export default function CosplayerSiteLayout() {
                     </div>
                   </div>
                 </aside>
-=======
-            {/* Wide column on large screens so side margins feel less empty (no side-banner grid) */}
-            <div className={cn("relative z-10", cosplayerViewportGutter)}>
-              <div className={cn(cosplayerContentColumn, "pb-3 pt-2 sm:pt-3 md:pt-4")}>
-              <div className="min-w-0">
-                <Outlet />
->>>>>>> Stashed changes
-              </div>
               </div>
             </div>
           </div>
         ) : (
-<<<<<<< Updated upstream
           <div
             className={cn(
               "mx-auto w-full",
@@ -720,21 +644,15 @@ export default function CosplayerSiteLayout() {
                 : "max-w-7xl px-4 lg:px-6"
             )}
           >
-=======
-          <div className={cosplayerViewportGutter}>
-            <div className={cn(cosplayerContentColumn, "pb-4 pt-0 md:pb-6")}>
->>>>>>> Stashed changes
             <div className="min-w-0">
               <Outlet />
-            </div>
             </div>
           </div>
         )}
       </main>
 
       <footer className="bg-pink-100/90 text-slate-700">
-        <div className={cosplayerViewportGutter}>
-          <div className={cn(cosplayerContentColumn, "py-8")}>
+        <div className="mx-auto w-full max-w-7xl px-6 py-8">
           <div className="grid items-start gap-8 md:grid-cols-12">
             <div className="space-y-4 self-start md:col-span-5">
               <div className="text-3xl font-bold text-pink-600">CosMate</div>
@@ -894,14 +812,13 @@ export default function CosplayerSiteLayout() {
               </div>
             </div>
           </div>
-
-          <div className="border-t border-pink-300/60" />
-
-          <div className="py-4 text-center text-xs text-slate-500">
-            © 2026 CosMate. All rights reserved.
-          </div>
         </div>
-      </div>
+
+        <div className="border-t border-pink-300/60" />
+
+        <div className="py-4 text-center text-xs text-slate-500">
+          © 2026 CosMate. All rights reserved.
+        </div>
       </footer>
       <ChangePasswordModal open={changePasswordOpen} onOpenChange={setChangePasswordOpen} />
     </div>

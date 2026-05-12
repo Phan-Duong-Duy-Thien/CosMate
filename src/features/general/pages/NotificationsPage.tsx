@@ -49,7 +49,6 @@ export default function NotificationsPage() {
 
   if (!loggedIn) {
     return (
-<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-20 text-center">
           <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 shadow-xl">
@@ -57,15 +56,6 @@ export default function NotificationsPage() {
               <div className="flex h-16 w-16 items-center justify-center rounded-full bg-slate-100">
                 <Bell className="h-8 w-8 text-slate-400" />
               </div>
-=======
-      <section className="home-anime min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-        <div className="mx-auto flex max-w-lg items-center justify-center pt-16 text-center md:pt-24">
-          <div className="w-full rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-8 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
-            <div className="mb-5 flex justify-center">
-              <span className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-white shadow-[5px_5px_0_0_#1e1b4b]">
-                <Bell className="h-8 w-8 text-indigo-800" aria-hidden />
-              </span>
->>>>>>> Stashed changes
             </div>
             <p className="text-sm text-slate-500">Vui lòng đăng nhập để xem thông báo.</p>
             <Button className="mt-4" onClick={() => navigate("/login")}>

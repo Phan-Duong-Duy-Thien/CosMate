@@ -72,15 +72,9 @@ export default function CheckoutReviewPage() {
   // No draft - show empty state
   if (!isLoading && !draft) {
     return (
-<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
-=======
-      <section className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-        <div className="mx-auto w-full max-w-2xl pt-10">
-          <div className="rounded-[1.3rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-8 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.4)]">
->>>>>>> Stashed changes
             <div className="mb-4 text-5xl">📦</div>
             <h2 className="text-xl font-semibold text-slate-900">
               {VI.checkout.messages.noDraft}
@@ -105,15 +99,9 @@ export default function CheckoutReviewPage() {
   // Loading state
   if (isLoading) {
     return (
-<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
-=======
-      <section className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-        <div className="mx-auto w-full max-w-2xl pt-10">
-          <div className="rounded-[1.3rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-8 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.4)]">
->>>>>>> Stashed changes
             <div className="animate-pulse">
               <div className="mx-auto h-8 w-8 rounded-full border-2 border-pink-300 border-t-pink-500"></div>
               <p className="mt-4 text-sm text-slate-500">{VI.common.status.loading}</p>
@@ -127,15 +115,9 @@ export default function CheckoutReviewPage() {
   // Not logged in
   if (!userId) {
     return (
-<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-2xl px-4 pt-10">
           <div className="rounded-3xl border border-white/80 bg-white/80 p-8 shadow-sm text-center">
-=======
-      <section className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-        <div className="mx-auto w-full max-w-2xl pt-10">
-          <div className="rounded-[1.3rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-8 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.4)]">
->>>>>>> Stashed changes
             <div className="mb-4 text-5xl">🔒</div>
             <h2 className="text-xl font-semibold text-slate-900">
               Vui lòng đăng nhập
@@ -164,13 +146,8 @@ export default function CheckoutReviewPage() {
   ];
 
   return (
-<<<<<<< Updated upstream
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-4xl px-4 pt-8">
-=======
-    <section className="min-h-screen bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
-      <div className="w-full min-w-0 pt-8">
->>>>>>> Stashed changes
         {/* Page Header */}
         <div className="mb-6">
           <div className="text-xs text-slate-500">

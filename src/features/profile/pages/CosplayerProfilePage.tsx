@@ -100,19 +100,11 @@ export default function CosplayerProfilePage() {
 
   return (
     <div
-<<<<<<< Updated upstream
       className={`min-h-[calc(100vh-64px)] bg-transparent px-4 py-10 transition-all duration-500 ${
         isPageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       }`}
     >
       <div className="mx-auto w-full max-w-6xl space-y-4">
-=======
-      className={`home-anime min-h-[calc(100vh-64px)] bg-transparent py-8 transition-all duration-500 md:py-10 ${
-        isPageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
-      }`}
-    >
-      <div className="w-full min-w-0 space-y-4">
->>>>>>> Stashed changes
         <input
           ref={coverInputRef}
           type="file"

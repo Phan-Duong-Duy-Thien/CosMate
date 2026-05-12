@@ -1,42 +1,11 @@
-<<<<<<< Updated upstream
 import { PhotographerCard } from '@/features/photographer-booking/components/PhotographerCard';
 import { ListingFilterBar } from '@/features/photographer-booking/components/ListingFilterBar';
 import { Button } from '@/features/photographer-booking/components/ui/button';
 import { motion } from 'motion/react';
 import { useProvidersByRole, PROVIDER_ROLE } from '@/features/photographer-booking/hooks/useProvidersByRole';
-=======
-import * as React from "react"
-import { Camera, Sparkles } from "lucide-react"
-
-import { Pagination } from "@/features/costume-rental/components/Pagination"
-import { PhotographerCard } from "@/features/photographer-booking/components/PhotographerCard"
-import { ListingFilterBar } from "@/features/photographer-booking/components/ListingFilterBar"
-import { cn } from "@/lib/utils"
-import { useProvidersByRole, PROVIDER_ROLE } from "@/features/photographer-booking/hooks/useProvidersByRole"
->>>>>>> Stashed changes
-
-const PAGE_SIZE = 16
 
 export default function PhotographersListingPage() {
-<<<<<<< Updated upstream
   const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER);
-=======
-  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER)
-  const [currentPage, setCurrentPage] = React.useState(1)
-
-  React.useEffect(() => {
-    setCurrentPage(1)
-  }, [providers.length])
-
-  const totalPages = Math.ceil(providers.length / PAGE_SIZE)
-  const hasResults = providers.length > 0
-  const safePage = Math.min(currentPage, Math.max(totalPages || 1, 1))
-  const displayPage = hasResults ? safePage : 0
-  const displayTotalPages = hasResults ? totalPages : 0
-  const pagedProviders = hasResults
-    ? providers.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
-    : []
->>>>>>> Stashed changes
 
   return (
     <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
@@ -76,7 +45,6 @@ export default function PhotographersListingPage() {
           ) : error ? (
             <div className="col-span-full text-center py-12 text-red-400">{error}</div>
           ) : (
-<<<<<<< Updated upstream
             providers.map((provider) => (
               <PhotographerCard key={provider.id} {...provider} />
             ))
@@ -106,22 +74,6 @@ export default function PhotographersListingPage() {
             <button className="hover:text-[#B59DFF] transition-colors">Tiếp</button>
           </div>
         </div>
-=======
-            pagedProviders.map((provider) => <PhotographerCard key={provider.id} {...provider} />)
-          )}
-        </section>
-
-        {hasResults && !loading && !error && (
-          <div className="pb-8">
-            <Pagination
-              currentPage={displayPage}
-              totalPages={displayTotalPages}
-              onPrev={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-              onNext={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages || 1))}
-            />
-          </div>
-        )}
->>>>>>> Stashed changes
       </main>
     </div>
   );
