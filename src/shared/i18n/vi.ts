@@ -22,35 +22,8 @@ export const VI = {
    */
   notification: {
     empty: "Không có thông báo nào",
-    emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
     title: "Thông báo",
-    filterLabel: "Lọc nhanh",
-    filterUnread: "Chưa đọc",
-    filterRead: "Đã đọc",
-    filterOrders: "Đơn hàng",
-    filterMessages: "Tin nhắn",
-    filterHintSidebar:
-      "Chọn mục bên trái để lọc danh sách. Đơn hàng = loại từ hệ thống đơn hàng; Tin nhắn gồm chat và thông báo có nội dung gửi tin nhắn.",
-    filterEmptyHintMobile: "Thử chọn mục khác ở thanh bên hoặc kéo ngang trên điện thoại.",
-    railQuizBadge: "AI · Quiz",
-    railQuizTitle: "Khám phá phong cách của bạn",
-    railQuizCta: "Làm quiz ngay",
-    railTipsBadge: "Mẹo nhanh",
-    railTipsTitle: "Đừng để inbox chất đống!",
-    railTipsBody:
-      "Đánh dấu đọc và lọc theo \"Đơn hàng\" / \"Tin nhắn\" để xử lý tin quan trọng trước.",
-    railShopBadge: "Khám phá",
-    railShopTitle: "Trang phục mới mỗi tuần",
-    railShopCta: "Xem danh sách",
-    railChatBadge: "Chat CosMate",
-    railChatTitle: "Trao đổi trực tiếp",
-    railChatBody: "Mở hộp chat để nói chuyện với shop hoặc hỗ trợ.",
-    railChatCta: "Mở tin nhắn",
-    railHelpBadge: "Hỗ trợ",
-    railHelpTitle: "Quy định & hướng dẫn",
-    railHelpBody: "Thuê đồ, hoàn tiền, khiếu nại — đọc nhanh trước khi đặt.",
-    railHelpCta: "Đọc hướng dẫn",
   },
 
   /**
@@ -72,25 +45,6 @@ export const VI = {
     uploadFailed: "Tải ảnh thất bại. Vui lòng thử lại.",
     reasonTooShort: "Lý do phải có ít nhất 10 ký tự",
     helperText: "Hình ảnh giúp CosMate xử lý khiếu nại nhanh hơn. Khuyến nghị tải lên ảnh/video làm bằng chứng.",
-    // Staff resolve
-    resolveModalTitle: "Giải quyết khiếu nại",
-    resolveResultLabel: "Kết quả xử lý",
-    resolveResultPlaceholder: "Mô tả chi tiết cách giải quyết...",
-    resolvePenaltyAmountLabel: "Số tiền phạt (VND)",
-    resolvePenaltyPercentLabel: "Phần trăm phạt (%)",
-    resolveNotesLabel: "Ghi chú",
-    resolveNotesPlaceholder: "Ghi chú bổ sung (nếu có)...",
-    resolveSubmit: "Xác nhận giải quyết",
-    resolving: "Đang xử lý...",
-    resolveSuccess: "Giải quyết khiếu nại thành công",
-    resolveError: "Không thể giải quyết khiếu nại. Vui lòng thử lại.",
-    resolveAction: "Giải quyết",
-    resultRequired: "Vui lòng nhập kết quả xử lý",
-    penaltyAmountInvalid: "Số tiền phạt phải lớn hơn hoặc bằng 0",
-    penaltyPercentInvalid: "Phần trăm phạt phải từ 0 đến 100",
-    penaltyPercentPlaceholder: "0 - 100",
-    penaltyAmountPlaceholder: "0",
-    actionResolve: "Có thể giải quyết",
   },
 
   /**
@@ -145,7 +99,6 @@ export const VI = {
       close: "Đóng",
       next: "Tiếp theo",
       previous: "Trước",
-      scrollToTop: "Lên đầu trang",
       continueWithGoogle: "Tiếp tục với Google",
       continueWithFacebook: "Tiếp tục với Facebook",
       continueWithEmail: "Hoặc tiếp tục với email",
@@ -164,7 +117,6 @@ export const VI = {
       online: "Trực tuyến",
       offline: "Ngoại tuyến",
       loadingDots: "Đang tải...",
-      countOverflow: "99+",
     },
 
     // Toast messages
@@ -174,6 +126,7 @@ export const VI = {
       loading: "Đang xử lý...",
       loginRequired: "Vui lòng đăng nhập để tiếp tục.",
       wishlist: {
+        pageTitle: "Danh sách yêu thích",
         addSuccess: "Đã thêm vào danh sách yêu thích.",
         removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
         fetchFailed: "Không thể tải danh sách yêu thích.",
@@ -208,15 +161,6 @@ export const VI = {
       selectConversation: "Chọn một cuộc trò chuyện từ danh sách",
       startConversation: "Bắt đầu trò chuyện",
       sayHello: "Chào hỏi để bắt đầu!",
-      chatSearchPlaceholder: "Tìm theo tên hoặc username...",
-      chatSearchAria: "Tìm người dùng để nhắn tin",
-      chatExitSearch: "Thoát tìm kiếm",
-      chatNoUsersFound: "Không tìm thấy người dùng",
-      chatNeedLogin: "Vui lòng đăng nhập để nhắn tin.",
-      chatStartFailed: "Không thể mở cuộc trò chuyện.",
-      chatSelfNotAllowed: "Không thể mở chat với chính mình.",
-      chatRoomNotFound:
-        "Chưa có phòng chat với người này. Bắt đầu nhắn từ trang dịch vụ / cửa hàng để mở cuộc trò chuyện.",
     },
   },
 
@@ -379,10 +323,6 @@ export const VI = {
    * Authentication text
    */
   auth: {
-    hero: {
-      promoLine: "Tìm nhân vật của bạn",
-    },
-
     login: {
       title: "Mừng bạn đến với CosMate",
       subtitle: "Đăng nhập để tiếp tục hành trình cosplay của bạn",
@@ -404,7 +344,7 @@ export const VI = {
       validation: {
         emailRequired: "Email hoặc tên người dùng là bắt buộc.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự bao gồm ít nhất 1 chữ cái và 1 số.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
       },
 
       messages: {
@@ -412,8 +352,6 @@ export const VI = {
         loginSuccess: "Đăng nhập thành công! Chào mừng bạn trở lại CosMate 🎉",
         invalidCredentials: "Không thể đăng nhập. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
       },
-
-      googleNotConfigured: "(chưa cấu hình)",
     },
 
     forgotPassword: {
@@ -501,30 +439,6 @@ export const VI = {
       signIn: "Đăng nhập",
       createAccount: "Tạo tài khoản",
 
-      chooseOtherRole: "Chọn vai trò khác",
-      continueWithForm: "Hoặc tiếp tục đăng ký với biểu mẫu",
-      googleComingSoon: "sắp có",
-
-      byRole: {
-        cosplayer: {
-          title: "Tạo tài khoản Cosplayer",
-          subtitle: "Tham gia cộng đồng CosMate và bắt đầu hành trình cosplay của bạn.",
-        },
-        provider: {
-          title: "Tạo tài khoản nhà cung cấp trang phục",
-          subtitle:
-            "Tham gia CosMate với vai trò nhà cung cấp cho thuê trang phục và quản lý danh mục của bạn.",
-        },
-        staff: {
-          title: "Tạo tài khoản nhân viên sự kiện",
-          subtitle: "Tham gia CosMate với vai trò nhân viên sự kiện và hỗ trợ các hoạt động cosplay.",
-        },
-        photographer: {
-          title: "Tạo tài khoản nhiếp ảnh gia",
-          subtitle: "Tham gia CosMate để cung cấp dịch vụ chụp ảnh cho cosplayer.",
-        },
-      },
-
       roleSelect: {
         title: "Chọn vai trò của bạn",
         subtitle: "Chọn loại tài khoản bạn muốn tạo",
@@ -555,7 +469,7 @@ export const VI = {
         phoneRequired: "Số điện thoại là bắt buộc.",
         phoneInvalid: "Số điện thoại phải bắt đầu bằng 0 và có 10 chữ số.",
         passwordRequired: "Mật khẩu là bắt buộc.",
-        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự, ít nhất 1 chữ cái và 1 số.",
+        passwordMinLength: "Mật khẩu phải có ít nhất 6 ký tự.",
         confirmPasswordRequired: "Vui lòng xác nhận mật khẩu.",
         passwordMismatch: "Mật khẩu không khớp.",
       },
@@ -881,16 +795,7 @@ export const VI = {
         comment: "Nội dung",
         images: "Hình ảnh",
         createdAt: "Ngày tạo",
-        action: "Thao tác",
       },
-      viewDetail: "Xem chi tiết",
-      detailTitle: "Chi tiết đánh giá",
-      detailReviewer: "Người đánh giá",
-      detailReviewerFallback: "Khách hàng",
-      detailComment: "Nội dung đánh giá",
-      detailImages: "Hình ảnh đính kèm",
-      detailNoImages: "Không có ảnh",
-      detailNoComment: "Không có nội dung",
       empty: "Chưa có đánh giá nào",
       loadError: "Không thể tải danh sách đánh giá",
     },
@@ -1051,7 +956,6 @@ export const VI = {
       tabShippingBack: "Đang trả hàng",
       tabCompleted: "Hoàn thành",
       tabCancelled: "Đã hủy",
-      tabDispute: "Tranh chấp",
       empty: "Không có đơn hàng nào",
       loadError: "Không thể tải danh sách đơn hàng",
       // Status labels for list
@@ -1062,9 +966,8 @@ export const VI = {
       statusUnpaid: "Chưa thanh toán",
       // Card display
       orderTitle: "Đơn hàng",
-      orderCodeLabel: "Mã đơn",
       cardCostumeName: "Trang phục",
-      orderCodePrefix: "RN",
+      orderCodePrefix: "CM",
       cardRentPeriod: "Thuê",
       cardDayCount: "ngày",
       cardTotal: "Tổng cộng",
@@ -1128,16 +1031,12 @@ export const VI = {
       empty: "Chưa có đơn đặt dịch vụ nào",
       loadError: "Không thể tải danh sách đơn đặt dịch vụ",
       orderTitle: "Đặt dịch vụ",
-      orderCodePrefix: "SE",
+      orderCodePrefix: "DV",
       cardBookingDate: "Ngày đặt",
       cardTimeSlot: "Khung giờ",
       cardPeopleCount: "Số người",
       cardSlotAmount: "Số slot",
       cardBookings: "Lịch đặt",
-      /** Cột / modal: tiền theo slot (không nhầm với «số slot») */
-      detailSlotAmount: "Thành tiền slot",
-      detailStatusLabel: "Trạng thái",
-      detailCreatedLabel: "Ngày tạo đơn",
       cardBookingsCount: "lịch đặt",
       cardMoreBookings: "thêm lịch đặt",
       statusUnconfirm: "Chờ xác nhận",
@@ -1298,23 +1197,6 @@ export const VI = {
       trackingCode: "Mã vận đơn",
       trackingStatus: "Trạng thái",
       stage: "Giai đoạn",
-      /** Mã API `trackingStatus` → hiển thị tiếng Việt (theo dõi vận chuyển) */
-      trackingStatusLabels: {
-        CREATED: "Đã ghi nhận vận đơn",
-        RETURN_CREATED: "Đã ghi nhận vận đơn trả hàng",
-        UPDATED: "Đã cập nhật",
-        DELIVERED: "Đã giao",
-        CANCELLED: "Đã hủy",
-      },
-      /** Mã API `stage` → hiển thị tiếng Việt */
-      trackingStageLabels: {
-        SHIPPING_OUT: "Đang giao đến khách",
-        SHIPPING_BACK: "Đang hoàn trả về cửa hàng",
-        DELIVERING_OUT: "Chờ khách xác nhận nhận hàng",
-        RETURNED: "Đã trả hàng",
-        PREPARING: "Đang chuẩn bị",
-        IN_TRANSIT: "Đang vận chuyển",
-      },
     },
     actions: {
       viewDetail: "Xem chi tiết",
@@ -1352,6 +1234,11 @@ export const VI = {
   costumeRental: {
     title: "Cho thuê trang phục",
     searchPlaceholder: "Tìm kiếm trang phục...",
+    searchNoResults: "Không tìm thấy trang phục",
+    searchTryOtherKeyword: "Thử lại với từ khóa khác",
+    searchViewAllResults: "Xem tất cả kết quả",
+    searchClearAria: "Xóa tìm kiếm",
+    perDayShort: "/ngày",
     filter: "Bộ lọc",
     sort: "Sắp xếp",
     categories: "Danh mục",
@@ -1363,12 +1250,6 @@ export const VI = {
     viewDetails: "Xem chi tiết",
     viewDetail: "Xem chi tiết",
     costumeName: "Tên trang phục",
-    /** Costume list: line under title — e.g. Name (từ Series) */
-    characterFromWork: "từ",
-    /** Costume detail: heading above character list */
-    charactersHeading: "Nhân vật",
-    /** Costume list card — shop line */
-    listShopLabel: "Shop",
     description: "Mô tả",
     rentPurpose: "Mục đích thuê",
     numberOfItems: "Số lượng món",
@@ -1376,13 +1257,6 @@ export const VI = {
     rentDiscount: "Giảm giá thuê",
     depositAmount: "Tiền cọc",
     status: "Trạng thái",
-    /** Trạng thái hiển thị công khai (chi tiết / danh sách trang phục) */
-    costumeStatus: {
-      available: "Có sẵn",
-      rented: "Đang được thuê",
-      maintenance: "Bảo trì",
-      disabled: "Tạm ngừng",
-    },
     providerId: "ID nhà cung cấp",
     imageUrls: "Danh sách ảnh",
     isRequired: "Bắt buộc",
@@ -1622,11 +1496,6 @@ export const VI = {
       createButton: "Tạo dịch vụ mới",
       empty: "Bạn chưa có dịch vụ nào.",
       emptyHint: "Nhấn \"Tạo dịch vụ mới\" để bắt đầu.",
-      /** Hiển thị giá trị serviceType từ API (Photographer / Event Staff) */
-      serviceTypeValues: {
-        photographer: "Chụp ảnh",
-        eventStaff: "Hỗ trợ sự kiện",
-      },
       table: {
         coverImage: "Ảnh",
         serviceType: "Loại dịch vụ",
@@ -1644,12 +1513,6 @@ export const VI = {
       messages: {
         loadError: "Không thể tải danh sách dịch vụ.",
         refresh: "Làm mới",
-        deleteSuccess: "Đã xóa dịch vụ!",
-        deleteError: "Không thể xóa dịch vụ. Vui lòng thử lại.",
-      },
-      delete: {
-        confirmTitle: "Xóa dịch vụ này?",
-        confirmDescription: "Hành động này không thể hoàn tác.",
       },
       detail: {
         title: "Chi tiết dịch vụ",
@@ -1694,15 +1557,8 @@ export const VI = {
         topPhotographers: "Nhiếp ảnh gia hàng đầu",
         recentEvents: "Sự kiện gần đây",
       },
-      browseByTheme: "Khám phá theo chủ đề",
-      browseByThemeHint:
-        "Chọn chủ đề yêu thích — banner và các nút khám phá sẽ gắn với chủ đề này khi bạn tương tác.",
-      trustedShopsTitle: "Shop cho thuê uy tín",
-      trustedShopsHint:
-        "Cửa hàng được đánh giá cao, minh bạch và được nhiều khách tin chọn.",
       featured: {
         title: "Trang phục nổi bật",
-        featuredHint: "Cập nhật liên tục — click vào thẻ để xem chi tiết và đặt thuê.",
         viewAll: "Xem tất cả",
         errorTitle: "Ôi không!",
         errorDescription: "Có lỗi xảy ra khi tải dữ liệu.",

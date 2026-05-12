@@ -9,7 +9,7 @@ export default function StaffListingPage() {
 
   return (
     <div className="min-h-screen bg-white selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans flex flex-col">
-      <main className="flex-1 max-w-7xl mx-auto py-12 px-6 lg:px-8 w-full">
+      <main className="w-full min-w-0 flex-1 py-12">
         {/* Header Section */}
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
@@ -17,7 +17,7 @@ export default function StaffListingPage() {
               <motion.h1
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
-                className="text-4xl font-bold text-cosmate-ink mb-2"
+                className="text-4xl font-bold text-[#4A3B6B] mb-2"
               >
                 Tìm Đội Ngũ Hỗ Trợ
               </motion.h1>
@@ -31,7 +31,7 @@ export default function StaffListingPage() {
               </motion.p>
             </div>
             <div className="text-sm font-medium text-gray-400">
-              Hiển thị <span className="text-cosmate-ink font-bold">{providers.length}</span> nhân sự
+              Hiển thị <span className="text-[#4A3B6B] font-bold">{providers.length}</span> nhân sự
             </div>
           </div>
 
@@ -55,23 +55,23 @@ export default function StaffListingPage() {
         <div className="flex flex-col items-center gap-6 pb-12">
           <Button
             variant="outline"
-            className="rounded-full px-12 py-6 border-2 border-gray-100 hover:border-cosmate-lavender-hover-border hover:bg-cosmate-lavender-surface-alt transition-all font-bold text-cosmate-ink"
+            className="rounded-full px-12 py-6 border-2 border-gray-100 hover:border-[#d4c5f9] hover:bg-[#F8F7FF] transition-all font-bold text-[#4A3B6B]"
           >
             Xem thêm nhân sự
           </Button>
           <div className="flex items-center gap-4 text-sm text-gray-400">
-            <button className="hover:text-cosmate-lavender transition-colors">Trước</button>
+            <button className="hover:text-[#B59DFF] transition-colors">Trước</button>
             <div className="flex gap-2">
               {[1, 2, 3, '...', 12].map((n, i) => (
                 <button
                   key={i}
-                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${n === 1 ? 'bg-cosmate-ink text-white shadow-lg' : 'hover:bg-gray-100 text-gray-600'}`}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${n === 1 ? 'bg-[#4A3B6B] text-white shadow-lg' : 'hover:bg-gray-100 text-gray-600'}`}
                 >
                   {n}
                 </button>
               ))}
             </div>
-            <button className="hover:text-cosmate-lavender transition-colors">Tiếp</button>
+            <button className="hover:text-[#B59DFF] transition-colors">Tiếp</button>
           </div>
         </div>
       </main>
