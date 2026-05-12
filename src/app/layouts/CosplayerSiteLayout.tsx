@@ -37,7 +37,6 @@ import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
-import bgImage from "@/assets/background.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
 import siteLogo from "@/assets/cosmate.png"
 import type { MenuProps } from 'antd'
@@ -59,23 +58,21 @@ export default function CosplayerSiteLayout() {
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
-  const isNotificationsPage = location.pathname === "/notifications"
   const isPhotographersListingPage = location.pathname === "/photographers"
   const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
   const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
-  const isFullWidthEdgeListing =
+  const isFullWidthEdgeListing = false
+  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
+  const isNotificationsPage = location.pathname === "/notifications"
+  const isExtraWideContentPage =
     isNotificationsPage ||
+    isGuidelinesRulesPage ||
     isPhotographersListingPage ||
     isPhotographerDetailPage ||
     isPublicServiceDetailPage
-  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
   const isWideContentPage =
     location.pathname === "/costumes" ||
-    location.pathname === "/guidelines-rules" ||
-    location.pathname === "/notifications" ||
-    location.pathname === "/photographers" ||
-    isPhotographerDetailPage ||
-    isPublicServiceDetailPage
+    isExtraWideContentPage
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
@@ -383,14 +380,18 @@ export default function CosplayerSiteLayout() {
 
   return (
     <div className="relative flex min-h-screen flex-col overflow-x-hidden text-foreground">
+      {/* Site-wide soft gradient + dot-grid background (replaces curtain image) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_0%,#fff7fb_0%,#fdf2f8_36%,#eef2ff_72%,#f8fafc_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.55]"
         style={{
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          backgroundImage:
+            "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+          backgroundSize: "14px 14px",
         }}
       />
 
@@ -606,8 +607,8 @@ export default function CosplayerSiteLayout() {
               "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
               isFullWidthEdgeListing
                 ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
-                : isGuidelinesRulesPage
-                  ? "max-w-[min(1680px,100%)] xl:px-8"
+                : isExtraWideContentPage
+                  ? "max-w-[min(1760px,100%)] xl:px-10"
                   : "max-w-7xl"
             )}
           >
@@ -646,8 +647,8 @@ export default function CosplayerSiteLayout() {
                 "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
               isWideContentPage &&
                 !isFullWidthEdgeListing &&
-                (isGuidelinesRulesPage
-                  ? "max-w-[min(1680px,100%)] px-4 md:px-6 xl:px-8"
+                (isExtraWideContentPage
+                  ? "max-w-[min(1760px,100%)] px-4 md:px-6 xl:px-10"
                   : "max-w-screen-2xl px-4 md:px-6 xl:px-8"),
               !isWideContentPage && "max-w-7xl px-4 lg:px-6"
             )}

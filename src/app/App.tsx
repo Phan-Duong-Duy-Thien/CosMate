@@ -1,6 +1,7 @@
 import AppRoutes from "@/app/routes"
 import { ChatPopupProvider } from "@/features/chat/components/ChatPopupContext"
 import { ChatPopup } from "@/features/chat/components/ChatPopup"
+import { ScrollToTopFab } from "@/shared/components/ScrollToTopFab"
 import { ConfigProvider } from "antd"
 import type { FormProps } from "antd"
 
@@ -29,6 +30,7 @@ export default function App() {
       <ChatPopupProvider>
         <AppRoutes />
         <ChatPopup />
+        <ScrollToTopFab />
       </ChatPopupProvider>
     </ConfigProvider>
   )

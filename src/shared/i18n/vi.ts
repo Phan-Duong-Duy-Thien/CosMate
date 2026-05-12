@@ -145,6 +145,7 @@ export const VI = {
       close: "Đóng",
       next: "Tiếp theo",
       previous: "Trước",
+      scrollToTop: "Lên đầu trang",
       continueWithGoogle: "Tiếp tục với Google",
       continueWithFacebook: "Tiếp tục với Facebook",
       continueWithEmail: "Hoặc tiếp tục với email",
