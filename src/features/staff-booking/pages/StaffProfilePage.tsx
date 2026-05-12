@@ -97,8 +97,13 @@ export default function StaffProfilePage() {
   ];
 
   return (
+<<<<<<< Updated upstream
     <div className="min-h-screen bg-[#F8F9FA] selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
       <div className="flex-1 max-w-[1280px] mx-auto py-12 px-6 lg:px-8 w-full">
+=======
+    <div className="min-h-screen bg-cosmate-page selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans flex flex-col">
+      <div className="flex-1 w-full min-w-0 py-12">
+>>>>>>> Stashed changes
         {/* Animated Background Elements */}
         <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
           <motion.div 

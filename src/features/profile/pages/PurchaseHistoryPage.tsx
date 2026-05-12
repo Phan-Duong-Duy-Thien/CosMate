@@ -811,10 +811,17 @@ export default function PurchaseHistoryPage() {
   }
 
   return (
+<<<<<<< Updated upstream
     <section className="min-h-[calc(100vh-64px)] bg-gradient-to-br from-[#fff6fc] via-[#f6f5ff] to-[#eef7ff] px-4 py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Card className="p-6">
           <h1 className="text-2xl font-bold text-slate-900">{VI.profile.serviceOrders.title}</h1>
+=======
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent py-8 md:py-10">
+      <div className="w-full min-w-0">
+        <Card className="rounded-[1.5rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fff7fb] via-[#fffaf0] to-[#f5f3ff] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.34)] md:p-6">
+          <h1 className="text-2xl font-extrabold text-indigo-950">{VI.profile.serviceOrders.title}</h1>
+>>>>>>> Stashed changes
 
           {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
           <div className="mt-4 flex gap-2">

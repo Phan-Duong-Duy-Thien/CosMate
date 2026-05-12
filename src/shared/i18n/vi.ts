@@ -126,6 +126,7 @@ export const VI = {
       loading: "Đang xử lý...",
       loginRequired: "Vui lòng đăng nhập để tiếp tục.",
       wishlist: {
+        pageTitle: "Danh sách yêu thích",
         addSuccess: "Đã thêm vào danh sách yêu thích.",
         removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
         fetchFailed: "Không thể tải danh sách yêu thích.",
@@ -1233,6 +1234,11 @@ export const VI = {
   costumeRental: {
     title: "Cho thuê trang phục",
     searchPlaceholder: "Tìm kiếm trang phục...",
+    searchNoResults: "Không tìm thấy trang phục",
+    searchTryOtherKeyword: "Thử lại với từ khóa khác",
+    searchViewAllResults: "Xem tất cả kết quả",
+    searchClearAria: "Xóa tìm kiếm",
+    perDayShort: "/ngày",
     filter: "Bộ lọc",
     sort: "Sắp xếp",
     categories: "Danh mục",

@@ -222,9 +222,15 @@ export default function CostumeDetailPage() {
 
   if (isLoading) {
     return (
+<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-6">
           <div className="rounded-2xl border border-dashed border-pink-200 bg-white/70 p-8 text-center text-sm text-slate-500">
+=======
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full min-w-0 pt-6">
+          <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-8 text-center text-sm font-semibold text-indigo-950 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
+>>>>>>> Stashed changes
             Đang tải chi tiết trang phục...
           </div>
         </div>
@@ -234,9 +240,15 @@ export default function CostumeDetailPage() {
 
   if (error) {
     return (
+<<<<<<< Updated upstream
       <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
         <div className="mx-auto w-full max-w-6xl px-4 pt-6">
           <div className="rounded-2xl border border-red-100 bg-red-50 p-6 text-center text-sm text-red-600">
+=======
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full min-w-0 pt-6">
+          <div className="rounded-2xl border-[4px] border-[#B91C1C] bg-[#FEE2E2] p-6 text-center text-sm font-semibold text-[#991B1B] shadow-[8px_8px_0_0_rgba(127,29,29,0.3)]">
+>>>>>>> Stashed changes
             <p>{error}</p>
             <Button variant="soft" size="sm" className="mt-3 rounded-full" onClick={refetch}>
               Thử lại
@@ -249,9 +261,15 @@ export default function CostumeDetailPage() {
 
   if (!costume) {
     return (
+<<<<<<< Updated upstream
       <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
         <div className="mx-auto w-full max-w-6xl px-4 pt-6 text-center">
           <div className="rounded-2xl border border-pink-100 bg-white/80 p-6 text-sm text-slate-600">
+=======
+      <section className={pageShellClass}>
+        <div className="mx-auto w-full min-w-0 pt-6 text-center">
+          <div className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 text-sm font-semibold text-indigo-950 shadow-[8px_8px_0_0_rgba(30,27,75,0.45)]">
+>>>>>>> Stashed changes
             Không tìm thấy trang phục bạn yêu cầu.
             <div className="mt-3">
               <Link to="/costumes" className="text-pink-600 underline">Quay lại danh sách</Link>
@@ -265,8 +283,16 @@ export default function CostumeDetailPage() {
   const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
 
   return (
+<<<<<<< Updated upstream
     <section className="min-h-screen bg-gradient-to-b from-pink-50/50 to-white pb-12">
       <div className="mx-auto w-full max-w-6xl px-4 pt-5">
+=======
+    <section className={pageShellClass}>
+      <div className="mx-auto w-full min-w-0 pt-5">
+        <div className="rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] via-[#f9a8d4] to-[#c4b5fd] px-4 py-2 text-xs font-extrabold text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b] sm:text-sm">
+          Thuê trang phục theo style homepage anime: bo tròn, dễ nhìn, nổi bật CTA.
+        </div>
+>>>>>>> Stashed changes
 
         <div className="mt-4 grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
           <MediaGallery

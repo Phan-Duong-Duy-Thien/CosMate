@@ -49,8 +49,13 @@ export default function ShopProfilePage() {
 
   if (loading) {
     return (
+<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
+=======
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
+        <div className="mx-auto w-full min-w-0 max-w-6xl pt-10">
+>>>>>>> Stashed changes
           <div className="rounded-3xl border border-dashed border-pink-200 bg-white/70 p-10 text-center text-sm text-slate-500">
             {VI.common.status.loading}
           </div>
@@ -61,8 +66,13 @@ export default function ShopProfilePage() {
 
   if (error || !shop) {
     return (
+<<<<<<< Updated upstream
       <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
         <div className="mx-auto w-full max-w-6xl px-4 pt-10">
+=======
+      <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
+        <div className="mx-auto w-full min-w-0 max-w-6xl pt-10">
+>>>>>>> Stashed changes
           <div className="rounded-3xl border border-red-100 bg-red-50 p-10 text-center text-sm text-red-600">
             <p>{error || 'Không tìm thấy shop'}</p>
           </div>
@@ -72,8 +82,13 @@ export default function ShopProfilePage() {
   }
 
   return (
+<<<<<<< Updated upstream
     <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
       <div className="mx-auto w-full max-w-6xl space-y-6 px-4 pt-8">
+=======
+    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
+      <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 pt-8">
+>>>>>>> Stashed changes
         {/* Shop Hero */}
         <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
 

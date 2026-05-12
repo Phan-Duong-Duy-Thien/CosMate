@@ -8,8 +8,13 @@ export default function StaffListingPage() {
   const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.EVENT_STAFF);
 
   return (
+<<<<<<< Updated upstream
     <div className="min-h-screen bg-white selection:bg-[#FFD7E5] selection:text-[#4A3B6B] font-sans flex flex-col">
       <main className="flex-1 max-w-7xl mx-auto py-12 px-6 lg:px-8 w-full">
+=======
+    <div className="min-h-screen bg-white selection:bg-cosmate-selection-bg selection:text-cosmate-selection-fg font-sans flex flex-col">
+      <main className="w-full min-w-0 flex-1 py-12">
+>>>>>>> Stashed changes
         {/* Header Section */}
         <header className="mb-12">
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
