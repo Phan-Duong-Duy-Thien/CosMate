@@ -2,6 +2,7 @@ import AppRoutes from "@/app/routes"
 import { ChatPopupProvider } from "@/features/chat/components/ChatPopupContext"
 import { ChatPopup } from "@/features/chat/components/ChatPopup"
 import { ScrollToTopFab } from "@/shared/components/ScrollToTopFab"
+import { StyleProvider } from "@ant-design/cssinjs"
 import { ConfigProvider } from "antd"
 import type { FormProps } from "antd"
 
@@ -18,20 +19,22 @@ const appFontStack =
 
 export default function App() {
   return (
-    <ConfigProvider
-      form={{ requiredMark: formRequiredMark }}
-      wave={{ disabled: false }}
-      theme={{
-        token: {
-          fontFamily: appFontStack,
-        },
-      }}
-    >
-      <ChatPopupProvider>
-        <AppRoutes />
-        <ChatPopup />
-        <ScrollToTopFab />
-      </ChatPopupProvider>
-    </ConfigProvider>
+    <StyleProvider hashPriority="high">
+      <ConfigProvider
+        form={{ requiredMark: formRequiredMark }}
+        wave={{ disabled: false }}
+        theme={{
+          token: {
+            fontFamily: appFontStack,
+          },
+        }}
+      >
+        <ChatPopupProvider>
+          <AppRoutes />
+          <ChatPopup />
+          <ScrollToTopFab />
+        </ChatPopupProvider>
+      </ConfigProvider>
+    </StyleProvider>
   )
 }

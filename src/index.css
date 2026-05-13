@@ -251,7 +251,11 @@
 }
 
 @layer base {
-  * {
+  /*
+   * Shadcn-style default border token. Use :where(*) so specificity stays 0 and
+   * Ant Design css-in-js (esp. with StyleProvider hashPriority="high") wins on components.
+   */
+  :where(*) {
     @apply border-border outline-ring/50;
   }
   body {
@@ -279,6 +283,17 @@
 }
 
 /* Ant Design Message — use default animations, no custom overrides */
+
+/*
+ * Admin tables: `.anticon { color: inherit }` pulls table cell text color (near-black).
+ * Tooltip clone + css-in-js order can drop inline `style.color`; token classes + !important win.
+ */
+.cosmate-admin-table-actions .cosmate-admin-action-icon-view.anticon {
+  color: var(--cosmate-pink) !important;
+}
+.cosmate-admin-table-actions .cosmate-admin-action-icon-edit.anticon {
+  color: var(--primary) !important;
+}
 
 /* Product card title marquee (used on hover when title is truncated).
    The inner track contains TWO copies of the text. Each copy ends with

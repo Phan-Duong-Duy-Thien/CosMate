@@ -518,13 +518,16 @@ export function DashboardLayout({
 
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
         <Header
-          className="sticky top-0 z-10 flex items-center justify-between border-b border-border bg-linear-to-b from-cosmate-soft-pink/15 via-card to-card px-6 shadow-[0_1px_0_0_color-mix(in_oklch,var(--cosmate-pink)_22%,transparent)]"
+          className="sticky top-0 z-10 flex h-16 min-h-16 shrink-0 items-center justify-between overflow-hidden border-b border-border px-6 shadow-[0_1px_0_0_color-mix(in_oklch,var(--cosmate-pink)_22%,transparent)]"
           style={{
             height: 64,
-            lineHeight: '64px',
+            // Ant Design Layout.Header applies its own background; inline wins so admin/provider headers stay on-token (not default dark).
+            background:
+              'linear-gradient(180deg, color-mix(in oklch, var(--cosmate-soft-pink) 15%, transparent) 0%, var(--card) 45%, var(--card) 100%)',
+            color: 'var(--foreground)',
           }}
         >
-          <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex min-h-0 min-w-0 flex-1 items-center gap-3">
             <span
               className="hidden h-8 w-1 shrink-0 rounded-full bg-cosmate-pink/85 sm:block"
               aria-hidden
@@ -534,13 +537,13 @@ export function DashboardLayout({
             </h1>
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
             {showChatButton && (
               <button
                 type="button"
                 onClick={() => openChat(0, 0)}
                 title="Messages"
-                className="relative flex cursor-pointer items-center justify-center rounded-lg border border-transparent p-1.5 text-cosmate-pink transition-colors hover:border-cosmate-pink/25 hover:bg-cosmate-soft-pink/50 hover:text-cosmate-mauve"
+                className="relative flex h-9 cursor-pointer items-center justify-center rounded-lg border border-transparent p-1.5 text-cosmate-pink transition-colors hover:border-cosmate-pink/25 hover:bg-cosmate-soft-pink/50 hover:text-cosmate-mauve"
               >
                 <MessageCircle size={22} className="shrink-0" aria-hidden />
                 {chatUnreadCount > 0 && (
@@ -551,11 +554,11 @@ export function DashboardLayout({
               </button>
             )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div className="flex cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 py-1.5 text-foreground transition-colors hover:border-cosmate-pink/20 hover:bg-cosmate-soft-pink/40 sm:gap-3">
+              <div className="flex h-9 max-h-9 cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 text-foreground transition-colors hover:border-cosmate-pink/20 hover:bg-cosmate-soft-pink/40 sm:gap-3">
                 {userProfile.avatarUrl ? (
-                  <Avatar src={userProfile.avatarUrl} />
+                  <Avatar src={userProfile.avatarUrl} size={32} />
                 ) : (
-                  <Avatar className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
+                  <Avatar size={32} className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
                 )}
                 <span className="hidden max-w-[140px] truncate font-medium sm:inline">{userName}</span>
               </div>

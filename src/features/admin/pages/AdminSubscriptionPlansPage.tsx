@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Table,
-  Drawer,
   Descriptions,
   Select,
   Tag,
@@ -18,10 +17,11 @@ import {
   Tooltip,
 } from 'antd';
 import type { TableProps } from 'antd';
-import { ReloadOutlined, EyeOutlined, SearchOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined, PlusOutlined, EditOutlined } from '@ant-design/icons';
 import { useAdminSubscriptionPlans } from '../hooks/useAdminSubscriptionPlans';
 import type { AdminSubscriptionPlan } from '../types';
 import { formatBillingCycleMonths } from '../utils/formatBillingCycleMonths';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 
 const formatVnd = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(
@@ -197,13 +197,12 @@ export default function AdminSubscriptionPlansPage() {
       align: 'center',
       render: (_, record) => (
         <div
-          className="flex items-center justify-center gap-3"
+          className="cosmate-admin-table-actions flex items-center justify-center gap-3"
           role="presentation"
           onClick={(e) => e.stopPropagation()}
         >
           <Tooltip title="Chi tiết">
-            <EyeOutlined
-              className="cursor-pointer text-base text-cosmate-info"
+            <AdminDetailEyeIcon
               onClick={() => {
                 setSelected(record);
                 setOpen(true);
@@ -212,7 +211,8 @@ export default function AdminSubscriptionPlansPage() {
           </Tooltip>
           <Tooltip title="Chỉnh sửa">
             <EditOutlined
-              className="cursor-pointer text-base text-foreground"
+              className="cosmate-admin-action-icon-edit cursor-pointer text-base transition-opacity hover:opacity-80"
+              style={{ color: 'var(--primary)', fontSize: 16 }}
               onClick={() => openEditPlanForm(record)}
             />
           </Tooltip>
@@ -293,14 +293,16 @@ export default function AdminSubscriptionPlansPage() {
           rowClassName={() => 'admin-subscription-row'}
         />
 
-        <Drawer
+        <Modal
           title={selected ? `Chi tiết: ${selected.name}` : 'Chi tiết gói'}
           open={open}
-          onClose={() => {
+          onCancel={() => {
             setOpen(false);
             setSelected(null);
           }}
-          width={420}
+          footer={null}
+          centered
+          width={480}
           destroyOnClose
         >
           {selected && (
@@ -324,7 +326,7 @@ export default function AdminSubscriptionPlansPage() {
               <Descriptions.Item label="Cập nhật">{formatDateTime(selected.updatedAt)}</Descriptions.Item>
             </Descriptions>
           )}
-        </Drawer>
+        </Modal>
 
         <Modal
           title={planBeingEdited ? 'Chỉnh sửa gói đăng ký' : 'Tạo gói đăng ký'}
