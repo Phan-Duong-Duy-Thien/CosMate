@@ -20,7 +20,7 @@ import {
   UserRound,
   Youtube,
 } from "lucide-react"
-import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
+import { Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
 import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
@@ -35,6 +35,7 @@ import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import ghnLogo from "@/assets/ghn.jpg"
@@ -58,35 +59,10 @@ export default function CosplayerSiteLayout() {
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
-  const isPhotographersListingPage = location.pathname === "/photographers"
-  const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
-  const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
-  const isPublicShopPage = /^\/shop\/[^/]+\/?$/.test(location.pathname)
-  const isCostumeDetailPage = /^\/costumes\/[^/]+\/?$/.test(location.pathname)
-  const isFullWidthEdgeListing = false
-  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
-  const isNotificationsPage = location.pathname === "/notifications"
-  const isProfilePage =
-    location.pathname === "/profile" ||
-    location.pathname.startsWith("/profile/") ||
-    location.pathname === "/wishlist" ||
-    location.pathname === "/purchase-history"
-  const isWalletPage = /^\/wallet(\/.*)?$/.test(location.pathname)
-  const isCheckoutPage = location.pathname.startsWith("/rent/checkout")
-  const isExtraWideContentPage =
-    isNotificationsPage ||
-    isGuidelinesRulesPage ||
-    isPhotographersListingPage ||
-    isPhotographerDetailPage ||
-    isPublicServiceDetailPage ||
-    isPublicShopPage ||
-    isCostumeDetailPage
-  const isWideContentPage =
-    location.pathname === "/costumes" ||
-    isProfilePage ||
-    isWalletPage ||
-    isCheckoutPage ||
-    isExtraWideContentPage
+
+  /** Một cột nội dung chung (giống /costumes): max-width + lề hai bên — trừ homepage. */
+  const siteContentShellClass =
+    "mx-auto w-full min-w-0 max-w-screen-2xl px-4 md:px-6 xl:px-8"
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
@@ -272,6 +248,8 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: "Wishlist" },
       ])
+    } else if (path === "/login" || path.startsWith("/register")) {
+      setItems([])
     }
   }, [location.pathname, setItems])
 
@@ -607,10 +585,24 @@ export default function CosplayerSiteLayout() {
               </Dropdown>
             ) : (
               <>
-                <AntButton onClick={() => navigate("/login")}>Đăng nhập</AntButton>
-                <AntButton type="primary" onClick={() => navigate("/register")}>
+                <Button
+                  type="button"
+                  variant="cosmateOutline"
+                  size="sm"
+                  className="rounded-full border-2 border-indigo-950 px-4 font-bold text-cosmate-ink shadow-[3px_3px_0_0_rgba(30,27,75,0.28)] transition hover:brightness-[1.03] active:translate-x-px active:translate-y-px active:shadow-[2px_2px_0_0_rgba(30,27,75,0.28)]"
+                  onClick={() => navigate("/login")}
+                >
+                  Đăng nhập
+                </Button>
+                <Button
+                  type="button"
+                  variant="cosmate"
+                  size="sm"
+                  className="rounded-full border-2 border-indigo-950 px-4 font-bold text-cosmate-ink shadow-[3px_3px_0_0_rgba(30,27,75,0.28)] transition hover:brightness-[1.03] active:translate-x-px active:translate-y-px active:shadow-[2px_2px_0_0_rgba(30,27,75,0.28)]"
+                  onClick={() => navigate("/register")}
+                >
                   Đăng ký
-                </AntButton>
+                </Button>
               </>
             )}
 
@@ -620,16 +612,7 @@ export default function CosplayerSiteLayout() {
 
       <main className="min-w-0 flex-1 pt-[56px]">
         {!isHomePage && items.length > 0 && (
-          <div
-            className={cn(
-              "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
-              isFullWidthEdgeListing
-                ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
-                : isExtraWideContentPage
-                  ? "max-w-[min(1760px,100%)] xl:px-10"
-                  : "max-w-7xl"
-            )}
-          >
+          <div className={cn(siteContentShellClass, "pt-6 pb-2")}>
             <Breadcrumbs items={items} />
           </div>
         )}
@@ -658,19 +641,7 @@ export default function CosplayerSiteLayout() {
             </div>
           </div>
         ) : (
-          <div
-            className={cn(
-              "mx-auto w-full min-w-0",
-              isFullWidthEdgeListing &&
-                "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
-              isWideContentPage &&
-                !isFullWidthEdgeListing &&
-                (isExtraWideContentPage
-                  ? "max-w-[min(1760px,100%)] px-4 md:px-6 xl:px-10"
-                  : "max-w-screen-2xl px-4 md:px-6 xl:px-8"),
-              !isWideContentPage && "max-w-7xl px-4 lg:px-6"
-            )}
-          >
+          <div className={siteContentShellClass}>
             <div className="min-w-0">
               <Outlet />
             </div>

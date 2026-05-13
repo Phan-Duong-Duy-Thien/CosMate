@@ -293,3 +293,15 @@
   }
 }
 
+/* CostumeCard status chip: solid fill from tokens (scoped so utilities/resets cannot leave it transparent). */
+@layer components {
+  .costume-card-media .cosmate-costume-card-status {
+    background-color: var(--cosmate-success);
+    color: var(--cosmate-ink);
+  }
+  .costume-card-media .cosmate-costume-card-status--rented {
+    background-color: var(--cosmate-warning);
+    color: var(--cosmate-ink);
+  }
+}
+
