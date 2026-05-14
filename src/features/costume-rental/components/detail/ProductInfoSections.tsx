@@ -1,12 +1,27 @@
 import { Card } from "@/shared/components/Card"
 import { VI } from "@/shared/i18n/vi"
 
+type DetailValueTone = "available" | "rented" | "neutral"
+
 interface ProductInfoSectionsProps {
   details: {
     label: string
     value: string
+    valueTone?: DetailValueTone
   }[]
   description: string
+}
+
+function valueToneClass(tone: DetailValueTone | undefined): string {
+  switch (tone) {
+    case "available":
+      return "text-emerald-800"
+    case "rented":
+      return "text-amber-800"
+    case "neutral":
+    default:
+      return "text-indigo-950"
+  }
 }
 
 const SectionTitle = ({ title }: { title: string }) => (
@@ -28,7 +43,7 @@ export function ProductInfoSections({ details, description }: ProductInfoSection
                 className="rounded-xl border-[3px] border-indigo-950 bg-white px-3 py-2 shadow-[3px_3px_0_0_rgba(30,27,75,0.25)]"
               >
                 <p className="label-caps text-xs font-semibold text-indigo-900/70">{detail.label}</p>
-                <p className="mt-0.5 text-sm font-bold text-indigo-950">{detail.value}</p>
+                <p className={`mt-0.5 text-sm font-bold ${valueToneClass(detail.valueTone)}`}>{detail.value}</p>
               </div>
             ))}
           </div>
