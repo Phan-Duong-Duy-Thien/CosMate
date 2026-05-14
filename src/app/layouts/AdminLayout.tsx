@@ -7,7 +7,12 @@ export default function AdminLayout() {
   if (loading) return <div>Đang tải giao diện...</div>;
 
   return (
-    <DashboardLayout title="Bảng điều khiển Admin" sidebarItems={sidebarItems} brandName="CosMate Admin">
+    <DashboardLayout
+      title="Bảng điều khiển Admin"
+      sidebarItems={sidebarItems}
+      brandName="CosMate Admin"
+      showChatButton={false}
+    >
       {/* Không cần để <Outlet /> ở đây, vì bên trong DashboardLayout đã xử lý rỗng sẽ tự gọi Outlet rồi */}
     </DashboardLayout>
   );

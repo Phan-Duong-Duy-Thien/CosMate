@@ -57,7 +57,7 @@ export function mapCostumeToItem(
   shopName: string
 ): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
-  const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
+  const accessoryListLength = costume.accessories?.length ?? 0
   const { priceMin, priceMax } = computePriceRange(costume)
 
   return {
@@ -71,7 +71,7 @@ export function mapCostumeToItem(
     shopName,
     tags: [],
     isAdult18: false,
-    bestSeller: costume.status !== 'RENTED',
+    bestSeller: costume.bestSeller === true,
     isAvailable: costume.status === 'AVAILABLE',
     rating: 0,
     reviewCount: 0,
@@ -82,8 +82,8 @@ export function mapCostumeToItem(
     brandType: 'non_brand',
     region: 'hcm',
     images: images.length > 0 ? images : [],
-    hasAccessories: accessoryCount > 0,
-    accessoryCount: accessoryCount > 0 ? accessoryCount : undefined,
+    hasAccessories: accessoryListLength > 0,
+    accessoryCount: accessoryListLength > 0 ? accessoryListLength : undefined,
     accessoryOptions: (costume.accessories ?? []).map((a) => ({
       id: String(a.id),
       name: a.name,
@@ -129,12 +129,8 @@ export function usePublicCostumes() {
           .map((p) => [p.id, p.shopName ?? '—'])
       )
 
-      // Mock rentalsCount for testing (API chua tra ve truong nay)
       const mapped = visibleCostumes.map((c) =>
-        mapCostumeToItem(
-          { ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) },
-          providerMap[c.providerId] ?? '—'
-        )
+        mapCostumeToItem(c, providerMap[c.providerId] ?? '—')
       )
       setItems(mapped)
     } catch (err) {

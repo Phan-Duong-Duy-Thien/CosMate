@@ -5,20 +5,21 @@ import {
   SearchOutlined,
   ReloadOutlined,
   MoreOutlined,
-  EyeOutlined,
   LockOutlined,
   UnlockOutlined,
   StopOutlined,
   CheckCircleOutlined,
-  UploadOutlined, 
+  UploadOutlined,
   DownloadOutlined,
   PlusOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { cn } from '@/lib/utils';
 import { register } from '@/features/auth/api/auth.api';
 import type { RegisterRequest } from '@/features/auth/types';
 import { useAdminUsers } from '../hooks/useAdminUsers';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
 import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
@@ -275,39 +276,49 @@ export default function AdminUsersPage() {
         });
 
         return (
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="cosmate-admin-table-actions flex items-center justify-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Tooltip title={VI.admin.users.actions.viewDetail}>
-              <EyeOutlined
-                onClick={() => handleViewDetail(user)}
-                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
-              />
+              <AdminDetailEyeIcon onClick={() => handleViewDetail(user)} />
             </Tooltip>
 
             <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
               <span
+                role="presentation"
+                className={cn(
+                  'inline-flex',
+                  permission.allowed && actionLoadingId !== user.id
+                    ? 'cursor-pointer'
+                    : 'cursor-not-allowed opacity-50'
+                )}
                 onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleLockToggle(user)}
-                style={{
-                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
-                  fontSize: 16,
-                  color: userIsLocked ? 'var(--cosmate-success)' : 'var(--cosmate-warning)',
-                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
-                }}
               >
-                {userIsLocked ? <UnlockOutlined /> : <LockOutlined />}
+                {userIsLocked ? (
+                  <UnlockOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+                ) : (
+                  <LockOutlined style={{ color: 'var(--cosmate-warning)', fontSize: 16 }} />
+                )}
               </span>
             </Tooltip>
 
             <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
               <span
+                role="presentation"
+                className={cn(
+                  'inline-flex',
+                  permission.allowed && actionLoadingId !== user.id
+                    ? 'cursor-pointer'
+                    : 'cursor-not-allowed opacity-50'
+                )}
                 onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleBanToggle(user)}
-                style={{
-                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
-                  fontSize: 16,
-                  color: userIsBanned ? 'var(--cosmate-success)' : 'var(--destructive)',
-                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
-                }}
               >
-                {userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />}
+                {userIsBanned ? (
+                  <CheckCircleOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+                ) : (
+                  <StopOutlined style={{ color: 'var(--destructive)', fontSize: 16 }} />
+                )}
               </span>
             </Tooltip>
           </div>

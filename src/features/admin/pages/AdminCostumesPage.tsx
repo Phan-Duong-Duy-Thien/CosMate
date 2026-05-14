@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Input, Table, Tag, Tooltip, Drawer, Descriptions, Select, message } from 'antd';
+import { Input, Table, Tag, Tooltip, Modal, Descriptions, Select, message } from 'antd';
 import type { TableProps } from 'antd';
-import {
-  SearchOutlined,
-  ReloadOutlined,
-  EyeOutlined,
-} from '@ant-design/icons';
+import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getCostumes } from '../api/adminCostumes.api';
 import { VI } from '@/shared/i18n/vi';
 import { COSTUME_STATUS_FILTER_VALUES, getCostumeStatusTagProps } from '../utils/costumeStatus';
 import { Button as UiButton } from '@/components/ui/button';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 
 interface CostumeRow {
   id: number;
@@ -124,12 +121,12 @@ export default function AdminCostumesPage() {
       width: 60,
       align: 'center',
       render: (_, costume) => (
-        <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="cosmate-admin-table-actions flex justify-center gap-3"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Tooltip title={VI.admin.costumes.actions.viewDetail}>
-            <EyeOutlined
-              onClick={() => handleViewDetail(costume)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
-            />
+            <AdminDetailEyeIcon onClick={() => handleViewDetail(costume)} />
           </Tooltip>
         </div>
       ),
@@ -211,16 +208,19 @@ export default function AdminCostumesPage() {
           rowClassName={() => 'admin-user-row'}
         />
 
-        {/* Detail Drawer */}
-        <Drawer
+        {/* Detail modal (centered) */}
+        <Modal
+          title={VI.admin.costumes.detail.title}
           open={drawerOpen}
-          onClose={() => {
+          onCancel={() => {
             setDrawerOpen(false);
             setSelectedCostume(null);
           }}
-          title={VI.admin.costumes.detail.title}
-          styles={{ body: { paddingBottom: 24 } }}
+          footer={null}
+          centered
+          width={640}
           destroyOnClose
+          styles={{ body: { paddingBottom: 24 } }}
         >
           {selectedCostume && (
             <>
@@ -280,7 +280,7 @@ export default function AdminCostumesPage() {
               )}
             </>
           )}
-        </Drawer>
+        </Modal>
       </div>
     </>
   );

@@ -46,6 +46,7 @@ import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
 import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
+import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -120,6 +121,7 @@ export default function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
+          <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
         </Route>
       </Route>

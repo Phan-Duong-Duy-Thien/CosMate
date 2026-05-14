@@ -6,6 +6,7 @@ import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 
 interface CostumeCardProps {
   costume: CostumeItem
@@ -26,7 +27,6 @@ export const CostumeCard = ({
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
-  const statusLabel = costume.isAvailable ? "Sẵn sàng cho thuê" : "Đang được thuê"
 
   return (
     <Card
@@ -51,11 +51,15 @@ export const CostumeCard = ({
         <div className="absolute left-3 top-3 flex flex-wrap gap-2">
           <Badge
             className={cn(
-              "rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold text-white shadow-sm",
-              costume.isAvailable ? "bg-emerald-600" : "bg-slate-700"
+              "rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold shadow-sm",
+              costume.isAvailable
+                ? "bg-cosmate-success text-primary-foreground"
+                : "bg-cosmate-warning text-foreground"
             )}
           >
-            {costume.isAvailable ? "Có sẵn" : "Đã thuê"}
+            {costume.isAvailable
+              ? VI.costumeRental.costumeStatus.available
+              : VI.costumeRental.costumeStatus.rented}
           </Badge>
           {costume.isAdult18 && (
             <Badge className="rounded-full border-2 border-indigo-950 bg-pink-500 px-3 py-1 text-xs font-bold text-white">
@@ -95,9 +99,6 @@ export const CostumeCard = ({
       </div>
 
       <div className="flex min-h-[124px] flex-1 flex-col gap-2 p-3">
-        <p className="inline-flex w-fit rounded-full border-2 border-indigo-950 bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
-          {statusLabel}
-        </p>
         <h3
           className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
           title={displayName}

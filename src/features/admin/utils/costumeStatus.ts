@@ -37,7 +37,7 @@ export function getCostumeStatusTagProps(status?: string): { color: string; labe
     return { color: 'red', label: 'Đã xóa' };
   }
   if (normalized === 'RENTED') {
-    return { color: 'purple', label: 'Đang thuê' };
+    return { color: 'purple', label: 'Đang được thuê' };
   }
   if (normalized === 'AVAILABLE') {
     return { color: 'cyan', label: 'Còn trống' };

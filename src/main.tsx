@@ -6,8 +6,8 @@ import { message, notification } from "antd"
 import App from "@/app/App"
 import ScrollToTop from "@/shared/components/ScrollToTop"
 import faviconImage from "@/assets/logo.png"
-import "./index.css"
 import "antd/dist/reset.css"
+import "./index.css"
 
 // Global default: all antd toasts auto-dismiss after 5 seconds
 message.config({ duration: 5 })

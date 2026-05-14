@@ -1,16 +1,12 @@
 import { useState } from 'react';
-import { Table, Drawer, Descriptions, Select, Tag, Empty, Modal, Tooltip, Input } from 'antd';
+import { Table, Descriptions, Select, Tag, Empty, Modal, Tooltip, Input } from 'antd';
 import type { TableProps } from 'antd';
-import {
-  ReloadOutlined,
-  EyeOutlined,
-  CheckCircleOutlined,
-  StopOutlined,
-  SearchOutlined,
-} from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { cn } from '@/lib/utils';
 import { Button as UiButton } from '@/components/ui/button';
 import { useAdminProviders } from '../hooks/useAdminProviders';
 import type { AdminProviderRow } from '../services/adminProviders.service';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 
 export default function AdminProvidersPage() {
   const {
@@ -95,13 +91,12 @@ export default function AdminProvidersPage() {
       align: 'center',
       render: (_, record) => (
         <div
-          className="flex items-center justify-center gap-3"
+          className="cosmate-admin-table-actions flex items-center justify-center gap-3"
           role="presentation"
           onClick={(e) => e.stopPropagation()}
         >
           <Tooltip title="Chi tiết">
-            <EyeOutlined
-              className="cursor-pointer text-base text-cosmate-info"
+            <AdminDetailEyeIcon
               onClick={() => {
                 setSelected(record);
                 setOpen(true);
@@ -110,17 +105,18 @@ export default function AdminProvidersPage() {
           </Tooltip>
           <Tooltip title={record.verified ? 'Bỏ duyệt' : 'Duyệt provider'}>
             <span
-              className={
-                actionLoadingId === record.id
-                  ? 'cursor-not-allowed opacity-50'
-                  : 'cursor-pointer text-base'
-              }
-              style={{
-                color: record.verified ? 'var(--cosmate-warning)' : 'var(--cosmate-success)',
-              }}
+              role="presentation"
+              className={cn(
+                'inline-flex',
+                actionLoadingId === record.id ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+              )}
               onClick={() => actionLoadingId !== record.id && handleVerifyClick(record)}
             >
-              {record.verified ? <StopOutlined /> : <CheckCircleOutlined />}
+              {record.verified ? (
+                <StopOutlined style={{ color: 'var(--cosmate-warning)', fontSize: 16 }} />
+              ) : (
+                <CheckCircleOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+              )}
             </span>
           </Tooltip>
         </div>
@@ -203,7 +199,15 @@ export default function AdminProvidersPage() {
         )}
       </div>
 
-      <Drawer open={open} onClose={() => setOpen(false)} title="Chi tiết provider" width={620}>
+      <Modal
+        title="Chi tiết provider"
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        centered
+        width={620}
+        destroyOnClose
+      >
         {selected && (
           <Descriptions bordered column={1}>
             <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
@@ -220,7 +224,7 @@ export default function AdminProvidersPage() {
             <Descriptions.Item label="Bio">{selected.bio ?? '—'}</Descriptions.Item>
           </Descriptions>
         )}
-      </Drawer>
+      </Modal>
     </>
   );
 }

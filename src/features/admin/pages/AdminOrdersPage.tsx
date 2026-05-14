@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Descriptions, Drawer, Input, Result, Select, Table, Tag, Tooltip } from 'antd';
+import { Descriptions, Input, Modal, Result, Select, Table, Tag, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
-import { ReloadOutlined, EyeOutlined, SearchOutlined } from '@ant-design/icons';
+import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button as UiButton } from '@/components/ui/button';
 import { useAdminOrders } from '../hooks/useAdminOrders';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 import { ORDER_STATUS } from '@/constants/orderStatus';
 import { COSTUME_ORDER_STATUS_UI, getCostumeOrderStatusProps } from '../utils/orderStatus';
 import type { AdminOrderRow } from '../services/adminOrders.service';
@@ -115,11 +116,13 @@ export default function AdminOrdersPage() {
       width: 90,
       align: 'center',
       render: (_, r) => (
-        <div className="flex justify-center" role="presentation" onClick={(e) => e.stopPropagation()}>
+        <div
+          className="cosmate-admin-table-actions flex justify-center"
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Tooltip title="Chi tiết">
-            <EyeOutlined
-              className="cursor-pointer text-base"
-              style={{ color: 'var(--cosmate-info)' }}
+            <AdminDetailEyeIcon
               onClick={() => {
                 setSelected(r);
                 setOpen(true);
@@ -208,7 +211,15 @@ export default function AdminOrdersPage() {
           </div>
         )}
 
-        <Drawer open={open} onClose={() => setOpen(false)} title="Chi tiết đơn hàng" width={560} destroyOnClose>
+        <Modal
+          title="Chi tiết đơn hàng"
+          open={open}
+          onCancel={() => setOpen(false)}
+          footer={null}
+          centered
+          width={560}
+          destroyOnClose
+        >
           {selected && (
             <Descriptions bordered column={1}>
               <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
@@ -228,7 +239,7 @@ export default function AdminOrdersPage() {
               </Descriptions.Item>
             </Descriptions>
           )}
-        </Drawer>
+        </Modal>
       </div>
     </>
   );

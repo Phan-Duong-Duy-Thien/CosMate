@@ -518,72 +518,49 @@ export function DashboardLayout({
 
       <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
         <Header
+          className="sticky top-0 z-10 flex h-16 min-h-16 shrink-0 items-center justify-between overflow-hidden border-b border-border px-6 shadow-[0_1px_0_0_color-mix(in_oklch,var(--cosmate-pink)_22%,transparent)]"
           style={{
-            padding: '0 24px',
-            background: "var(--card)",
-            borderBottom: "1px solid var(--border)",
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            position: 'sticky',
-            top: 0,
-            zIndex: 1,
+            height: 64,
+            // Ant Design Layout.Header applies its own background; inline wins so admin/provider headers stay on-token (not default dark).
+            background:
+              'linear-gradient(180deg, color-mix(in oklch, var(--cosmate-soft-pink) 15%, transparent) 0%, var(--card) 45%, var(--card) 100%)',
+            color: 'var(--foreground)',
           }}
         >
-          <h1 className="m-0 text-xl font-semibold text-foreground">{displayTitle}</h1>
+          <div className="flex min-h-0 min-w-0 flex-1 items-center gap-3">
+            <span
+              className="hidden h-8 w-1 shrink-0 rounded-full bg-cosmate-pink/85 sm:block"
+              aria-hidden
+            />
+            <h1 className="m-0 truncate text-xl font-semibold tracking-tight text-foreground">
+              {displayTitle}
+            </h1>
+          </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
             {showChatButton && (
               <button
                 type="button"
                 onClick={() => openChat(0, 0)}
                 title="Messages"
-                style={{
-                  position: 'relative',
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: 4,
-                  borderRadius: 8,
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
+                className="relative flex h-9 cursor-pointer items-center justify-center rounded-lg border border-transparent p-1.5 text-cosmate-pink transition-colors hover:border-cosmate-pink/25 hover:bg-cosmate-soft-pink/50 hover:text-cosmate-mauve"
               >
-                <MessageCircle size={22} style={{ color: "var(--muted-foreground)" }} />
+                <MessageCircle size={22} className="shrink-0" aria-hidden />
                 {chatUnreadCount > 0 && (
-                  <span
-                    style={{
-                      position: 'absolute',
-                      top: 0,
-                      right: 0,
-                      minWidth: 16,
-                      height: 16,
-                      padding: '0 3px',
-                      borderRadius: 8,
-                      backgroundColor: "var(--destructive)",
-                      color: "var(--primary-foreground)",
-                      fontSize: 9,
-                      fontWeight: 700,
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      lineHeight: 1,
-                    }}
-                  >
+                  <span className="absolute right-0 top-0 flex h-4 min-w-4 items-center justify-center rounded-md bg-destructive px-0.5 text-[9px] font-bold leading-none text-primary-foreground">
                     {chatUnreadCount > 9 ? '9+' : chatUnreadCount}
                   </span>
                 )}
               </button>
             )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
-              <div className="flex cursor-pointer items-center gap-3 rounded-lg px-2 py-1 text-foreground hover:bg-accent/60">
+              <div className="flex h-9 max-h-9 cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 text-foreground transition-colors hover:border-cosmate-pink/20 hover:bg-cosmate-soft-pink/40 sm:gap-3">
                 {userProfile.avatarUrl ? (
-                  <Avatar src={userProfile.avatarUrl} />
+                  <Avatar src={userProfile.avatarUrl} size={32} />
                 ) : (
-                  <Avatar className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
+                  <Avatar size={32} className="bg-primary! text-primary-foreground!">{userName.charAt(0)}</Avatar>
                 )}
-                <span className="font-medium">{userName}</span>
+                <span className="hidden max-w-[140px] truncate font-medium sm:inline">{userName}</span>
               </div>
             </Dropdown>
           </div>
