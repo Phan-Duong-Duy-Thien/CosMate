@@ -218,9 +218,7 @@ export default function CostumeListPage() {
           />
 
           <div className="space-y-4">
-            <div className="rounded-[1.15rem] border-[3px] border-indigo-950/20 bg-white p-2 shadow-[6px_6px_0_0_rgba(30,27,75,0.1)]">
-              <AISearchBar onSearchCompleted={handleAISearchCompleted} />
-            </div>
+            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
 
             {!aiResults && (
               <div className="rounded-xl border-[3px] border-indigo-950/20 bg-white px-4 py-3 text-sm font-semibold text-indigo-800">
