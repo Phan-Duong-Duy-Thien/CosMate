@@ -41,16 +41,6 @@ export async function resetPassword(token: string, newPassword: string): Promise
 }
 
 /**
- * Login/Register with Google idToken
- * @param idToken - Google OAuth idToken from Google Identity Services
- * @returns Login response with token
- */
-export async function loginWithGoogle(idToken: string): Promise<LoginResponse> {
-  const response = await axiosInstance.post<LoginResponse>('/api/auth/google/login', { idToken });
-  return response.data;
-}
-
-/**
  * Update the current user's role (for onboarding flow)
  * @param role - The role to assign to the user
  * @returns Updated user info
