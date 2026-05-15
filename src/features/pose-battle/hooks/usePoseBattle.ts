@@ -66,6 +66,7 @@ export function usePoseBattle() {
       setUserImageFile(null)
       setCharacterName("")
 
+      window.dispatchEvent(new Event('profile:refresh'))
       await loadHistory(searchKeyword)
 
       notification.success({ description: "Đã chấm điểm xong. Kết quả đã lưu vào lịch sử Pose Battle." })

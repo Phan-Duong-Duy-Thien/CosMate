@@ -120,15 +120,13 @@ export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
 export async function generateCostumeDescriptionByAI(
   name: string,
   imageFiles: File[],
-  customPrompt?: string,
+  personaId: number,
 ): Promise<string> {
   const form = new FormData()
   if (name?.trim()) {
     form.append('name', name.trim())
   }
-  if (customPrompt?.trim()) {
-    form.append('customPrompt', customPrompt.trim())
-  }
+  form.append('personaId', String(personaId))
   imageFiles.forEach((file) => form.append('files', file))
 
   const response = await axiosInstance.post<ApiWrapper<string>>(

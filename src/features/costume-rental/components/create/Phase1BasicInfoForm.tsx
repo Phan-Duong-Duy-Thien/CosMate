@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Radio, Row, Select, Upload, message } from 'antd'
 import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
 import type { UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
@@ -57,6 +57,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [characters, setCharacters] = useState<CharacterOption[]>([])
   const [isCharactersLoading, setIsCharactersLoading] = useState(false)
   const [moderationError, setModerationError] = useState<string | null>(null)
+  const [personaId, setPersonaId] = useState<number>(1)
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -112,7 +113,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const handleGenerateDescription = async () => {
     const values = form.getFieldsValue()
     const name = String(values?.name || '').trim()
-    const promptText = String(form.getFieldValue('customPrompt') || '').trim()
     const files = extractFilesFromForm(values)
 
     if (!name) {
@@ -126,7 +126,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files, promptText)
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
@@ -246,14 +246,22 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" disabled={isAiGenerating} />
           </Form.Item>
 
-          <Row gutter={12} align="middle">
-            <Col flex="auto">
-              <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt" style={{ marginBottom: 0 }}>
-                <Input.TextArea rows={3} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..." />
-              </Form.Item>
-            </Col>
+          <Form.Item label="Chọn phong cách mô tả" style={{ marginBottom: 16 }}>
+            <Radio.Group
+              value={personaId}
+              onChange={(event) => setPersonaId(event.target.value)}
+              optionType="button"
+              buttonStyle="solid"
+            >
+              <Radio.Button value={1}>Sale chuyên nghiệp</Radio.Button>
+              <Radio.Button value={2}>Cute Gen Z</Radio.Button>
+              <Radio.Button value={3}>Deep Cổ trang</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Row justify="end">
             <Col>
-              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI} style={{ marginTop: 30 }}>
+              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI}>
                 AI tự viết mô tả
               </Button>
             </Col>
