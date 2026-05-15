@@ -2,6 +2,7 @@ import { Form, Input } from "antd"
 import { Lock, Mail, Phone, User } from "lucide-react"
 
 import type { RegisterFormValues } from "../types"
+import { authAffixInputClassName, authInputAffixIconClassName } from "../constants/authFieldStyles"
 import { AuthForm } from "./AuthForm"
 import { VI } from "@/shared/i18n/vi"
 
@@ -35,8 +36,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.usernamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<User className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<User className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -50,8 +51,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.fullNamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<User className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<User className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -68,8 +69,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.emailPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Mail className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Mail className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -89,8 +90,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.phonePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Phone className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Phone className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -107,8 +108,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.passwordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Lock className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -133,8 +134,8 @@ export function RegisterForm({ onSubmit, submitting, formError }: RegisterFormPr
           placeholder={VI.auth.register.confirmPasswordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Lock className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
     </AuthForm>

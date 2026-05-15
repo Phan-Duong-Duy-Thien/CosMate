@@ -14,6 +14,7 @@ import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { ConfirmButton } from "../components/ConfirmButton"
 import { useResetPassword } from "../hooks/useResetPassword"
+import { authAffixInputClassName, authInputAffixIconClassName } from "../constants/authFieldStyles"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 
@@ -120,8 +121,8 @@ export default function ResetPasswordPage() {
               <Input.Password
                 placeholder={VI.auth.resetPassword.newPasswordPlaceholder}
                 size="large"
-                prefix={<Lock className="h-4 w-4 text-indigo-900/50" aria-hidden />}
-                className="h-11 rounded-xl border-[2px] border-indigo-950/25 px-4"
+                prefix={<Lock className={authInputAffixIconClassName} aria-hidden />}
+                className={authAffixInputClassName}
               />
             </Form.Item>
 
@@ -133,8 +134,8 @@ export default function ResetPasswordPage() {
               <Input.Password
                 placeholder={VI.auth.resetPassword.confirmPasswordPlaceholder}
                 size="large"
-                prefix={<Lock className="h-4 w-4 text-indigo-900/50" aria-hidden />}
-                className="h-11 rounded-xl border-[2px] border-indigo-950/25 px-4"
+                prefix={<Lock className={authInputAffixIconClassName} aria-hidden />}
+                className={authAffixInputClassName}
               />
             </Form.Item>
 

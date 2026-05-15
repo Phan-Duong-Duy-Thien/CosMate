@@ -38,7 +38,6 @@ export default function CostumeDetailPage() {
     startDate,
     setStartDate,
     selectedRentalOptionId,
-    setSelectedRentalOptionId,
     checkedOptionalIds,
     toggleOptionalAccessory,
     quote,
@@ -48,8 +47,17 @@ export default function CostumeDetailPage() {
   // Modal state for "no address" confirmation
   const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
 
-  // Validation error state
+  // Validation error popup state
   const [validationError, setValidationError] = React.useState<string | null>(null)
+
+  React.useEffect(() => {
+    if (!validationError) return
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setValidationError(null)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [validationError])
 
   // Get current user ID
   const currentUserId = getUserId()
@@ -266,9 +274,6 @@ export default function CostumeDetailPage() {
   return (
     <section className={pageShellClass}>
       <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-5">
-        <div className="rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] via-[#f9a8d4] to-[#c4b5fd] px-4 py-2 text-xs font-extrabold text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b] sm:text-sm">
-          Thuê trang phục theo style homepage anime: bo tròn, dễ nhìn, nổi bật CTA.
-        </div>
 
         <div className="mt-4 grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
           <MediaGallery
@@ -287,25 +292,16 @@ export default function CostumeDetailPage() {
               costume={costume}
               days={days}
               startDate={startDate}
-              selectedRentalOptionId={selectedRentalOptionId}
               checkedOptionalIds={checkedOptionalIds}
               quote={quote}
               onDaysChange={setDays}
               onStartDateChange={setStartDate}
-              onSelectRentalOption={setSelectedRentalOptionId}
               onToggleOptionalAccessory={toggleOptionalAccessory}
               onRentNow={handleRentNow}
             />
           </div>
         </div>
 
-        {/* Validation Error */}
-        {validationError && (
-          <div className="mt-3 flex items-start gap-2 rounded-xl border-[4px] border-[#B91C1C] bg-[#FEE2E2] p-3 text-sm font-semibold text-[#991B1B] shadow-[6px_6px_0_0_rgba(127,29,29,0.25)] lg:ml-auto lg:w-[44%]">
-            <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
-            {validationError}
-          </div>
-        )}
 
         {/* Shop Info Card */}
         {provider && (
@@ -386,6 +382,47 @@ export default function CostumeDetailPage() {
               onSelectCostume={(id) => navigate(`/costumes/${id}`)}
               currentCostumeId={String(costume.id)}
             />
+          </div>
+        )}
+
+        {/* Validation Error Popup */}
+        {validationError && (
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="validation-error-title"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"
+            onClick={() => setValidationError(null)}
+          >
+            <div
+              className="w-full max-w-md rounded-3xl border-[5px] border-[#B91C1C] bg-gradient-to-b from-[#fffbeb] via-[#fee2e2] to-[#fecaca] p-6 shadow-[12px_12px_0_0_rgba(127,29,29,0.55)]"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-[3px] border-[#B91C1C] bg-white shadow-[3px_3px_0_0_rgba(127,29,29,0.35)]">
+                  <AlertCircle className="h-5 w-5 text-[#B91C1C]" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <h3 id="validation-error-title" className="text-base font-extrabold text-[#7F1D1D]">
+                    Thông báo
+                  </h3>
+                  <p className="mt-1 text-sm font-semibold leading-relaxed text-[#991B1B]">
+                    {validationError}
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <Button
+                  variant="default"
+                  size="lg"
+                  className="rounded-xl border-[3px] border-[#7F1D1D] bg-gradient-to-r from-[#ef4444] to-[#dc2626] px-6 font-extrabold text-white shadow-[5px_5px_0_0_#7F1D1D] hover:brightness-110"
+                  onClick={() => setValidationError(null)}
+                  autoFocus
+                >
+                  Đã hiểu
+                </Button>
+              </div>
+            </div>
           </div>
         )}
 

@@ -12,6 +12,7 @@ import { Card } from "@/shared/components/Card"
 import { Button } from "@/shared/components/Button"
 import { ConfirmButton } from "../components/ConfirmButton"
 import { useForgotPasswordRequest } from "../hooks/useForgotPasswordRequest"
+import { authAffixInputClassName, authInputAffixIconClassName } from "../constants/authFieldStyles"
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 
@@ -80,8 +81,8 @@ export default function ForgotPasswordPage() {
               <Input
                 placeholder={VI.auth.forgotPassword.identifierPlaceholder}
                 size="large"
-                prefix={<Mail className="h-4 w-4 text-indigo-900/50" aria-hidden />}
-                className="h-11 rounded-xl border-[2px] border-indigo-950/25 px-4"
+                prefix={<Mail className={authInputAffixIconClassName} aria-hidden />}
+                className={authAffixInputClassName}
               />
             </Form.Item>
 

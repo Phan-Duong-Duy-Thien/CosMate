@@ -1,13 +1,35 @@
+import { useEffect, useMemo, useState } from "react"
 import { Camera, Sparkles } from "lucide-react"
 
 import { PhotographerCard } from "@/features/photographer-booking/components/PhotographerCard"
 import { ListingFilterBar } from "@/features/photographer-booking/components/ListingFilterBar"
-import { Button } from "@/shared/components/Button"
+import { ListingPagination } from "@/features/photographer-booking/components/ListingPagination"
 import { cn } from "@/lib/utils"
 import { useProvidersByRole, PROVIDER_ROLE } from "@/features/photographer-booking/hooks/useProvidersByRole"
 
+const PAGE_SIZE = 8
+
 export default function PhotographersListingPage() {
   const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER)
+  const [currentPage, setCurrentPage] = useState(1)
+
+  const totalPages = Math.max(1, Math.ceil(providers.length / PAGE_SIZE))
+
+  useEffect(() => {
+    if (currentPage > totalPages) setCurrentPage(1)
+  }, [currentPage, totalPages])
+
+  const pagedProviders = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE
+    return providers.slice(start, start + PAGE_SIZE)
+  }, [providers, currentPage])
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page)
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" })
+    }
+  }
 
   return (
     <div className="relative isolate home-anime min-h-screen overflow-x-clip bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
@@ -72,52 +94,19 @@ export default function PhotographersListingPage() {
               <p className="mt-2 text-sm font-semibold text-slate-600">Quay lại sau hoặc đổi bộ lọc.</p>
             </div>
           ) : (
-            providers.map((provider) => <PhotographerCard key={provider.id} {...provider} />)
+            pagedProviders.map((provider) => <PhotographerCard key={provider.id} {...provider} />)
           )}
         </section>
 
-        <div className="flex flex-col items-center gap-5 pb-8">
-          <Button
-            variant="soft"
-            type="button"
-            className="rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 px-10 py-3 text-sm font-extrabold text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b] hover:brightness-105"
-          >
-            Xem thêm
-          </Button>
-          <nav
-            aria-label="Phân trang"
-            className="flex flex-wrap items-center justify-center gap-3 text-xs font-bold text-indigo-900"
-          >
-            <button
-              type="button"
-              className="rounded-lg border-[2px] border-indigo-950/40 bg-white px-3 py-2 shadow-[3px_3px_0_0_rgba(30,27,75,0.15)] transition hover:bg-pink-50"
-            >
-              Trước
-            </button>
-            <div className="flex flex-wrap justify-center gap-2">
-              {[1, 2, 3, "...", 12].map((n, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  className={cn(
-                    "flex h-9 min-w-[2.25rem] items-center justify-center rounded-lg border-[2px] px-2 transition",
-                    n === 1
-                      ? "border-indigo-950 bg-gradient-to-br from-pink-500 to-fuchsia-600 text-white shadow-[3px_3px_0_0_#1e1b4b]"
-                      : "border-indigo-950/35 bg-white text-indigo-900 shadow-[3px_3px_0_0_rgba(30,27,75,0.1)] hover:bg-amber-100"
-                  )}
-                >
-                  {n}
-                </button>
-              ))}
-            </div>
-            <button
-              type="button"
-              className="rounded-lg border-[2px] border-indigo-950/40 bg-white px-3 py-2 shadow-[3px_3px_0_0_rgba(30,27,75,0.15)] transition hover:bg-pink-50"
-            >
-              Tiếp
-            </button>
-          </nav>
-        </div>
+        {!loading && !error && providers.length > 0 && (
+          <div className="flex flex-col items-center gap-5 pb-8">
+            <ListingPagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </div>
+        )}
       </main>
     </div>
   )

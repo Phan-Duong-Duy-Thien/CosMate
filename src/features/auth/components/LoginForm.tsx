@@ -2,6 +2,7 @@ import { Checkbox, Form, Input } from "antd"
 import { Lock, Mail } from "lucide-react"
 
 import type { LoginFormValues } from "../types"
+import { authAffixInputClassName, authInputAffixIconClassName } from "../constants/authFieldStyles"
 import { AuthForm } from "./AuthForm"
 import { VI } from "@/shared/i18n/vi"
 
@@ -34,8 +35,8 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder={VI.auth.login.emailOrUsernamePlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Mail className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Mail className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 
@@ -52,8 +53,8 @@ export function LoginForm({ onSubmit, submitting, formError }: LoginFormProps) {
           placeholder={VI.auth.login.passwordPlaceholder}
           size="large"
           disabled={submitting}
-          prefix={<Lock className="h-4 w-4 text-muted-foreground" />}
-          className="h-11 rounded-full px-4"
+          prefix={<Lock className={authInputAffixIconClassName} aria-hidden />}
+          className={authAffixInputClassName}
         />
       </Form.Item>
 

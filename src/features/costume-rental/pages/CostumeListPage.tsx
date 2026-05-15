@@ -1,7 +1,7 @@
 import * as React from "react"
 import { useNavigate }from "react-router-dom"
 
-import type { CostumeItem, FilterState, RegionKey, SortKey, TagKey } from "../types"
+import type { CostumeItem, FilterState, RegionKey, SortKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
 import { FilterSidebar } from "../components/filters/FilterSidebar"
 import { SortBar }from "../components/SortBar"
@@ -13,15 +13,6 @@ import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 
 const PAGE_SIZE = 16
-
-const tagOptions: Array<{ key: TagKey; label: string }> = [
-  { key: "anime", label: "Anime" },
-  { key: "game", label: "Game" },
-  { key: "event", label: "Event" },
-  { key: "photoshoot", label: "Photoshoot" },
-  { key: "new", label: "New" },
-  { key: "adult18", label: "18+" },
-]
 
 const regionOptions: Array<{ key: RegionKey; label: string }> = [
   { key: "hcm", label: "TP. Hồ Chí Minh" },
@@ -38,7 +29,6 @@ const initialFilters: FilterState = {
   minRating: null,
   priceMin: null,
   priceMax: null,
-  tagKeys: [],
   hasAccessories: false,
   onlyAvailable: false,
   onlyBestSeller: false,
@@ -60,6 +50,8 @@ export default function CostumeListPage() {
     () => Array.from(new Set(allItems.map((item) => item.brand).filter(Boolean))).sort(),
     [allItems]
   )
+
+  const priceBounds = React.useMemo(() => ({ min: 0, max: 5_000_000 }), [])
 
   React.useEffect(() => {
     setCurrentPage(1)
@@ -88,9 +80,8 @@ export default function CostumeListPage() {
     if (filters.regionKeys.length) result = result.filter((item) => filters.regionKeys.includes(item.region))
     if (filters.brandKeys.length) result = result.filter((item) => filters.brandKeys.includes(item.brand))
     if (filters.minRating) result = result.filter((item) => item.rating >= filters.minRating!)
-    if (filters.priceMin !== null) result = result.filter((item) => item.priceMax >= filters.priceMin!)
+    if (filters.priceMin !== null) result = result.filter((item) => item.priceMin >= filters.priceMin!)
     if (filters.priceMax !== null) result = result.filter((item) => item.priceMin <= filters.priceMax!)
-    if (filters.tagKeys.length) result = result.filter((item) => filters.tagKeys.some((tag) => item.tags.includes(tag)))
     if (filters.hasAccessories) result = result.filter((item) => item.hasAccessories)
     if (filters.onlyAvailable) result = result.filter((item) => item.isAvailable)
     if (filters.onlyBestSeller) result = result.filter((item) => item.bestSeller)
@@ -220,16 +211,14 @@ export default function CostumeListPage() {
             filters={filters}
             regions={regionOptions}
             brands={brands}
-            tags={tagOptions}
+            priceBounds={priceBounds}
             resultCount={sortedItems.length}
             onUpdate={(next) => setFilters((prev) => ({ ...prev, ...next }))}
             onReset={handleReset}
           />
 
           <div className="space-y-4">
-            <div className="rounded-[1.15rem] border-[3px] border-indigo-950/20 bg-white p-2 shadow-[6px_6px_0_0_rgba(30,27,75,0.1)]">
-              <AISearchBar onSearchCompleted={handleAISearchCompleted} />
-            </div>
+            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
 
             {!aiResults && (
               <div className="rounded-xl border-[3px] border-indigo-950/20 bg-white px-4 py-3 text-sm font-semibold text-indigo-800">

@@ -13,12 +13,6 @@ export const PriceBreakdownCard = ({ quote, days }: PriceBreakdownCardProps) => 
         <span>Giá thuê ({days} ngày)</span>
         <span className="font-bold text-indigo-950">{quote.rentalPrice.toLocaleString("vi-VN")}VNĐ</span>
       </div>
-      {quote.rentalOptionPrice > 0 && (
-        <div className="flex items-center justify-between">
-          <span>Gói thuê</span>
-          <span className="font-bold text-indigo-950">+{quote.rentalOptionPrice.toLocaleString("vi-VN")} VNĐ</span>
-        </div>
-      )}
       {quote.accessoryTotal > 0 && (
         <div className="flex items-center justify-between">
           <span>Phụ kiện</span>
