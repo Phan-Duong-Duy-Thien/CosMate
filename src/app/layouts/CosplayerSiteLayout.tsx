@@ -59,35 +59,10 @@ export default function CosplayerSiteLayout() {
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
-  const isPhotographersListingPage = location.pathname === "/photographers"
-  const isPhotographerDetailPage = /^\/photographer\/[^/]+\/?$/.test(location.pathname)
-  const isPublicServiceDetailPage = /^\/service\/[^/]+\/?$/.test(location.pathname)
-  const isPublicShopPage = /^\/shop\/[^/]+\/?$/.test(location.pathname)
-  const isCostumeDetailPage = /^\/costumes\/[^/]+\/?$/.test(location.pathname)
-  const isFullWidthEdgeListing = false
-  const isGuidelinesRulesPage = location.pathname === "/guidelines-rules"
-  const isNotificationsPage = location.pathname === "/notifications"
-  const isProfilePage =
-    location.pathname === "/profile" ||
-    location.pathname.startsWith("/profile/") ||
-    location.pathname === "/wishlist" ||
-    location.pathname === "/purchase-history"
-  const isWalletPage = /^\/wallet(\/.*)?$/.test(location.pathname)
-  const isCheckoutPage = location.pathname.startsWith("/rent/checkout")
-  const isExtraWideContentPage =
-    isNotificationsPage ||
-    isGuidelinesRulesPage ||
-    isPhotographersListingPage ||
-    isPhotographerDetailPage ||
-    isPublicServiceDetailPage ||
-    isPublicShopPage ||
-    isCostumeDetailPage
-  const isWideContentPage =
-    location.pathname === "/costumes" ||
-    isProfilePage ||
-    isWalletPage ||
-    isCheckoutPage ||
-    isExtraWideContentPage
+
+  /** Một cột nội dung chung (giống /costumes): max-width + lề hai bên — trừ homepage. */
+  const siteContentShellClass =
+    "mx-auto w-full min-w-0 max-w-screen-2xl px-4 md:px-6 xl:px-8"
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
@@ -273,6 +248,8 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: "Wishlist" },
       ])
+    } else if (path === "/login" || path.startsWith("/register")) {
+      setItems([])
     }
   }, [location.pathname, setItems])
 
@@ -540,62 +517,66 @@ export default function CosplayerSiteLayout() {
           <div className={SITE_HEADER_UI.actions}>
             <SearchBar className={SITE_HEADER_UI.searchWrap} />
 
-            <button
-              type="button"
-              aria-label="Tin nhắn"
-              className={SITE_HEADER_UI.iconBtn}
-              onClick={() => openChat(0, 0)}
-            >
-              <MessageCircle className={SITE_HEADER_UI.actionIcon} />
-              {chatUnreadCount > 0 && (
-                <span className={SITE_HEADER_UI.unreadBadge}>
-                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                </span>
-              )}
-            </button>
+            {loggedIn && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Tin nhắn"
+                  className={SITE_HEADER_UI.iconBtn}
+                  onClick={() => openChat(0, 0)}
+                >
+                  <MessageCircle className={SITE_HEADER_UI.actionIcon} />
+                  {chatUnreadCount > 0 && (
+                    <span className={SITE_HEADER_UI.unreadBadge}>
+                      {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                    </span>
+                  )}
+                </button>
 
-            <button
-              type="button"
-              aria-label="Giỏ hàng"
-              className={SITE_HEADER_UI.iconBtn}
-              onClick={() => navigate('/profile/purchase-history')}
-            >
-              <ShoppingCart className={SITE_HEADER_UI.actionIcon} />
-              <span className={SITE_HEADER_UI.cartDot} />
-            </button>
+                <button
+                  type="button"
+                  aria-label="Giỏ hàng"
+                  className={SITE_HEADER_UI.iconBtn}
+                  onClick={() => navigate('/profile/purchase-history')}
+                >
+                  <ShoppingCart className={SITE_HEADER_UI.actionIcon} />
+                  <span className={SITE_HEADER_UI.cartDot} />
+                </button>
 
-            <Tooltip title="Wishlist">
-              <button
-                type="button"
-                aria-label="Wishlist"
-                className={SITE_HEADER_UI.iconBtn}
-                onClick={() => navigate('/wishlist')}
-              >
-                <Heart className={SITE_HEADER_UI.actionIcon} />
-              </button>
-            </Tooltip>
+                <Tooltip title="Wishlist">
+                  <button
+                    type="button"
+                    aria-label="Wishlist"
+                    className={SITE_HEADER_UI.iconBtn}
+                    onClick={() => navigate('/wishlist')}
+                  >
+                    <Heart className={SITE_HEADER_UI.actionIcon} />
+                  </button>
+                </Tooltip>
 
-            <Popover
-              content={notifPopoverContent}
-              trigger="click"
-              open={notifOpen}
-              onOpenChange={setNotifOpen}
-              placement="bottomRight"
-              arrow={false}
-            >
-              <button
-                type="button"
-                aria-label="Thông báo"
-                className={SITE_HEADER_UI.iconBtn}
-              >
-                <Bell className={SITE_HEADER_UI.actionIcon} />
-                {unreadCount > 0 && (
-                  <span className={SITE_HEADER_UI.unreadBadge}>
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            </Popover>
+                <Popover
+                  content={notifPopoverContent}
+                  trigger="click"
+                  open={notifOpen}
+                  onOpenChange={setNotifOpen}
+                  placement="bottomRight"
+                  arrow={false}
+                >
+                  <button
+                    type="button"
+                    aria-label="Thông báo"
+                    className={SITE_HEADER_UI.iconBtn}
+                  >
+                    <Bell className={SITE_HEADER_UI.actionIcon} />
+                    {unreadCount > 0 && (
+                      <span className={SITE_HEADER_UI.unreadBadge}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </Popover>
+              </>
+            )}
 
             {loggedIn ? (
               <Dropdown 
@@ -638,16 +619,7 @@ export default function CosplayerSiteLayout() {
 
       <main className={cn("min-w-0 flex-1", SITE_HEADER_UI.mainOffset)}>
         {!isHomePage && items.length > 0 && (
-          <div
-            className={cn(
-              "mx-auto w-full min-w-0 px-4 pt-6 pb-2 md:px-6",
-              isFullWidthEdgeListing
-                ? "max-w-none px-2 pt-5 pb-2 sm:px-3 md:px-4"
-                : isExtraWideContentPage
-                  ? "max-w-[min(1760px,100%)] xl:px-10"
-                  : "max-w-7xl"
-            )}
-          >
+          <div className={cn(siteContentShellClass, "pt-6 pb-2")}>
             <Breadcrumbs items={items} />
           </div>
         )}
@@ -676,19 +648,7 @@ export default function CosplayerSiteLayout() {
             </div>
           </div>
         ) : (
-          <div
-            className={cn(
-              "mx-auto w-full min-w-0",
-              isFullWidthEdgeListing &&
-                "max-w-none px-2 pb-3 pt-0 sm:px-3 md:px-4 lg:pb-4",
-              isWideContentPage &&
-                !isFullWidthEdgeListing &&
-                (isExtraWideContentPage
-                  ? "max-w-[min(1760px,100%)] px-4 md:px-6 xl:px-10"
-                  : "max-w-screen-2xl px-4 md:px-6 xl:px-8"),
-              !isWideContentPage && "max-w-7xl px-4 lg:px-6"
-            )}
-          >
+          <div className={siteContentShellClass}>
             <div className="min-w-0">
               <Outlet />
             </div>
