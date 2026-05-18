@@ -13,7 +13,7 @@ import { AddressModal } from "../components/AddressModal"
 import { ProfileCover } from "../components/ProfileCover"
 import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
-import { CheckCheck, PackageCheck, Star, Truck } from "lucide-react"
+import { CheckCheck, Coins, PackageCheck, Star, Truck } from "lucide-react"
 import { message } from "antd"
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -166,6 +166,23 @@ export default function CosplayerProfilePage() {
                       <Button type="button" variant="outline" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50" onClick={() => navigate("/profile/wallet")}>
                         {VI.wallet.manage}
                       </Button>
+                    </div>
+                  </div>
+                </Card>
+
+                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
+                  <div className="p-5">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.token.title}</h2>
+                        <p className="mt-1 text-sm font-medium text-slate-500">{VI.profile.token.balance}</p>
+                        <p className="mt-2 text-2xl font-extrabold text-[#d61f91]">
+                          {(profile.numberOfToken ?? 0).toLocaleString("vi-VN")}
+                        </p>
+                      </div>
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[2px] border-indigo-950 bg-cosmate-soft-pink/60 shadow-[3px_3px_0_0_rgba(30,27,75,0.18)]">
+                        <Coins className="h-5 w-5 text-[#d61f91]" />
+                      </div>
                     </div>
                   </div>
                 </Card>

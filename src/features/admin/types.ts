@@ -28,6 +28,8 @@ export interface AdminUserProfile {
   avatarUrl: string | null;
   phone: string | null;
   status: 'ACTIVE' | 'BANNED' | 'INACTIVE' | string;
+  numberOfToken?: number;
+  role?: string;
 }
 
 /**

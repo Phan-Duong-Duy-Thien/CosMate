@@ -84,7 +84,6 @@ export default function CosplayerSiteLayout() {
       "/photographers",
       "/staffs",
       "/service",
-      "/staff/",
       "/photographer/",
     ]
     const isPublicBrowsePath = publicBrowsePaths.some((p) => location.pathname.startsWith(p))
@@ -168,7 +167,7 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
-    } else if (path.startsWith("/staff/")) {
+    } else if (path.startsWith("/staffs/") && path !== "/staffs") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs, to: "/staffs" },
@@ -180,7 +179,7 @@ export default function CosplayerSiteLayout() {
         setItems([
           { label: VI.common.breadcrumb.home, to: "/" },
           { label: VI.common.breadcrumb.staffs, to: "/staffs" },
-          { label: VI.common.breadcrumb.staffProfile, to: `/staff/${state.providerId}` },
+          { label: VI.common.breadcrumb.staffProfile, to: `/staffs/${state.providerId}` },
           { label: VI.common.breadcrumb.serviceDetailFromProfile },
         ])
       } else if (state?.providerType === 'photographer' && state?.providerId) {

@@ -35,7 +35,7 @@ export function StaffCard({
       viewport={{ once: true }}
       className="group bg-white rounded-2xl overflow-hidden border border-gray-100 hover:shadow-xl hover:shadow-lavender-100/30 transition-all duration-300"
     >
-      <Link to={`/staff/${id}`}>
+      <Link to={`/staffs/${id}`}>
         {/* Cover Image */}
         <div className="relative aspect-[4/3] overflow-hidden">
           <ImageWithFallback
