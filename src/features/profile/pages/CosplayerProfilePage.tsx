@@ -13,7 +13,10 @@ import { AddressModal } from "../components/AddressModal"
 import { ProfileCover } from "../components/ProfileCover"
 import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
-import { CheckCheck, Coins, PackageCheck, Star, Truck } from "lucide-react"
+import { BuyTokenPlansModal } from "../components/BuyTokenPlansModal"
+import { ProfileMetricBody, ProfileNeoCard } from "../components/ProfileNeoCard"
+import { PROFILE_CARD_UI } from "../constants/profileUi"
+import { CheckCheck, Coins, MapPin, PackageCheck, Star, Truck, User, Wallet } from "lucide-react"
 import { message } from "antd"
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -25,7 +28,7 @@ const STATUS_BADGE_CLASS: Record<string, string> = {
 
 export default function CosplayerProfilePage() {
   const navigate = useNavigate()
-  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile, userId } =
+  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile, userId, refetch } =
     useUserProfile()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false)
@@ -36,6 +39,7 @@ export default function CosplayerProfilePage() {
   const [isPageVisible, setIsPageVisible] = useState(false)
   const [showAllAddresses, setShowAllAddresses] = useState(false)
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
+  const [isBuyTokenOpen, setIsBuyTokenOpen] = useState(false)
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
   const { counts } = usePurchaseOrders("all")
@@ -153,44 +157,50 @@ export default function CosplayerProfilePage() {
               <div className="space-y-4 lg:col-span-5">
                 <ProfileBioCard />
 
-                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <div className="p-5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <h2 className="text-base font-extrabold text-indigo-950">{VI.wallet.title}</h2>
-                        <p className="mt-1 text-sm font-medium text-slate-500">{VI.wallet.balance}</p>
-                        <p className="mt-2 text-2xl font-extrabold text-[#d61f91]">
-                          {walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫
-                        </p>
-                      </div>
-                      <Button type="button" variant="outline" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50" onClick={() => navigate("/profile/wallet")}>
-                        {VI.wallet.manage}
-                      </Button>
-                    </div>
-                  </div>
-                </Card>
+                <ProfileNeoCard
+                  title={VI.wallet.title}
+                  icon={Wallet}
+                  footer={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={PROFILE_CARD_UI.action}
+                      onClick={() => navigate("/profile/wallet")}
+                    >
+                      {VI.wallet.manage}
+                    </Button>
+                  }
+                >
+                  <ProfileMetricBody
+                    label={VI.wallet.balance}
+                    value={`${walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫`}
+                  />
+                </ProfileNeoCard>
 
-                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <div className="p-5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.token.title}</h2>
-                        <p className="mt-1 text-sm font-medium text-slate-500">{VI.profile.token.balance}</p>
-                        <p className="mt-2 text-2xl font-extrabold text-[#d61f91]">
-                          {(profile.numberOfToken ?? 0).toLocaleString("vi-VN")}
-                        </p>
-                      </div>
-                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[2px] border-indigo-950 bg-cosmate-soft-pink/60 shadow-[3px_3px_0_0_rgba(30,27,75,0.18)]">
-                        <Coins className="h-5 w-5 text-[#d61f91]" />
-                      </div>
-                    </div>
-                  </div>
-                </Card>
+                <ProfileNeoCard
+                  title={VI.profile.token.title}
+                  icon={Coins}
+                  footer={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={PROFILE_CARD_UI.action}
+                      onClick={() => setIsBuyTokenOpen(true)}
+                    >
+                      {VI.profile.token.buyMore}
+                    </Button>
+                  }
+                >
+                  <ProfileMetricBody
+                    label={VI.profile.token.balance}
+                    value={(profile.numberOfToken ?? 0).toLocaleString("vi-VN")}
+                  />
+                </ProfileNeoCard>
 
-                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]">
-                  <div className="p-5">
-                    <p className="text-base font-extrabold text-indigo-950">{VI.profile.title}</p>
-                    <div className="mt-3 space-y-2">
+                <ProfileNeoCard title={VI.profile.title} icon={User} hoverable={false}>
+                    <div className="mt-2 space-y-2">
                       <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
                         <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.email}</p>
                         <p className="mt-1 text-sm font-semibold text-slate-700">{profile.email}</p>
@@ -210,70 +220,84 @@ export default function CosplayerProfilePage() {
                         </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
+                </ProfileNeoCard>
               </div>
 
               <div className="space-y-4 lg:col-span-7">
-                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <div className="p-5">
-                    <div className="flex items-center justify-between gap-2">
-                      <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.orders.title}</h2>
-                      <button
-                        type="button"
-                        className="text-sm font-bold text-[#d61f91] underline-offset-2 transition-colors hover:text-[#b0177a] hover:underline"
-                        onClick={() => navigate("/profile/purchase-history")}
-                      >
-                        {VI.profile.orders.history}
-                      </button>
-                    </div>
-                    <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                      {orderShortcuts.map((item) => {
-                        const Icon = item.icon
-                        const tabKey = shortcutToTabMap[item.key]
-                        const count = tabKey ? counts[tabKey as keyof typeof counts] || 0 : 0
-                        return (
-                          <button
-                            key={item.key}
-                            type="button"
-                            className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-pink-50 active:scale-[0.98]"
-                            onClick={() => navigate(`/profile/purchase-history?tab=${tabKey}`)}
-                          >
-                            <div className="flex items-center justify-between">
-                              <Icon className="h-4 w-4 text-[#d61f91]" />
-                              <span className="text-xs font-bold text-slate-500">{count}</span>
-                            </div>
-                            <p className="mt-2 text-xs font-semibold text-slate-700">{item.label}</p>
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </div>
-                </Card>
-
-                <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]">
-                  <div className="p-5">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-base font-extrabold text-indigo-950">{VI.profile.addresses.title}</p>
-                    <Button
+                <ProfileNeoCard
+                  title={VI.profile.orders.title}
+                  icon={PackageCheck}
+                  footer={
+                    <button
                       type="button"
-                      size="sm"
-                      variant="outline"
-                      className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50"
-                      onClick={() => setIsAddressModalOpen(true)}
+                      className={PROFILE_CARD_UI.linkAction}
+                      onClick={() => navigate("/profile/purchase-history")}
                     >
-                      + {VI.profile.address.button.add}
-                    </Button>
+                      {VI.profile.orders.history}
+                    </button>
+                  }
+                >
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {orderShortcuts.map((item) => {
+                      const Icon = item.icon
+                      const tabKey = shortcutToTabMap[item.key]
+                      const count = tabKey ? counts[tabKey as keyof typeof counts] || 0 : 0
+                      return (
+                        <button
+                          key={item.key}
+                          type="button"
+                          className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-pink-50 active:scale-[0.98]"
+                          onClick={() => navigate(`/profile/purchase-history?tab=${tabKey}`)}
+                        >
+                          <div className="flex items-center justify-between">
+                            <Icon className="h-4 w-4 text-[#d61f91]" />
+                            <span className="text-xs font-bold text-slate-500">{count}</span>
+                          </div>
+                          <p className="mt-2 text-xs font-semibold text-slate-700">{item.label}</p>
+                        </button>
+                      )
+                    })}
                   </div>
+                </ProfileNeoCard>
 
+                <ProfileNeoCard
+                  title={VI.profile.addresses.title}
+                  icon={MapPin}
+                  footer={
+                    <>
+                      {addresses.length > 1 && !addressesLoading && !addressesError && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className={PROFILE_CARD_UI.action}
+                          onClick={() => setShowAllAddresses((prev) => !prev)}
+                        >
+                          {showAllAddresses
+                            ? VI.profile.addresses.collapse
+                            : VI.profile.addresses.showMore}
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className={PROFILE_CARD_UI.action}
+                        onClick={() => setIsAddressModalOpen(true)}
+                      >
+                        + {VI.profile.address.button.add}
+                      </Button>
+                    </>
+                  }
+                >
                   {addressesLoading ? (
-                    <p className="mt-3 text-sm text-muted-foreground">{VI.profile.addresses.loading}</p>
+                    <p className="text-sm text-muted-foreground">{VI.profile.addresses.loading}</p>
                   ) : addressesError ? (
-                    <p className="mt-3 text-sm text-destructive">{addressesError}</p>
+                    <p className="text-sm text-destructive">{addressesError}</p>
                   ) : addresses.length === 0 ? (
-                    <p className="mt-3 text-sm text-muted-foreground">{VI.profile.addresses.empty}</p>
+                    <p className="text-sm text-muted-foreground">{VI.profile.addresses.empty}</p>
                   ) : (
-                    <div className="mt-3 space-y-2">
+                    <div className="space-y-2">
                       {displayedAddresses.map((item) => {
                         const fullAddress = [item.address, item.district, item.city]
                           .filter((part) => part && part.trim().length > 0)
@@ -292,22 +316,7 @@ export default function CosplayerProfilePage() {
                       })}
                     </div>
                   )}
-
-                  {addresses.length > 1 && !addressesLoading && !addressesError && (
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      className="mt-3 rounded-full border-[2px] border-indigo-950 bg-white px-4 font-bold text-[#d61f91] transition-all duration-200 hover:-translate-y-0.5 hover:bg-pink-50 active:scale-[0.98]"
-                      onClick={() => setShowAllAddresses((prev) => !prev)}
-                    >
-                      {showAllAddresses
-                        ? VI.profile.addresses.collapse
-                        : VI.profile.addresses.showMore}
-                    </Button>
-                  )}
-                  </div>
-                </Card>
+                </ProfileNeoCard>
               </div>
             </div>
           </>
@@ -332,6 +341,13 @@ export default function CosplayerProfilePage() {
         open={isAddressModalOpen}
         onOpenChange={setIsAddressModalOpen}
         userId={userId}
+      />
+      <BuyTokenPlansModal
+        open={isBuyTokenOpen}
+        onOpenChange={(open) => {
+          setIsBuyTokenOpen(open);
+          if (!open) void refetch();
+        }}
       />
       <Dialog open={isAvatarPreviewOpen} onOpenChange={setIsAvatarPreviewOpen}>
         <DialogContent className="max-h-[92vh] w-auto max-w-[96vw] rounded-none bg-transparent p-0 shadow-none">

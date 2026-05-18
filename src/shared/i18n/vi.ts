@@ -936,6 +936,21 @@ export const VI = {
     token: {
       title: "Token CosMate",
       balance: "Số token hiện có",
+      buyMore: "Mua thêm",
+      buyModalTitle: "Chọn gói token",
+      buyModalEmpty: "Chưa có gói token khả dụng",
+      buyModalLoadError: "Không tải được danh sách gói",
+      selectPayment: "Phương thức thanh toán",
+      buy: "Mua",
+      purchaseError: "Không thể tạo thanh toán",
+      purchaseInvalidUrl: "Liên kết thanh toán không hợp lệ",
+      columns: {
+        name: "Tên gói",
+        price: "Giá",
+        numberOfToken: "Số token",
+        description: "Mô tả",
+        actions: "Hành động",
+      },
     },
 
     bio: {
