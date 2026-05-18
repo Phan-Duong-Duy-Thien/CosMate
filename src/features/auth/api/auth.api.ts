@@ -2,7 +2,6 @@ import axiosInstance from '@/services/axiosInstance';
 import type {
   LoginRequest,
   LoginResponse,
-  QrLoginStatusResponse,
   RegisterRequest,
   RegisterResponse,
 } from '../types';
@@ -67,13 +66,3 @@ export async function changePassword(userId: number, payload: {
   await axiosInstance.post<void>(`/api/users/${userId}/change-password`, payload);
 }
 
-/**
- * GET /api/auth/qr/session/{loginSessionToken}/status — poll until APPROVED or EXPIRED.
- * sessionToken is generated on web (UUID), same as confirm-delivery ws-image sessionId.
- */
-export async function getQrLoginStatus(loginSessionToken: string): Promise<QrLoginStatusResponse> {
-  const response = await axiosInstance.get<QrLoginStatusResponse>(
-    `/api/auth/qr/session/${encodeURIComponent(loginSessionToken)}/status`
-  );
-  return response.data;
-}
