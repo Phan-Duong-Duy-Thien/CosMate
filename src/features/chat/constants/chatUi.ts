@@ -8,9 +8,22 @@ export const CHAT_UI = {
   panel: "overflow-hidden rounded-xl border border-cosmate-lavender-border bg-card shadow-sm",
   providerShell: "flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-cosmate-lavender-border bg-card",
   pageCanvas: "bg-cosmate-soft-pink/35",
-  sidebar: "flex shrink-0 flex-col border-cosmate-lavender-border bg-cosmate-lavender-surface/40",
+  sidebar: "flex h-full shrink-0 flex-col border-cosmate-lavender-border bg-cosmate-lavender-surface/40",
+  sidebarCompact: "w-[140px]",
+  sidebarComfortable: "min-w-0 w-72",
   sidebarBorder: "border-r border-cosmate-lavender-border",
+  sidebarHeader: "flex h-14 shrink-0 items-center justify-between border-b border-cosmate-lavender-border",
+  sidebarHeaderCompact: "px-2",
+  sidebarHeaderComfortable: "px-4",
+  sidebarSearchPadCompact: "p-2",
+  sidebarSearchPadComfortable: "p-3",
   headerBar: "flex shrink-0 items-center border-b border-cosmate-lavender-border bg-card",
+  popupHeader:
+    "flex shrink-0 items-center justify-between border-b border-cosmate-lavender-border bg-card px-4 pt-3 pb-2.5",
+  partnerTitle: "truncate text-sm font-semibold leading-tight text-foreground",
+  partnerStatus: "truncate text-xs leading-none text-muted-foreground",
+  closeIconBtn:
+    "ml-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
   messageEmpty: "flex h-full w-full flex-col items-center justify-center gap-2 bg-cosmate-soft-pink/20 text-muted-foreground",
   messageScroll: "flex h-full flex-1 flex-col overflow-y-auto bg-cosmate-soft-pink/15",
   messageScrollPad: "px-3 py-2",
@@ -43,4 +56,31 @@ export const CHAT_UI = {
   bookingCta:
     "inline-flex items-center gap-1.5 rounded-full bg-cosmate-pink px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50",
   spinner: "h-8 w-8 animate-spin rounded-full border-2 border-cosmate-lavender-border border-t-cosmate-pink",
+  roomRow:
+    "group/sidebar-btn flex w-full items-center gap-2 overflow-hidden rounded-xl px-2 py-2 text-left transition-colors",
+  roomRowActive: "bg-cosmate-soft-pink",
+  roomRowHover: "hover:bg-muted/50",
+  roomNameActive: "font-semibold text-cosmate-pink",
+  roomNameIdle: "font-medium text-foreground",
+  roomTime: "block truncate text-[10px] leading-tight text-muted-foreground",
+  userRowHover: "hover:bg-cosmate-soft-pink/70",
+  emptyInbox: "flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-muted-foreground",
+  emptyIcon: "text-muted-foreground/40",
+  tooltip:
+    "pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-cosmate-lavender-border bg-card px-2.5 py-1.5 text-xs text-foreground opacity-0 shadow-lg transition-opacity group-hover/sidebar-btn:opacity-100",
+  tooltipArrow:
+    "absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-full rotate-45 border-b border-r border-cosmate-lavender-border bg-card",
+  tooltipSub: "block text-muted-foreground",
+  avatarSm: "h-8 w-8 shrink-0 rounded-full object-cover",
+  avatarMd: "h-9 w-9 rounded-full object-cover",
+  avatarFallbackSm:
+    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cosmate-soft-pink to-cosmate-lavender-surface text-[10px] font-semibold text-cosmate-pink",
+  avatarFallbackMd:
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-cosmate-soft-pink to-cosmate-lavender-surface text-xs font-semibold text-cosmate-pink",
+  statusDot:
+    "absolute bottom-0 right-0 rounded-full border-2 border-card",
+  statusDotSm: "h-2.5 w-2.5",
+  imageInBubble: "block max-h-[250px] max-w-[200px] cursor-pointer object-cover",
+  footerBarPopup: "flex h-[60px] shrink-0 items-start gap-2 border-t border-cosmate-lavender-border bg-card px-3 py-2",
+  iconBtnSm: "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
 } as const

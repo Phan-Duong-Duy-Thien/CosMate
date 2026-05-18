@@ -2,6 +2,7 @@ import { MessageCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { formatRoomTime } from "@/lib/datetime"
 import type { ChatRoomListItem } from "../types"
+import { CHAT_UI } from "../constants/chatUi"
 
 interface ChatRoomListProps {
   rooms: ChatRoomListItem[];
@@ -20,8 +21,8 @@ function computeInitials(fullName: string | null | undefined): string {
 export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomListProps) {
   if (rooms.length === 0) {
     return (
-      <div className="flex h-full w-full flex-col items-center justify-center gap-2 p-3 text-slate-400">
-        <MessageCircle className="h-8 w-8 text-slate-300" />
+      <div className={CHAT_UI.emptyInbox}>
+        <MessageCircle className={cn("h-8 w-8", CHAT_UI.emptyIcon)} />
         <p className="text-xs">No conversations yet</p>
       </div>
     )
@@ -37,42 +38,39 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
             type="button"
             onClick={() => onSelectRoom(room)}
             className={cn(
-              "group/sidebar-btn flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors overflow-hidden",
-              isActive ? "bg-pink-50" : "hover:bg-slate-50"
+              CHAT_UI.roomRow,
+              isActive ? CHAT_UI.roomRowActive : CHAT_UI.roomRowHover,
             )}
           >
-            {/* Avatar */}
             <div className="relative shrink-0">
               {room.partnerAvatar ? (
                 <img
                   src={room.partnerAvatar || undefined}
                   alt={room.partnerName || "Partner"}
-                  className="h-8 w-8 rounded-full object-cover"
+                  className={CHAT_UI.avatarSm}
                 />
               ) : (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-[10px] font-semibold text-pink-600">
+                <div className={CHAT_UI.avatarFallbackSm}>
                   {computeInitials(room.partnerName)}
                 </div>
               )}
-              {/* Hover tooltip — shows when ANY part of the button is hovered */}
-              <div className="pointer-events-none absolute bottom-full left-1/2 z-50 mb-1.5 -translate-x-1/2 whitespace-nowrap rounded-lg border border-slate-100 bg-white px-2.5 py-1.5 text-xs text-slate-700 shadow-lg opacity-0 shadow-xl transition-opacity group-hover/sidebar-btn:opacity-100">
+              <div className={CHAT_UI.tooltip}>
                 <span className="block font-medium">{room.partnerName || "Unknown"}</span>
-                <div className="absolute bottom-0 left-1/2 h-1.5 w-1.5 -translate-x-1/2 translate-y-full rotate-45 border-b border-r border-slate-100 bg-white" />
+                <div className={CHAT_UI.tooltipArrow} />
               </div>
             </div>
 
-            {/* Text — w-0 min-w-0 forces flex item to shrink, enabling truncate */}
             <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">
               <span
                 className={cn(
                   "block truncate text-xs",
-                  isActive ? "font-semibold text-pink-600" : "font-medium text-slate-700"
+                  isActive ? CHAT_UI.roomNameActive : CHAT_UI.roomNameIdle,
                 )}
               >
                 {room.partnerName || "Unknown"}
               </span>
               {room.lastMessageAt && (
-                <span className="block truncate text-[10px] leading-tight text-slate-400">
+                <span className={CHAT_UI.roomTime}>
                   {formatRoomTime(room.lastMessageAt)}
                 </span>
               )}

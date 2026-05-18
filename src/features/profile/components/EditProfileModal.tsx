@@ -1,7 +1,7 @@
 import * as React from "react"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@/shared/components/Button"
-import { Input } from "@/shared/components/Input"
+import { Button } from "@/components/ui/button"
+import { PROFILE_MODAL_UI } from "../constants/profileUi"
 import type { AdminUserProfile } from "@/features/admin/types"
 import type { UpsertUserAddressPayload, UserAddress, Province, District } from "../types"
 import { cn } from "@/lib/utils"
@@ -314,21 +314,20 @@ export default function EditProfileModal({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-h-[85vh] max-w-xl overflow-y-auto"
+        className={PROFILE_MODAL_UI.content}
+        closeClassName={PROFILE_MODAL_UI.closeBtn}
         onClose={() => onOpenChange(false)}
       >
-        <h2 className="text-xl font-bold text-slate-900">
+        <h2 className={PROFILE_MODAL_UI.title}>
           {VI.profile.editModal.title}
         </h2>
 
-        <div className="mt-4 flex gap-2 rounded-xl bg-slate-50 p-1">
+        <div className={cn("mt-4", PROFILE_MODAL_UI.tabTrack)}>
           <button
             type="button"
             className={cn(
-              "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              activeTab === "basic"
-                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+              PROFILE_MODAL_UI.tabBtn,
+              activeTab === "basic" ? PROFILE_MODAL_UI.tabActive : PROFILE_MODAL_UI.tabIdle,
             )}
             onClick={() => setActiveTab("basic")}
           >
@@ -337,10 +336,8 @@ export default function EditProfileModal({
           <button
             type="button"
             className={cn(
-              "flex-1 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
-              activeTab === "address"
-                ? "bg-cosmate-soft-pink text-slate-900 shadow-sm"
-                : "text-slate-500 hover:text-slate-700"
+              PROFILE_MODAL_UI.tabBtn,
+              activeTab === "address" ? PROFILE_MODAL_UI.tabActive : PROFILE_MODAL_UI.tabIdle,
             )}
             onClick={() => setActiveTab("address")}
           >
@@ -350,8 +347,8 @@ export default function EditProfileModal({
 
         {activeTab === "basic" ? (
           <div className="mt-5 space-y-5">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-              <p className="mb-3 text-sm font-medium text-slate-700">
+            <div className={PROFILE_MODAL_UI.section}>
+              <p className={cn("mb-3", PROFILE_MODAL_UI.sectionTitle)}>
                 {VI.profile.avatar}
               </p>
               <div className="flex items-center gap-4">
@@ -359,10 +356,10 @@ export default function EditProfileModal({
                   <img
                     src={previewUrl}
                     alt={VI.profile.avatar}
-                    className="h-16 w-16 rounded-full object-cover"
+                    className={PROFILE_MODAL_UI.avatar}
                   />
                 ) : (
-                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-purple-100 text-lg font-bold text-purple-700">
+                  <div className={PROFILE_MODAL_UI.avatarFallback}>
                     {initials}
                   </div>
                 )}
@@ -371,7 +368,7 @@ export default function EditProfileModal({
                     type="file"
                     accept="image/*"
                     onChange={handleAvatarFileSelected}
-                    className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-full file:border-0 file:bg-pink-100 file:px-3 file:py-2 file:text-sm file:font-medium file:text-pink-700 hover:file:bg-pink-200"
+                    className={PROFILE_MODAL_UI.fileInput}
                   />
                 </div>
               </div>
@@ -385,56 +382,63 @@ export default function EditProfileModal({
               }}
             >
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  {VI.profile.fullName} <span className="text-pink-500">*</span>
+                <label className={PROFILE_MODAL_UI.label}>
+                  {VI.profile.fullName} <span className={PROFILE_MODAL_UI.required}>*</span>
                 </label>
-                <Input
+                <input
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   placeholder={VI.profile.placeholders.fullName}
-                  className={cn(fieldErrors.fullName && "border-pink-300")}
+                  className={cn(
+                    PROFILE_MODAL_UI.input,
+                    fieldErrors.fullName && PROFILE_MODAL_UI.inputError,
+                  )}
                 />
                 {fieldErrors.fullName && (
-                  <p className="mt-1 text-xs text-pink-600">{fieldErrors.fullName}</p>
+                  <p className={PROFILE_MODAL_UI.fieldError}>{fieldErrors.fullName}</p>
                 )}
               </div>
 
               <div>
-                <label className="mb-1 block text-sm font-medium text-slate-700">
-                  {VI.profile.phone} <span className="text-pink-500">*</span>
+                <label className={PROFILE_MODAL_UI.label}>
+                  {VI.profile.phone} <span className={PROFILE_MODAL_UI.required}>*</span>
                 </label>
-                <Input
+                <input
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder={VI.profile.placeholders.phone}
-                  className={cn(fieldErrors.phone && "border-pink-300")}
+                  className={cn(
+                    PROFILE_MODAL_UI.input,
+                    fieldErrors.phone && PROFILE_MODAL_UI.inputError,
+                  )}
                 />
                 {fieldErrors.phone && (
-                  <p className="mt-1 text-xs text-pink-600">{fieldErrors.phone}</p>
+                  <p className={PROFILE_MODAL_UI.fieldError}>{fieldErrors.phone}</p>
                 )}
               </div>
 
               {error && (
-                <p className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                  {error}
-                </p>
+                <p className={PROFILE_MODAL_UI.alertError}>{error}</p>
               )}
               {success && (
-                <p className="rounded-xl border border-emerald-100 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
-                  {success}
-                </p>
+                <p className={PROFILE_MODAL_UI.alertSuccess}>{success}</p>
               )}
 
-              <div className="flex justify-end gap-3 pt-1">
+              <div className={PROFILE_MODAL_UI.footerActions}>
                 <Button
                   type="button"
-                  variant="outline"
-                  size="sm"
+                  variant="ghost"
+                  className={PROFILE_MODAL_UI.btnCancel}
                   onClick={() => onOpenChange(false)}
                 >
                   {VI.common.actions.cancel}
                 </Button>
-                <Button type="submit" size="sm" variant="default" disabled={updatingProfile}>
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  className={PROFILE_MODAL_UI.btnPrimary}
+                  disabled={updatingProfile}
+                >
                   {updatingProfile
                     ? VI.common.status.loading
                     : VI.profile.editModal.saveBasicInfo}
@@ -444,15 +448,15 @@ export default function EditProfileModal({
           </div>
         ) : (
           <div className="mt-5 space-y-4">
-            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+            <div className={PROFILE_MODAL_UI.section}>
               <div className="mb-3 flex items-center justify-between gap-2">
-                <p className="text-sm font-medium text-slate-700">
+                <p className={PROFILE_MODAL_UI.sectionTitle}>
                   {VI.profile.addresses.title}
                 </p>
                 <Button
                   type="button"
-                  size="sm"
-                  variant="outline"
+                  variant="ghost"
+                  className={PROFILE_MODAL_UI.btnGhost}
                   onClick={handleOpenCreateAddress}
                 >
                   + {VI.profile.address.button.add}
@@ -460,11 +464,11 @@ export default function EditProfileModal({
               </div>
 
               {loadingList ? (
-                <p className="text-sm text-slate-600">{VI.profile.addresses.loading}</p>
+                <p className={PROFILE_MODAL_UI.mutedText}>{VI.profile.addresses.loading}</p>
               ) : addressesError ? (
-                <p className="text-sm text-rose-600">{addressesError}</p>
+                <p className={PROFILE_MODAL_UI.fieldError}>{addressesError}</p>
               ) : addresses.length === 0 ? (
-                <p className="text-sm text-slate-600">{VI.profile.addresses.empty}</p>
+                <p className={PROFILE_MODAL_UI.mutedText}>{VI.profile.addresses.empty}</p>
               ) : (
                 <div className="space-y-2">
                   {addresses.map((item) => {
@@ -475,29 +479,27 @@ export default function EditProfileModal({
                     return (
                       <div
                         key={item.id}
-                        className="rounded-xl border border-slate-200 bg-white p-3"
+                        className={PROFILE_MODAL_UI.addressCard}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div>
-                            <p className="text-sm font-semibold text-slate-800">{item.name}</p>
-                            <p className="mt-0.5 text-sm text-slate-700">{item.phone}</p>
-                            <p className="mt-0.5 text-sm text-slate-600">{fullAddress}</p>
+                            <p className={PROFILE_MODAL_UI.addressName}>{item.name}</p>
+                            <p className={PROFILE_MODAL_UI.addressMeta}>{item.phone}</p>
+                            <p className={PROFILE_MODAL_UI.addressMeta}>{fullAddress}</p>
                           </div>
                           <div className="flex shrink-0 items-center gap-2">
                             <Button
                               type="button"
-                              size="sm"
                               variant="ghost"
-                              className="min-w-14 justify-center"
+                              className={cn("min-w-14 justify-center", PROFILE_MODAL_UI.btnGhost)}
                               onClick={() => handleOpenEditAddress(item)}
                             >
                               {VI.profile.address.button.edit}
                             </Button>
                             <Button
                               type="button"
-                              size="sm"
                               variant="ghost"
-                              className="min-w-14 justify-center border border-rose-100 bg-rose-50 text-rose-600 hover:bg-rose-100 hover:text-rose-700"
+                              className={cn("min-w-14 justify-center", PROFILE_MODAL_UI.deleteBtn)}
                               disabled={saving}
                               onClick={() => void handleDeleteAddress(item.id)}
                             >
@@ -513,8 +515,8 @@ export default function EditProfileModal({
             </div>
 
             {isAddressFormOpen && (
-              <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                <p className="mb-3 text-sm font-medium text-slate-700">
+              <div className={PROFILE_MODAL_UI.section}>
+                <p className={cn("mb-3", PROFILE_MODAL_UI.sectionTitle)}>
                   {editingAddressId == null
                     ? VI.profile.address.button.add
                     : VI.profile.address.button.edit}
@@ -522,42 +524,49 @@ export default function EditProfileModal({
 
                 <div className="space-y-3">
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.recipientName} <span className="text-pink-500">*</span>
+                    <label className={PROFILE_MODAL_UI.label}>
+                      {VI.profile.address.form.recipientName}{" "}
+                      <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
-                    <Input
+                    <input
                       value={addressForm.name}
                       onChange={(e) =>
                         setAddressForm((prev) => ({ ...prev, name: e.target.value }))
                       }
                       placeholder={VI.profile.address.form.recipientNamePlaceholder}
-                      className={cn(addressFieldErrors.name && "border-pink-300")}
+                      className={cn(
+                        PROFILE_MODAL_UI.input,
+                        addressFieldErrors.name && PROFILE_MODAL_UI.inputError,
+                      )}
                     />
                     {addressFieldErrors.name && (
-                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.name}</p>
+                      <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.name}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.phone} <span className="text-pink-500">*</span>
+                    <label className={PROFILE_MODAL_UI.label}>
+                      {VI.profile.address.form.phone} <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
-                    <Input
+                    <input
                       value={addressForm.phone}
                       onChange={(e) =>
                         setAddressForm((prev) => ({ ...prev, phone: e.target.value }))
                       }
                       placeholder={VI.profile.address.form.phonePlaceholder}
-                      className={cn(addressFieldErrors.phone && "border-pink-300")}
+                      className={cn(
+                        PROFILE_MODAL_UI.input,
+                        addressFieldErrors.phone && PROFILE_MODAL_UI.inputError,
+                      )}
                     />
                     {addressFieldErrors.phone && (
-                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.phone}</p>
+                      <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.phone}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.city} <span className="text-pink-500">*</span>
+                    <label className={PROFILE_MODAL_UI.label}>
+                      {VI.profile.address.form.city} <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
                     <select
                       value={provinceCode ?? ""}
@@ -575,8 +584,8 @@ export default function EditProfileModal({
                       }}
                       disabled={loadingProvinces}
                       className={cn(
-                        "h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2",
-                        addressFieldErrors.city && "border-pink-300"
+                        PROFILE_MODAL_UI.select,
+                        addressFieldErrors.city && PROFILE_MODAL_UI.inputError,
                       )}
                     >
                       <option value="">{VI.profile.address.form.cityPlaceholder}</option>
@@ -587,14 +596,14 @@ export default function EditProfileModal({
                       ))}
                     </select>
                     {addressFieldErrors.city && (
-                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.city}</p>
+                      <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.city}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
+                    <label className={PROFILE_MODAL_UI.label}>
                       {VI.profile.address.form.district}{" "}
-                      <span className="text-pink-500">*</span>
+                      <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
                     <select
                       value={districtCode ?? ""}
@@ -611,8 +620,8 @@ export default function EditProfileModal({
                       }}
                       disabled={provinceCode == null || loadingDistricts}
                       className={cn(
-                        "h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2",
-                        addressFieldErrors.district && "border-pink-300"
+                        PROFILE_MODAL_UI.select,
+                        addressFieldErrors.district && PROFILE_MODAL_UI.inputError,
                       )}
                     >
                       <option value="">{VI.profile.address.form.districtPlaceholder}</option>
@@ -623,58 +632,62 @@ export default function EditProfileModal({
                       ))}
                     </select>
                     {addressFieldErrors.district && (
-                      <p className="mt-1 text-xs text-pink-600">
+                      <p className={PROFILE_MODAL_UI.fieldError}>
                         {addressFieldErrors.district}
                       </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
-                      {VI.profile.address.form.addressName} <span className="text-pink-500">*</span>
+                    <label className={PROFILE_MODAL_UI.label}>
+                      {VI.profile.address.form.addressName} <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
-                    <Input
+                    <input
                       value={addressForm.addressName}
                       onChange={(e) =>
                         setAddressForm((prev) => ({ ...prev, addressName: e.target.value }))
                       }
                       placeholder={VI.profile.address.form.addressNamePlaceholder}
-                      className={cn(addressFieldErrors.addressName && "border-pink-300")}
+                      className={cn(
+                        PROFILE_MODAL_UI.input,
+                        addressFieldErrors.addressName && PROFILE_MODAL_UI.inputError,
+                      )}
                     />
                     {addressFieldErrors.addressName && (
-                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.addressName}</p>
+                      <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.addressName}</p>
                     )}
                   </div>
 
                   <div>
-                    <label className="mb-1 block text-sm font-medium text-slate-700">
+                    <label className={PROFILE_MODAL_UI.label}>
                       {VI.profile.address.form.streetAddress}{" "}
-                      <span className="text-pink-500">*</span>
+                      <span className={PROFILE_MODAL_UI.required}>*</span>
                     </label>
-                    <Input
+                    <input
                       value={addressForm.address}
                       onChange={(e) =>
                         setAddressForm((prev) => ({ ...prev, address: e.target.value }))
                       }
                       placeholder={VI.profile.address.form.streetAddressPlaceholder}
-                      className={cn(addressFieldErrors.address && "border-pink-300")}
+                      className={cn(
+                        PROFILE_MODAL_UI.input,
+                        addressFieldErrors.address && PROFILE_MODAL_UI.inputError,
+                      )}
                     />
                     {addressFieldErrors.address && (
-                      <p className="mt-1 text-xs text-pink-600">{addressFieldErrors.address}</p>
+                      <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.address}</p>
                     )}
                   </div>
 
                   {locationError && (
-                    <p className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-sm text-rose-700">
-                      {locationError}
-                    </p>
+                    <p className={PROFILE_MODAL_UI.alertError}>{locationError}</p>
                   )}
 
-                  <div className="flex justify-end gap-3 pt-1">
+                  <div className={PROFILE_MODAL_UI.footerActions}>
                     <Button
                       type="button"
-                      variant="outline"
-                      size="sm"
+                      variant="ghost"
+                      className={PROFILE_MODAL_UI.btnCancel}
                       onClick={() => {
                         setIsAddressFormOpen(false)
                         setEditingAddressId(null)
@@ -685,7 +698,8 @@ export default function EditProfileModal({
                     </Button>
                     <Button
                       type="button"
-                      size="sm"
+                      variant="ghost"
+                      className={PROFILE_MODAL_UI.btnPrimary}
                       disabled={saving}
                       onClick={() => void handleSaveAddress()}
                     >
