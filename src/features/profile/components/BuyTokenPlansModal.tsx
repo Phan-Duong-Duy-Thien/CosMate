@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Table, Spin, Empty, Alert } from 'antd';
 import type { TableProps } from 'antd';
-import { Building2, Check, Smartphone, X, type LucideIcon } from 'lucide-react';
+import { Check, X } from 'lucide-react';
+import { PaymentBrandLogo } from '@/shared/components/payment/PaymentBrandLogo';
 import { Dialog, DialogContent } from '@/shared/components/Dialog';
 import { Button } from '@/shared/components/Button';
 import { cn } from '@/lib/utils';
@@ -32,28 +33,25 @@ export function BuyTokenPlansModal({ open, onOpenChange }: BuyTokenPlansModalPro
     value: TokenPaymentMethod;
     label: string;
     desc: string;
-    Icon: LucideIcon;
     color: string;
     bgColor: string;
-    iconWrapClass: string;
+    logoWrapClass: string;
   }[] = [
     {
       value: 'MOMO',
       label: VI.wallet.momo,
       desc: VI.wallet.momoDesc,
-      Icon: Smartphone,
       color: 'text-cosmate-pink',
       bgColor: 'bg-cosmate-soft-pink/55',
-      iconWrapClass: 'border-cosmate-pink/30 bg-cosmate-soft-pink/50 text-cosmate-pink',
+      logoWrapClass: 'border-cosmate-pink/25 bg-white',
     },
     {
       value: 'VNPAY',
       label: VI.wallet.vnpay,
       desc: VI.wallet.vnpayDesc,
-      Icon: Building2,
       color: 'text-cosmate-ink',
       bgColor: 'bg-cosmate-lavender-surface/90',
-      iconWrapClass: 'border-cosmate-lavender-border bg-cosmate-lavender-surface/80 text-cosmate-ink',
+      logoWrapClass: 'border-cosmate-lavender-border bg-white',
     },
   ];
 
@@ -133,7 +131,6 @@ export function BuyTokenPlansModal({ open, onOpenChange }: BuyTokenPlansModalPro
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
               {paymentMethods.map((method) => {
                 const selected = paymentMethod === method.value;
-                const Icon = method.Icon;
                 return (
                   <label
                     key={method.value}
@@ -154,11 +151,11 @@ export function BuyTokenPlansModal({ open, onOpenChange }: BuyTokenPlansModalPro
                     />
                     <span
                       className={cn(
-                        'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border',
-                        selected ? method.iconWrapClass : 'border-indigo-950/15 bg-muted/40'
+                        'flex h-10 min-w-[4.75rem] shrink-0 items-center justify-center rounded-lg border px-2',
+                        selected ? method.logoWrapClass : 'border-indigo-950/15 bg-white'
                       )}
                     >
-                      <Icon className="h-5 w-5" strokeWidth={2} />
+                      <PaymentBrandLogo brand={method.value} className="h-6 max-w-[4.25rem]" />
                     </span>
                     <span className="min-w-0 flex-1">
                       <span
