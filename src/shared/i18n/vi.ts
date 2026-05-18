@@ -174,6 +174,9 @@ export const VI = {
       loading: "Đang xử lý...",
       loginRequired: "Vui lòng đăng nhập để tiếp tục.",
       wishlist: {
+        /** Hero /wishlist — cùng phong cách trang Thuê đồ Cosplay */
+        pageHeroDecor:
+          "･:*🌸࿔   ⋆. 𐙚˚࿔  Danh sách yêu thích  𝜗𝜚˚⋆   ࿔🌸*:･",
         addSuccess: "Đã thêm vào danh sách yêu thích.",
         removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
         fetchFailed: "Không thể tải danh sách yêu thích.",

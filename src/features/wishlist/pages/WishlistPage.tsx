@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react'
 
@@ -163,6 +163,7 @@ function WishlistItemCard({
 
 export default function WishlistPage() {
   const navigate = useNavigate()
+  const [heroVisible, setHeroVisible] = useState(false)
   const {
     wishlistItems,
     loading,
@@ -173,6 +174,13 @@ export default function WishlistPage() {
   useEffect(() => {
     fetchWishlist()
   }, [fetchWishlist])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setHeroVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   const handleViewDetail = (costumeId: number) => {
     navigate(`/costumes/${costumeId}`)
@@ -203,22 +211,20 @@ export default function WishlistPage() {
   return (
     <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent pb-16 pt-2">
       <div className="mx-auto w-full max-w-[min(1680px,100%)] min-w-0 px-4 pt-6 md:px-6">
-        <div className="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-[1.2rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-5">
-          <div className="flex min-w-0 flex-wrap items-center gap-3">
-            <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-pink-400 via-rose-500 to-fuchsia-600 text-white shadow-[4px_4px_0_0_#1e1b4b]">
-              <Heart className="h-5 w-5 fill-current" aria-hidden />
+        <div
+          className={
+            "mb-8 rounded-[1.4rem] border-[4px] border-indigo-950 bg-gradient-to-r from-pink-200 via-rose-100 to-violet-200 px-5 py-5 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.33)] backdrop-blur transition-all duration-300 ease-out " +
+            (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
+          }
+        >
+          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-3xl font-extrabold tracking-tight text-indigo-950 md:mt-2 md:text-5xl">
+            <span className="text-[20px] tracking-[0.5px] text-indigo-900 motion-reduce:animate-none md:text-[40px]">
+              {VI.common.toast.wishlist.pageHeroDecor}
             </span>
-            <div className="min-w-0">
-              <h1 className="text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-[1.75rem]">
-                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                  「 {VI.common.toast.wishlist.wishlist} 」
-                </span>
-              </h1>
-              <p className="mt-1 text-sm font-semibold text-indigo-900/75">
-                {wishlistItems.length} {itemCountLabel}
-              </p>
-            </div>
-          </div>
+          </h1>
+          <p className="mt-3 text-sm font-semibold text-indigo-900/85 md:text-base">
+            {wishlistItems.length} {itemCountLabel}
+          </p>
         </div>
 
         {wishlistItems.length === 0 ? (

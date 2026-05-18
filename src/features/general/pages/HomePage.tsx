@@ -9,7 +9,7 @@ import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
 import { TagChips } from "../components/home/TagChips"
 import { bannerSlides, shops as mockShops, tagList } from "../mocks/home.mock"
-import type { BannerSlide, Product, TagKey, UIState } from "./home.types"
+import type { BannerSlide, TagKey, UIState } from "./home.types"
 import { useFeaturedCostumes } from "@/features/costume-rental/hooks/useFeaturedCostumes"
 import { useTrustedShops } from "../hooks/useTrustedShops"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
@@ -19,25 +19,13 @@ import { VI } from "@/shared/i18n/vi"
 const HomePage = () => {
   const navigate = useNavigate()
   const [activeTag, setActiveTag] = React.useState<TagKey>("anime")
-  const [wishlistTogglingId, setWishlistTogglingId] = React.useState<string | null>(null)
+  const [wishlistTogglingId, setWishlistTogglingId] = React.useState<number | null>(null)
   const [isQuizOpen, setIsQuizOpen] = React.useState(false)
   const productSectionRef = React.useRef<HTMLDivElement>(null)
 
   const { items, isLoading, error } = useFeaturedCostumes()
   const { shops: trustedShops, loading: shopsLoading, error: shopsError } = useTrustedShops()
   const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
-
-  const filteredProducts = React.useMemo(() => {
-    return items.map<Product>((costume) => ({
-      id: costume.id,
-      name: costume.name,
-      pricePerDay: costume.pricePerDay,
-      status: costume.status,
-      imageUrls: costume.imageUrls ?? [],
-      brand: "",
-      rentalsCount: costume.rentalsCount ?? 0,
-    }))
-  }, [items])
 
   const displayShops = React.useMemo(
     () => (trustedShops.length > 0 ? trustedShops : mockShops),
@@ -50,14 +38,14 @@ const HomePage = () => {
     )
 
     elements.forEach((element) => element.setAttribute("data-visible", "true"))
-  }, [error, filteredProducts.length, isLoading])
+  }, [error, items.length, isLoading])
 
   const displayState: UIState =
     isLoading
       ? "loading"
       : error
         ? "error"
-        : filteredProducts.length === 0
+        : items.length === 0
           ? "empty"
           : "success"
 
@@ -74,18 +62,10 @@ const HomePage = () => {
     }
   }
 
-  const wishlistIds = React.useMemo(
-    () => wishlistItems.map((w) => String(w.costumeId)),
-    [wishlistItems]
-  )
+  const handleToggleWishlist = async (costumeId: number) => {
+    if (wishlistTogglingId === costumeId) return
 
-  const handleToggleWishlist = async (productId: string) => {
-    if (wishlistTogglingId === productId) return
-
-    const costumeId = Number(productId)
-    if (!Number.isFinite(costumeId)) return
-
-    setWishlistTogglingId(productId)
+    setWishlistTogglingId(costumeId)
     try {
       if (isInWishlist(costumeId)) {
         const item = wishlistItems.find((w) => w.costumeId === costumeId)
@@ -151,12 +131,12 @@ const HomePage = () => {
 
             {displayState === "success" && (
               <ProductSection
-                products={filteredProducts}
-                wishlistIds={wishlistIds}
+                costumes={items}
+                isWishlisted={isInWishlist}
                 onToggleWishlist={handleToggleWishlist}
                 wishlistLoadingId={wishlistTogglingId}
                 sectionRef={productSectionRef}
-                onViewDetail={(productId) => navigate(`/costumes/${productId}`)}
+                onViewDetail={(costumeId) => navigate(`/costumes/${costumeId}`)}
                 onViewAll={() => navigate("/costumes")}
               />
             )}
@@ -216,8 +196,8 @@ const HomeSkeleton = () => (
           <div className="h-7 w-52 rounded-xl border-2 border-indigo-950/20 bg-pink-200/80" />
           <div className="h-4 max-w-lg rounded-lg bg-indigo-950/10" />
         </div>
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 lg:gap-6">
-          {Array.from({ length: 10 }).map((_, index) => (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-5">
+          {Array.from({ length: 8 }).map((_, index) => (
             <div
               key={`skeleton-${index}`}
               className="h-72 rounded-2xl border-[4px] border-indigo-950/25 bg-gradient-to-br from-pink-100/80 to-violet-100/80"

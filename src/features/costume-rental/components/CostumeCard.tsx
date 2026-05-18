@@ -26,6 +26,9 @@ export const CostumeCard = ({
   const costumeId = Number(costume.id)
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
+  const characterLine = costume.characterName?.trim()
+  const showCharacter =
+    Boolean(characterLine) && characterLine !== "—" && characterLine !== "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
 
   return (
@@ -41,28 +44,27 @@ export const CostumeCard = ({
       }}
       className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.05rem] border-[4px] border-indigo-950 bg-[#fffbe8] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]"
     >
-      <div className="relative">
+      <div className="costume-card-media relative">
         <img
           src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
           alt={costume.name}
           loading="lazy"
           className="h-48 w-full border-b-[4px] border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105"
         />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <Badge
+        <div className="absolute left-3 top-3 z-[2] flex flex-wrap gap-2">
+          <span
+            role="status"
             className={cn(
-              "rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold shadow-sm",
-              costume.isAvailable
-                ? "bg-cosmate-success text-primary-foreground"
-                : "bg-cosmate-warning text-foreground"
+              "cosmate-costume-card-status inline-flex items-center rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold shadow-sm",
+              !costume.isAvailable && "cosmate-costume-card-status--rented"
             )}
           >
             {costume.isAvailable
               ? VI.costumeRental.costumeStatus.available
               : VI.costumeRental.costumeStatus.rented}
-          </Badge>
+          </span>
           {costume.isAdult18 && (
-            <Badge className="rounded-full border-2 border-indigo-950 bg-pink-500 px-3 py-1 text-xs font-bold text-white">
+            <Badge className="rounded-full border-2 border-indigo-950 bg-cosmate-pink px-3 py-1 text-xs font-bold text-primary-foreground">
               18+
             </Badge>
           )}
@@ -98,7 +100,7 @@ export const CostumeCard = ({
         </div>
       </div>
 
-      <div className="flex min-h-[124px] flex-1 flex-col gap-2 p-3">
+      <div className="flex min-h-[148px] flex-1 flex-col gap-1.5 p-3">
         <h3
           className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
           title={displayName}
@@ -111,6 +113,14 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
+        {showCharacter && (
+          <p
+            className="line-clamp-2 text-xs font-semibold leading-snug text-cosmate-text-soft"
+            title={characterLine}
+          >
+            {characterLine}
+          </p>
+        )}
         <div className="flex min-h-7 items-baseline gap-1 text-base font-extrabold leading-tight">
           {hasPrice ? (
             <>
@@ -132,7 +142,7 @@ export const CostumeCard = ({
             onViewDetail(costume.id)
           }}
         >
-          Xem chi tiết
+          {VI.costumeRental.viewDetail}
         </Button>
       </div>
     </Card>
