@@ -178,6 +178,28 @@ export function disconnectChatSocket(): void {
   forceDisconnect()
 }
 
+/**
+ * Subscribe to a STOMP topic (e.g. `/topic/ws-image/{sessionId}`).
+ * Caller must ensure `connectChatSocket()` ran first.
+ */
+export function subscribeStompTopic(
+  destination: string,
+  onMessage: (body: string) => void
+): () => void {
+  if (!stompClient?.connected) {
+    console.warn("[chatSocket] Not connected, cannot subscribe to", destination)
+    return () => {}
+  }
+
+  const subscription = stompClient.subscribe(destination, (frame: IMessage) => {
+    onMessage(frame.body)
+  })
+
+  return () => {
+    subscription.unsubscribe()
+  }
+}
+
 export function subscribeChatRoom(
   roomId: number,
   onMessage: (message: ChatMessage) => void
