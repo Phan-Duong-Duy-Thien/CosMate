@@ -1,16 +1,14 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
-import { Alert, Empty, Input, Modal, Pagination, Popconfirm, Spin, Tag, Upload, notification } from "antd"
+import { Empty, Input, Pagination, Popconfirm, Spin, Tag, Upload, notification } from "antd"
 import type { UploadProps } from "antd"
-import { ClockCircleOutlined, DeleteOutlined, EyeOutlined, ShareAltOutlined, UploadOutlined } from "@ant-design/icons"
+import { ClockCircleOutlined, DeleteOutlined, ShareAltOutlined, UploadOutlined } from "@ant-design/icons"
 
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
-import type { PoseHistoryItem, PoseScoringResult } from "../types"
-
-const { Search } = Input
+import type { PoseHistoryItem } from "../types"
 
 function formatDateTime(value: string) {
   const date = new Date(value)
@@ -34,10 +32,6 @@ function cleanAiComment(raw: string) {
     .trim()
 }
 
-function formatScore(value?: number) {
-  return typeof value === 'number' ? value.toFixed(1) : '0.0'
-}
-
 export default function PoseBattlePage() {
   const {
     referenceImage,
@@ -54,13 +48,10 @@ export default function PoseBattlePage() {
     setSearchKeyword,
     submit,
     closeResult,
-    setResult,
-    renameHistoryItem,
     removeHistoryItem,
   } = usePoseBattle()
-  const poseResult = result as PoseScoringResult | null
 
-  const [selectedHistory, setSelectedHistory] = useState<PoseHistoryItem | null>(null)
+  const [historyOverlayResult, setHistoryOverlayResult] = useState<PoseHistoryItem | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
   const [searchInput, setSearchInput] = useState(searchKeyword)
   const historyPageSize = 6
@@ -221,10 +212,10 @@ export default function PoseBattlePage() {
                       key={item.id}
                       role="button"
                       tabIndex={0}
-                      onClick={() => setSelectedHistory(item)}
+                      onClick={() => setHistoryOverlayResult(item)}
                       onKeyDown={(event) => {
                         if (event.key === "Enter" || event.key === " ") {
-                          setSelectedHistory(item)
+                          setHistoryOverlayResult(item)
                         }
                       }}
                       className="overflow-hidden rounded-[1.5rem] border-[3px] border-indigo-950 text-left shadow-[6px_6px_0px_#fbcfe8] transition hover:-translate-y-1 hover:bg-amber-50 hover:shadow-[8px_8px_0px_#312e81]"
@@ -322,122 +313,18 @@ export default function PoseBattlePage() {
 
       {result && <PoseResultOverlay result={result} onClose={closeResult} />}
 
-      <Modal
-        open={Boolean(poseResult && (poseResult.pose_score !== undefined || poseResult.expression_score !== undefined || poseResult.costume_score !== undefined))}
-        footer={null}
-        onCancel={closeResult}
-        title={null}
-        centered
-        width={720}
-        className="pose-result-modal"
-      >
-        {poseResult && (
-          <div className="space-y-4 rounded-[1.5rem] border-[3px] border-indigo-950 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-4 shadow-[8px_8px_0px_#c4b5fd]">
-            <div className="flex items-center justify-between gap-3">
-              <div>
-                <p className="text-xs font-bold uppercase tracking-[0.2em] text-fuchsia-700">Pose Battle</p>
-                <h4 className="text-2xl font-extrabold text-indigo-950">Chi tiết chấm điểm</h4>
-              </div>
-              <button
-                type="button"
-                onClick={closeResult}
-                className="rounded-full border-[3px] border-indigo-950 bg-fuchsia-200 px-3 py-2 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81]"
-              >
-                Đóng
-              </button>
-            </div>
-
-            <div className="grid gap-3 sm:grid-cols-4">
-              {[
-                { label: 'Pose', value: poseResult.pose_score ?? poseResult.breakdown?.pose },
-                { label: 'Biểu cảm', value: poseResult.expression_score ?? poseResult.breakdown?.expression },
-                { label: 'Trang phục', value: poseResult.costume_score ?? poseResult.breakdown?.costume },
-                { label: 'Tổng', value: poseResult.score },
-              ].map((item) => (
-                <div key={item.label} className="rounded-[1.25rem] border-[3px] border-indigo-950 bg-white p-4 text-center shadow-[4px_4px_0px_#f9a8d4]">
-                  <p className="text-xs font-bold uppercase tracking-wide text-indigo-950">{item.label}</p>
-                  <p className="mt-1 text-3xl font-extrabold text-fuchsia-700">{formatScore(item.value)}</p>
-                </div>
-              ))}
-            </div>
-
-            <Alert
-              type="info"
-              showIcon
-              className="rounded-2xl border-[2px] border-indigo-950 bg-cyan-50"
-              message="Kết quả đã được cập nhật theo cấu trúc điểm mới từ backend."
-            />
-          </div>
-        )}
-      </Modal>
-
-      <Modal
-        open={Boolean(selectedHistory)}
-        footer={null}
-        onCancel={() => setSelectedHistory(null)}
-        title={null}
-        width={700}
-        style={{ top: 12 }}
-        zIndex={12000}
-        styles={{ body: { paddingTop: 8, paddingBottom: 10 } }}
-      >
-        {selectedHistory && (
-          <div className="space-y-2.5">
-            <div className="overflow-hidden rounded-2xl border border-slate-200">
-              <img
-                src={selectedHistory.imageUrl}
-                alt={`Pose history ${selectedHistory.id}`}
-                className="h-52 w-full bg-slate-50 object-contain"
-              />
-            </div>
-
-            <div className="rounded-2xl border border-slate-200 bg-gradient-to-b from-white to-slate-50 p-3">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-base font-semibold text-slate-800">Chi tiết lượt chấm #{selectedHistory.id}</p>
-                <div className="flex items-center gap-2">
-                  <Tag color={selectedHistory.score >= 80 ? "green" : selectedHistory.score >= 50 ? "gold" : "red"}>
-                    Điểm: {selectedHistory.score}
-                  </Tag>
-                  <Tag color="magenta">{formatDateTime(selectedHistory.createdAt)}</Tag>
-                </div>
-              </div>
-
-              <div className="mt-2 rounded-xl border border-pink-100 bg-white p-2.5">
-                <p className="mb-2 text-xs font-bold uppercase tracking-wide text-pink-700">Nhận xét AI</p>
-                <div
-                  className="max-h-64 overflow-y-auto pr-1 text-sm font-medium leading-6 text-slate-700 whitespace-pre-wrap break-words overscroll-contain"
-                  onWheel={(event) => event.stopPropagation()}
-                >
-                  {cleanAiComment(selectedHistory.comment)}
-                </div>
-              </div>
-
-              <div className="mt-2.5 flex justify-end gap-2">
-                <Button variant="outline" size="sm" onClick={() => setSelectedHistory(null)}>
-                  Đóng
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  onClick={() => {
-                    setResult({
-                      id: selectedHistory.id,
-                      score: selectedHistory.score,
-                      comment: cleanAiComment(selectedHistory.comment),
-                      characterName: selectedHistory.characterName,
-                      imageUrl: selectedHistory.imageUrl,
-                    })
-                    setSelectedHistory(null)
-                  }}
-                >
-                  <EyeOutlined />
-                  Xem popup kết quả
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
-      </Modal>
+      {historyOverlayResult && (
+        <PoseResultOverlay
+          result={{
+            id: historyOverlayResult.id,
+            score: historyOverlayResult.score,
+            comment: cleanAiComment(historyOverlayResult.comment),
+            characterName: historyOverlayResult.characterName,
+            imageUrl: historyOverlayResult.imageUrl,
+          }}
+          onClose={() => setHistoryOverlayResult(null)}
+        />
+      )}
     </section>
   )
 }
