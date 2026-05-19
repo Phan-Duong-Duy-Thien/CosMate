@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
 import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
-import type { SelectProps, UploadFile } from 'antd'
+import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
 import { createCharacterRequest } from '../../api/characterRequests.api'
@@ -36,6 +36,7 @@ interface FormValues {
   rentDiscount: number
   depositAmount: number
   imageFiles: { fileList: UploadFile[] }
+  videoFiles?: { fileList: UploadFile[] }
 }
 
 interface CharacterOption {
@@ -66,6 +67,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [personaId, setPersonaId] = useState<number>(1)
   const [isCharacterRequestModalOpen, setIsCharacterRequestModalOpen] = useState(false)
   const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
+  const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -127,6 +130,36 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const extractFilesFromForm = (values?: FormValues): File[] => {
     const raw = values?.imageFiles?.fileList ?? []
     return raw.map((f: UploadFile) => f.originFileObj).filter((f): f is File => f !== undefined)
+  }
+
+  const videoUploadProps: UploadProps = {
+    accept: '.mp4,.mov,video/mp4,video/quicktime',
+    beforeUpload: (file) => {
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|mov)$/i.test(file.name)
+      if (!isVideo) {
+        message.error('Chỉ hỗ trợ video định dạng .mp4 hoặc .mov')
+        return Upload.LIST_IGNORE
+      }
+      const maxSizeMb = 100
+      if (file.size / 1024 / 1024 > maxSizeMb) {
+        message.error(`Video không được vượt quá ${maxSizeMb}MB`)
+        return Upload.LIST_IGNORE
+      }
+      const preview = URL.createObjectURL(file)
+      setVideoPreviewUrl(preview)
+      setVideoFileList([{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }])
+      form.setFieldValue('videoFiles', { fileList: [{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }] })
+      return false
+    },
+    onRemove: () => {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl)
+      setVideoPreviewUrl(null)
+      setVideoFileList([])
+      form.setFieldValue('videoFiles', { fileList: [] })
+    },
+    fileList: videoFileList,
+    maxCount: 1,
+    listType: 'picture',
   }
 
   const handleGenerateDescription = async () => {
@@ -212,6 +245,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         depositAmount: values.depositAmount,
         imageFiles: rawFiles,
         rentalOptions: null,
+        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
       }
       await onSubmit(submitPayload)
     } catch (err: unknown) {
@@ -389,6 +423,21 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             <p className="ant-upload-text">Kéo thả hoặc nhấn để tải ảnh lên</p>
             <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
           </Dragger>
+        </Form.Item>
+
+        <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
+          <Upload.Dragger {...videoUploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
+            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
+          </Upload.Dragger>
+          {videoPreviewUrl && (
+            <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>
+              <video src={videoPreviewUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
+            </div>
+          )}
         </Form.Item>
 
         <Form.Item>

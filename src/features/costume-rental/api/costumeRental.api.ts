@@ -52,6 +52,9 @@ export async function createCostumeMultipart(payload: CreateCostumeBasicPayload)
   form.append('accessories', '[]')
   form.append('rentalOptions', '[]')
   payload.imageFiles.forEach((file) => form.append('imageFiles', file))
+  if ((payload as { videoFile?: File | null }).videoFile) {
+    form.append('videoFiles', (payload as { videoFile?: File }).videoFile as Blob)
+  }
   const response = await axiosInstance.post<ApiWrapper<CostumeCreatedResponse>>('/api/costumes', form, { headers: { 'Content-Type': 'multipart/form-data' }})
   const wrapped = response.data
   if (import.meta.env.DEV) { console.log('[createCostumeMultipart] raw response:', wrapped); console.log('[createCostumeMultipart] extracted costumeId:', wrapped?.result?.id) }
