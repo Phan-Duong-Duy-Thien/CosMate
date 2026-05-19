@@ -49,7 +49,7 @@ export const FilterSidebar = ({
   }
 
   return (
-    <aside className="w-full rounded-[1.2rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[9px_9px_0_0_rgba(30,27,75,0.25)] backdrop-blur lg:sticky lg:top-[84px] lg:max-h-[calc(100vh-100px)] lg:overflow-y-auto">
+    <aside className="h-auto w-full self-start rounded-[1.2rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[9px_9px_0_0_rgba(30,27,75,0.25)] backdrop-blur lg:sticky lg:top-[84px]">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-extrabold text-indigo-950">
           Bộ lọc
