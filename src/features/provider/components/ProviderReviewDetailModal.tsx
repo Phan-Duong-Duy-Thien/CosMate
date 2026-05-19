@@ -1,7 +1,7 @@
 /**
- * Presentational: provider review detail with gallery (Ant Modal + Image preview).
+ * Presentational: provider review detail with gallery and reply form (Ant Modal + Image preview).
  */
-import { Modal, Spin, Avatar, Image, Divider } from 'antd';
+import { Modal, Spin, Avatar, Image, Divider, Input, Button as AntButton } from 'antd';
 import { Star } from 'lucide-react';
 
 import type { ProviderReviewDetailNormalized } from '../services/provider.service';
@@ -12,6 +12,14 @@ type ProviderReviewDetailModalProps = {
   error: string | null;
   detail: ProviderReviewDetailNormalized | null;
   onClose: () => void;
+  replyContent: string;
+  onReplyContentChange: (value: string) => void;
+  onSubmitReply: () => void;
+  submitting: boolean;
+  replyError: string | null;
+  isEditing: boolean;
+  onStartEdit: () => void;
+  onCancelEdit: () => void;
   labels: {
     title: string;
     reviewId: string;
@@ -24,6 +32,13 @@ type ProviderReviewDetailModalProps = {
     images: string;
     noImages: string;
     noComment: string;
+    replySection: string;
+    replyPlaceholder: string;
+    replySubmit: string;
+    replyEdit: string;
+    replySave: string;
+    replyCancel: string;
+    replyAt: string;
   };
 };
 
@@ -43,6 +58,14 @@ export function ProviderReviewDetailModal({
   error,
   detail,
   onClose,
+  replyContent,
+  onReplyContentChange,
+  onSubmitReply,
+  submitting,
+  replyError,
+  isEditing,
+  onStartEdit,
+  onCancelEdit,
   labels,
 }: ProviderReviewDetailModalProps) {
   const titleName =
@@ -51,6 +74,9 @@ export function ProviderReviewDetailModal({
     detail?.cosplayerName?.trim() && detail?.username?.trim()
       ? `@${detail.username.trim()}`
       : null;
+
+  const hasReply = Boolean(detail?.providerReply?.trim());
+  const showReplyForm = !hasReply || isEditing;
 
   return (
     <Modal
@@ -149,6 +175,53 @@ export function ProviderReviewDetailModal({
                   ))}
                 </div>
               </Image.PreviewGroup>
+            )}
+          </div>
+
+          <Divider className="border-border!" />
+
+          <div>
+            <div className="mb-3 text-sm font-medium text-foreground">{labels.replySection}</div>
+
+            {hasReply && !isEditing && (
+              <div className="space-y-2">
+                <div className="whitespace-pre-wrap rounded-lg border border-border bg-muted/30 p-3 text-sm text-foreground">
+                  {detail.providerReply}
+                </div>
+                {detail.repliedAt ? (
+                  <p className="text-muted-foreground text-xs">
+                    {labels.replyAt}: {formatDateVi(detail.repliedAt)}
+                  </p>
+                ) : null}
+                <AntButton type="default" onClick={onStartEdit}>
+                  {labels.replyEdit}
+                </AntButton>
+              </div>
+            )}
+
+            {showReplyForm && (
+              <div className="space-y-3">
+                <Input.TextArea
+                  value={replyContent}
+                  onChange={(e) => onReplyContentChange(e.target.value)}
+                  placeholder={labels.replyPlaceholder}
+                  rows={4}
+                  maxLength={1000}
+                  showCount
+                  disabled={submitting}
+                />
+                {replyError ? <p className="text-destructive text-sm">{replyError}</p> : null}
+                <div className="flex flex-wrap gap-2">
+                  <AntButton type="primary" loading={submitting} onClick={onSubmitReply}>
+                    {hasReply ? labels.replySave : labels.replySubmit}
+                  </AntButton>
+                  {isEditing && (
+                    <AntButton disabled={submitting} onClick={onCancelEdit}>
+                      {labels.replyCancel}
+                    </AntButton>
+                  )}
+                </div>
+              </div>
             )}
           </div>
         </div>

@@ -1,5 +1,11 @@
 import { Star } from "lucide-react"
 import { Card } from "@/shared/components/Card"
+import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
+import {
+  getReviewReviewerInitial,
+  getReviewReviewerName,
+  resolveReviewAvatarUrl,
+} from "@/shared/utils/reviewDisplay"
 import { useCostumeReviews } from "../../hooks/useCostumeReviews"
 import { VI } from "@/shared/i18n/vi"
 import type { ReviewItem } from "../../api/review.api"
@@ -98,15 +104,27 @@ export function ProductReviewsSection({ costumeId }: ProductReviewsSectionProps)
 }
 
 function ReviewCard({ review }: { review: ReviewItem }) {
+  const displayName = getReviewReviewerName(review, VI.costumeRental.detail.reviewer)
+  const avatarUrl = resolveReviewAvatarUrl(review.avatarUrl)
+  const initial = getReviewReviewerInitial(displayName)
+
   return (
     <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
       <div className="flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-semibold text-indigo-950">
-            U
-          </div>
+          {avatarUrl ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              className="h-10 w-10 rounded-xl border-[3px] border-indigo-950 object-cover"
+            />
+          ) : (
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-semibold text-indigo-950">
+              {initial}
+            </div>
+          )}
           <div>
-            <p className="font-semibold text-indigo-950">{VI.costumeRental.detail.reviewer}</p>
+            <p className="font-semibold text-indigo-950">{displayName}</p>
             <div className="mt-0.5 flex items-center gap-1 text-amber-400">
               {[1, 2, 3, 4, 5].map((star) => (
                 <Star
@@ -122,16 +140,21 @@ function ReviewCard({ review }: { review: ReviewItem }) {
       <p className="mt-3 text-sm font-semibold text-indigo-900/85">{review.comment}</p>
       {review.images && review.images.length > 0 && (
         <div className="mt-3 flex gap-2">
-          {review.images.map((img) => (
+          {review.images.map((img, idx) => (
             <img
-              key={img.id}
-              src={img.url}
+              key={typeof img === "string" ? idx : img.id ?? idx}
+              src={typeof img === "string" ? img : img.url}
               alt=""
               className="h-16 w-16 rounded-xl border-[3px] border-indigo-950 object-cover"
             />
           ))}
         </div>
       )}
+      <ProviderReplyBlock
+        providerReply={review.providerReply}
+        repliedAt={review.repliedAt}
+        variant="indigo"
+      />
     </Card>
   )
 }

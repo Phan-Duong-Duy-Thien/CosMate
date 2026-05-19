@@ -35,5 +35,14 @@ export function useProviderReviewDetail() {
     setError(null);
   }, []);
 
-  return { open, detail, loading, error, openDetail, closeDetail };
+  const updateDetailReply = useCallback(
+    (providerReply: string | null, repliedAt: string | null) => {
+      setDetail((prev) =>
+        prev ? { ...prev, providerReply, repliedAt } : prev
+      );
+    },
+    []
+  );
+
+  return { open, detail, loading, error, openDetail, closeDetail, updateDetailReply };
 }
