@@ -196,11 +196,11 @@ const HomeSkeleton = () => (
           <div className="h-7 w-52 rounded-xl border-2 border-indigo-950/20 bg-pink-200/80" />
           <div className="h-4 max-w-lg rounded-lg bg-indigo-950/10" />
         </div>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-5">
-          {Array.from({ length: 8 }).map((_, index) => (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          {Array.from({ length: 12 }).map((_, index) => (
             <div
               key={`skeleton-${index}`}
-              className="h-72 rounded-2xl border-[4px] border-indigo-950/25 bg-gradient-to-br from-pink-100/80 to-violet-100/80"
+              className="h-52 rounded-xl border-[3px] border-indigo-950/25 bg-gradient-to-br from-pink-100/80 to-violet-100/80"
             />
           ))}
         </div>

@@ -18,7 +18,8 @@ export function useFeaturedCostumes() {
       const costumes = await getCostumes()
       const visibleCostumes = costumes
         .filter((costume) => costume.status !== "DELETED")
-        .slice(0, 8)
+        .filter((costume) => costume.status === "AVAILABLE")
+        .slice(0, 12)
       const normalized = visibleCostumes.map((costume) => ({
         ...costume,
         imageUrls: (costume.imageUrls ?? []).map(resolveImageUrl),
