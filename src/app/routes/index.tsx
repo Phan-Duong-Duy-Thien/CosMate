@@ -25,6 +25,7 @@ import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import StyleQuizPage from "@/features/style-quiz/pages/StyleQuizPage"
 import WishlistPage from "@/features/wishlist/pages/WishlistPage"
 import PoseBattlePage from "@/features/pose-battle/pages/PoseBattlePage"
+import SharedPosePage from "@/features/pose-battle/pages/SharedPosePage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -48,6 +49,7 @@ import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
 import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
+import CharacterRequestManagementPage from "@/features/admin/pages/CharacterRequestManagement"
 import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
 import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
@@ -96,6 +98,7 @@ export default function AppRoutes() {
         <Route path="style-quiz" element={<StyleQuizPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="pose-battle" element={<PoseBattlePage />} />
+        <Route path="pose-battle/:id" element={<SharedPosePage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
@@ -130,6 +133,7 @@ export default function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
+          <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
           <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
