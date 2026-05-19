@@ -25,6 +25,7 @@ import {
   EditOutlined,
   CheckCircleOutlined,
   StopOutlined,
+  DeleteOutlined,
 } from '@ant-design/icons';
 import { Card } from '@/shared/components/Card';
 import { VI } from '@/shared/i18n/vi';
@@ -67,7 +68,9 @@ export default function StaffAiTokenPlansPage() {
     updatePlan,
     activatePlan,
     deactivatePlan,
+    deletePlan,
     togglingId,
+    deletingId,
   } = useStaffAiTokenPlans();
 
   const [selected, setSelected] = useState<AiTokenPlan | null>(null);
@@ -106,6 +109,16 @@ export default function StaffAiTokenPlansPage() {
     }
   };
 
+  const handleDelete = async (plan: AiTokenPlan) => {
+    const ok = await deletePlan(plan.id);
+    if (ok) {
+      if (selected?.id === plan.id) {
+        setDetailOpen(false);
+        setSelected(null);
+      }
+    }
+  };
+
   const renderToggleAction = (record: AiTokenPlan) => {
     const isToggling = togglingId === record.id;
 
@@ -139,6 +152,27 @@ export default function StaffAiTokenPlansPage() {
           <CheckCircleOutlined
             className={`cursor-pointer text-base transition-opacity hover:opacity-80 ${isToggling ? 'pointer-events-none opacity-40' : ''}`}
             style={{ color: 'var(--cosmate-success)' }}
+            onClick={(e) => e.stopPropagation()}
+          />
+        </Tooltip>
+      </Popconfirm>
+    );
+  };
+
+  const renderDeleteAction = (record: AiTokenPlan) => {
+    const isDeleting = deletingId === record.id;
+    return (
+      <Popconfirm
+        title={VI.staff.tokenPlans.confirmDelete}
+        onConfirm={() => void handleDelete(record)}
+        okText={VI.common.actions.confirm}
+        cancelText={VI.common.actions.cancel}
+        okButtonProps={{ danger: true }}
+      >
+        <Tooltip title={VI.staff.tokenPlans.delete}>
+          <DeleteOutlined
+            className={`cursor-pointer text-base transition-opacity hover:opacity-80 ${isDeleting ? 'pointer-events-none opacity-40' : ''}`}
+            style={{ color: 'var(--destructive)' }}
             onClick={(e) => e.stopPropagation()}
           />
         </Tooltip>
@@ -223,7 +257,7 @@ export default function StaffAiTokenPlansPage() {
     {
       title: VI.staff.tokenPlans.columns.actions,
       key: 'actions',
-      width: 180,
+      width: 210,
       align: 'center',
       render: (_, record) => (
         <div
@@ -247,6 +281,7 @@ export default function StaffAiTokenPlansPage() {
             />
           </Tooltip>
           {renderToggleAction(record)}
+          {renderDeleteAction(record)}
         </div>
       ),
     },
@@ -369,6 +404,22 @@ export default function StaffAiTokenPlansPage() {
                       </Button>
                     </Popconfirm>
                   ),
+                  <Popconfirm
+                    key="delete"
+                    title={VI.staff.tokenPlans.confirmDelete}
+                    onConfirm={() => void handleDelete(selected)}
+                    okText={VI.common.actions.confirm}
+                    cancelText={VI.common.actions.cancel}
+                    okButtonProps={{ danger: true }}
+                  >
+                    <Button
+                      danger
+                      loading={deletingId === selected.id}
+                      icon={<DeleteOutlined />}
+                    >
+                      {VI.staff.tokenPlans.delete}
+                    </Button>
+                  </Popconfirm>,
                 ]
               : null
           }

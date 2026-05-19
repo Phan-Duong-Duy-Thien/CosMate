@@ -75,3 +75,12 @@ export async function deactivateStaffAiTokenPlan(id: number): Promise<ApiRespons
   );
   return response.data;
 }
+
+/**
+ * DELETE /api/ai-token-plans/{id}
+ * Soft-delete a token plan.
+ */
+export async function deleteStaffAiTokenPlan(id: number): Promise<ApiResponse<unknown>> {
+  const response = await axiosInstance.delete<ApiResponse<unknown>>(`/api/ai-token-plans/${id}`);
+  return response.data;
+}

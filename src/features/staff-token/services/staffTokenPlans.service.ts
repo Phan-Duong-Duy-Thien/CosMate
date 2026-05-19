@@ -321,3 +321,19 @@ export async function deactivateAiTokenPlan(id: number): Promise<void> {
 }
 
 
+
+export async function deleteAiTokenPlan(id: number): Promise<void> {
+
+  const response = await api.deleteStaffAiTokenPlan(id);
+
+
+
+  if (response.code !== 0) {
+
+    throw new Error(response.message || 'Không thể xóa gói token');
+
+  }
+
+}
+
+

@@ -3,7 +3,7 @@ import { VI } from '@/shared/i18n/vi';
 import * as aiTokenPlansService from '../services/aiTokenPlans.service';
 import type { AiTokenPlan } from '../types';
 
-export function useAiTokenPlansCatalog(open: boolean) {
+export function useAiTokenPlansCatalog() {
   const [plans, setPlans] = useState<AiTokenPlan[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +25,8 @@ export function useAiTokenPlansCatalog(open: boolean) {
   }, []);
 
   useEffect(() => {
-    if (open) {
-      void fetchPlans();
-    }
-  }, [open, fetchPlans]);
+    void fetchPlans();
+  }, [fetchPlans]);
 
   return { plans, loading, error, refetch: fetchPlans };
 }

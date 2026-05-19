@@ -5,6 +5,7 @@ import * as staffTokenPlansService from '../services/staffTokenPlans.service';
 import type { AiTokenPlan, CreateAiTokenPlanRequest } from '../types';
 import {
   removeInactivePlanFromCache,
+  removePlanFromCaches,
   trackKnownPlanId,
   upsertInactivePlanCache,
 } from '../utils/inactivePlansCache';
@@ -15,6 +16,7 @@ export function useStaffAiTokenPlans() {
   const [isCreating, setIsCreating] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [togglingId, setTogglingId] = useState<number | null>(null);
+  const [deletingId, setDeletingId] = useState<number | null>(null);
   const [search, setSearch] = useState('');
   const [activeFilter, setActiveFilter] = useState<boolean | null>(null);
   const [page, setPage] = useState(1);
@@ -161,6 +163,29 @@ export function useStaffAiTokenPlans() {
     [fetchPlans]
   );
 
+  const deletePlan = useCallback(
+    async (id: number): Promise<boolean> => {
+      try {
+        setDeletingId(id);
+        await staffTokenPlansService.deleteAiTokenPlan(id);
+        removePlanFromCaches(id);
+        setPlans((prev) => prev.filter((p) => p.id !== id));
+        message.success(VI.staff.tokenPlans.deleteSuccess);
+        await fetchPlans({ silent: true });
+        return true;
+      } catch (err: unknown) {
+        const msg =
+          (err as { response?: { data?: { message?: string } } })?.response?.data?.message ||
+          (err instanceof Error ? err.message : VI.staff.tokenPlans.deleteError);
+        message.error(typeof msg === 'string' && msg ? msg : VI.staff.tokenPlans.deleteError);
+        return false;
+      } finally {
+        setDeletingId(null);
+      }
+    },
+    [fetchPlans]
+  );
+
   return {
     rows: pagedRows,
     total,
@@ -168,6 +193,7 @@ export function useStaffAiTokenPlans() {
     isCreating,
     isUpdating,
     togglingId,
+    deletingId,
     search,
     setSearch,
     activeFilter,
@@ -181,5 +207,6 @@ export function useStaffAiTokenPlans() {
     updatePlan,
     activatePlan,
     deactivatePlan,
+    deletePlan,
   };
 }

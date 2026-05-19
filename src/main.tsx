@@ -81,6 +81,7 @@ function DocumentTitleSync() {
     else if (pathname === "/notifications") pageTitle = "Thông báo"
     else if (pathname === "/profile") pageTitle = "Trang cá nhân"
     else if (pathname === "/profile/purchase-history") pageTitle = "Lịch sử mua hàng"
+    else if (pathname === "/profile/token") pageTitle = "Quản lý Token"
     else if (pathname === "/profile/wallet") pageTitle = "Ví của tôi"
     else if (pathname === "/profile/wallet/topup") pageTitle = "Nạp ví"
     else if (pathname === "/profile/wallet/withdraw") pageTitle = "Rút tiền"

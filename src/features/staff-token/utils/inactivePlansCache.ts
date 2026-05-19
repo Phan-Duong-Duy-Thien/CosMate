@@ -79,3 +79,13 @@ export function trackKnownPlanIds(plans: AiTokenPlan[]): void {
 export function trackKnownPlanId(id: number): void {
   trackKnownPlanIds([{ id } as AiTokenPlan]);
 }
+
+export function removePlanFromCaches(id: number): void {
+  removeInactivePlanFromCache(id);
+  try {
+    const ids = loadKnownPlanIds().filter((planId) => planId !== id);
+    localStorage.setItem(KNOWN_IDS_STORAGE_KEY, JSON.stringify(ids));
+  } catch {
+    // Ignore storage errors.
+  }
+}

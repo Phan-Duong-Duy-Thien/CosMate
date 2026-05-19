@@ -123,3 +123,14 @@ export interface InitiateAiTokenPurchaseParams {
   returnUrl: string
   isMobile?: boolean
 }
+
+export interface AiTokenPurchase {
+  id: number
+  userId: number
+  subscriptionId: number
+  transactionId: number
+  priceAtPurchase: number
+  tokensAdded: number
+  purchaseDate: string
+  status: string
+}

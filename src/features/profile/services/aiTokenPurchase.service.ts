@@ -1,5 +1,5 @@
 import * as api from '../api/aiTokenPurchase.api';
-import type { InitiateAiTokenPurchaseParams } from '../types';
+import type { AiTokenPurchase, InitiateAiTokenPurchaseParams } from '../types';
 
 function extractPaymentUrl(result: unknown): string | null {
   if (typeof result === 'string' && result.startsWith('http')) {
@@ -32,4 +32,14 @@ export async function initiateAndRedirectAiTokenPurchase(
   }
 
   window.location.href = paymentUrl;
+}
+
+export async function fetchUserAiTokenPurchases(userId: number): Promise<AiTokenPurchase[]> {
+  const response = await api.getUserAiTokenPurchases(userId);
+
+  if (response.code !== 0 || !Array.isArray(response.result)) {
+    throw new Error(response.message || 'Không thể tải lịch sử mua token');
+  }
+
+  return response.result;
 }

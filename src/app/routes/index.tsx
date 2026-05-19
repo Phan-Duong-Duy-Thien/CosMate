@@ -33,6 +33,7 @@ import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
 import WalletPage from "@/features/profile/pages/WalletPage"
 import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import WalletWithdrawPage from "@/features/profile/pages/WalletWithdrawPage"
+import TokenPage from "@/features/profile/pages/TokenPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -97,6 +98,7 @@ export default function AppRoutes() {
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/token" element={<TokenPage />} />
         <Route path="profile/wallet" element={<WalletPage />} />
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="profile/wallet/withdraw" element={<WalletWithdrawPage />} />

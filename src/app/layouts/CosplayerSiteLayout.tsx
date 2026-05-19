@@ -229,6 +229,12 @@ export default function CosplayerSiteLayout() {
         { label: "Địa chỉ", to: "/profile" },
         { label: "Thêm địa chỉ" },
       ])
+    } else if (path === "/profile/token") {
+      setItems([
+        { label: VI.common.breadcrumb.home, to: "/" },
+        { label: VI.common.breadcrumb.profile, to: "/profile" },
+        { label: VI.profile.token.hubTitle },
+      ])
     } else if (path === "/profile/wallet") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },

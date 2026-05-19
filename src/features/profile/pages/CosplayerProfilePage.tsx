@@ -13,7 +13,6 @@ import { AddressModal } from "../components/AddressModal"
 import { ProfileCover } from "../components/ProfileCover"
 import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
-import { BuyTokenPlansModal } from "../components/BuyTokenPlansModal"
 import { ProfileMetricBody, ProfileNeoCard } from "../components/ProfileNeoCard"
 import { PROFILE_CARD_UI } from "../constants/profileUi"
 import { CheckCheck, Coins, MapPin, PackageCheck, Star, Truck, User, Wallet } from "lucide-react"
@@ -39,7 +38,6 @@ export default function CosplayerProfilePage() {
   const [isPageVisible, setIsPageVisible] = useState(false)
   const [showAllAddresses, setShowAllAddresses] = useState(false)
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false)
-  const [isBuyTokenOpen, setIsBuyTokenOpen] = useState(false)
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
   const { counts } = usePurchaseOrders("all")
@@ -187,9 +185,9 @@ export default function CosplayerProfilePage() {
                       variant="outline"
                       size="sm"
                       className={PROFILE_CARD_UI.action}
-                      onClick={() => setIsBuyTokenOpen(true)}
+                      onClick={() => navigate("/profile/token")}
                     >
-                      {VI.profile.token.buyMore}
+                      {VI.profile.token.manage}
                     </Button>
                   }
                 >
@@ -341,13 +339,6 @@ export default function CosplayerProfilePage() {
         open={isAddressModalOpen}
         onOpenChange={setIsAddressModalOpen}
         userId={userId}
-      />
-      <BuyTokenPlansModal
-        open={isBuyTokenOpen}
-        onOpenChange={(open) => {
-          setIsBuyTokenOpen(open);
-          if (!open) void refetch();
-        }}
       />
       <Dialog open={isAvatarPreviewOpen} onOpenChange={setIsAvatarPreviewOpen}>
         <DialogContent className="max-h-[92vh] w-auto max-w-[96vw] rounded-none bg-transparent p-0 shadow-none">
