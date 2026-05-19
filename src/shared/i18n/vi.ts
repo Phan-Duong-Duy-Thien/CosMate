@@ -437,7 +437,7 @@ export const VI = {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
         wsConnectFailed:
-          "Không nhận được xác nhận từ máy chủ. Nhờ BE mở WebSocket cho QR (token=sessionId, topic /topic/qr/{sessionId}).",
+          "Không kết nối được WebSocket hoặc chưa nhận xác nhận từ app. Thử tạo mã QR mới và quét lại.",
       },
     },
 

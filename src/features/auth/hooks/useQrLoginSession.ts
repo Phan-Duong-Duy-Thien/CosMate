@@ -161,10 +161,17 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
         handleWsMessage(body)
       },
       () => {
+        clearTimeout(connectErrorTimer)
+        setWsConnectFailed(false)
+        setSessionError((prev) =>
+          prev === VI.auth.qrLogin.messages.wsConnectFailed ? "" : prev
+        )
+      },
+      () => {
         connectErrorTimer = setTimeout(() => {
           setWsConnectFailed(true)
           setSessionError(VI.auth.qrLogin.messages.wsConnectFailed)
-        }, 4000)
+        }, 8000)
       }
     )
 

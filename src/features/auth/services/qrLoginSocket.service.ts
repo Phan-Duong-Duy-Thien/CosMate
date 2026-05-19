@@ -13,100 +13,58 @@ export function qrLoginTopicForSession(sessionId: string): string {
   return `/topic/qr/${sessionId}`
 }
 
-type ConnectMode = "query-token" | "query-session-id" | "header-session-id"
-
-function buildWsUrl(sessionId: string, mode: ConnectMode): string {
-  const encoded = encodeURIComponent(sessionId)
-  if (mode === "query-session-id") {
-    return `${WS_ENDPOINT}?sessionId=${encoded}`
-  }
-  return `${WS_ENDPOINT}?token=${encoded}&access_token=${encoded}`
-}
-
-function buildConnectHeaders(
-  sessionId: string,
-  mode: ConnectMode
-): Record<string, string> | undefined {
-  if (mode === "header-session-id") {
-    return { sessionId }
-  }
-  return undefined
-}
-
 /**
- * QR login STOMP — sessionId is UUID in Tokens (QR_LOGIN_SESSION), not user JWT.
- * Do not send Authorization: Bearer {uuid} — Spring JWT filter rejects it.
+ * QR login STOMP — BE accepts QR_LOGIN_SESSION via:
+ *   SockJS /ws?token={sessionId}
+ *   CONNECT header Authorization: Bearer {sessionId}
  */
 export function subscribeQrLoginSession(
   sessionId: string,
   onMessage: (body: string) => void,
+  onConnected?: () => void,
   onConnectError?: () => void
 ): () => void {
-  const modes: ConnectMode[] = ["query-token", "query-session-id", "header-session-id"]
-  let modeIndex = 0
-  let activeClient: Client | null = null
+  const encoded = encodeURIComponent(sessionId)
+  const wsUrl = `${WS_ENDPOINT}?token=${encoded}&access_token=${encoded}`
+
   let unsubscribeTopic: (() => void) | undefined
   let disposed = false
   let connected = false
-  let errorReported = false
 
-  const cleanup = () => {
-    unsubscribeTopic?.()
-    unsubscribeTopic = undefined
-    if (activeClient) {
-      void activeClient.deactivate()
-      activeClient = null
-    }
-  }
+  const client = new Client({
+    webSocketFactory: () => new SockJS(wsUrl),
+    connectHeaders: {
+      Authorization: `Bearer ${sessionId}`,
+    },
+    reconnectDelay: 5000,
+    heartbeatIncoming: 10000,
+    heartbeatOutgoing: 10000,
+    onConnect: () => {
+      connected = true
+      onConnected?.()
+      const subscription = client.subscribe(
+        qrLoginTopicForSession(sessionId),
+        (frame: IMessage) => {
+          onMessage(frame.body)
+        }
+      )
+      unsubscribeTopic = () => subscription.unsubscribe()
+    },
+    onStompError: (frame) => {
+      console.error("[qrLoginSocket] STOMP error:", frame.headers?.message ?? frame)
+      if (!disposed && !connected) onConnectError?.()
+    },
+    onWebSocketError: (event) => {
+      console.error("[qrLoginSocket] WebSocket error:", event)
+      if (!disposed && !connected) onConnectError?.()
+    },
+  })
 
-  const tryNext = () => {
-    if (disposed || connected) return
-    cleanup()
-
-    if (modeIndex >= modes.length) {
-      if (!errorReported) {
-        errorReported = true
-        onConnectError?.()
-      }
-      return
-    }
-
-    const mode = modes[modeIndex]
-    modeIndex += 1
-
-    const client = new Client({
-      webSocketFactory: () => new SockJS(buildWsUrl(sessionId, mode)),
-      connectHeaders: buildConnectHeaders(sessionId, mode),
-      reconnectDelay: 0,
-      heartbeatIncoming: 10000,
-      heartbeatOutgoing: 10000,
-      onConnect: () => {
-        connected = true
-        const subscription = client.subscribe(
-          qrLoginTopicForSession(sessionId),
-          (frame: IMessage) => {
-            onMessage(frame.body)
-          }
-        )
-        unsubscribeTopic = () => subscription.unsubscribe()
-      },
-      onStompError: () => {
-        if (!connected) tryNext()
-        else void client.deactivate()
-      },
-      onWebSocketError: () => {
-        if (!connected) tryNext()
-      },
-    })
-
-    activeClient = client
-    client.activate()
-  }
-
-  tryNext()
+  client.activate()
 
   return () => {
     disposed = true
-    cleanup()
+    unsubscribeTopic?.()
+    void client.deactivate()
   }
 }
