@@ -10,7 +10,7 @@ interface UserProfileContextValue {
   userProfile: UserProfileState
   tokenBalance: number | null
   setUserProfile: (profile: Partial<UserProfileState>) => void
-  setTokenBalance: (balance: number | null) => void
+  setTokenBalance: (balance: number | null | ((prev: number | null) => number | null)) => void
   refreshProfile: () => void
 }
 

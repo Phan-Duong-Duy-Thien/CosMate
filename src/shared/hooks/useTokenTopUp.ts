@@ -1,9 +1,9 @@
 import * as React from "react"
 import { message } from "antd"
 
+import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { createMomoTopUp, createVnpayTopUp } from "@/features/profile/api/wallet.api"
-import { useUserProfile } from "@/app/providers/UserProfileProvider"
 
 export type TokenTopUpMethod = "vnpay" | "momo" | "wallet"
 
@@ -84,7 +84,6 @@ export function useTokenTopUp({ onSuccess }: UseTokenTopUpOptions = {}) {
       }
       setLoadingMethod("wallet")
       try {
-        // Wallet payment is handled by backend flow; refresh balance after initiating success-side action.
         refreshAfterTopUp()
         setTokenBalance((prev) => (typeof prev === "number" ? prev : null))
         message.success(`Đã xác nhận nạp ${amount.toLocaleString("vi-VN")} VNĐ qua ví CosMate.`)
