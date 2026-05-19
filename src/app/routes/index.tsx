@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
@@ -78,6 +78,7 @@ import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
 import StaffPlaceholderPage from "@/features/staff/pages/StaffPlaceholderPage"
 import StaffAiTokenPlansPage from "@/features/staff-token/pages/StaffAiTokenPlansPage"
 import StaffAiTokenPurchasesPage from "@/features/staff-token/pages/StaffAiTokenPurchasesPage"
+import StaffOrdersPage from "@/features/staff/pages/StaffOrdersPage"
 import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
@@ -194,7 +195,8 @@ export default function AppRoutes() {
           <Route path="/staff" element={<StaffHomePage />} />
           <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
           <Route path="/staff/ai-token-purchases" element={<StaffAiTokenPurchasesPage />} />
-          <Route path="/staff/bookings" element={<StaffPlaceholderPage title={VI.staff.bookings.title} />} />
+          <Route path="/staff/orders" element={<StaffOrdersPage />} />
+          <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
           <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
           <Route path="/staff/reports" element={<StaffPlaceholderPage title={VI.staff.sidebar.reports} />} />
           <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />

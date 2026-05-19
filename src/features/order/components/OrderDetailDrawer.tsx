@@ -27,6 +27,10 @@ interface OrderDetailDrawerProps {
   orderType?: string; // 'RENT_COSTUME' — used to guard against cross-type contamination
   onClose: () => void;
   onExtendSuccess?: () => void;
+  /** Hide rental-option package UI (staff/admin read-only surfaces). */
+  hideRentalOptions?: boolean;
+  /** Hide extend-rental actions and history (staff/admin). */
+  hideExtendActions?: boolean;
 }
 
 // Format currency
@@ -96,7 +100,15 @@ const getStatusColor = (status: OrderStatus): string => {
   return colorMap[status] || 'default';
 };
 
-export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendSuccess }: OrderDetailDrawerProps) {
+export function OrderDetailDrawer({
+  open,
+  orderId,
+  orderType,
+  onClose,
+  onExtendSuccess,
+  hideRentalOptions = false,
+  hideExtendActions = false,
+}: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
   const { extendOrder, isExtending } = useExtendOrder();
 
@@ -277,7 +289,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
             {formatCurrency(detail.accessoriesAmount)}
           </Descriptions.Item>
         )}
-        {detail.rentOptionAmount > 0 && (
+        {!hideRentalOptions && detail.rentOptionAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.rentOptionAmount} span={2}>
             {formatCurrency(detail.rentOptionAmount)}
           </Descriptions.Item>
@@ -457,7 +469,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           {renderBasicInfo()}
         </div>
 
-        {orderDetail.status === 'IN_USE' && (
+        {!hideExtendActions && orderDetail.status === 'IN_USE' && (
           <div className="flex flex-wrap items-center gap-3">
             <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => setExtendModalOpen(true)}>
               {VI.provider.orders.tabs.extending}
@@ -465,7 +477,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           </div>
         )}
 
-        {orderDetail.status === 'IN_USE' && (
+        {!hideExtendActions && orderDetail.status === 'IN_USE' && (
           <div>
             <h3 className="mb-3 flex items-center gap-1 text-sm font-semibold text-foreground">
               <HistoryOutlined className="text-purple-600" />
@@ -535,10 +547,12 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalInfo}</h3>
           {renderRentalInfo()}
         </div>
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalOptions}</h3>
-          {renderRentalOptions()}
-        </div>
+        {!hideRentalOptions && (
+          <div>
+            <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalOptions}</h3>
+            {renderRentalOptions()}
+          </div>
+        )}
         <div>
           <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.accessories}</h3>
           {renderAccessories()}

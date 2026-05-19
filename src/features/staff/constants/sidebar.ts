@@ -45,10 +45,10 @@ export const staffSidebarItems: StaffSidebarItem[] = [
     path: '/staff/ai-token-purchases',
   },
   {
-    key: 'bookings',
-    label: VI.staff.sidebar.bookings,
+    key: 'orders',
+    label: VI.staff.sidebar.orders,
     icon: CalendarDays,
-    path: '/staff/bookings',
+    path: '/staff/orders',
   },
   {
     key: 'customers',

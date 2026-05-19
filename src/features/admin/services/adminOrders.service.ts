@@ -4,16 +4,18 @@
 
 import * as adminOrdersApi from '../api/adminOrders.api';
 import { getUserById } from '../api/adminUsers.api';
+import {
+  normalizeOrderListRow,
+  type OrderListRow,
+} from '@/features/order/utils/normalizeOrderListRow';
 
-export interface AdminOrderRow {
-  id: number;
+export interface AdminOrderRow extends OrderListRow {
   code?: string;
   userName?: string;
   cosplayerName?: string;
   providerName?: string;
-  status?: string;
+  /** @deprecated use totalAmount */
   total?: number;
-  cosplayerId?: number;
 }
 
 export async function fetchAdminOrdersEnriched(): Promise<{
@@ -22,7 +24,14 @@ export async function fetchAdminOrdersEnriched(): Promise<{
 }> {
   const data = await adminOrdersApi.getOrders(1, 9999);
 
-  let content = (data.content || []) as AdminOrderRow[];
+  let content: AdminOrderRow[] = (data.content || []).map((raw) => {
+    const row = normalizeOrderListRow(raw as Record<string, unknown>);
+    return {
+      ...row,
+      code: String(row.id),
+      total: row.totalAmount,
+    };
+  });
 
   const rowsNeedingName = content.filter((r) => !r.cosplayerName && r.cosplayerId != null);
   if (rowsNeedingName.length > 0) {

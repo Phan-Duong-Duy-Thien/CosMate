@@ -397,10 +397,10 @@ export function DashboardLayout({
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.tokenPurchases.title },
       ]);
-    } else if (path === '/staff/bookings') {
+    } else if (path === '/staff/orders' || path === '/staff/bookings') {
       setItems([
         { label: VI.staff.layout.title, to: '/staff' },
-        { label: VI.staff.bookings.title },
+        { label: VI.staff.orders.title },
       ]);
     } else if (path === '/staff/customers') {
       setItems([

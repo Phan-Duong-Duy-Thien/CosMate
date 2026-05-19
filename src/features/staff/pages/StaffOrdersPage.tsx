@@ -1,16 +1,18 @@
 import { useState } from 'react';
-import { Table, Descriptions, Select, Tag, Empty, Input, Button, Modal, Tooltip, Spin } from 'antd';
+import { Table, Select, Tag, Empty, Input, Button, Tooltip } from 'antd';
 import type { TableProps } from 'antd';
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Card } from '@/shared/components/Card';
 import { VI } from '@/shared/i18n/vi';
 import { AdminDetailEyeIcon } from '@/features/admin/components/AdminDetailEyeIcon';
-import { useStaffAiTokenPurchases } from '../hooks/useStaffAiTokenPurchases';
+import { OrderDetailDrawer } from '@/features/order/components/OrderDetailDrawer';
+import { useStaffOrders } from '../hooks/useStaffOrders';
 import {
-  getAiTokenPurchaseStatusLabel,
-  getAiTokenPurchaseStatusTagColor,
-} from '../utils/aiTokenPurchaseStatus';
-import type { AiTokenPurchase } from '../types';
+  getOrderStatusLabel,
+  getOrderStatusTagColor,
+  getOrderTypeLabel,
+} from '../utils/orderDisplay';
+import type { OrderListRow } from '../types/order';
 
 const formatVnd = (value: number) =>
   new Intl.NumberFormat('vi-VN', {
@@ -19,13 +21,13 @@ const formatVnd = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const formatDateTime = (iso: string) => {
+const formatDateTime = (iso: string | null | undefined) => {
   if (!iso) return '—';
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleString('vi-VN');
 };
 
-export default function StaffAiTokenPurchasesPage() {
+export default function StaffOrdersPage() {
   const {
     rows,
     total,
@@ -34,52 +36,65 @@ export default function StaffAiTokenPurchasesPage() {
     setSearch,
     statusFilter,
     setStatusFilter,
+    orderTypeFilter,
+    setOrderTypeFilter,
     statusOptions,
+    orderTypeOptions,
     page,
     setPage,
     pageSize,
     setPageSize,
     refetch,
-    detail,
-    detailLoading,
-    fetchDetail,
-    clearDetail,
-  } = useStaffAiTokenPurchases();
+  } = useStaffOrders();
 
-  const [detailOpen, setDetailOpen] = useState(false);
-  const t = VI.staff.tokenPurchases;
+  const [detailOrderId, setDetailOrderId] = useState<number | null>(null);
+  const [detailOrderType, setDetailOrderType] = useState<string | undefined>();
+  const t = VI.staff.orders;
 
-  const openDetail = (record: AiTokenPurchase) => {
-    setDetailOpen(true);
-    void fetchDetail(record.id, record);
+  const openDetail = (record: OrderListRow) => {
+    setDetailOrderId(record.id);
+    setDetailOrderType(record.orderType);
   };
 
-  const columns: TableProps<AiTokenPurchase>['columns'] = [
+  const closeDetail = () => {
+    setDetailOrderId(null);
+    setDetailOrderType(undefined);
+  };
+
+  const columns: TableProps<OrderListRow>['columns'] = [
     { title: t.columns.id, dataIndex: 'id', width: 72 },
-    { title: t.columns.userId, dataIndex: 'userId', width: 88 },
-    { title: t.columns.subscriptionId, dataIndex: 'subscriptionId', width: 110 },
-    { title: t.columns.transactionId, dataIndex: 'transactionId', width: 110 },
     {
-      title: t.columns.priceAtPurchase,
-      dataIndex: 'priceAtPurchase',
+      title: t.columns.orderType,
+      dataIndex: 'orderType',
+      width: 140,
+      render: (v: string) => getOrderTypeLabel(v),
+    },
+    { title: t.columns.cosplayerId, dataIndex: 'cosplayerId', width: 100 },
+    { title: t.columns.providerId, dataIndex: 'providerId', width: 100 },
+    {
+      title: t.columns.totalAmount,
+      dataIndex: 'totalAmount',
       render: (v: number) => formatVnd(v),
     },
-    { title: t.columns.tokensAdded, dataIndex: 'tokensAdded', width: 100 },
     {
-      title: t.columns.purchaseDate,
-      dataIndex: 'purchaseDate',
-      width: 168,
-      render: (v: string) => formatDateTime(v),
+      title: t.columns.totalDepositAmount,
+      dataIndex: 'totalDepositAmount',
+      width: 130,
+      render: (v: number) => formatVnd(v),
     },
     {
       title: t.columns.status,
       dataIndex: 'status',
-      width: 110,
+      width: 150,
       render: (status: string) => (
-        <Tag color={getAiTokenPurchaseStatusTagColor(status)}>
-          {getAiTokenPurchaseStatusLabel(status)}
-        </Tag>
+        <Tag color={getOrderStatusTagColor(status)}>{getOrderStatusLabel(status)}</Tag>
       ),
+    },
+    {
+      title: t.columns.createdAt,
+      dataIndex: 'createdAt',
+      width: 168,
+      render: (v: string) => formatDateTime(v),
     },
     {
       title: t.columns.actions,
@@ -103,7 +118,7 @@ export default function StaffAiTokenPurchasesPage() {
   return (
     <Card className="p-4 md:p-6">
       <style>{`
-        .staff-token-purchase-row:hover { background-color: var(--muted) !important; }
+        .staff-order-row:hover { background-color: var(--muted) !important; }
       `}</style>
 
       <div className="flex h-full w-full flex-col">
@@ -132,17 +147,28 @@ export default function StaffAiTokenPurchasesPage() {
               placeholder={t.filterStatus}
               value={statusFilter ?? undefined}
               onChange={(v) => setStatusFilter(v ?? null)}
-              className="min-w-[180px]"
+              className="min-w-[200px]"
               allowClear
               options={statusOptions.map((s) => ({
-                label: getAiTokenPurchaseStatusLabel(s),
+                label: getOrderStatusLabel(s),
                 value: s,
+              }))}
+            />
+            <Select
+              placeholder={t.filterOrderType}
+              value={orderTypeFilter ?? undefined}
+              onChange={(v) => setOrderTypeFilter(v ?? null)}
+              className="min-w-[180px]"
+              allowClear
+              options={orderTypeOptions.map((ot) => ({
+                label: getOrderTypeLabel(ot),
+                value: ot,
               }))}
             />
           </div>
         </div>
 
-        <Table<AiTokenPurchase>
+        <Table<OrderListRow>
           columns={columns}
           dataSource={rows}
           rowKey="id"
@@ -162,50 +188,21 @@ export default function StaffAiTokenPurchasesPage() {
               setPageSize(ps);
             },
           }}
-          rowClassName={() => 'staff-token-purchase-row'}
+          onRow={(record) => ({
+            onClick: () => openDetail(record),
+            style: { cursor: 'pointer' },
+          })}
+          rowClassName={() => 'staff-order-row'}
         />
 
-        <Modal
-          title={detail ? t.detailTitle.replace('{id}', String(detail.id)) : t.detailTitleFallback}
-          open={detailOpen}
-          onCancel={() => {
-            setDetailOpen(false);
-            clearDetail();
-          }}
-          footer={null}
-          centered
-          width={480}
-          destroyOnClose
-        >
-          {detailLoading && !detail ? (
-            <div className="flex justify-center py-8">
-              <Spin />
-            </div>
-          ) : detail ? (
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label={t.columns.id}>{detail.id}</Descriptions.Item>
-              <Descriptions.Item label={t.columns.userId}>{detail.userId}</Descriptions.Item>
-              <Descriptions.Item label={t.columns.subscriptionId}>
-                {detail.subscriptionId}
-              </Descriptions.Item>
-              <Descriptions.Item label={t.columns.transactionId}>
-                {detail.transactionId}
-              </Descriptions.Item>
-              <Descriptions.Item label={t.columns.priceAtPurchase}>
-                {formatVnd(detail.priceAtPurchase)}
-              </Descriptions.Item>
-              <Descriptions.Item label={t.columns.tokensAdded}>{detail.tokensAdded}</Descriptions.Item>
-              <Descriptions.Item label={t.columns.purchaseDate}>
-                {formatDateTime(detail.purchaseDate)}
-              </Descriptions.Item>
-              <Descriptions.Item label={t.columns.status}>
-                <Tag color={getAiTokenPurchaseStatusTagColor(detail.status)}>
-                  {getAiTokenPurchaseStatusLabel(detail.status)}
-                </Tag>
-              </Descriptions.Item>
-            </Descriptions>
-          ) : null}
-        </Modal>
+        <OrderDetailDrawer
+          open={detailOrderId != null}
+          orderId={detailOrderId}
+          orderType={detailOrderType}
+          hideRentalOptions
+          hideExtendActions
+          onClose={closeDetail}
+        />
       </div>
     </Card>
   );

@@ -60,7 +60,7 @@ export default function StaffHomePage() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900">{VI.staff.home.recentBookings}</h3>
-          <Link to="/staff/bookings" className="text-sm font-medium text-pink-500 hover:text-pink-600">
+          <Link to="/staff/orders" className="text-sm font-medium text-pink-500 hover:text-pink-600">
             {VI.common.actions.viewMore}
           </Link>
         </div>

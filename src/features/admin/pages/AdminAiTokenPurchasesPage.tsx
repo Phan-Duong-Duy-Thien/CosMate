@@ -6,6 +6,10 @@ import { VI } from '@/shared/i18n/vi';
 import { useAdminAiTokenPurchases } from '../hooks/useAdminAiTokenPurchases';
 import type { AiTokenPurchase } from '../types';
 import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
+import {
+  getAiTokenPurchaseStatusLabel,
+  getAiTokenPurchaseStatusTagColor,
+} from '@/features/staff-token/utils/aiTokenPurchaseStatus';
 
 const formatVnd = (value: number) =>
   new Intl.NumberFormat('vi-VN', {
@@ -18,14 +22,6 @@ const formatDateTime = (iso: string) => {
   if (!iso) return '—';
   const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? iso : d.toLocaleString('vi-VN');
-};
-
-const statusTagColor = (status: string): string => {
-  const s = status.toUpperCase();
-  if (s === 'SUCCESS' || s === 'COMPLETED' || s === 'PAID') return 'green';
-  if (s === 'FAILED' || s === 'CANCELLED' || s === 'CANCELED') return 'red';
-  if (s === 'PENDING' || s === 'PROCESSING') return 'gold';
-  return 'default';
 };
 
 export default function AdminAiTokenPurchasesPage() {
@@ -78,7 +74,11 @@ export default function AdminAiTokenPurchasesPage() {
       title: t.columns.status,
       dataIndex: 'status',
       width: 110,
-      render: (status: string) => <Tag color={statusTagColor(status)}>{status}</Tag>,
+      render: (status: string) => (
+        <Tag color={getAiTokenPurchaseStatusTagColor(status)}>
+          {getAiTokenPurchaseStatusLabel(status)}
+        </Tag>
+      ),
     },
     {
       title: t.columns.actions,
@@ -133,7 +133,10 @@ export default function AdminAiTokenPurchasesPage() {
               onChange={(v) => setStatusFilter(v ?? null)}
               className="min-w-[180px]"
               allowClear
-              options={statusOptions.map((s) => ({ label: s, value: s }))}
+              options={statusOptions.map((s) => ({
+                label: getAiTokenPurchaseStatusLabel(s),
+                value: s,
+              }))}
             />
           </div>
         </div>
@@ -195,7 +198,9 @@ export default function AdminAiTokenPurchasesPage() {
                 {formatDateTime(detail.purchaseDate)}
               </Descriptions.Item>
               <Descriptions.Item label={t.columns.status}>
-                <Tag color={statusTagColor(detail.status)}>{detail.status}</Tag>
+                <Tag color={getAiTokenPurchaseStatusTagColor(detail.status)}>
+                  {getAiTokenPurchaseStatusLabel(detail.status)}
+                </Tag>
               </Descriptions.Item>
             </Descriptions>
           ) : null}
