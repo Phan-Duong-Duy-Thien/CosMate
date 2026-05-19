@@ -26,9 +26,6 @@ export const CostumeCard = ({
   const costumeId = Number(costume.id)
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
-  const characterLine = costume.characterName?.trim()
-  const showCharacter =
-    Boolean(characterLine) && characterLine !== "—" && characterLine !== "-"
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
 
   return (
@@ -100,7 +97,7 @@ export const CostumeCard = ({
         </div>
       </div>
 
-      <div className="flex min-h-[148px] flex-1 flex-col gap-1.5 p-3">
+      <div className="flex min-h-[124px] flex-1 flex-col gap-1.5 p-3">
         <h3
           className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
           title={displayName}
@@ -113,14 +110,6 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
-        {showCharacter && (
-          <p
-            className="line-clamp-2 text-xs font-semibold leading-snug text-cosmate-text-soft"
-            title={characterLine}
-          >
-            {characterLine}
-          </p>
-        )}
         <div className="flex min-h-7 items-baseline gap-1 text-base font-extrabold leading-tight">
           {hasPrice ? (
             <>
