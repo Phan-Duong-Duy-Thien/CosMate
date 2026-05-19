@@ -1,3 +1,4 @@
+import { useCallback, useState } from "react"
 import { Link, useNavigate } from "react-router-dom"
 
 import loginHero from "@/assets/saukura.jpg"
@@ -5,6 +6,8 @@ import { useLogin } from "../hooks/useLogin"
 import { AuthLayout } from "../layout/AuthLayout"
 import { AuthMarketingHero } from "../components/AuthMarketingHero"
 import { LoginForm } from "../components/LoginForm"
+import { LoginMethodTabs, type LoginMethod } from "../components/LoginMethodTabs"
+import { QrLoginPanel } from "../components/QrLoginPanel"
 import { getRedirectPath } from "../utils/roleRedirect"
 import type { LoginFormValues } from "../types"
 import { VI } from "@/shared/i18n/vi"
@@ -14,16 +17,30 @@ export default function LoginPage() {
   const { submitting, formError, handleEmailLogin } = useLogin()
   const navigate = useNavigate()
   const { refreshProfile } = useUserProfile()
+  const [loginMethod, setLoginMethod] = useState<LoginMethod>("email")
+
+  const completeLogin = useCallback(
+    (roles: string[]) => {
+      refreshProfile()
+      navigate(getRedirectPath(roles))
+    },
+    [navigate, refreshProfile]
+  )
 
   const onLoginSubmit = async (values: LoginFormValues) => {
     const roles = await handleEmailLogin(values)
 
     if (roles) {
-      refreshProfile()
-      const redirectPath = getRedirectPath(roles)
-      navigate(redirectPath)
+      completeLogin(roles)
     }
   }
+
+  const onQrApproved = useCallback(
+    (roles: string[]) => {
+      completeLogin(roles)
+    },
+    [completeLogin]
+  )
 
   return (
     <AuthLayout left={<AuthMarketingHero imageSrc={loginHero} imageAlt="Cosmate login hero" />}>
@@ -37,11 +54,21 @@ export default function LoginPage() {
           </p>
         </div>
 
-        <LoginForm
-          onSubmit={onLoginSubmit}
-          submitting={submitting}
-          formError={formError}
+        <LoginMethodTabs
+          value={loginMethod}
+          onChange={setLoginMethod}
+          disabled={submitting}
         />
+
+        {loginMethod === "email" ? (
+          <LoginForm
+            onSubmit={onLoginSubmit}
+            submitting={submitting}
+            formError={formError}
+          />
+        ) : (
+          <QrLoginPanel active={loginMethod === "qr"} onApproved={onQrApproved} />
+        )}
 
         <div className="flex flex-col gap-2 text-center text-sm text-muted-foreground">
           <Link

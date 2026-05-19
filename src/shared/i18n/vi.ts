@@ -174,6 +174,9 @@ export const VI = {
       loading: "Đang xử lý...",
       loginRequired: "Vui lòng đăng nhập để tiếp tục.",
       wishlist: {
+        /** Hero /wishlist — cùng phong cách trang Thuê đồ Cosplay */
+        pageHeroDecor:
+          "･:*🌸࿔   ⋆. 𐙚˚࿔  Danh sách yêu thích  𝜗𝜚˚⋆   ࿔🌸*:･",
         addSuccess: "Đã thêm vào danh sách yêu thích.",
         removeSuccess: "Đã xóa khỏi danh sách yêu thích.",
         fetchFailed: "Không thể tải danh sách yêu thích.",
@@ -413,7 +416,32 @@ export const VI = {
         invalidCredentials: "Không thể đăng nhập. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
       },
 
+      methodTabsLabel: "Phương thức đăng nhập",
+      methodEmail: "Email / mật khẩu",
+      methodQr: "Đăng nhập bằng QR",
+
       googleNotConfigured: "(chưa cấu hình)",
+    },
+
+    qrLogin: {
+      intro:
+        "Quét mã bằng app CosMate (đã đăng nhập) để đăng nhập trên trình duyệt này — không cần nhập mật khẩu.",
+      steps: [
+        "Mở app CosMate trên điện thoại và đăng nhập",
+        "Vào mục Quét QR trong app",
+        "Quét mã bên dưới và bấm xác nhận trên điện thoại",
+      ],
+      scanTitle: "Quét bằng app CosMate",
+      waiting: (time: string) => `Đang chờ xác nhận trên app… (${time})`,
+      expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
+      refreshQr: "Tạo mã QR mới",
+      waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
+      messages: {
+        sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
+        approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
+        wsConnectFailed:
+          "Không kết nối được WebSocket hoặc chưa nhận xác nhận từ app. Thử tạo mã QR mới và quét lại.",
+      },
     },
 
     forgotPassword: {
@@ -1071,6 +1099,27 @@ export const VI = {
       // Actions
       actionViewDetail: "Xem chi tiết đơn",
       actionConfirmDelivery: "Xác nhận nhận hàng",
+      confirmDeliveryQr: {
+        intro:
+          "Dùng app CosMate trên điện thoại để chụp ảnh xác nhận. Sau khi ảnh hiển thị bên dưới (1–5 tấm), bấm xác nhận trên máy tính.",
+        steps: [
+          "Mở app CosMate và đăng nhập cùng tài khoản với web",
+          "Vào mục Quét QR trong app",
+          "Quét mã QR bên dưới, chụp và gửi 1–5 ảnh",
+        ],
+        scanTitle: "Quét bằng app CosMate",
+        refreshQr: "Tạo mã QR mới",
+        refreshQrWait: (time: string) => `Tạo mã mới sau ${time}`,
+        refreshQrCooldown: (time: string) =>
+          `Bạn chỉ có thể tạo mã QR mới sau ${time} (tối đa 1 lần / 15 phút).`,
+        previewTitle: "Ảnh từ điện thoại",
+        waitingImages: "Chưa có ảnh — đang chờ bạn gửi từ app…",
+        apiNote: "Ảnh từ điện thoại hiện tự động khi app gửi thành công. Sau đó bấm xác nhận để hoàn tất đơn.",
+        imageLoadFailed: "Không tải được ảnh xác nhận từ máy chủ",
+        apiPending: "Chưa thể hoàn tất — đang chờ API xác nhận từ backend.",
+        needImages: "Cần ít nhất 1 ảnh từ điện thoại trước khi xác nhận.",
+        tooManyImages: "Tối đa 5 ảnh xác nhận.",
+      },
       actionProcessing: "Đang xử lý...",
       // Toast messages
       toastConfirmDeliverySuccess: "Xác nhận nhận hàng thành công",

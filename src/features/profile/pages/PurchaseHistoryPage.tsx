@@ -141,8 +141,6 @@ export default function PurchaseHistoryPage() {
     counts,
     loading: costumeLoading,
     error: costumeError,
-    confirmDelivery,
-    confirmingDeliveryId,
     returnOrder,
     returningOrderId,
     refetch: costumeRefetch,
@@ -193,6 +191,7 @@ export default function PurchaseHistoryPage() {
   // ── Confirm delivery modal state ────────────────────────────────────────────
   const [confirmModalOpen, setConfirmModalOpen] = useState(false)
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null)
+  const [confirmSubmittingOrderId, setConfirmSubmittingOrderId] = useState<number | null>(null)
 
   // ── Return order modal state ─────────────────────────────────────────────────
   const [returnModalOpen, setReturnModalOpen] = useState(false)
@@ -268,16 +267,11 @@ export default function PurchaseHistoryPage() {
     setConfirmModalOpen(true)
   }
 
-  const handleConfirmSubmit = async (data: { images: File[]; notes: string[] }) => {
-    if (!selectedOrderId) return
-    const success = await confirmDelivery(selectedOrderId, data.images, data.notes)
-    if (success) {
-      message.success(VI.profile.orders.toastConfirmDeliverySuccess)
-      setConfirmModalOpen(false)
-      setSelectedOrderId(null)
-    } else {
-      message.error(VI.profile.orders.toastConfirmDeliveryFailed)
-    }
+  const handleConfirmDeliverySuccess = () => {
+    message.success(VI.profile.orders.toastConfirmDeliverySuccess)
+    setConfirmModalOpen(false)
+    setSelectedOrderId(null)
+    costumeRefetch()
   }
 
   const handleReturnOrder = (orderId: number) => {
@@ -487,10 +481,10 @@ export default function PurchaseHistoryPage() {
                 <button
                   type="button"
                   onClick={() => handleConfirmDelivery(order.id)}
-                  disabled={confirmingDeliveryId === order.id}
+                  disabled={confirmSubmittingOrderId === order.id}
                   className="rounded-xl border-[2px] border-green-900 bg-green-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-green-700 disabled:opacity-50"
                 >
-                  {confirmingDeliveryId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
+                  {confirmSubmittingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionConfirmDelivery}
                 </button>
                 <button
                   type="button"
@@ -931,12 +925,13 @@ export default function PurchaseHistoryPage() {
       <ConfirmDeliveryModal
         open={confirmModalOpen}
         orderId={selectedOrderId || 0}
-        loading={!!confirmingDeliveryId}
+        onSubmittingChange={setConfirmSubmittingOrderId}
         onCancel={() => {
           setConfirmModalOpen(false)
           setSelectedOrderId(null)
+          setConfirmSubmittingOrderId(null)
         }}
-        onSubmit={handleConfirmSubmit}
+        onSuccess={handleConfirmDeliverySuccess}
       />
 
       <ReturnOrderModal

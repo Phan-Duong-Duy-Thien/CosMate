@@ -1,25 +1,25 @@
 import * as React from "react"
 import { ArrowRight, Shirt } from "lucide-react"
 
-import type { Product } from "../../pages/home.types"
 import { AnimeSectionHeading } from "./AnimeSectionHeading"
-import { ProductCard } from "./ProductCard"
+import { CostumeCard } from "@/features/costume-rental/components/CostumeCard"
+import type { CostumeItem } from "@/features/costume-rental/types"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
 interface ProductSectionProps {
-  products: Product[]
-  wishlistIds: string[]
-  onToggleWishlist: (productId: string) => void
-  wishlistLoadingId?: string | null
+  costumes: CostumeItem[]
+  isWishlisted: (costumeId: number) => boolean
+  onToggleWishlist: (costumeId: number) => void
+  wishlistLoadingId?: number | null
   sectionRef: React.RefObject<HTMLDivElement | null>
-  onViewDetail: (productId: number) => void
+  onViewDetail: (costumeId: string) => void
   onViewAll: () => void
 }
 
 export const ProductSection = ({
-  products,
-  wishlistIds,
+  costumes,
+  isWishlisted,
   onToggleWishlist,
   wishlistLoadingId,
   sectionRef,
@@ -47,15 +47,15 @@ export const ProductSection = ({
         </Button>
       }
     />
-    <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 lg:gap-6">
-      {products.map((product) => (
-        <ProductCard
-          key={product.id}
-          product={product}
-          isWishlisted={wishlistIds.includes(String(product.id))}
-          wishlistLoading={wishlistLoadingId === String(product.id)}
-          onToggleWishlist={onToggleWishlist}
+    <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 lg:gap-5">
+      {costumes.map((costume) => (
+        <CostumeCard
+          key={costume.id}
+          costume={costume}
           onViewDetail={onViewDetail}
+          isWishlisted={isWishlisted(Number(costume.id))}
+          wishlistLoading={wishlistLoadingId === Number(costume.id)}
+          onToggleWishlist={onToggleWishlist}
         />
       ))}
     </div>

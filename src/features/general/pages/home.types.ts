@@ -20,16 +20,6 @@ export interface BannerSlide {
   imageUrl: string
 }
 
-export interface Product {
-  id: number
-  name: string
-  pricePerDay: number
-  status: string
-  imageUrls: string[]
-  brand: string
-  rentalsCount: number
-}
-
 export interface Shop {
   id: string
   name: string

@@ -29,6 +29,21 @@ export type LoginResponse = {
   result: LoginResult
 }
 
+// ============ QR LOGIN TYPES ============
+
+export type QrLoginSessionStatus = "PENDING" | "APPROVED" | "EXPIRED" | "CANCELLED"
+
+/** GET /api/auth/qr-generate */
+export type QrGenerateResult = {
+  sessionId: string
+}
+
+export type QrGenerateResponse = {
+  code: number
+  message: string
+  result: QrGenerateResult
+}
+
 // JWT Payload Type
 export type JwtPayload = {
   sub?: string      // User ID (string format)

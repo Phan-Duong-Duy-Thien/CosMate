@@ -16,7 +16,7 @@ export const CostumeGrid = ({
   wishlistLoadingId,
   onToggleWishlist,
 }: CostumeGridProps) => (
-  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+  <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
     {costumes.map((costume) => (
       <CostumeCard
         key={costume.id}

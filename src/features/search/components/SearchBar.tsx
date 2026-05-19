@@ -4,8 +4,8 @@ import { Spin } from 'antd'
 import { useNavigate } from 'react-router-dom'
 
 import { useSearchCostumes } from '@/features/costume-rental/hooks/useSearchCostumes'
-import { Input } from '@/shared/components/Input'
 import { cn } from '@/lib/utils'
+import { SITE_HEADER_UI } from '@/app/constants/homeAnimeUi'
 
 interface SearchBarProps {
   className?: string
@@ -62,16 +62,16 @@ export function SearchBar({ className }: SearchBarProps) {
   return (
     <div ref={containerRef} className={cn('relative', className)}>
       <div className="relative flex items-center">
-        <span className="absolute left-3 z-10 text-slate-400">
+        <span className={SITE_HEADER_UI.searchIcon}>
           {isLoading ? <Spin size="small" /> : <SearchOutlined />}
         </span>
-        <Input
+        <input
           ref={inputRef}
           value={keyword}
           onChange={(e) => handleChange(e.target.value)}
           onFocus={() => keyword.trim().length > 0 && setIsOpen(true)}
           placeholder="Tìm kiếm trang phục..."
-          className="pl-9! pr-8! h-9! rounded-full! text-sm!"
+          className={SITE_HEADER_UI.searchInput}
           aria-label="Tìm kiếm trang phục"
           autoComplete="off"
         />
@@ -80,7 +80,7 @@ export function SearchBar({ className }: SearchBarProps) {
             type="button"
             onClick={handleClear}
             aria-label="Clear search"
-            className="absolute right-2 rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className="absolute right-2 rounded-full border border-transparent p-1 text-indigo-900/50 transition hover:border-indigo-950/20 hover:bg-cosmate-soft-pink/50 hover:text-cosmate-pink"
           >
             <CloseOutlined className="text-xs" />
           </button>
@@ -88,7 +88,7 @@ export function SearchBar({ className }: SearchBarProps) {
       </div>
 
       {showDropdown && (
-        <div className="absolute left-0 top-full z-50 mt-1.5 w-80 rounded-2xl border border-slate-100 bg-white shadow-xl">
+        <div className={cn(SITE_HEADER_UI.searchDropdown, "w-80")}>
           <div className="overflow-hidden rounded-2xl">
             {results.length === 0 && !isLoading ? (
               <div className="flex flex-col items-center gap-2 px-4 py-8 text-center">

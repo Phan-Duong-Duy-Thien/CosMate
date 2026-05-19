@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, Fragment } from "react"
 import { X, Send, MessageCircle, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms } from "../hooks/useChatRooms"
@@ -24,6 +24,7 @@ import type { ChatMessage, ChatRoomListItem } from "../types"
 import cosmateLogo from "@/assets/logo.png"
 import { VI } from "@/shared/i18n/vi"
 import { ChatInboxSidebar } from "./ChatInboxSidebar"
+import { CHAT_UI } from "../constants/chatUi"
 
 interface ActiveRoom {
   roomId: number
@@ -278,8 +279,7 @@ export function ChatPopup() {
   const validMessages = messages.filter((m) => m.createdAt && m.createdAt.trim() !== "")
 
   return (
-    // Outer: fixed position, full height, ROW layout (sidebar | chat)
-    <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[460px] overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-2xl">
+    <div className={CHAT_UI.popupShell}>
 
       <ChatInboxSidebar
         variant="compact"
@@ -296,30 +296,31 @@ export function ChatPopup() {
       <div className="flex h-full min-w-0 flex-1 flex-col">
 
         {/* Header */}
-        <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 pt-3 pb-2.5">
+        <div className={CHAT_UI.popupHeader}>
           <div className="flex min-w-0 flex-1 items-start gap-3">
             <div className="relative shrink-0">
               {avatar ? (
                 <img
                   src={avatar}
                   alt={displayName}
-                  className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm"
+                  className={cn(CHAT_UI.avatarMd, CHAT_UI.avatarRing, "object-cover")}
                 />
               ) : (
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-xs font-semibold text-pink-600 shadow-sm ring-2 ring-white">
+                <div className={cn(CHAT_UI.avatarFallbackMd, CHAT_UI.avatarRing)}>
                   {computeInitials(displayName)}
                 </div>
               )}
               <span
                 className={cn(
-                  "absolute bottom-0 right-0 h-2.5 w-2.5 rounded-full border-2 border-white",
-                  isConnected ? "bg-green-400" : "bg-slate-300"
+                  CHAT_UI.statusDot,
+                  CHAT_UI.statusDotSm,
+                  isConnected ? CHAT_UI.onlineDot : CHAT_UI.offlineDot,
                 )}
               />
             </div>
             <div className="flex min-w-0 flex-col">
-              <p className="truncate text-sm font-semibold leading-tight text-slate-800">{displayName}</p>
-              <p className="truncate text-xs leading-none text-slate-400">
+              <p className={CHAT_UI.partnerTitle}>{displayName}</p>
+              <p className={CHAT_UI.partnerStatus}>
                 {isConnected ? VI.common.status.online : VI.common.status.offline}
               </p>
             </div>
@@ -327,7 +328,7 @@ export function ChatPopup() {
           <button
             type="button"
             onClick={closeChat}
-            className="ml-2 shrink-0 rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+            className={CHAT_UI.closeIconBtn}
             aria-label="Close chat"
           >
             <X className="h-4 w-4" />
@@ -337,28 +338,28 @@ export function ChatPopup() {
         {/* Message area — flex-1, scrolls independently */}
         <div className="flex-1 overflow-hidden">
           {!activeRoom ? (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
-              <MessageCircle className="h-10 w-10 text-slate-300" />
+            <div className={CHAT_UI.messageEmpty}>
+              <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
               <p className="text-sm font-medium">Select a conversation</p>
-              <p className="text-xs">Choose a chat from the left</p>
+              <p className="text-xs text-muted-foreground">Choose a chat from the left</p>
             </div>
           ) : isLoadingHistory || validMessages.length === 0 ? (
-            <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
+            <div className={CHAT_UI.messageEmpty}>
               {isLoadingHistory ? (
                 <>
-                  <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
+                  <div className={CHAT_UI.spinner} />
                   <p className="text-sm font-medium">Loading...</p>
                 </>
               ) : (
                 <>
-                  <MessageCircle className="h-10 w-10 text-slate-300" />
+                  <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
                   <p className="text-sm font-medium">No messages yet</p>
-                  <p className="text-xs">Say hi to start the conversation!</p>
+                  <p className="text-xs text-muted-foreground">Say hi to start the conversation!</p>
                 </>
               )}
             </div>
           ) : (
-            <div className="flex h-full flex-col overflow-y-auto px-3 py-2">
+            <div className={cn(CHAT_UI.messageScroll, CHAT_UI.messageScrollPad)}>
               {/* Messages anchored to bottom */}
               <div className="mt-auto flex flex-col gap-2">
                 {validMessages.map((msg, idx) => {
@@ -368,34 +369,25 @@ export function ChatPopup() {
                   const prevDateKey = idx > 0 ? getDateKey(validMessages[idx - 1].createdAt) : null
                   const showDateSeparator = idx === 0 || dateKey !== prevDateKey
                   return (
-                    <>
+                    <Fragment key={msg.id}>
                       {showDateSeparator && (
-                        <div key={`date-${dateKey}`} className="my-2 flex items-center gap-2">
-                          <div className="h-px flex-1 bg-slate-200" />
-                          <span className="text-[10px] text-slate-400 font-medium px-2 whitespace-nowrap">
+                        <div className="my-2 flex items-center gap-2">
+                          <div className={CHAT_UI.sepLine} />
+                          <span className={CHAT_UI.dateLabel}>
                             {formatDateSeparator(msg.createdAt)}
                           </span>
-                          <div className="h-px flex-1 bg-slate-200" />
+                          <div className={CHAT_UI.sepLine} />
                         </div>
                       )}
-                      <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
-                        <div
-                          className={cn(
-                            "max-w-[80%] rounded-xl px-2.5 py-1.5 text-sm shadow-sm overflow-hidden",
-                            isMine
-                              ? "rounded-br-sm"
-                              : "rounded-bl-sm"
-                          )}
-                          style={isMine ? { background: "var(--gradient-chat-mine)" } : {}}
-                        >
+                      <div className={cn("flex", isMine ? "justify-end" : "justify-start")}>
+                        <div className={isMine ? CHAT_UI.mineBubble : CHAT_UI.theirBubble}>
                           {(msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http")) ? (() => {
                             const imgSrc = resolveImageUrl(msg.content ?? "")
                             return (
                               <img
                                 src={imgSrc}
                                 alt="Shared image"
-                                className="block max-w-full cursor-pointer object-cover"
-                                style={{ maxHeight: "250px", maxWidth: "200px" }}
+                                className={CHAT_UI.imageInBubble}
                                 onError={(e) => {
                                   e.currentTarget.style.display = "none"
                                 }}
@@ -405,13 +397,13 @@ export function ChatPopup() {
                             <p className="whitespace-pre-wrap wrap-break-word leading-snug">{msg.content}</p>
                           )}
                           {time && (
-                            <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
+                            <p className={cn("mt-0.5 text-[10px]", isMine ? CHAT_UI.timeOnMine : CHAT_UI.timeOnTheirs)}>
                               {time}
                             </p>
                           )}
                         </div>
                       </div>
-                    </>
+                    </Fragment>
                   )
                 })}
                 <div ref={bottomRef} />
@@ -421,7 +413,7 @@ export function ChatPopup() {
         </div>
 
         {/* Footer input — fixed height, always visible */}
-        <div className="flex h-[60px] shrink-0 items-start gap-2 border-t border-slate-200 bg-white px-3 py-2">
+        <div className={CHAT_UI.footerBarPopup}>
           <input
             ref={fileInputRef}
             type="file"
@@ -438,10 +430,10 @@ export function ChatPopup() {
             onClick={() => fileInputRef.current?.click()}
             disabled={!activeRoom || !isConnected || isUploading}
             className={cn(
-              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
+              CHAT_UI.iconBtnSm,
               activeRoom && isConnected && !isUploading
-                ? "text-slate-400 hover:bg-slate-100 hover:text-slate-600"
-                : "text-slate-300"
+                ? CHAT_UI.ghostIconBtn
+                : CHAT_UI.ghostIconDisabled,
             )}
             aria-label="Attach image"
           >
@@ -455,21 +447,16 @@ export function ChatPopup() {
             disabled={!activeRoom || !isConnected}
             rows={1}
             style={{ resize: "none", maxHeight: "6rem" }}
-            className={cn(
-              "max-h-24 flex-1 resize-none overflow-x-hidden overflow-y-auto rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400",
-              "disabled:cursor-not-allowed disabled:opacity-50",
-              "focus:border-pink-300 focus:bg-pink-50/50"
-            )}
+            className={cn(CHAT_UI.textarea, "overflow-x-hidden")}
           />
           <button
             type="button"
             onClick={handleSend}
             disabled={!inputValue.trim() || !activeRoom || !isConnected}
             className={cn(
-              "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-colors",
-              inputValue.trim() && activeRoom && isConnected
-                ? "bg-pink-400 text-white hover:bg-pink-500"
-                : "bg-slate-100 text-slate-300"
+              CHAT_UI.iconBtnSm,
+              CHAT_UI.sendFab,
+              !inputValue.trim() || !activeRoom || !isConnected ? "disabled:pointer-events-none" : "",
             )}
             aria-label="Send"
           >

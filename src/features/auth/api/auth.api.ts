@@ -1,5 +1,11 @@
 import axiosInstance from '@/services/axiosInstance';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../types';
+import type {
+  LoginRequest,
+  LoginResponse,
+  QrGenerateResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from '../types';
 
 /**
  * Login with username/email and password
@@ -59,4 +65,12 @@ export async function changePassword(userId: number, payload: {
   newPassword: string;
 }): Promise<void> {
   await axiosInstance.post<void>(`/api/users/${userId}/change-password`, payload);
+}
+
+/**
+ * GET /api/auth/qr-generate — BE creates sessionId for QR + WebSocket topic.
+ */
+export async function generateQrSession(): Promise<QrGenerateResponse> {
+  const response = await axiosInstance.get<QrGenerateResponse>('/api/auth/qr-generate');
+  return response.data;
 }
