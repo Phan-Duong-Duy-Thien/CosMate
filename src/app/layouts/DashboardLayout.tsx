@@ -101,8 +101,9 @@ export function DashboardLayout({
   const navigate = useNavigate();
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
-  const { userProfile, setUserProfile, tokenBalance, setTokenBalance } = useUserProfile();
+  const { userProfile, setUserProfile } = useUserProfile();
   useChatPopup(); // ensure popup context is initialized
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
   const [tokenLoading, setTokenLoading] = useState(false);
 
   const userId = getUserId();

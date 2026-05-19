@@ -5,11 +5,7 @@ import { Camera, Loader2, Search, Sparkles, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
-import { TokenCostBadge } from "@/shared/components/TokenCostBadge"
-import { TokenPricingModal } from "@/shared/components/TokenPricingModal"
 import { useAISearch, type AISearchResultItem } from "@/features/search/hooks/useAISearch"
-import { useTokenCheck } from "@/shared/hooks/useAiTokenGuard"
-import { useTokenTopUp } from "@/shared/hooks/useTokenTopUp"
 
 interface AISearchBarProps {
   onSearchCompleted?: (results: AISearchResultItem[]) => void
@@ -25,11 +21,6 @@ const promptSuggestions = [
 
 export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
   const { executeSearch, isLoading, fallbackUsed } = useAISearch()
-  const { checkTokens } = useTokenCheck(15)
-  const { loadingMethod, payWithMomo, payWithVnpay, payWithWallet } = useTokenTopUp({
-    onSuccess: () => setPricingOpen(false),
-  })
-  const [pricingOpen, setPricingOpen] = useState(false)
 
   const [keyword, setKeyword] = useState("")
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -71,13 +62,9 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
 
   const handleSubmit = async () => {
     if (!hasEnoughInput) {
-      notification.warning({ message: "Vui lòng nhập text hoặc tải ảnh để tìm kiếm." })
-      return
-    }
-
-    const allowed = await checkTokens()
-    if (!allowed) {
-      setPricingOpen(true)
+      notification.warning({
+        message: "Vui lòng nhập text hoặc tải ảnh để tìm kiếm.",
+      })
       return
     }
 
@@ -105,16 +92,6 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
       <div
         aria-hidden
         className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-cosmate-lavender-surface/50 blur-3xl"
-      />
-
-      <TokenPricingModal
-        open={pricingOpen}
-        role="cosplayer"
-        onCancel={() => setPricingOpen(false)}
-        loadingMethod={loadingMethod}
-        onPayVnpay={(amount) => void payWithVnpay(amount)}
-        onPayMomo={(amount) => void payWithMomo(amount)}
-        onPayWallet={(amount) => void payWithWallet(amount)}
       />
 
       <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,260px)] lg:items-start lg:gap-8">
@@ -177,7 +154,6 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
                 <Camera className="h-5 w-5 shrink-0" aria-hidden />
               )}
               Tìm trang phục bằng AI
-              <TokenCostBadge cost={15} />
             </Button>
 
             <Button
@@ -198,48 +174,50 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
             Ảnh tham chiếu
           </p>
 
-          <div className="relative w-full max-w-[260px]">
-            <Upload
-              accept="image/*"
-              maxCount={1}
-              fileList={uploadList}
-              beforeUpload={() => false}
-              onChange={handleUploadChange}
-              showUploadList={false}
-              disabled={isLoading}
-              className="block w-full [&_.ant-upload]:block [&_.ant-upload]:w-full"
+          <Upload
+            accept="image/*"
+            maxCount={1}
+            fileList={uploadList}
+            beforeUpload={() => false}
+            onChange={handleUploadChange}
+            showUploadList={false}
+            disabled={isLoading}
+            className="block w-full [&_.ant-upload]:block [&_.ant-upload]:w-full"
+          >
+            <div
+              role="button"
+              tabIndex={0}
+              className={cn(
+                "group relative flex aspect-square w-full max-w-[260px] cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-[3px] border-dashed border-indigo-950/35 bg-white shadow-[4px_4px_0_0_rgba(30,27,75,0.15)] transition",
+                "hover:border-cosmate-pink/60 hover:bg-cosmate-soft-pink/20",
+                isLoading && "cursor-not-allowed opacity-60"
+              )}
             >
-              <div
-                className={cn(
-                  "group relative flex aspect-square w-full cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-[3px] border-dashed border-indigo-950/35 bg-white shadow-[4px_4px_0_0_rgba(30,27,75,0.15)] transition",
-                  "hover:border-cosmate-pink/60 hover:bg-cosmate-soft-pink/20",
-                  isLoading && "cursor-not-allowed opacity-60"
-                )}
-              >
-                {previewUrl ? (
-                  <>
-                    <img src={previewUrl} alt="Ảnh tham chiếu đã chọn" className="absolute inset-0 h-full w-full object-cover" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/50 to-transparent opacity-0 transition group-hover:opacity-100" />
-                  </>
-                ) : (
-                  <>
-                    <Camera className="h-10 w-10 text-cosmate-pink" aria-hidden />
-                    <span className="px-2 text-center text-xs font-extrabold text-indigo-950">Tải ảnh cosplay</span>
-                  </>
-                )}
-              </div>
-            </Upload>
-            {previewUrl && (
-              <button
-                type="button"
-                onClick={clearImage}
-                className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white/95 text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.25)] transition hover:bg-rose-50"
-                aria-label="Xóa ảnh đã chọn"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+              {previewUrl ? (
+                <>
+                  <img src={previewUrl} alt="Ảnh tham chiếu đã chọn" className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/50 to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      clearImage()
+                    }}
+                    className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white/95 text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.25)] transition hover:bg-rose-50"
+                    aria-label="Xóa ảnh đã chọn"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-10 w-10 text-cosmate-pink" aria-hidden />
+                  <span className="px-2 text-center text-xs font-extrabold text-indigo-950">Tải ảnh cosplay</span>
+                </>
+              )}
+            </div>
+          </Upload>
 
           <div className="flex min-h-[2.75rem] items-center justify-between gap-2 rounded-xl border-[3px] border-indigo-950/15 bg-cosmate-soft-pink/30 px-3 py-2 text-xs font-semibold text-indigo-950/85">
             <span className="line-clamp-2 break-all">

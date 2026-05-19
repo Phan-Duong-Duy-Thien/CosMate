@@ -3,7 +3,6 @@ import { notification } from "antd"
 import axios from "axios"
 
 import axiosInstance from "@/services/axiosInstance"
-import { isInsufficientTokenError } from "@/shared/utils/tokenErrors"
 
 export interface AISearchRequest {
   files: File[]
@@ -71,10 +70,6 @@ export function useAISearch(): UseAISearchResult {
         setData(fallbackResult)
         notification.warning({ message: OVERLOAD_MESSAGE })
         return fallbackResult
-      }
-
-      if (isInsufficientTokenError(err)) {
-        throw err
       }
 
       setError("Không thể thực hiện tìm kiếm AI.")

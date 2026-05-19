@@ -8,14 +8,11 @@ export interface UserProfileState {
 
 interface UserProfileContextValue {
   userProfile: UserProfileState
-  tokenBalance: number | null
   setUserProfile: (profile: Partial<UserProfileState>) => void
-  setTokenBalance: (balance: number | null) => void
   refreshProfile: () => void
 }
 
 const STORAGE_KEY = "cosmate:userProfile"
-const TOKEN_KEY = "cosmate:tokenBalance"
 
 function getStoredProfile(): UserProfileState {
   try {
@@ -29,29 +26,9 @@ function getStoredProfile(): UserProfileState {
   return { avatarUrl: null, fullName: null }
 }
 
-function getStoredTokenBalance(): number | null {
-  try {
-    const stored = localStorage.getItem(TOKEN_KEY)
-    if (stored === null) return null
-    const parsed = Number(stored)
-    return Number.isFinite(parsed) ? parsed : null
-  } catch {
-    return null
-  }
-}
-
 function storeProfile(profile: UserProfileState): void {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(profile))
-  } catch {
-    // Ignore storage errors
-  }
-}
-
-function storeTokenBalance(balance: number | null): void {
-  try {
-    if (balance === null || !Number.isFinite(balance)) localStorage.removeItem(TOKEN_KEY)
-    else localStorage.setItem(TOKEN_KEY, String(balance))
   } catch {
     // Ignore storage errors
   }
@@ -61,7 +38,6 @@ const UserProfileContext = React.createContext<UserProfileContextValue | null>(n
 
 export function UserProfileProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfileState] = React.useState<UserProfileState>(() => getStoredProfile())
-  const [tokenBalance, setTokenBalanceState] = React.useState<number | null>(() => getStoredTokenBalance())
 
   const setUserProfile = React.useCallback((profile: Partial<UserProfileState>) => {
     setUserProfileState((prev) => {
@@ -71,33 +47,26 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     })
   }, [])
 
-  const setTokenBalance = React.useCallback((balance: number | ((prev: number | null) => number | null)) => {
-    setTokenBalanceState((prev) => {
-      const next = typeof balance === "function" ? balance(prev) : balance
-      storeTokenBalance(next)
-      return next
-    })
-  }, [])
-
+  // Function to refresh profile - called after login
   const refreshProfile = React.useCallback(() => {
+    // Clear stored profile on login so it will be fetched fresh
     if (isAuthenticated()) {
       setUserProfileState({ avatarUrl: null, fullName: null })
-      setTokenBalanceState(null)
       localStorage.removeItem(STORAGE_KEY)
-      localStorage.removeItem(TOKEN_KEY)
+      // Dispatch event to trigger profile fetch in components
       window.dispatchEvent(new Event("profile:refresh"))
     }
   }, [])
 
+  // Listen for auth changes to refresh profile
   React.useEffect(() => {
     const handleAuthChange = () => {
       if (isAuthenticated()) {
         refreshProfile()
       } else {
+        // User logged out, clear profile
         setUserProfileState({ avatarUrl: null, fullName: null })
-        setTokenBalanceState(null)
         localStorage.removeItem(STORAGE_KEY)
-        localStorage.removeItem(TOKEN_KEY)
       }
     }
 
@@ -106,7 +75,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
   }, [refreshProfile])
 
   return (
-    <UserProfileContext.Provider value={{ userProfile, tokenBalance, setUserProfile, setTokenBalance, refreshProfile }}>
+    <UserProfileContext.Provider value={{ userProfile, setUserProfile, refreshProfile }}>
       {children}
     </UserProfileContext.Provider>
   )

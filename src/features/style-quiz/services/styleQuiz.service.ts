@@ -1,7 +1,6 @@
 import axios from "axios"
 
 import axiosInstance from "@/services/axiosInstance"
-import { isInsufficientTokenError } from "@/shared/utils/tokenErrors"
 import type {
   ApiResponse,
   CustomAnswerRequest,
@@ -46,9 +45,6 @@ export async function recommendByStyle(payload: RecommendationRequestPayload): P
 }
 
 export function mapQuizError(error: unknown): string {
-  if (isInsufficientTokenError(error)) {
-    return "Bạn không đủ xu Token để làm bài quiz này. Vui lòng nạp thêm để tiếp tục!"
-  }
   if (axios.isAxiosError(error)) {
     const status = error.response?.status
     if (status === 429 || status === 503) {
