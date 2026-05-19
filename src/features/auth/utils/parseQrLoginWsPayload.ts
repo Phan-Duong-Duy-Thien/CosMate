@@ -1,7 +1,7 @@
 import type { LoginResult } from "../types"
 
 /**
- * BE may send JSON LoginResult or nested { token, tokenType } / { accessToken }.
+ * BE payload: { "event": "qr_approved", "accessToken": "<jwt>" }
  */
 export function parseQrLoginWsPayload(body: string): LoginResult | null {
   const trimmed = body.trim()
@@ -9,6 +9,16 @@ export function parseQrLoginWsPayload(body: string): LoginResult | null {
 
   try {
     const data = JSON.parse(trimmed) as Record<string, unknown>
+
+    if (data.event === "qr_approved" || data.event === "QR_APPROVED") {
+      const accessToken =
+        (typeof data.accessToken === "string" && data.accessToken) ||
+        (typeof data.token === "string" && data.token) ||
+        null
+      if (accessToken) {
+        return { token: accessToken, tokenType: "Bearer" }
+      }
+    }
 
     const nested = data.result as LoginResult | undefined
     if (nested?.token) {
@@ -27,7 +37,6 @@ export function parseQrLoginWsPayload(body: string): LoginResult | null {
       }
     }
   } catch {
-    // Raw JWT string
     if (trimmed.split(".").length === 3) {
       return { token: trimmed, tokenType: "Bearer" }
     }

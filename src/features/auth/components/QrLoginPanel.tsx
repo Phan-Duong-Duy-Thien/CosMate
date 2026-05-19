@@ -19,6 +19,7 @@ export function QrLoginPanel({ active, onApproved }: QrLoginPanelProps) {
     sessionError,
     refreshSession,
     isWaiting,
+    showWaitHint,
   } = useQrLoginSession({ active, onApproved })
 
   const isExpired = status === "EXPIRED" || status === "CANCELLED"
@@ -62,6 +63,12 @@ export function QrLoginPanel({ active, onApproved }: QrLoginPanelProps) {
         {isWaiting && (
           <p className="text-center text-xs font-bold text-indigo-800/80">
             {VI.auth.qrLogin.waiting(countdownLabel)}
+          </p>
+        )}
+
+        {showWaitHint && isWaiting && !sessionError && (
+          <p className="text-center text-xs font-semibold text-amber-800">
+            {VI.auth.qrLogin.waitHint}
           </p>
         )}
 

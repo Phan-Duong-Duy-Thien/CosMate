@@ -432,8 +432,12 @@ export const VI = {
       waiting: (time: string) => `Đang chờ xác nhận trên app… (${time})`,
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
+      waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
       messages: {
+        sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
+        wsConnectFailed:
+          "Không nhận được xác nhận từ máy chủ. Nhờ BE mở WebSocket cho QR (token=sessionId, topic /topic/qr/{sessionId}).",
       },
     },
 

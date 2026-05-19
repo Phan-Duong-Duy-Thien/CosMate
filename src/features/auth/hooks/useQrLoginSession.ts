@@ -1,21 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { message } from "antd"
 
+import { generateQrSession } from "../api/auth.api"
 import { buildQrLoginUrl } from "../constants/qrLogin"
 import { subscribeQrLoginSession } from "../services/qrLoginSocket.service"
 import { saveAuth, getRoles } from "../services/tokenStorage"
 import { parseQrLoginWsPayload } from "../utils/parseQrLoginWsPayload"
 import type { QrLoginSessionStatus } from "../types"
+import { extractApiErrorMessage } from "@/shared/utils/apiError"
 import { VI } from "@/shared/i18n/vi"
 
-const SESSION_TTL_MS = 2 * 60 * 1000
-
-function createLocalSessionToken(): string {
-  if (typeof crypto !== "undefined" && crypto.randomUUID) {
-    return crypto.randomUUID()
-  }
-  return `qr-login-${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
+/** Align with BE Tokens.expires_at (qr-generate = now + 10 min) */
+const SESSION_TTL_MS = 10 * 60 * 1000
+const WAIT_HINT_MS = 2 * 60 * 1000
 
 function formatCountdown(remainingSec: number): string {
   const sec = Math.max(0, remainingSec)
@@ -30,17 +27,21 @@ type UseQrLoginSessionOptions = {
 }
 
 /**
- * QR login: web generates sessionToken → STOMP `/topic/qr-login/{sessionToken}` (no poll).
+ * QR login: GET /api/auth/qr-generate → QR + WS `/topic/qr/{sessionId}`.
+ * Mobile: POST /api/auth/qr-approve → BE emits { event: "qr_approved", accessToken }.
  */
 export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptions) {
-  const [loginSessionToken, setLoginSessionToken] = useState("")
+  const [sessionId, setSessionId] = useState("")
   const [qrValue, setQrValue] = useState("")
   const [status, setStatus] = useState<QrLoginSessionStatus | "IDLE">("IDLE")
   const [expiresAtMs, setExpiresAtMs] = useState(0)
   const [countdownSec, setCountdownSec] = useState(0)
   const [sessionError, setSessionError] = useState("")
+  const [sessionLoading, setSessionLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
-  const tokenRef = useRef("")
+  const [wsConnectFailed, setWsConnectFailed] = useState(false)
+  const [showWaitHint, setShowWaitHint] = useState(false)
+  const sessionIdRef = useRef("")
   const approvedRef = useRef(false)
   const onApprovedRef = useRef(onApproved)
   onApprovedRef.current = onApproved
@@ -61,41 +62,71 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
     onApprovedRef.current?.(getRoles())
   }, [])
 
-  const applyLocalSession = useCallback(() => {
+  const startSession = useCallback(async () => {
     approvedRef.current = false
+    setSessionLoading(true)
     setSessionError("")
+    setWsConnectFailed(false)
+    setShowWaitHint(false)
+    setStatus("IDLE")
 
-    const token = createLocalSessionToken()
-    const expiresMs = Date.now() + SESSION_TTL_MS
+    try {
+      const response = await generateQrSession()
+      if (response.code !== 0 || !response.result?.sessionId) {
+        setSessionError(response.message || VI.auth.qrLogin.messages.sessionFailed)
+        return
+      }
 
-    tokenRef.current = token
-    setLoginSessionToken(token)
-    setQrValue(buildQrLoginUrl(token))
-    setExpiresAtMs(expiresMs)
-    setCountdownSec(Math.ceil(SESSION_TTL_MS / 1000))
-    setStatus("PENDING")
+      const id = response.result.sessionId
+      const expiresMs = Date.now() + SESSION_TTL_MS
+
+      sessionIdRef.current = id
+      setSessionId(id)
+      setQrValue(buildQrLoginUrl(id))
+      setExpiresAtMs(expiresMs)
+      setCountdownSec(Math.ceil(SESSION_TTL_MS / 1000))
+      setStatus("PENDING")
+    } catch (err) {
+      setSessionError(
+        extractApiErrorMessage(err, VI.auth.qrLogin.messages.sessionFailed)
+      )
+    } finally {
+      setSessionLoading(false)
+    }
   }, [])
 
   const refreshSession = useCallback(() => {
-    applyLocalSession()
-  }, [applyLocalSession])
+    void startSession()
+  }, [startSession])
 
   useEffect(() => {
     if (!active) {
-      tokenRef.current = ""
+      sessionIdRef.current = ""
       approvedRef.current = false
-      setLoginSessionToken("")
+      setSessionId("")
       setQrValue("")
       setExpiresAtMs(0)
       setCountdownSec(0)
       setStatus("IDLE")
       setSessionError("")
+      setWsConnectFailed(false)
+      setShowWaitHint(false)
       setIsListening(false)
       return
     }
 
-    applyLocalSession()
-  }, [active, applyLocalSession])
+    void startSession()
+  }, [active, startSession])
+
+  useEffect(() => {
+    if (!active || status !== "PENDING" || !sessionId) {
+      setShowWaitHint(false)
+      return
+    }
+
+    const id = setTimeout(() => setShowWaitHint(true), WAIT_HINT_MS)
+    return () => clearTimeout(id)
+  }, [active, status, sessionId])
 
   useEffect(() => {
     if (!active || !expiresAtMs) return
@@ -114,30 +145,46 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
   }, [active, expiresAtMs, status])
 
   useEffect(() => {
-    if (!active || !loginSessionToken || status !== "PENDING") {
+    if (!active || !sessionId || status !== "PENDING") {
       setIsListening(false)
       return
     }
 
     setIsListening(true)
-    const unsubscribe = subscribeQrLoginSession(loginSessionToken, (body) => {
-      handleWsMessage(body)
-    })
+    setWsConnectFailed(false)
+
+    let connectErrorTimer: ReturnType<typeof setTimeout> | undefined
+
+    const unsubscribe = subscribeQrLoginSession(
+      sessionId,
+      (body) => {
+        handleWsMessage(body)
+      },
+      () => {
+        connectErrorTimer = setTimeout(() => {
+          setWsConnectFailed(true)
+          setSessionError(VI.auth.qrLogin.messages.wsConnectFailed)
+        }, 4000)
+      }
+    )
 
     return () => {
+      clearTimeout(connectErrorTimer)
       unsubscribe()
       setIsListening(false)
     }
-  }, [active, loginSessionToken, status, handleWsMessage])
+  }, [active, sessionId, status, handleWsMessage])
 
   return {
     qrValue,
-    sessionLoading: false,
+    sessionLoading,
     status,
     countdownLabel: formatCountdown(countdownSec),
     sessionError,
     refreshSession,
-    isWaiting: status === "PENDING" && !!qrValue,
+    isWaiting: status === "PENDING" && !!qrValue && !sessionLoading,
     isListening,
+    wsConnectFailed,
+    showWaitHint,
   }
 }

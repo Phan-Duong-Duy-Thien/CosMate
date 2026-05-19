@@ -33,32 +33,15 @@ export type LoginResponse = {
 
 export type QrLoginSessionStatus = "PENDING" | "APPROVED" | "EXPIRED" | "CANCELLED"
 
-export type QrLoginSessionResult = {
-  loginSessionToken?: string
-  sessionToken?: string
-  expiresAt?: string
-  expiresInSeconds?: number
+/** GET /api/auth/qr-generate */
+export type QrGenerateResult = {
+  sessionId: string
 }
 
-export type QrLoginSessionResponse = {
+export type QrGenerateResponse = {
   code: number
   message: string
-  result: QrLoginSessionResult
-}
-
-export type QrLoginStatusResult = {
-  status: QrLoginSessionStatus
-  /** When APPROVED — same shape as email login */
-  token?: string
-  accessToken?: string
-  tokenType?: string
-  result?: LoginResult
-}
-
-export type QrLoginStatusResponse = {
-  code: number
-  message: string
-  result: QrLoginStatusResult
+  result: QrGenerateResult
 }
 
 // JWT Payload Type
