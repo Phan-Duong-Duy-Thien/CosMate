@@ -2,6 +2,7 @@ import { ScanSearch, Sparkles } from "lucide-react"
 
 import quizPromoImage from "@/assets/quiz1.jpg"
 import imageSearchPromoImage from "@/assets/anh1.jpg"
+import { TokenCostBadge } from "@/shared/components/TokenCostBadge"
 import { cn } from "@/lib/utils"
 
 export interface HomeAiPromoCardsProps {
@@ -42,9 +43,12 @@ export function HomeAiPromoCards({
           <p className="max-w-[18rem] text-base font-extrabold leading-snug text-white drop-shadow md:text-lg">
             Bạn là nhân vật nào?
           </p>
-          <span className="inline-flex w-fit items-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-4 py-2 text-sm font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition group-hover:brightness-110">
-            Làm quiz ngay
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex w-fit items-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-4 py-2 text-sm font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition group-hover:brightness-110">
+              Làm quiz ngay
+            </span>
+            <TokenCostBadge cost={30} className="shadow-[3px_3px_0_0_rgba(255,255,255,0.18)]" />
+          </div>
         </div>
       </button>
 
@@ -69,9 +73,12 @@ export function HomeAiPromoCards({
           <p className="max-w-[18rem] text-base font-extrabold leading-snug text-white drop-shadow md:text-lg">
             Tìm trang phục qua ảnh
           </p>
-          <span className="inline-flex w-fit items-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-400 to-teal-500 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition group-hover:brightness-105">
-            Tìm bằng hình ảnh
-          </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="inline-flex w-fit items-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-400 to-teal-500 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition group-hover:brightness-105">
+              Tìm bằng hình ảnh
+            </span>
+            <TokenCostBadge cost={15} className="shadow-[3px_3px_0_0_rgba(255,255,255,0.18)]" />
+          </div>
         </div>
       </button>
     </section>

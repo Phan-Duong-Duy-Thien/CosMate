@@ -1,6 +1,7 @@
 import axios from "axios"
 
 import axiosInstance from "@/services/axiosInstance"
+import { isInsufficientTokenError } from "@/shared/utils/tokenErrors"
 import type { PoseBattleApiResponse, PoseHistoryItem, PoseScoringResult } from "../types"
 
 export async function scorePose(payload: {
@@ -66,6 +67,10 @@ export function mapPoseError(error: unknown): string {
 
     if (errorText.includes('NOT_COSPLAY') || errorText.includes('AI_CONTENT_BLOCKED')) {
       return 'Bé Mèo không nhận diện được người/trang phục cosplay trong ảnh. Vui lòng thử lại ảnh khác nhé!'
+    }
+
+    if (isInsufficientTokenError(error)) {
+      return "Bạn không đủ xu Token để chấm điểm Pose. Vui lòng nạp thêm để tiếp tục!"
     }
 
     if (error.response?.status === 401 || error.response?.status === 403) {

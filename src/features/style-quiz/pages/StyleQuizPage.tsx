@@ -4,6 +4,9 @@ import { useNavigate } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
+import { TokenPricingModal } from "@/shared/components/TokenPricingModal"
+import { useTokenCheck } from "@/shared/hooks/useAiTokenGuard"
+import { useTokenTopUp } from "@/shared/hooks/useTokenTopUp"
 import ResultCostumeGrid from "../components/ResultCostumeGrid"
 import { useStyleQuiz } from "../hooks/useStyleQuiz"
 
@@ -57,6 +60,9 @@ const QUIZ_GRADIENT_CTA_CLASSNAME =
 export default function StyleQuizPage() {
   const navigate = useNavigate()
   const quiz = useStyleQuiz()
+  const { checkTokens } = useTokenCheck(30)
+  const [pricingOpen, setPricingOpen] = useState(false)
+  const { loadingMethod, payWithMomo, payWithVnpay, payWithWallet } = useTokenTopUp({ onSuccess: () => setPricingOpen(false) })
 
   const [sortBy, setSortBy] = useState<SortValue>("similarity")
   const [nameFilter, setNameFilter] = useState("")
@@ -144,7 +150,7 @@ export default function StyleQuizPage() {
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cosmate-pink">Checkpoint 70%</p>
           <h2 className="text-2xl font-semibold leading-snug text-foreground md:text-3xl">Hệ thống đã quét được <span className="font-extrabold text-cosmate-pink">70%</span> bản ngã của bạn và xếp bạn vào nhóm <span className="font-extrabold text-cosmate-pink">{quiz.archetypeProfile.name}</span>. Bạn muốn xem kết quả ngay hay test thêm 7 câu để phân tích chi tiết <span className="font-extrabold text-cosmate-pink">100%</span>?</h2>
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={quiz.viewResultNow} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}>
+            <button type="button" onClick={async () => { const allowed = await checkTokens(); if (!allowed) { setPricingOpen(true); return } await quiz.viewResultNow() }} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}>
               Xem kết quả ngay
             </button>
             <button type="button" onClick={quiz.continueDeepAnalysis} className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}>
@@ -161,6 +167,8 @@ export default function StyleQuizPage() {
       )}
 
       {quiz.screen === "loading" && <AILoadingMascot type="quiz" />}
+
+      <TokenPricingModal open={pricingOpen} role="cosplayer" loadingMethod={loadingMethod} onCancel={() => setPricingOpen(false)} onPayVnpay={(amount) => void payWithVnpay(amount)} onPayMomo={(amount) => void payWithMomo(amount)} onPayWallet={(amount) => void payWithWallet(amount)} />
 
       {quiz.screen === "result" && quiz.results.length > 0 && (
         <div className="grid gap-6 lg:grid-cols-2">

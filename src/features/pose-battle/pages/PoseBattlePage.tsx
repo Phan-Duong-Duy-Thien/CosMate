@@ -6,6 +6,10 @@ import { ClockCircleOutlined, DeleteOutlined, ShareAltOutlined, UploadOutlined }
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
+import { TokenCostBadge } from "@/shared/components/TokenCostBadge"
+import { TokenPricingModal } from "@/shared/components/TokenPricingModal"
+import { useTokenCheck } from "@/shared/hooks/useAiTokenGuard"
+import { useTokenTopUp } from "@/shared/hooks/useTokenTopUp"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 import type { PoseHistoryItem } from "../types"
@@ -50,6 +54,9 @@ export default function PoseBattlePage() {
     closeResult,
     removeHistoryItem,
   } = usePoseBattle()
+  const { checkTokens } = useTokenCheck(20)
+  const [pricingOpen, setPricingOpen] = useState(false)
+  const { loadingMethod, payWithMomo, payWithVnpay, payWithWallet } = useTokenTopUp({ onSuccess: () => setPricingOpen(false) })
 
   const [historyOverlayResult, setHistoryOverlayResult] = useState<PoseHistoryItem | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
@@ -99,7 +106,7 @@ export default function PoseBattlePage() {
 
       <div className="sticky top-[72px] z-20 grid gap-4 rounded-[2rem] border-[3px] border-indigo-950/90 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-3 shadow-[10px_10px_0px_#312e81] backdrop-blur-sm lg:grid-cols-2">
         <Card className="rounded-[1.75rem] border-[3px] border-indigo-950 p-4 shadow-[8px_8px_0px_#f9a8d4]">
-          <div className="mb-3 inline-flex rounded-full border-2 border-indigo-950 bg-fuchsia-200 px-3 py-1 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81]">
+          <div className="mb-3 inline-flex items-center gap-2 rounded-full border-2 border-indigo-950 bg-fuchsia-200 px-3 py-1 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81]">
             Ảnh gốc (Reference)
           </div>
 
@@ -143,11 +150,19 @@ export default function PoseBattlePage() {
             <h2 className="text-base font-extrabold text-indigo-950">Ảnh người dùng upload</h2>
             <button
               type="button"
-              onClick={submit}
+              onClick={async () => {
+                const allowed = await checkTokens()
+                if (!allowed) {
+                  setPricingOpen(true)
+                  return
+                }
+                await submit()
+              }}
               disabled={loading}
               className="group relative rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-r from-fuchsia-200 via-pink-200 to-amber-200 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81] transition-all duration-300 hover:-translate-y-0.5 hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Đang chấm...' : 'Chấm điểm'}
+              {loading ? "Đang chấm..." : "Chấm điểm"}
+              <TokenCostBadge cost={20} className="ml-2" />
             </button>
           </div>
 
@@ -258,9 +273,9 @@ export default function PoseBattlePage() {
                                 const shareUrl = `${window.location.origin}/pose-battle/${item.id}`
                                 try {
                                   await navigator.clipboard.writeText(shareUrl)
-                                  notification.success({ message: 'Đã copy link chia sẻ!' })
+                                  notification.success({ message: "Đã copy link chia sẻ!" })
                                 } catch {
-                                  notification.error({ message: 'Không thể copy link chia sẻ.' })
+                                  notification.error({ message: "Không thể copy link chia sẻ." })
                                 }
                               }}
                             >
@@ -312,6 +327,16 @@ export default function PoseBattlePage() {
       {loading && <AILoadingMascot type="pose" />}
 
       {result && <PoseResultOverlay result={result} onClose={closeResult} />}
+
+      <TokenPricingModal
+        open={pricingOpen}
+        role="cosplayer"
+        loadingMethod={loadingMethod}
+        onCancel={() => setPricingOpen(false)}
+        onPayVnpay={(amount) => void payWithVnpay(amount)}
+        onPayMomo={(amount) => void payWithMomo(amount)}
+        onPayWallet={(amount) => void payWithWallet(amount)}
+      />
 
       {historyOverlayResult && (
         <PoseResultOverlay
