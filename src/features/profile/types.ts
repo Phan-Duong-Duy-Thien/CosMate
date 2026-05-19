@@ -115,12 +115,12 @@ export interface AiTokenPlan {
   isActive: boolean
 }
 
-export type TokenPaymentMethod = "VNPAY" | "MOMO"
+export type TokenPaymentMethod = "VNPAY" | "MOMO" | "WALLET"
 
 export interface InitiateAiTokenPurchaseParams {
   planId: number
   paymentMethod: TokenPaymentMethod
-  returnUrl: string
+  returnUrl?: string
   isMobile?: boolean
 }
 

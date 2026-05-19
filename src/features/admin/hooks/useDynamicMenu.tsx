@@ -8,6 +8,7 @@ import {
   Folder,
   Menu as MenuIcon,
   CreditCard,
+  Coins,
 } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
@@ -43,6 +44,9 @@ const getIconComponent = (iconName?: string): LucideIcon => {
     case 'subscription':
     case 'credit-card':
     case 'creditcard': return CreditCard;
+    case 'coins':
+    case 'token':
+    case 'ai-token': return Coins;
     default: return Folder;
   }
 };

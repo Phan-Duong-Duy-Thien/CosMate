@@ -39,6 +39,12 @@ export const staffSidebarItems: StaffSidebarItem[] = [
     path: '/staff/ai-token-plans',
   },
   {
+    key: 'aiTokenPurchases',
+    label: VI.staff.sidebar.aiTokenPurchases,
+    icon: Coins,
+    path: '/staff/ai-token-purchases',
+  },
+  {
     key: 'bookings',
     label: VI.staff.sidebar.bookings,
     icon: CalendarDays,

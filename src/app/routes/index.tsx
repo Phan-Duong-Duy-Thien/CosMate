@@ -49,6 +49,7 @@ import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
 import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
+import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -76,6 +77,7 @@ import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
 import StaffPlaceholderPage from "@/features/staff/pages/StaffPlaceholderPage"
 import StaffAiTokenPlansPage from "@/features/staff-token/pages/StaffAiTokenPlansPage"
+import StaffAiTokenPurchasesPage from "@/features/staff-token/pages/StaffAiTokenPurchasesPage"
 import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
@@ -128,6 +130,7 @@ export default function AppRoutes() {
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
+          <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
           <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
@@ -190,6 +193,7 @@ export default function AppRoutes() {
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
           <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
+          <Route path="/staff/ai-token-purchases" element={<StaffAiTokenPurchasesPage />} />
           <Route path="/staff/bookings" element={<StaffPlaceholderPage title={VI.staff.bookings.title} />} />
           <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
           <Route path="/staff/reports" element={<StaffPlaceholderPage title={VI.staff.sidebar.reports} />} />

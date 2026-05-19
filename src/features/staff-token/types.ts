@@ -20,3 +20,17 @@ export interface CreateAiTokenPlanRequest {
 }
 
 export type UpdateAiTokenPlanRequest = CreateAiTokenPlanRequest;
+
+/**
+ * AI token purchase from GET /api/ai-token-purchases
+ */
+export interface AiTokenPurchase {
+  id: number;
+  userId: number;
+  subscriptionId: number;
+  transactionId: number;
+  priceAtPurchase: number;
+  tokensAdded: number;
+  purchaseDate: string;
+  status: string;
+}

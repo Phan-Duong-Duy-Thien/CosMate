@@ -15,6 +15,7 @@ const routeOptions = [
     { label: '/admin/characters (Quản lý Nhân vật)', value: '/admin/characters' },
     { label: '/admin/audit-logs (Nhật ký hệ thống)', value: '/admin/audit-logs' },
     { label: '/admin/subscription-plans (Gói đăng ký)', value: '/admin/subscription-plans' },
+    { label: '/admin/ai-token-purchases (Lịch sử mua AI Token)', value: '/admin/ai-token-purchases' },
     { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' },
   ]},
 ];
@@ -28,6 +29,7 @@ const iconOptions = [
   { label: '👕 Trang phục', value: 'costumes' },
   { label: '📈 Báo cáo', value: 'reports' },
   { label: '💳 Gói đăng ký', value: 'subscription' },
+  { label: '🪙 Token / Lịch sử mua', value: 'coins' },
 ];
 
 export default function AdminMenusPage() {

@@ -181,6 +181,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: VI.common.breadcrumb.users || 'Quản lý người dùng' },
       ]);
+    } else if (path === '/admin/ai-token-purchases') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: VI.admin.aiTokenPurchases.title },
+      ]);
     } else if (path === '/admin/profile') {
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
@@ -386,6 +391,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.tokenPlans.title },
+      ]);
+    } else if (path === '/staff/ai-token-purchases') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.tokenPurchases.title },
       ]);
     } else if (path === '/staff/bookings') {
       setItems([

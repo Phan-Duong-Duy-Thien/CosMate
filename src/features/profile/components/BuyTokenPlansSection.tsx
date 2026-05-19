@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Table, Spin, Empty, Alert } from 'antd';
 import type { TableProps } from 'antd';
-import { Check } from 'lucide-react';
+import { Check, Wallet } from 'lucide-react';
 import { PaymentBrandLogo } from '@/shared/components/payment/PaymentBrandLogo';
 import { Button } from '@/shared/components/Button';
 import { cn } from '@/lib/utils';
@@ -9,6 +10,7 @@ import { VI } from '@/shared/i18n/vi';
 import { PROFILE_MODAL_UI } from '../constants/profileUi';
 import { useAiTokenPlansCatalog } from '../hooks/useAiTokenPlansCatalog';
 import { usePurchaseAiToken } from '../hooks/usePurchaseAiToken';
+import { useWallet } from '../hooks/useWallet';
 import type { AiTokenPlan, TokenPaymentMethod } from '../types';
 
 const formatVnd = (value: number) =>
@@ -18,14 +20,26 @@ const formatVnd = (value: number) =>
     maximumFractionDigits: 0,
   }).format(value);
 
-const PAYMENT_METHODS: {
+type PaymentMethodOption = {
   value: TokenPaymentMethod;
   label: string;
   desc: string;
   color: string;
   bgColor: string;
   logoWrapClass: string;
-}[] = [
+  isWallet?: boolean;
+};
+
+const PAYMENT_METHODS: PaymentMethodOption[] = [
+  {
+    value: 'WALLET',
+    label: VI.profile.token.walletPay,
+    desc: VI.profile.token.walletPayDesc,
+    color: 'text-amber-700',
+    bgColor: 'bg-amber-50/90',
+    logoWrapClass: 'border-amber-300/50 bg-white',
+    isWallet: true,
+  },
   {
     value: 'MOMO',
     label: VI.wallet.momo,
@@ -45,13 +59,25 @@ const PAYMENT_METHODS: {
 ];
 
 export function BuyTokenPlansSection() {
+  const navigate = useNavigate();
   const { plans, loading, error } = useAiTokenPlansCatalog();
   const { purchase, purchasingPlanId } = usePurchaseAiToken();
+  const { walletInfo, loadingWallet } = useWallet();
   const [paymentMethod, setPaymentMethod] = useState<TokenPaymentMethod | null>(null);
 
-  const handleBuy = (planId: number) => {
+  const walletBalance = walletInfo?.balance ?? null;
+
+  const isWalletInsufficientForPlan = useMemo(() => {
+    return (planPrice: number) =>
+      paymentMethod === 'WALLET' &&
+      walletBalance !== null &&
+      walletBalance < planPrice;
+  }, [paymentMethod, walletBalance]);
+
+  const handleBuy = (plan: AiTokenPlan) => {
     if (!paymentMethod) return;
-    void purchase(planId, paymentMethod);
+    if (isWalletInsufficientForPlan(plan.price)) return;
+    void purchase(plan.id, paymentMethod);
   };
 
   const columns: TableProps<AiTokenPlan>['columns'] = [
@@ -90,13 +116,19 @@ export function BuyTokenPlansSection() {
       align: 'center',
       render: (_: unknown, record: AiTokenPlan) => {
         const isLoading = purchasingPlanId === record.id;
+        const insufficient = isWalletInsufficientForPlan(record.price);
         return (
           <Button
             type="button"
             size="sm"
             className={PROFILE_MODAL_UI.btnPrimary}
-            disabled={!paymentMethod || isLoading || purchasingPlanId !== null}
-            onClick={() => handleBuy(record.id)}
+            disabled={
+              !paymentMethod ||
+              isLoading ||
+              purchasingPlanId !== null ||
+              insufficient
+            }
+            onClick={() => handleBuy(record)}
           >
             {isLoading ? '...' : VI.profile.token.buy}
           </Button>
@@ -111,7 +143,7 @@ export function BuyTokenPlansSection() {
 
       <section className={PROFILE_MODAL_UI.section}>
         <p className={PROFILE_MODAL_UI.sectionTitle}>{VI.profile.token.selectPayment}</p>
-        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+        <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {PAYMENT_METHODS.map((method) => {
             const selected = paymentMethod === method.value;
             return (
@@ -138,7 +170,11 @@ export function BuyTokenPlansSection() {
                     selected ? method.logoWrapClass : 'border-indigo-950/15 bg-white'
                   )}
                 >
-                  <PaymentBrandLogo brand={method.value} className="h-6 max-w-[4.25rem]" />
+                  {method.isWallet ? (
+                    <Wallet className="h-5 w-5 text-amber-600" aria-hidden />
+                  ) : (
+                    <PaymentBrandLogo brand={method.value} className="h-6 max-w-[4.25rem]" />
+                  )}
                 </span>
                 <span className="min-w-0 flex-1">
                   <span
@@ -163,6 +199,30 @@ export function BuyTokenPlansSection() {
             {VI.wallet.selectPaymentMethod}
           </p>
         )}
+
+        {paymentMethod === 'WALLET' && (
+          <div className="mt-4">
+            {loadingWallet ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+                <div className="mx-auto h-4 w-4 animate-spin rounded-full border-2 border-pink-300 border-t-pink-500" />
+              </div>
+            ) : walletBalance !== null && walletBalance >= 0 ? (
+              <div className="rounded-xl border-[2px] border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
+                    <Wallet className="h-5 w-5 text-green-700" aria-hidden />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs text-slate-500">
+                      {VI.wallet.checkoutValidation.payWithWalletNote}
+                    </p>
+                    <p className="text-lg font-bold text-green-700">{formatVnd(walletBalance)}</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        )}
       </section>
 
       {error ? <Alert type="error" message={error} showIcon /> : null}
@@ -185,7 +245,37 @@ export function BuyTokenPlansSection() {
           }}
         />
       </Spin>
+
+      {paymentMethod === 'WALLET' &&
+        plans.some((p) => isWalletInsufficientForPlan(p.price)) &&
+        walletBalance !== null && (
+          <div className="rounded-xl border-[2px] border-amber-300 bg-linear-to-r from-amber-50 to-orange-50 p-4">
+            <div className="flex items-start gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-amber-100 text-lg">
+                ⚠️
+              </div>
+              <div className="min-w-0 flex-1 space-y-2">
+                <p className="text-sm font-semibold leading-tight text-amber-800">
+                  {VI.wallet.checkoutValidation.insufficientTitle}
+                </p>
+                <p className="text-xs text-amber-700">
+                  {VI.profile.token.walletInsufficient} — {VI.wallet.checkoutValidation.balanceLabel}:{' '}
+                  <span className="font-semibold">{formatVnd(walletBalance)}</span>
+                </p>
+                <div className="flex justify-end">
+                  <Button
+                    type="button"
+                    size="sm"
+                    className="rounded-xl border-[2px] border-amber-800 bg-amber-500 text-white hover:bg-amber-600"
+                    onClick={() => navigate('/profile/wallet/topup?redirect=/profile/token')}
+                  >
+                    {VI.wallet.checkoutValidation.topUpCta}
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
-
