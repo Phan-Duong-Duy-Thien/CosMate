@@ -6,11 +6,12 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Radio, Row, Select, Upload, message } from 'antd'
-import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
-import type { UploadFile } from 'antd'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
+import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import type { SelectProps, UploadFile } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
+import { createCharacterRequest } from '../../api/characterRequests.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import AILoadingMascot from '@/shared/components/AILoadingMascot'
@@ -44,6 +45,11 @@ interface CharacterOption {
   imageUrl?: string
 }
 
+interface CharacterRequestFormValues {
+  characterName: string
+  animeName: string
+}
+
 interface Props {
   onSubmit: (values: Omit<CreateCostumeBasicPayload, 'providerId'> & { imageFiles: File[] }) => Promise<void>
   loading: boolean
@@ -58,6 +64,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [isCharactersLoading, setIsCharactersLoading] = useState(false)
   const [moderationError, setModerationError] = useState<string | null>(null)
   const [personaId, setPersonaId] = useState<number>(1)
+  const [isCharacterRequestModalOpen, setIsCharacterRequestModalOpen] = useState(false)
+  const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -68,11 +76,17 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     return hasName && hasImages
   }, [watchedImages, watchedName])
 
-  const characterOptions = useMemo(
-    () =>
-      characters.map((character) => ({
+  const selectedCharacterIds = Form.useWatch('characterIds', form) ?? []
+  const isCharacterSelectionFull = selectedCharacterIds.length >= 3
+
+  const characterOptions = useMemo(() => {
+    const grouped = characters.reduce<Record<string, SelectProps['options']>>((acc, character) => {
+      const anime = character.anime?.trim() || 'Khác'
+      if (!acc[anime]) acc[anime] = []
+      acc[anime].push({
         value: character.id,
         title: `${character.name} ${character.anime}`.trim(),
+        disabled: isCharacterSelectionFull && !selectedCharacterIds.includes(character.id),
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Avatar shape="square" size={36} src={character.imageUrl} alt={character.name} style={{ objectFit: 'cover', flexShrink: 0 }}>
@@ -84,9 +98,14 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </div>
           </div>
         ),
-      })),
-    [characters],
-  )
+      })
+      return acc
+    }, {})
+
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, options]) => ({ label, options }))
+  }, [characters, isCharacterSelectionFull, selectedCharacterIds])
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -140,6 +159,26 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       }
     } finally {
       setIsAiGenerating(false)
+    }
+  }
+
+  const handleCharacterRequestSubmit = async () => {
+    try {
+      const values = await characterRequestForm.validateFields()
+      const providerId = Number((form.getFieldValue('providerId') ?? 1) || 1)
+      await createCharacterRequest({
+        characterName: values.characterName.trim(),
+        animeName: values.animeName.trim(),
+        providerId,
+      })
+      message.success('Đã gửi yêu cầu thêm nhân vật mới.')
+      setIsCharacterRequestModalOpen(false)
+      characterRequestForm.resetFields()
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ValidationError') return
+      if (err instanceof Error) {
+        message.error(err.message)
+      }
     }
   }
 
@@ -210,7 +249,11 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <Input placeholder="Nhập tên trang phục" maxLength={120} />
         </Form.Item>
 
-        <Form.Item label="Nhân vật Anime / Game" name="characterIds">
+        <Form.Item
+          label="Nhân vật Anime / Game"
+          name="characterIds"
+          extra={isCharacterSelectionFull ? 'Tối đa 3 nhân vật' : undefined}
+        >
           <Select
             mode="multiple"
             showSearch
@@ -218,12 +261,34 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             placeholder="Chọn nhân vật"
             loading={isCharactersLoading}
             optionFilterProp="title"
+            onDeselect={() => undefined}
+            maxTagCount="responsive"
+            notFoundContent={
+              <Space direction="vertical" size={8} style={{ padding: 12, width: '100%' }}>
+                <div>Không tìm thấy nhân vật phù hợp.</div>
+                <Button
+                  type="dashed"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsCharacterRequestModalOpen(true)}
+                  style={{ width: '100%', borderRadius: 10, fontWeight: 700 }}
+                >
+                  Nhân vật bạn tìm không có? Yêu cầu thêm mới
+                </Button>
+              </Space>
+            }
             filterOption={(input, option) => {
               const keyword = input.toLowerCase().trim()
               if (!keyword) return true
               return String(option?.title ?? '').toLowerCase().includes(keyword)
             }}
             options={characterOptions}
+            onChange={(nextValue) => {
+              if ((nextValue?.length ?? 0) > 3) {
+                message.warning('Tối đa 3 nhân vật')
+                form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
+              }
+            }}
           />
         </Form.Item>
 
@@ -332,6 +397,25 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </Button>
         </Form.Item>
       </Form>
+
+      <Modal
+        title="Yêu cầu thêm nhân vật mới"
+        open={isCharacterRequestModalOpen}
+        onCancel={() => setIsCharacterRequestModalOpen(false)}
+        onOk={handleCharacterRequestSubmit}
+        okText="Gửi Yêu Cầu"
+        cancelText="Hủy"
+        centered
+      >
+        <Form form={characterRequestForm} layout="vertical">
+          <Form.Item name="characterName" label="Tên nhân vật" rules={[{ required: true, message: 'Vui lòng nhập tên nhân vật' }]}>
+            <Input placeholder="Ví dụ: Itachi Uchiha" />
+          </Form.Item>
+          <Form.Item name="animeName" label="Tên Anime/Game" rules={[{ required: true, message: 'Vui lòng nhập tên Anime/Game' }]}>
+            <Input placeholder="Ví dụ: Naruto" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   )
 }
