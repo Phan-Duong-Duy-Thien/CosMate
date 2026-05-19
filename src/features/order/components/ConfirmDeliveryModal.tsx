@@ -30,6 +30,7 @@ export function ConfirmDeliveryModal({
     previewImages,
     isListening,
     sessionLoading,
+    sessionError,
     refreshSession,
     confirmSession,
     isConfirming,
@@ -93,13 +94,19 @@ export function ConfirmDeliveryModal({
             {VI.profile.orders.confirmDeliveryQr.scanTitle}
           </div>
 
-          {sessionLoading || !qrValue ? (
+          {sessionError ? (
+            <p className="text-center text-sm font-semibold text-rose-700">{sessionError}</p>
+          ) : sessionLoading || !qrValue ? (
             <Spin />
           ) : (
             <div className="rounded-xl border-[3px] border-indigo-950 bg-white p-3 shadow-[4px_4px_0_0_rgba(30,27,75,0.15)]">
               <QRCode value={qrValue} size={200} bordered={false} />
             </div>
           )}
+
+          <p className="text-center text-xs font-medium text-indigo-900/60">
+            {VI.profile.orders.confirmDeliveryQr.appLoginHint}
+          </p>
 
           <Button
             type="link"

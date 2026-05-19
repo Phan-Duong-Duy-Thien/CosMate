@@ -1,16 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react"
 import { message } from "antd"
 
+import { generateQrSession } from "@/features/auth/api/auth.api"
 import { fetchWsImageBlobWithRetry, parseImageIdFromWsBody } from "../api/wsImage.api"
 import { buildConfirmDeliveryQrUrl } from "../constants/confirmDeliveryQr"
 import { confirmDeliveryOrder } from "../services/order.service"
 import { subscribeWsImageSession } from "../services/wsImageSession.service"
 import { extractApiErrorMessage } from "@/shared/utils/apiError"
+import { qrPayloadMatchesCurrentApi } from "@/shared/utils/mobileQrUrl"
 import { VI } from "@/shared/i18n/vi"
 
 const MAX_IMAGES = 5
 /** Min interval between creating a new QR for the same order */
 const QR_REFRESH_COOLDOWN_MS = 15 * 60 * 1000
+/** Align with BE qr-generate TTL (~10 min) */
+const SESSION_TTL_MS = 10 * 60 * 1000
 
 type StoredQrSession = {
   sessionToken: string
@@ -42,6 +46,10 @@ function getRefreshCooldownRemainingMs(createdAt: number): number {
   return Math.max(0, QR_REFRESH_COOLDOWN_MS - (Date.now() - createdAt))
 }
 
+function isSessionExpired(createdAt: number): boolean {
+  return Date.now() - createdAt >= SESSION_TTL_MS
+}
+
 function formatCooldownLabel(remainingMs: number): string {
   const totalSec = Math.ceil(remainingMs / 1000)
   const min = Math.floor(totalSec / 60)
@@ -68,7 +76,7 @@ type UseConfirmDeliverySessionOptions = {
 }
 
 /**
- * QR session (sessionToken = BE sessionId) + STOMP `/topic/ws-image/{sessionToken}`
+ * QR session (sessionId from BE qr-generate) + STOMP `/topic/ws-image/{sessionId}`
  * → fetch preview via GET `/ws-image/view/{id}`.
  */
 export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliverySessionOptions) {
@@ -77,14 +85,14 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
   const [previewImages, setPreviewImages] = useState<ConfirmDeliveryPreviewImage[]>([])
   const [isListening, setIsListening] = useState(false)
   const [sessionLoading, setSessionLoading] = useState(false)
+  const [sessionError, setSessionError] = useState("")
   const [qrCreatedAt, setQrCreatedAt] = useState(0)
   const [refreshCooldownMs, setRefreshCooldownMs] = useState(0)
   const [isConfirming, setIsConfirming] = useState(false)
   const previewImagesRef = useRef(previewImages)
-  const sessionTokenRef = useRef(sessionToken)
+  const createSessionFromApiRef = useRef<() => Promise<boolean>>(async () => false)
 
   previewImagesRef.current = previewImages
-  sessionTokenRef.current = sessionToken
 
   const clearPreviewImages = useCallback(() => {
     setPreviewImages((prev) => {
@@ -93,27 +101,60 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
     })
   }, [])
 
-  const applyLocalSession = useCallback((): StoredQrSession => {
-    const token =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `local-${orderId}-${Date.now()}`
-    const createdAt = Date.now()
-    const qr = buildConfirmDeliveryQrUrl(token, orderId)
-    const stored: StoredQrSession = { sessionToken: token, qrValue: qr, createdAt }
-    setSessionToken(token)
-    setQrValue(qr)
-    setQrCreatedAt(createdAt)
-    clearPreviewImages()
-    saveStoredQrSession(orderId, stored)
-    return stored
-  }, [clearPreviewImages, orderId])
+  const applySession = useCallback(
+    (sessionId: string, createdAt: number) => {
+      const qr = buildConfirmDeliveryQrUrl(sessionId, orderId)
+      const stored: StoredQrSession = {
+        sessionToken: sessionId,
+        qrValue: qr,
+        createdAt,
+      }
+      setSessionToken(sessionId)
+      setQrValue(qr)
+      setQrCreatedAt(createdAt)
+      setSessionError("")
+      clearPreviewImages()
+      saveStoredQrSession(orderId, stored)
+      return stored
+    },
+    [clearPreviewImages, orderId]
+  )
 
-  const restoreStoredSession = useCallback((stored: StoredQrSession) => {
-    setSessionToken(stored.sessionToken)
-    setQrValue(stored.qrValue)
-    setQrCreatedAt(stored.createdAt)
-  }, [])
+  const restoreStoredSession = useCallback(
+    (stored: StoredQrSession) => {
+      setSessionToken(stored.sessionToken)
+      setQrValue(stored.qrValue)
+      setQrCreatedAt(stored.createdAt)
+      setSessionError("")
+    },
+    []
+  )
+
+  const createSessionFromApi = useCallback(async (): Promise<boolean> => {
+    setSessionLoading(true)
+    setSessionError("")
+    try {
+      const response = await generateQrSession()
+      if (response.code !== 0 || !response.result?.sessionId) {
+        setSessionError(
+          response.message || VI.profile.orders.confirmDeliveryQr.sessionFailed
+        )
+        return false
+      }
+
+      applySession(response.result.sessionId, Date.now())
+      return true
+    } catch (err) {
+      setSessionError(
+        extractApiErrorMessage(err, VI.profile.orders.confirmDeliveryQr.sessionFailed)
+      )
+      return false
+    } finally {
+      setSessionLoading(false)
+    }
+  }, [applySession])
+
+  createSessionFromApiRef.current = createSessionFromApi
 
   const handleWsImageMessage = useCallback(async (body: string) => {
     const imageId = parseImageIdFromWsBody(body)
@@ -168,13 +209,8 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
       return
     }
 
-    setSessionLoading(true)
-    try {
-      applyLocalSession()
-    } finally {
-      setSessionLoading(false)
-    }
-  }, [applyLocalSession, orderId, qrCreatedAt])
+    void createSessionFromApi()
+  }, [createSessionFromApi, orderId, qrCreatedAt])
 
   useEffect(() => {
     if (!open || !orderId) {
@@ -183,24 +219,31 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
       clearPreviewImages()
       setQrCreatedAt(0)
       setRefreshCooldownMs(0)
+      setSessionError("")
       setIsListening(false)
       return
     }
 
-    setSessionLoading(true)
-    try {
-      const stored = loadStoredQrSession(orderId)
-      const storedRemaining = stored ? getRefreshCooldownRemainingMs(stored.createdAt) : 0
+    void (async () => {
+      setSessionLoading(true)
+      try {
+        const stored = loadStoredQrSession(orderId)
 
-      if (stored && storedRemaining > 0) {
-        restoreStoredSession(stored)
-      } else {
-        applyLocalSession()
+        if (stored && !isSessionExpired(stored.createdAt) && qrPayloadMatchesCurrentApi(stored.qrValue)) {
+          restoreStoredSession(stored)
+          return
+        }
+
+        if (stored) {
+          sessionStorage.removeItem(qrSessionStorageKey(orderId))
+        }
+
+        await createSessionFromApiRef.current()
+      } finally {
+        setSessionLoading(false)
       }
-    } finally {
-      setSessionLoading(false)
-    }
-  }, [open, orderId, applyLocalSession, clearPreviewImages, restoreStoredSession])
+    })()
+  }, [open, orderId, clearPreviewImages, restoreStoredSession])
 
   useEffect(() => {
     if (!open || !qrCreatedAt) {
@@ -213,6 +256,27 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [open, qrCreatedAt])
+
+  useEffect(() => {
+    if (!open || !sessionToken || !qrCreatedAt) {
+      return
+    }
+
+    if (isSessionExpired(qrCreatedAt)) {
+      setSessionError(VI.profile.orders.confirmDeliveryQr.sessionExpired)
+      setSessionToken("")
+      setQrValue("")
+      return
+    }
+
+    const expiryTimer = setTimeout(() => {
+      setSessionError(VI.profile.orders.confirmDeliveryQr.sessionExpired)
+      setSessionToken("")
+      setQrValue("")
+    }, Math.max(0, qrCreatedAt + SESSION_TTL_MS - Date.now()))
+
+    return () => clearTimeout(expiryTimer)
+  }, [open, sessionToken, qrCreatedAt])
 
   useEffect(() => {
     if (!open || !sessionToken) {
@@ -276,7 +340,9 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
     previewImages.length >= 1 &&
     previewImages.length <= MAX_IMAGES &&
     !sessionLoading &&
-    !isConfirming
+    !isConfirming &&
+    !!sessionToken &&
+    !sessionError
 
   const canRefreshQr = refreshCooldownMs <= 0 && !sessionLoading
 
@@ -286,6 +352,7 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
     previewImages,
     isListening,
     sessionLoading,
+    sessionError,
     refreshSession,
     confirmSession,
     isConfirming,

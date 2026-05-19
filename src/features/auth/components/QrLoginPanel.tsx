@@ -82,6 +82,10 @@ export function QrLoginPanel({ active, onApproved }: QrLoginPanelProps) {
           <p className="text-center text-sm font-semibold text-destructive">{sessionError}</p>
         )}
 
+        <p className="text-center text-xs font-medium text-indigo-900/60">
+          {VI.auth.qrLogin.appLoginHint}
+        </p>
+
         <Button
           type="link"
           size="small"

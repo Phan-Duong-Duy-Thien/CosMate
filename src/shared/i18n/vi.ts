@@ -436,6 +436,8 @@ export const VI = {
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
       waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
+      appLoginHint:
+        "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web. App phải trỏ cùng API với web (api.cosmate.site).",
       messages: {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
@@ -1119,6 +1121,11 @@ export const VI = {
         apiPending: "Chưa thể hoàn tất — đang chờ API xác nhận từ backend.",
         needImages: "Cần ít nhất 1 ảnh từ điện thoại trước khi xác nhận.",
         tooManyImages: "Tối đa 5 ảnh xác nhận.",
+        sessionFailed: "Không tạo được phiên QR. Vui lòng thử lại.",
+        sessionExpired:
+          "Mã QR đã hết hạn. Bấm «Tạo mã QR mới» (sau khi hết chờ) hoặc đăng nhập lại app trên điện thoại rồi quét lại.",
+        appLoginHint:
+          "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web.",
       },
       actionProcessing: "Đang xử lý...",
       // Toast messages
