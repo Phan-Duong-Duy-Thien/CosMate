@@ -57,7 +57,7 @@ export const CostumeCard = ({
           loading="lazy"
           className={cn(
             "w-full border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105",
-            compact ? "h-32 border-b-[3px]" : "h-48 border-b-[4px]"
+            compact ? "h-52 border-b-[3px]" : "h-56 border-b-[4px]"
           )}
         />
         <div

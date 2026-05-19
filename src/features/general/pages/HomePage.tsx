@@ -200,7 +200,7 @@ const HomeSkeleton = () => (
           {Array.from({ length: 12 }).map((_, index) => (
             <div
               key={`skeleton-${index}`}
-              className="h-52 rounded-xl border-[3px] border-indigo-950/25 bg-gradient-to-br from-pink-100/80 to-violet-100/80"
+              className="h-56 rounded-xl border-[3px] border-indigo-950/25 bg-gradient-to-br from-pink-100/80 to-violet-100/80"
             />
           ))}
         </div>
