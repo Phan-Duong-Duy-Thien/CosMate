@@ -1,6 +1,6 @@
-import { useState, useEffect, createElement, type ReactNode } from 'react';
+import { useState, useEffect, createElement, type ReactNode, useCallback } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
-import { ConfigProvider, Layout, Menu, Dropdown, Avatar } from 'antd';
+import { ConfigProvider, Layout, Menu, Dropdown, Avatar, Spin } from 'antd';
 import type { MenuProps } from 'antd';
 import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
@@ -103,6 +103,8 @@ export function DashboardLayout({
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
   const { userProfile, setUserProfile } = useUserProfile();
   useChatPopup(); // ensure popup context is initialized
+  const [tokenBalance, setTokenBalance] = useState<number | null>(null);
+  const [tokenLoading, setTokenLoading] = useState(false);
 
   const userId = getUserId();
   const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null);
@@ -180,6 +182,16 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: VI.common.breadcrumb.users || 'Quản lý người dùng' },
+      ]);
+    } else if (path === '/admin/ai-token-purchases') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: VI.admin.aiTokenPurchases.title },
+      ]);
+    } else if (path === '/admin/profile') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: VI.common.user.profile },
       ]);
     } else if (path === '/provider-rental') {
       setItems([{ label: VI.common.breadcrumb.provider, to: '/provider-rental' }]);
@@ -377,32 +389,78 @@ export function DashboardLayout({
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.disputes.title },
       ]);
+    } else if (path === '/staff/ai-token-plans') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.tokenPlans.title },
+      ]);
+    } else if (path === '/staff/ai-token-purchases') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.tokenPurchases.title },
+      ]);
+    } else if (path === '/staff/orders' || path === '/staff/bookings') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.orders.title },
+      ]);
+    } else if (path === '/staff/customers') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.customers },
+      ]);
+    } else if (path === '/staff/reports') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.reports },
+      ]);
+    } else if (path === '/staff/messages') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.messages },
+      ]);
+    } else if (path === '/staff/settings') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.common.user.profile },
+      ]);
     }
   }, [location.pathname, setItems]);
 
-  // Fetch account profile for header: need avatar even when fullName was cached without photo
-  useEffect(() => {
-    if (userProfile.avatarUrl) return;
-
+  const refreshHeaderProfile = useCallback(async () => {
     const userId = getUserId();
     if (!userId) return;
 
-    const fetchProfile = async () => {
-      try {
-        const profile = await getUserProfile(userId);
-        if (profile?.avatarUrl || profile?.fullName) {
-          setUserProfile({
-            avatarUrl: profile.avatarUrl ?? null,
-            fullName: profile.fullName ?? null,
-          });
-        }
-      } catch {
-        // Silently fail
+    setTokenLoading(true);
+    try {
+      const profile = await getUserProfile(userId);
+      if (profile?.avatarUrl || profile?.fullName) {
+        setUserProfile({
+          avatarUrl: profile.avatarUrl ?? null,
+          fullName: profile.fullName ?? null,
+        });
       }
+    } catch {
+      // Silently fail
+    } finally {
+      setTokenLoading(false);
+    }
+  }, [setUserProfile]);
+
+  // Fetch account profile for header: need avatar even when fullName was cached without photo
+  useEffect(() => {
+    if (userProfile.avatarUrl && tokenBalance !== null) return;
+    void refreshHeaderProfile();
+  }, [userProfile.avatarUrl, tokenBalance, refreshHeaderProfile]);
+
+  useEffect(() => {
+    const handleProfileRefresh = () => {
+      void refreshHeaderProfile();
     };
 
-    fetchProfile();
-  }, [userProfile.avatarUrl, setUserProfile]);
+    window.addEventListener('profile:refresh', handleProfileRefresh);
+    return () => window.removeEventListener('profile:refresh', handleProfileRefresh);
+  }, [refreshHeaderProfile]);
 
   const userName = userProfile.fullName || 'Admin';
   const currentPath = location.pathname;
@@ -444,6 +502,8 @@ export function DashboardLayout({
           navigate('/provider-event-staff/settings');
         } else if (location.pathname.startsWith('/staff')) {
           navigate('/staff/settings');
+        } else if (location.pathname.startsWith('/admin')) {
+          navigate('/admin/profile');
         } else {
           navigate('/provider/settings');
         }
@@ -538,6 +598,13 @@ export function DashboardLayout({
           </div>
 
           <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
+            <div className="hidden min-w-[110px] items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex">
+              {tokenLoading ? (
+                <Spin size="small" />
+              ) : (
+                <span>🪙 {typeof tokenBalance === 'number' ? tokenBalance : '—'} xu</span>
+              )}
+            </div>
             {showChatButton && (
               <button
                 type="button"

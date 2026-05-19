@@ -1,5 +1,6 @@
 import {
   LayoutDashboard,
+  Coins,
   Users,
   CalendarDays,
   BarChart3,
@@ -32,10 +33,22 @@ export const staffSidebarItems: StaffSidebarItem[] = [
     path: '/staff',
   },
   {
-    key: 'bookings',
-    label: VI.staff.sidebar.bookings,
+    key: 'aiTokenPlans',
+    label: VI.staff.sidebar.aiTokenPlans,
+    icon: Coins,
+    path: '/staff/ai-token-plans',
+  },
+  {
+    key: 'aiTokenPurchases',
+    label: VI.staff.sidebar.aiTokenPurchases,
+    icon: Coins,
+    path: '/staff/ai-token-purchases',
+  },
+  {
+    key: 'orders',
+    label: VI.staff.sidebar.orders,
     icon: CalendarDays,
-    path: '/staff/bookings',
+    path: '/staff/orders',
   },
   {
     key: 'customers',

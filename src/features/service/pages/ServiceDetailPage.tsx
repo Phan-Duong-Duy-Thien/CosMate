@@ -158,7 +158,7 @@ export default function ServiceDetailPage() {
 
   const providerProfilePath =
     service.serviceType === SERVICE_TYPE.EVENT_STAFF
-      ? `/staff/${service.providerId}`
+      ? `/staffs/${service.providerId}`
       : `/photographer/${service.providerId}`
 
   const isActive = service.status === "ACTIVE"

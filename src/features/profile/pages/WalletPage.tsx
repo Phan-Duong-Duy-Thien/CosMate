@@ -99,6 +99,8 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
     fetchTransactionsIfNeeded()
   }
 
+  const walletParentPath = walletBase.replace(/\/wallet\/?$/, "") || "/profile"
+
   return (
     <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-3xl">
@@ -108,6 +110,15 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
             <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
               {VI.wallet.title}
             </h1>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="w-full sm:w-auto"
+              onClick={() => navigate(walletParentPath)}
+            >
+              {VI.common.actions.back}
+            </Button>
           </div>
 
           {/* Error state */}

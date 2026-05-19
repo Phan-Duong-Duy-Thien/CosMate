@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
@@ -6,6 +6,7 @@ import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
 import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
 import CosplayerRegPage from "@/features/auth/pages/CosplayerRegPage"
@@ -24,6 +25,7 @@ import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import StyleQuizPage from "@/features/style-quiz/pages/StyleQuizPage"
 import WishlistPage from "@/features/wishlist/pages/WishlistPage"
 import PoseBattlePage from "@/features/pose-battle/pages/PoseBattlePage"
+import SharedPosePage from "@/features/pose-battle/pages/SharedPosePage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -32,6 +34,7 @@ import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
 import WalletPage from "@/features/profile/pages/WalletPage"
 import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import WalletWithdrawPage from "@/features/profile/pages/WalletWithdrawPage"
+import TokenPage from "@/features/profile/pages/TokenPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -46,7 +49,9 @@ import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
 import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
+import CharacterRequestManagementPage from "@/features/admin/pages/CharacterRequestManagement"
 import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
+import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -72,6 +77,11 @@ import { ProviderPhotographWalletLayout } from "@/features/provider/pages/Provid
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
+import StaffPlaceholderPage from "@/features/staff/pages/StaffPlaceholderPage"
+import StaffAiTokenPlansPage from "@/features/staff-token/pages/StaffAiTokenPlansPage"
+import StaffAiTokenPurchasesPage from "@/features/staff-token/pages/StaffAiTokenPurchasesPage"
+import StaffOrdersPage from "@/features/staff/pages/StaffOrdersPage"
+import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
 export default function AppRoutes() {
@@ -88,11 +98,13 @@ export default function AppRoutes() {
         <Route path="style-quiz" element={<StyleQuizPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="pose-battle" element={<PoseBattlePage />} />
+        <Route path="pose-battle/:id" element={<SharedPosePage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/token" element={<TokenPage />} />
         <Route path="profile/wallet" element={<WalletPage />} />
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="profile/wallet/withdraw" element={<WalletWithdrawPage />} />
@@ -100,7 +112,7 @@ export default function AppRoutes() {
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
-        <Route path="staff/:staffId" element={<StaffProfilePage />} />
+        <Route path="staffs/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
@@ -121,8 +133,11 @@ export default function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
+          <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
+          <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
+          <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
       </Route>
 
@@ -182,6 +197,14 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}> 
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
+          <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
+          <Route path="/staff/ai-token-purchases" element={<StaffAiTokenPurchasesPage />} />
+          <Route path="/staff/orders" element={<StaffOrdersPage />} />
+          <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
+          <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
+          <Route path="/staff/reports" element={<StaffPlaceholderPage title={VI.staff.sidebar.reports} />} />
+          <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />
+          <Route path="/staff/settings" element={<DashboardProfilePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
           <Route path="/staff/disputes" element={<DisputeManagementPage />} />
         </Route>

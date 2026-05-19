@@ -28,6 +28,8 @@ export interface AdminUserProfile {
   avatarUrl: string | null;
   phone: string | null;
   status: 'ACTIVE' | 'BANNED' | 'INACTIVE' | string;
+  numberOfToken?: number;
+  role?: string;
 }
 
 /**
@@ -83,3 +85,17 @@ export interface CreateSubscriptionPlanRequest {
 
 /** PUT /api/subscription-plans/{id} — cùng schema với tạo mới */
 export type UpdateSubscriptionPlanRequest = CreateSubscriptionPlanRequest;
+
+/**
+ * AI token purchase from GET /api/ai-token-purchases
+ */
+export interface AiTokenPurchase {
+  id: number;
+  userId: number;
+  subscriptionId: number;
+  transactionId: number;
+  priceAtPurchase: number;
+  tokensAdded: number;
+  purchaseDate: string;
+  status: string;
+}

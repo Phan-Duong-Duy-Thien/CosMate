@@ -57,3 +57,24 @@ export const PROFILE_MODAL_UI = {
   cropTitle: "text-lg font-extrabold tracking-tight text-indigo-950",
   rangeInput: "w-full accent-[#d61f91]",
 } as const
+
+/** Neo stat/section cards on cosplayer `/profile` */
+export const PROFILE_CARD_UI = {
+  card:
+    "rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]",
+  cardHover:
+    "transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_rgba(30,27,75,0.2)]",
+  inner: "flex flex-col p-5",
+  title: "text-base font-extrabold text-indigo-950",
+  iconBox:
+    "flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[2px] border-indigo-950 bg-cosmate-soft-pink/60 shadow-[3px_3px_0_0_rgba(30,27,75,0.18)]",
+  iconGlyph: "h-5 w-5 text-[#d61f91]",
+  body: "mt-1 min-h-0 flex-1",
+  footer: "mt-4 flex flex-wrap items-center justify-end gap-2",
+  label: "text-sm font-medium text-slate-500",
+  value: "mt-2 text-2xl font-extrabold text-[#d61f91]",
+  action:
+    "rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50",
+  linkAction:
+    "text-sm font-bold text-[#d61f91] underline-offset-2 transition-colors hover:text-[#b0177a] hover:underline",
+} as const

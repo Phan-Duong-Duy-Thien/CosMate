@@ -103,3 +103,34 @@ export interface WalletTransaction {
   status: string
   createdAt: string
 }
+
+// ============ AI TOKEN PLANS ============
+
+export interface AiTokenPlan {
+  id: number
+  name: string
+  description: string
+  price: number
+  numberOfToken: number
+  isActive: boolean
+}
+
+export type TokenPaymentMethod = "VNPAY" | "MOMO" | "WALLET"
+
+export interface InitiateAiTokenPurchaseParams {
+  planId: number
+  paymentMethod: TokenPaymentMethod
+  returnUrl?: string
+  isMobile?: boolean
+}
+
+export interface AiTokenPurchase {
+  id: number
+  userId: number
+  subscriptionId: number
+  transactionId: number
+  priceAtPurchase: number
+  tokensAdded: number
+  purchaseDate: string
+  status: string
+}
