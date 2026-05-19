@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react"
+import { PenLine } from "lucide-react"
 import { Button } from "@/shared/components/Button"
-import { Card } from "@/shared/components/Card"
 import { VI } from "@/shared/i18n/vi"
+import { ProfileNeoCard } from "./ProfileNeoCard"
+import { PROFILE_CARD_UI } from "../constants/profileUi"
 
 const PROFILE_BIO_STORAGE_KEY = "cosmate.profile.bio"
 
@@ -43,44 +45,55 @@ export function ProfileBioCard() {
   }
 
   return (
-    <Card className="rounded-2xl border-[3px] border-indigo-950/20 bg-white/85 p-5 shadow-[5px_5px_0_0_rgba(30,27,75,0.14)]">
-      <div className="flex items-center justify-between gap-3">
-        <h2 className="text-base font-extrabold text-indigo-950">{VI.profile.bio.title}</h2>
-        {!isEditing ? (
+    <ProfileNeoCard
+      title={VI.profile.bio.title}
+      icon={PenLine}
+      footer={
+        isEditing ? (
+          <>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className={PROFILE_CARD_UI.action}
+              onClick={handleCancel}
+            >
+              {VI.profile.bio.cancel}
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              className="rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-bold text-white hover:brightness-110"
+              onClick={handleSave}
+            >
+              {VI.profile.bio.save}
+            </Button>
+          </>
+        ) : (
           <Button
             type="button"
-            variant="ghost"
+            variant="outline"
             size="sm"
-            className="rounded-lg border border-transparent text-sm font-bold text-[#d61f91] decoration-1 underline-offset-2 hover:bg-pink-50 hover:underline"
+            className={PROFILE_CARD_UI.action}
             onClick={handleEdit}
           >
             {VI.profile.bio.edit}
           </Button>
-        ) : null}
-      </div>
-
+        )
+      }
+    >
       {isEditing ? (
-        <div className="mt-3 space-y-3">
-          <textarea
-            value={draftBio}
-            onChange={(event) => setDraftBio(event.target.value)}
-            placeholder={VI.profile.bio.placeholder}
-            className="min-h-28 w-full rounded-2xl border-[2px] border-indigo-950/20 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
-          />
-          <div className="flex justify-end gap-2">
-            <Button type="button" variant="outline" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-white font-bold text-indigo-900 hover:bg-pink-50" onClick={handleCancel}>
-              {VI.profile.bio.cancel}
-            </Button>
-            <Button type="button" size="sm" className="rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-bold text-white hover:brightness-110" onClick={handleSave}>
-              {VI.profile.bio.save}
-            </Button>
-          </div>
-        </div>
+        <textarea
+          value={draftBio}
+          onChange={(event) => setDraftBio(event.target.value)}
+          placeholder={VI.profile.bio.placeholder}
+          className="min-h-28 w-full rounded-2xl border-[2px] border-indigo-950/20 bg-white px-4 py-3 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+        />
       ) : (
-        <p className="mt-3 min-h-16 whitespace-pre-wrap rounded-2xl border-[2px] border-indigo-950/15 bg-white px-4 py-3 text-sm font-medium text-slate-600">
+        <p className="min-h-16 whitespace-pre-wrap rounded-2xl border-[2px] border-indigo-950/15 bg-white px-4 py-3 text-sm font-medium text-slate-600">
           {bio || VI.profile.bio.placeholder}
         </p>
       )}
-    </Card>
+    </ProfileNeoCard>
   )
 }

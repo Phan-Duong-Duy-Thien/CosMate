@@ -274,7 +274,7 @@ export const VI = {
 
       messages: {
         registrationFailed: "Đăng ký thất bại. Vui lòng thử lại.",
-        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng đăng nhập để tiếp tục.",
+        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng xác thực qua email để tiếp tục.",
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
       },
     },

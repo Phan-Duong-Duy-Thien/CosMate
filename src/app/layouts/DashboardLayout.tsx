@@ -183,6 +183,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: VI.common.breadcrumb.users || 'Quản lý người dùng' },
       ]);
+    } else if (path === '/admin/profile') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: VI.common.user.profile },
+      ]);
     } else if (path === '/provider-rental') {
       setItems([{ label: VI.common.breadcrumb.provider, to: '/provider-rental' }]);
     } else if (path === '/provider-rental/costumes') {
@@ -379,6 +384,36 @@ export function DashboardLayout({
         { label: VI.staff.layout.title, to: '/staff' },
         { label: VI.staff.disputes.title },
       ]);
+    } else if (path === '/staff/ai-token-plans') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.tokenPlans.title },
+      ]);
+    } else if (path === '/staff/bookings') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.bookings.title },
+      ]);
+    } else if (path === '/staff/customers') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.customers },
+      ]);
+    } else if (path === '/staff/reports') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.reports },
+      ]);
+    } else if (path === '/staff/messages') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.staff.sidebar.messages },
+      ]);
+    } else if (path === '/staff/settings') {
+      setItems([
+        { label: VI.staff.layout.title, to: '/staff' },
+        { label: VI.common.user.profile },
+      ]);
     }
   }, [location.pathname, setItems]);
 
@@ -459,6 +494,8 @@ export function DashboardLayout({
           navigate('/provider-event-staff/settings');
         } else if (location.pathname.startsWith('/staff')) {
           navigate('/staff/settings');
+        } else if (location.pathname.startsWith('/admin')) {
+          navigate('/admin/profile');
         } else {
           navigate('/provider/settings');
         }

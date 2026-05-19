@@ -6,6 +6,7 @@ import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
 import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
 import CosplayerRegPage from "@/features/auth/pages/CosplayerRegPage"
@@ -33,6 +34,7 @@ import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
 import WalletPage from "@/features/profile/pages/WalletPage"
 import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import WalletWithdrawPage from "@/features/profile/pages/WalletWithdrawPage"
+import TokenPage from "@/features/profile/pages/TokenPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -73,6 +75,9 @@ import { ProviderPhotographWalletLayout } from "@/features/provider/pages/Provid
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
+import StaffPlaceholderPage from "@/features/staff/pages/StaffPlaceholderPage"
+import StaffAiTokenPlansPage from "@/features/staff-token/pages/StaffAiTokenPlansPage"
+import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
 export default function AppRoutes() {
@@ -95,6 +100,7 @@ export default function AppRoutes() {
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/token" element={<TokenPage />} />
         <Route path="profile/wallet" element={<WalletPage />} />
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="profile/wallet/withdraw" element={<WalletWithdrawPage />} />
@@ -102,7 +108,7 @@ export default function AppRoutes() {
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
-        <Route path="staff/:staffId" element={<StaffProfilePage />} />
+        <Route path="staffs/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
@@ -125,6 +131,7 @@ export default function AppRoutes() {
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
+          <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
       </Route>
 
@@ -184,6 +191,12 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}> 
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
+          <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
+          <Route path="/staff/bookings" element={<StaffPlaceholderPage title={VI.staff.bookings.title} />} />
+          <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
+          <Route path="/staff/reports" element={<StaffPlaceholderPage title={VI.staff.sidebar.reports} />} />
+          <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />
+          <Route path="/staff/settings" element={<DashboardProfilePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
           <Route path="/staff/disputes" element={<DisputeManagementPage />} />
         </Route>
