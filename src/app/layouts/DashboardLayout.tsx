@@ -430,8 +430,6 @@ export function DashboardLayout({
           fullName: profile.fullName ?? null,
         });
       }
-      const balance = profile?.tokenBalance ?? profile?.coinBalance ?? null;
-      setTokenBalance(typeof balance === 'number' ? balance : null);
     } catch {
       // Silently fail
     } finally {

@@ -41,6 +41,7 @@ export default function SharedPosePage() {
   const [feedbackText, setFeedbackText] = useState("")
   const [thumbState, setThumbState] = useState<"up" | "down" | "">("")
   const [submitting, setSubmitting] = useState(false)
+  const [hasSubmittedFeedback, setHasSubmittedFeedback] = useState(false)
 
   useEffect(() => {
     const loadDetail = async () => {
@@ -92,7 +93,7 @@ export default function SharedPosePage() {
   }
 
   const handleSubmitFeedback = async () => {
-    if (!detail) return
+    if (!detail || hasSubmittedFeedback) return
     const finalText = feedbackText.trim()
     if (!thumbState && !finalText) {
       notification.warning({ message: "Vui lòng chọn thích/không thích hoặc nhập góp ý." })
@@ -105,12 +106,21 @@ export default function SharedPosePage() {
       notification.success({ message: "Đã gửi góp ý thành công!" })
       setFeedbackText("")
       setThumbState("")
+      setHasSubmittedFeedback(true)
     } catch (error) {
-      const status = (error as { response?: { status?: number } })?.response?.status
-      if (status === 401) {
+      const response = (error as { response?: { data?: { message?: string }; status?: number } })?.response
+      const message = response?.data?.message ?? (error as { message?: string })?.message ?? "Không thể gửi góp ý lúc này."
+      if (message.includes("Bạn đã gửi phản hồi")) {
+        notification.info({ message })
+        setHasSubmittedFeedback(true)
+        setFeedbackText("")
+        setThumbState("")
+        return
+      }
+      if (response?.status === 401) {
         notification.error({ message: "Vui lòng đăng nhập để gửi góp ý!" })
       } else {
-        notification.error({ message: "Không thể gửi góp ý lúc này." })
+        notification.error({ message })
       }
     } finally {
       setSubmitting(false)
@@ -181,43 +191,55 @@ export default function SharedPosePage() {
           <Card className="rounded-[2rem] border-[3px] border-indigo-950 bg-surfacePink p-4 shadow-[10px_10px_0px_#1e1b4b]">
             <h2 className="mb-3 text-lg font-extrabold text-indigo-950">Gửi góp ý cho AI</h2>
 
-            <div className="mb-3 flex gap-3">
-              <button
-                type="button"
-                onClick={() => setThumbState("up")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-extrabold shadow-[4px_4px_0px_#1e1b4b] transition ${thumbState === "up" ? "bg-emerald-300" : "bg-white hover:bg-emerald-50"}`}
-              >
-                <LikeOutlined />
-                Hợp lý
-              </button>
-              <button
-                type="button"
-                onClick={() => setThumbState("down")}
-                className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-extrabold shadow-[4px_4px_0px_#1e1b4b] transition ${thumbState === "down" ? "bg-rose-300" : "bg-white hover:bg-rose-50"}`}
-              >
-                <DislikeOutlined />
-                Chưa chuẩn
-              </button>
-            </div>
+            {hasSubmittedFeedback ? (
+              <div className="rounded-[1.25rem] border-[3px] border-indigo-950 bg-emerald-200 px-4 py-5 text-center text-base font-extrabold text-indigo-950 shadow-[4px_4px_0px_#1e1b4b]">
+                Cảm ơn bạn! Bạn đã gửi phản hồi cho kết quả này. 💖
+              </div>
+            ) : (
+              <>
+                <div className="mb-3 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setThumbState("up")}
+                    disabled={submitting}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-extrabold shadow-[4px_4px_0px_#1e1b4b] transition ${submitting ? "cursor-not-allowed opacity-70" : ""} ${thumbState === "up" ? "bg-emerald-300" : "bg-white hover:bg-emerald-50"}`}
+                  >
+                    <LikeOutlined />
+                    Hợp lý
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setThumbState("down")}
+                    disabled={submitting}
+                    className={`flex flex-1 items-center justify-center gap-2 rounded-2xl border-[3px] border-indigo-950 px-4 py-3 font-extrabold shadow-[4px_4px_0px_#1e1b4b] transition ${submitting ? "cursor-not-allowed opacity-70" : ""} ${thumbState === "down" ? "bg-rose-300" : "bg-white hover:bg-rose-50"}`}
+                  >
+                    <DislikeOutlined />
+                    Chưa chuẩn
+                  </button>
+                </div>
 
-            <Input.TextArea
-              value={feedbackText}
-              onChange={(event) => setFeedbackText(event.target.value)}
-              placeholder="Bạn thấy AI chấm có chuẩn không? Góp ý thêm tại đây..."
-              rows={5}
-              className="!rounded-2xl !border-[3px] !border-indigo-950 !bg-white !shadow-[4px_4px_0px_#1e1b4b]"
-            />
+                <Input.TextArea
+                  value={feedbackText}
+                  onChange={(event) => setFeedbackText(event.target.value)}
+                  disabled={submitting}
+                  placeholder="Bạn thấy AI chấm có chuẩn không? Góp ý thêm tại đây..."
+                  rows={5}
+                  className="!rounded-2xl !border-[3px] !border-indigo-950 !bg-white !shadow-[4px_4px_0px_#1e1b4b]"
+                />
 
-            <div className="mt-3 flex justify-end">
-              <Button
-                type="primary"
-                loading={submitting}
-                onClick={handleSubmitFeedback}
-                className="!h-11 !rounded-2xl !border-[3px] !border-indigo-950 !bg-cyan-200 !px-5 !font-extrabold !text-indigo-950 shadow-[4px_4px_0px_#1e1b4b] hover:!bg-cyan-300"
-              >
-                Gửi
-              </Button>
-            </div>
+                <div className="mt-3 flex justify-end">
+                  <Button
+                    type="primary"
+                    loading={submitting}
+                    disabled={submitting}
+                    onClick={handleSubmitFeedback}
+                    className="!h-11 !rounded-2xl !border-[3px] !border-indigo-950 !bg-cyan-200 !px-5 !font-extrabold !text-indigo-950 shadow-[4px_4px_0px_#1e1b4b] hover:!bg-cyan-300 disabled:!bg-cyan-100"
+                  >
+                    Gửi
+                  </Button>
+                </div>
+              </>
+            )}
           </Card>
         </div>
       </div>
