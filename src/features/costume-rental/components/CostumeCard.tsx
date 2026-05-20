@@ -14,6 +14,8 @@ interface CostumeCardProps {
   isWishlisted: boolean
   wishlistLoading?: boolean
   onToggleWishlist: (costumeId: number) => void
+  /** Thu gọn cho lưới homepage (6 cột) */
+  variant?: "default" | "compact"
 }
 
 export const CostumeCard = ({
@@ -22,7 +24,9 @@ export const CostumeCard = ({
   isWishlisted,
   wishlistLoading,
   onToggleWishlist,
+  variant = "default",
 }: CostumeCardProps) => {
+  const compact = variant === "compact"
   const costumeId = Number(costume.id)
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
@@ -39,20 +43,34 @@ export const CostumeCard = ({
           onViewDetail(costume.id)
         }
       }}
-      className="group flex h-full cursor-pointer flex-col overflow-hidden rounded-[1.05rem] border-[4px] border-indigo-950 bg-[#fffbe8] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]"
+      className={cn(
+        "group flex h-full cursor-pointer flex-col overflow-hidden border-indigo-950 bg-[#fffbe8] transition-all duration-300 hover:-translate-y-1",
+        compact
+          ? "rounded-xl border-[3px] shadow-[4px_4px_0_0_rgba(30,27,75,0.4)] hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.32)]"
+          : "rounded-[1.05rem] border-[4px] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]"
+      )}
     >
       <div className="costume-card-media relative">
         <img
           src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
           alt={costume.name}
           loading="lazy"
-          className="h-48 w-full border-b-[4px] border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className={cn(
+            "w-full border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105",
+            compact ? "h-52 border-b-[3px]" : "h-56 border-b-[4px]"
+          )}
         />
-        <div className="absolute left-3 top-3 z-[2] flex flex-wrap gap-2">
+        <div
+          className={cn(
+            "absolute z-[2] flex flex-wrap",
+            compact ? "left-2 top-2 gap-1" : "left-3 top-3 gap-2"
+          )}
+        >
           <span
             role="status"
             className={cn(
-              "cosmate-costume-card-status inline-flex items-center rounded-full border-2 border-indigo-950 px-3 py-1 text-xs font-bold shadow-sm",
+              "cosmate-costume-card-status inline-flex items-center rounded-full border-2 border-indigo-950 font-bold shadow-sm",
+              compact ? "px-2 py-0.5 text-[10px] leading-tight" : "px-3 py-1 text-xs",
               !costume.isAvailable && "cosmate-costume-card-status--rented"
             )}
           >
@@ -61,20 +79,25 @@ export const CostumeCard = ({
               : VI.costumeRental.costumeStatus.rented}
           </span>
           {costume.isAdult18 && (
-            <Badge className="rounded-full border-2 border-indigo-950 bg-cosmate-pink px-3 py-1 text-xs font-bold text-primary-foreground">
+            <Badge
+              className={cn(
+                "rounded-full border-2 border-indigo-950 bg-cosmate-pink font-bold text-primary-foreground",
+                compact ? "px-1.5 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
+              )}
+            >
               18+
             </Badge>
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
-          <div className="absolute right-3 top-3">
+          <div className={cn("absolute", compact ? "right-2 top-2" : "right-3 top-3")}>
             <Tag
-              className="m-0 rounded-md border-2 border-[#1E1B4B] bg-[#FCE7F3] px-2 py-1 font-anime text-[#C026D3] font-extrabold shadow-[2px_2px_0_0_#1E1B4B]"
+              className={cn(
+                "m-0 rounded-full border-0 bg-primary font-semibold !text-primary-foreground shadow-sm",
+                compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1"
+              )}
             >
-              <span className="inline-flex items-center gap-1 text-[#C026D3]">
-                ✨
-                Khớp {costume.aiSimilarityScore.toFixed(1)}%
-              </span>
+              ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
             </Tag>
           </div>
         )}
@@ -82,8 +105,15 @@ export const CostumeCard = ({
           type="button"
           aria-label={liked ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
           className={cn(
-            "absolute right-3 rounded-xl border-[3px] border-indigo-950 bg-[#fffbe8] p-1.5 text-slate-600 shadow-sm transition hover:scale-105",
-            typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
+            "absolute rounded-lg border-[3px] border-indigo-950 bg-[#fffbe8] text-slate-600 shadow-sm transition hover:scale-105",
+            compact ? "right-2 top-2 p-1" : "right-3 rounded-xl p-1.5",
+            typeof costume.aiSimilarityScore === "number"
+              ? compact
+                ? "top-9"
+                : "top-12"
+              : compact
+                ? "top-2"
+                : "top-3",
             liked && "text-pink-500",
             wishlistLoading && "pointer-events-none opacity-70"
           )}
@@ -92,17 +122,32 @@ export const CostumeCard = ({
             onToggleWishlist(costumeId)
           }}
         >
-          <Heart className={cn("h-4 w-4", liked && "fill-pink-500")} />
+          <Heart className={cn(compact ? "h-3.5 w-3.5" : "h-4 w-4", liked && "fill-pink-500")} />
         </button>
-        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg border-2 border-indigo-950 bg-[#fffbe8]/95 px-2 py-0.5 text-[11px] font-semibold text-indigo-900">
-          <ImageIcon className="h-3 w-3" />
+        <div
+          className={cn(
+            "absolute flex items-center gap-0.5 rounded-md border-2 border-indigo-950 bg-[#fffbe8]/95 font-semibold text-indigo-900",
+            compact
+              ? "bottom-1.5 right-1.5 px-1.5 py-0.5 text-[9px]"
+              : "bottom-2 right-2 gap-1 px-2 py-0.5 text-[11px]"
+          )}
+        >
+          <ImageIcon className={cn(compact ? "h-2.5 w-2.5" : "h-3 w-3")} />
           {costume.images.length} ảnh
         </div>
       </div>
 
-      <div className="flex min-h-[124px] flex-1 flex-col gap-1.5 p-3">
+      <div
+        className={cn(
+          "flex flex-1 flex-col",
+          compact ? "min-h-[96px] gap-1 p-2" : "min-h-[124px] gap-1.5 p-3"
+        )}
+      >
         <h3
-          className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
+          className={cn(
+            "overflow-hidden font-extrabold leading-snug text-indigo-950",
+            compact ? "text-xs" : "text-sm"
+          )}
           title={displayName}
         >
           <span className="block truncate group-hover:hidden">{displayName}</span>
@@ -113,13 +158,25 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
-        <div className="flex min-h-7 items-baseline gap-1 text-base font-extrabold leading-tight">
+        <div
+          className={cn(
+            "flex items-baseline gap-0.5 font-extrabold leading-tight",
+            compact ? "min-h-5 text-xs" : "min-h-7 gap-1 text-base"
+          )}
+        >
           {hasPrice ? (
             <>
               <span className="bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-transparent">
                 {costume.priceMin.toLocaleString("vi-VN")} VNĐ
               </span>
-              <span className="text-xs font-semibold text-indigo-900/60">/ngày</span>
+              <span
+                className={cn(
+                  "font-semibold text-indigo-900/60",
+                  compact ? "text-[10px]" : "text-xs"
+                )}
+              >
+                /ngày
+              </span>
             </>
           ) : (
             <span className="text-slate-400">-</span>
@@ -128,7 +185,12 @@ export const CostumeCard = ({
         <Button
           variant="soft"
           size="sm"
-          className="mt-auto h-9 w-full rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 text-[18px] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] hover:brightness-105"
+          className={cn(
+            "mt-auto w-full rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 font-extrabold text-indigo-950 hover:brightness-105",
+            compact
+              ? "h-7 text-xs shadow-[2px_2px_0_0_#1e1b4b]"
+              : "h-9 text-[18px] shadow-[3px_3px_0_0_#1e1b4b]"
+          )}
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)

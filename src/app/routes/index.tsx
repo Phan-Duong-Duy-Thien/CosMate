@@ -180,6 +180,7 @@ export default function AppRoutes() {
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-photograph/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-photograph/settings/completion" element={<ProviderProfileCompletionPage />} />
@@ -200,6 +201,7 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-event-staff/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-event-staff/settings/completion" element={<ProviderProfileCompletionPage />} />

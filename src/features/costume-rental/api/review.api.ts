@@ -58,11 +58,37 @@ export interface ReviewItem {
   id: number
   orderId: number
   username?: string
+  userName?: string
   avatarUrl?: string
   rating: number
   comment: string
   createdAt: string
   images: Array<ReviewImage | string>
+  providerReply?: string | null
+  repliedAt?: string | null
+  repliedByProviderId?: number | null
+}
+
+export interface ReplyToReviewPayload {
+  replyContent: string
+}
+
+/**
+ * PUT /api/reviews/{reviewId}/reply
+ * Provider replies to or updates a reply on a customer review.
+ */
+export async function replyToReview(
+  reviewId: number,
+  payload: ReplyToReviewPayload
+): Promise<ReviewItem> {
+  const res = await axiosInstance.put<ApiResponse<ReviewItem>>(
+    `/api/reviews/${reviewId}/reply`,
+    payload
+  )
+  if (res.data.code !== 0) {
+    throw new Error(res.data.message || "Không thể gửi phản hồi")
+  }
+  return res.data.result
 }
 
 export async function getReviewsByCostumeId(costumeId: number): Promise<ReviewItem[]> {

@@ -49,6 +49,8 @@ export interface ProviderReviewDetailNormalized {
   cosplayerName: string | null;
   avatarUrl: string | null;
   imageUrls: string[];
+  providerReply: string | null;
+  repliedAt: string | null;
 }
 
 function imageUrlsFromUnknown(images: unknown): string[] {
@@ -93,6 +95,19 @@ function normalizeProviderReviewDetail(
       : null;
   let urls = imageUrlsFromUnknown(primary.images);
   if (urls.length === 0) urls = imageUrlsFromUnknown(fallback.images);
+
+  const primaryReply =
+    'providerReply' in primary && primary.providerReply != null
+      ? String(primary.providerReply).trim()
+      : '';
+  const fallbackReply =
+    fallback.providerReply != null ? String(fallback.providerReply).trim() : '';
+  const providerReply = primaryReply || fallbackReply || null;
+
+  const primaryRepliedAt =
+    'repliedAt' in primary && primary.repliedAt != null ? String(primary.repliedAt) : null;
+  const repliedAt = primaryRepliedAt ?? fallback.repliedAt ?? null;
+
   return {
     id: primary.id ?? fallback.id,
     orderId: primary.orderId ?? fallback.orderId,
@@ -103,6 +118,8 @@ function normalizeProviderReviewDetail(
     cosplayerName,
     avatarUrl,
     imageUrls: urls,
+    providerReply,
+    repliedAt,
   };
 }
 

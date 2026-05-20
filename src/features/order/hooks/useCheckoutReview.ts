@@ -8,6 +8,7 @@ import { loadDraft, loadCheckoutSelections, saveCheckoutSelections, clearCheckou
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume } from '@/features/costume-rental/types';
 import type { PaymentMethod } from '../types';
+import { getReturnUrl } from '../utils/paymentReturnUrls';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 
 interface CheckoutState {
@@ -238,9 +239,7 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
       // returnUrl must point to BE callback endpoints so BE can receive the payment gateway callback,
       // update DB, then redirect back to FE with a clean URL.
       if (paymentMethod === 'MOMO' || paymentMethod === 'VNPAY') {
-        params.returnUrl = paymentMethod === 'MOMO'
-          ? 'http://localhost:8080/api/payment/api/momo/return'
-          : 'http://localhost:8080/api/payment/api/vnpay/return';
+        params.returnUrl = getReturnUrl(paymentMethod);
       }
 
       const result = await submitOrderAndHandleResult(params);

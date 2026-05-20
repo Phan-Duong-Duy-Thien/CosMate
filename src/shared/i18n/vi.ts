@@ -473,6 +473,8 @@ export const VI = {
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
       waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
+      appLoginHint:
+        "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web. App phải trỏ cùng API với web (api.cosmate.site).",
       messages: {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
@@ -737,13 +739,27 @@ export const VI = {
         pendingBookings: "Đơn đặt đang chờ",
         upcomingSchedule: "Lịch trình sắp tới",
         averageRating: "Đánh giá trung bình",
+        totalCostumes: "Tổng trang phục",
+        totalOrders: "Tổng đơn hàng",
+        totalOrderItems: "Tổng mặt hàng",
+        completedOrders: "Đơn hoàn thành",
+        totalRevenue: "Tổng doanh thu",
+      },
+
+      charts: {
+        revenueByMonth: "Doanh thu theo tháng",
+        revenueByQuarter: "Doanh thu theo quý",
+        noData: "Chưa có dữ liệu",
+        monthsFilter: "Khoảng thời gian",
+        monthsOption: "{count} tháng gần đây",
+        loadError: "Không thể tải thống kê",
       },
 
       sections: {
         recentBookings: "Đơn đặt gần đây",
         performanceOverview: "Tổng quan hiệu suất",
         quickTips: "Mẹo nhanh",
-        recentBookingsPlaceholder: "TODO: Hiển thị yêu cầu đặt chỗ gần đây và cập nhật trạng thái",
+        recentBookingsPlaceholder: "Xem chi tiết đơn đặt tại mục Quản lý đơn hàng.",
         performancePlaceholder: "TODO: Hiển thị biểu đồ cho đơn đặt, doanh thu và đánh giá theo thời gian",
       },
 
@@ -947,6 +963,7 @@ export const VI = {
         comment: "Nội dung",
         images: "Hình ảnh",
         createdAt: "Ngày tạo",
+        replyStatus: "Phản hồi",
         action: "Thao tác",
       },
       viewDetail: "Xem chi tiết",
@@ -959,6 +976,19 @@ export const VI = {
       detailNoComment: "Không có nội dung",
       empty: "Chưa có đánh giá nào",
       loadError: "Không thể tải danh sách đánh giá",
+      replySection: "Phản hồi của shop",
+      replyPlaceholder: "Nhập phản hồi cho khách hàng...",
+      replySubmit: "Gửi phản hồi",
+      replyEdit: "Chỉnh sửa",
+      replySave: "Lưu phản hồi",
+      replyCancel: "Hủy",
+      replyStatusReplied: "Đã trả lời",
+      replyStatusPending: "Chưa trả lời",
+      replyAt: "Phản hồi lúc",
+      replySuccess: "Gửi phản hồi thành công",
+      replyError: "Không thể gửi phản hồi",
+      replyValidationRequired: "Vui lòng nhập nội dung phản hồi",
+      replyValidationMax: "Phản hồi không được vượt quá {max} ký tự",
     },
 
     serviceOrders: {
@@ -1196,6 +1226,11 @@ export const VI = {
         apiPending: "Chưa thể hoàn tất — đang chờ API xác nhận từ backend.",
         needImages: "Cần ít nhất 1 ảnh từ điện thoại trước khi xác nhận.",
         tooManyImages: "Tối đa 5 ảnh xác nhận.",
+        sessionFailed: "Không tạo được phiên QR. Vui lòng thử lại.",
+        sessionExpired:
+          "Mã QR đã hết hạn. Bấm «Tạo mã QR mới» (sau khi hết chờ) hoặc đăng nhập lại app trên điện thoại rồi quét lại.",
+        appLoginHint:
+          "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web.",
       },
       actionProcessing: "Đang xử lý...",
       // Toast messages
@@ -1526,7 +1561,7 @@ export const VI = {
       myReviewTitle: "Đánh giá của tôi",
       ratingOfYou: "Đánh giá của bạn:",
       rentedBanner: "Trang phục này hiện đang được thuê. Vui lòng quay lại sau.",
-      rentedButton: "Đã được thuê",
+      rentedButton: "Đang được thuê",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",

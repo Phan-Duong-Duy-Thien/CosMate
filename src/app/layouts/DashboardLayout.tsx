@@ -300,6 +300,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
         { label: VI.provider.serviceOrders.sidebar },
       ]);
+    } else if (path === '/provider-photograph/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographReviews },
+      ]);
     } else if (path === '/provider-photograph/settings') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
@@ -365,6 +370,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
         { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-event-staff/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffReviews },
       ]);
     } else if (path === '/provider-event-staff/settings') {
       setItems([

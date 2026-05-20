@@ -10,6 +10,7 @@ import { InboxOutlined } from "@ant-design/icons"
 import type { UploadFile, UploadProps } from "antd"
 import { Star, X } from "lucide-react"
 import { VI } from "@/shared/i18n/vi"
+import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
 import type { ReviewItem } from "@/features/costume-rental/api/review.api"
 
 interface ReviewModalProps {
@@ -201,6 +202,14 @@ export function ReviewModal({
             )}
           </div>
         )}
+
+        {isReadOnly && existingReview?.providerReply?.trim() ? (
+          <ProviderReplyBlock
+            providerReply={existingReview.providerReply}
+            repliedAt={existingReview.repliedAt}
+            variant="neutral"
+          />
+        ) : null}
       </div>
     </Modal>
   )
