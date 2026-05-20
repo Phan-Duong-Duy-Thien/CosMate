@@ -25,6 +25,7 @@ import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
+import { buildCheckoutFlowBreadcrumbs, isFromCheckoutFlow } from "@/features/order/utils/checkoutNavigation"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
@@ -125,6 +126,7 @@ export default function CosplayerSiteLayout() {
 
   React.useEffect(() => {
     const path = location.pathname
+    const fromCheckout = isFromCheckoutFlow(location.search)
 
     if (path === "/") {
       setItems([])
@@ -140,11 +142,9 @@ export default function CosplayerSiteLayout() {
         { label: "Đang tải..." },
       ])
     } else if (path === "/rent/checkout") {
-      setItems([
-        { label: VI.common.breadcrumb.home, to: "/" },
-        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
-        { label: VI.common.breadcrumb.checkout },
-      ])
+      setItems(buildCheckoutFlowBreadcrumbs())
+    } else if (path === "/profile/addresses/new" && fromCheckout) {
+      setItems(buildCheckoutFlowBreadcrumbs([{ label: VI.common.breadcrumb.addAddress }]))
     } else if (path.startsWith("/profile/addresses")) {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -155,6 +155,8 @@ export default function CosplayerSiteLayout() {
             : VI.common.breadcrumb.addresses,
         },
       ])
+    } else if (path === "/profile/wallet/topup" && fromCheckout) {
+      setItems(buildCheckoutFlowBreadcrumbs([{ label: VI.wallet.topUpTitle }]))
     } else if (path === "/photographers") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -226,13 +228,6 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: VI.profile.orders.title },
       ])
-    } else if (path === "/profile/addresses/new") {
-      setItems([
-        { label: VI.common.breadcrumb.home, to: "/" },
-        { label: VI.common.breadcrumb.profile, to: "/profile" },
-        { label: "Địa chỉ", to: "/profile" },
-        { label: "Thêm địa chỉ" },
-      ])
     } else if (path === "/profile/token") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -260,7 +255,7 @@ export default function CosplayerSiteLayout() {
     } else if (path === "/login" || path.startsWith("/register")) {
       setItems([])
     }
-  }, [location.pathname, setItems])
+  }, [location.pathname, location.search, setItems])
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)

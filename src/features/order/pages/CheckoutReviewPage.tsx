@@ -6,6 +6,8 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
+import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
+import { buildCheckoutFlowBreadcrumbs } from '../utils/checkoutNavigation';
 import { useCheckoutReview } from '../hooks/useCheckoutReview';
 import { CheckoutPolicyModal } from '../components/CheckoutPolicyModal';
 import type { PaymentMethod } from '../types';
@@ -22,6 +24,7 @@ function formatVnd(amount: number): string {
 export default function CheckoutReviewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { setItems } = useBreadcrumb();
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const {
     addresses,
@@ -42,6 +45,7 @@ export default function CheckoutReviewPage() {
     setPaymentMethod,
     submitOrder,
     navigateToTopUp,
+    navigateToAddAddress,
   } = useCheckoutReview(navigate);
 
   // Helper to format currency
@@ -51,6 +55,13 @@ export default function CheckoutReviewPage() {
       currency: 'VND',
     }).format(amount);
   };
+
+  // Breadcrumb: link parent to costume detail (not costume list)
+  useEffect(() => {
+    if (costume?.name || draft?.costumeId) {
+      setItems(buildCheckoutFlowBreadcrumbs());
+    }
+  }, [costume?.name, costume?.id, draft?.costumeId, draft?.costumeName, setItems]);
 
   // Show success toast when returning from top-up
   useEffect(() => {
@@ -193,7 +204,7 @@ export default function CheckoutReviewPage() {
                     variant="default"
                     size="sm"
                     className="mt-4 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-bold text-white shadow-[5px_5px_0_0_#1e1b4b]"
-                    onClick={() => navigate('/profile/addresses/new?returnTo=/rent/checkout')}
+                    onClick={navigateToAddAddress}
                   >
                     {VI.checkout.address.addNew}
                   </Button>
