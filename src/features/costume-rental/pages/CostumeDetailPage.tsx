@@ -19,6 +19,7 @@ import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { buildAddressCreateFromCheckoutUrl } from "@/features/order/utils/checkoutNavigation"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
 import { publicCostumeStatusLabel } from "../utils/publicCostumeStatusLabel"
@@ -191,6 +192,7 @@ export default function CostumeDetailPage() {
     // Save rental draft to sessionStorage
     saveDraft({
       costumeId: costume.id,
+      costumeName: costume.name,
       rentDay: days,
       rentStart: rentStartFormatted,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
@@ -217,7 +219,7 @@ export default function CostumeDetailPage() {
 
   const handleNoAddressConfirm = () => {
     setShowNoAddressModal(false)
-    navigate('/profile/addresses/new?returnTo=/rent/checkout')
+    navigate(buildAddressCreateFromCheckoutUrl())
   }
 
   const handleNoAddressCancel = () => {

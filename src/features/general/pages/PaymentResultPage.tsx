@@ -2,7 +2,7 @@
  * Payment Result Page
  * Displays payment result after redirect from payment gateway.
  *
- * Handles costume orders, service orders, and AI token purchases (context=token).
+ * Handles costume orders, service orders, wallet top-up (context=wallet), and AI token purchases (context=token).
  */
 import * as React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,6 +12,7 @@ import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
 import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
+import { CHECKOUT_PATH } from '@/features/order/utils/checkoutNavigation';
 import type { UserRole } from '@/types/auth';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
 
@@ -47,10 +48,11 @@ export default function PaymentResultPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const isTokenContext = searchParams.get('context') === 'token';
+  const isWalletContext = searchParams.get('context') === 'wallet';
   const { status: urlStatus, orderId: rawOrderId } = parseUrlHint();
   const redirectUrl = searchParams.get('redirect') || null;
 
-  const verifyOrderId = isTokenContext ? null : rawOrderId;
+  const verifyOrderId = isTokenContext || isWalletContext ? null : rawOrderId;
 
   React.useEffect(() => {
     const params = new URLSearchParams(window.location.search);
@@ -70,7 +72,7 @@ export default function PaymentResultPage() {
   const serviceResolved = serviceVerification.status !== 'unknown';
 
   let finalStatus: PaymentStatus;
-  if (isTokenContext) {
+  if (isTokenContext || isWalletContext) {
     finalStatus = urlStatus;
   } else if (serviceResolved) {
     finalStatus = serviceVerification.status;
@@ -82,6 +84,7 @@ export default function PaymentResultPage() {
 
   const isLoading =
     !isTokenContext &&
+    !isWalletContext &&
     (costumeVerification.isLoading || serviceVerification.isLoading);
   const isSuccess = finalStatus === 'success';
   const error = (serviceVerification.error || costumeVerification.error) ?? null;
@@ -95,6 +98,9 @@ export default function PaymentResultPage() {
   }, [rawOrderId]);
 
   const getTitle = () => {
+    if (isWalletContext && finalStatus === 'success') {
+      return VI.paymentResult.walletSuccessTitle;
+    }
     if (isTokenContext && finalStatus === 'success') {
       return VI.paymentResult.tokenSuccessTitle;
     }
@@ -115,6 +121,9 @@ export default function PaymentResultPage() {
   const getDescription = () => {
     if (isLoading) return VI.paymentResult.verifying;
     if (error) return error;
+    if (isWalletContext && finalStatus === 'success') {
+      return VI.paymentResult.walletSuccessDesc;
+    }
     if (isTokenContext && finalStatus === 'success') {
       return VI.paymentResult.tokenSuccessDesc;
     }
@@ -135,7 +144,12 @@ export default function PaymentResultPage() {
   const handlePrimaryAction = () => {
     if (redirectUrl) {
       const separator = redirectUrl.includes('?') ? '&' : '?';
-      navigate(`${redirectUrl}${separator}topup=success`);
+      const resumeParam = isWalletContext || redirectUrl.startsWith(CHECKOUT_PATH) ? 'topup=success' : '';
+      navigate(resumeParam ? `${redirectUrl}${separator}${resumeParam}` : redirectUrl);
+      return;
+    }
+    if (isWalletContext && isSuccess) {
+      navigate('/profile/wallet');
       return;
     }
     if (isTokenContext && isSuccess) {
@@ -146,6 +160,10 @@ export default function PaymentResultPage() {
       navigate('/profile/purchase-history');
       return;
     }
+    if (isWalletContext) {
+      navigate('/profile/wallet');
+      return;
+    }
     if (isTokenContext) {
       navigate('/profile/token');
       return;
@@ -154,7 +172,9 @@ export default function PaymentResultPage() {
   };
 
   const getPrimaryCtaLabel = () => {
+    if (isWalletContext && isSuccess) return VI.paymentResult.walletPrimarySuccessCta;
     if (isTokenContext && isSuccess) return VI.paymentResult.tokenPrimarySuccessCta;
+    if (isWalletContext) return VI.paymentResult.walletPrimaryFailedCta;
     if (isSuccess) return VI.paymentResult.primarySuccessCta;
     return VI.paymentResult.primaryFailedCta;
   };
@@ -164,9 +184,13 @@ export default function PaymentResultPage() {
     return getRedirectPath(roles);
   };
 
-  const idLabel = isTokenContext
-    ? VI.paymentResult.transactionIdLabel
-    : VI.paymentResult.orderIdLabel;
+  const idLabel =
+    isTokenContext || isWalletContext
+      ? VI.paymentResult.transactionIdLabel
+      : VI.paymentResult.orderIdLabel;
+
+  const showTransactionId =
+    rawOrderId && rawOrderId !== 'unknown' && (!isWalletContext || isSuccess);
 
   return (
     <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
@@ -210,7 +234,7 @@ export default function PaymentResultPage() {
 
           <p className="mt-3 text-sm leading-relaxed text-slate-600">{getDescription()}</p>
 
-          {rawOrderId && rawOrderId !== 'unknown' && (
+          {showTransactionId && (
             <div className="mt-6 rounded-2xl bg-slate-50 p-4">
               <p className="text-xs text-slate-500">{idLabel}</p>
               <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{rawOrderId}</p>

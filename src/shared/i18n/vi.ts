@@ -105,6 +105,7 @@ export const VI = {
     breadcrumb: {
       home: "Trang chủ",
       costumes: "Thuê đồ Cosplay",
+      costumeDetail: "Chi tiết trang phục",
       checkout: "Xác nhận đơn thuê",
       profile: "Hồ sơ",
       addresses: "Địa chỉ",
@@ -2965,6 +2966,10 @@ export const VI = {
     tokenSuccessTitle: "Mua token thành công!",
     tokenSuccessDesc: "Token đã được cộng vào tài khoản của bạn. Bạn có thể sử dụng ngay.",
     tokenPrimarySuccessCta: "Về trang quản lý token",
+    walletSuccessTitle: "Nạp tiền thành công!",
+    walletSuccessDesc: "Số dư ví đã được cập nhật. Bạn có thể tiếp tục thanh toán đơn thuê.",
+    walletPrimarySuccessCta: "Tiếp tục thanh toán",
+    walletPrimaryFailedCta: "Quay lại nạp tiền",
     verifying: "Đang xác minh trạng thái thanh toán...",
   },
 };

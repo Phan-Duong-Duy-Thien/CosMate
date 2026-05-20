@@ -12,6 +12,8 @@ export type PaymentMethod = 'MOMO' | 'VNPAY' | 'WALLET';
 // Rental draft - stored in sessionStorage for checkout
 export interface RentalDraft {
   costumeId: number;
+  /** Display name for checkout breadcrumb (set on detail page). */
+  costumeName?: string;
   rentDay: number;
   rentStart: string; // ISO format-ready (YYYY-MM-DD)
   selectedAccessoryIds: number[];
