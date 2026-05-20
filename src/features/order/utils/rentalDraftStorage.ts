@@ -25,7 +25,10 @@ export interface CheckoutSelections {
  */
 export function saveDraft(draft: RentalDraft): void {
   try {
-    sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
+    sessionStorage.setItem(
+      DRAFT_KEY,
+      JSON.stringify({ ...draft, selectedRentalOptionId: null }),
+    );
   } catch (error) {
     console.error('Failed to save rental draft:', error);
   }
@@ -38,7 +41,8 @@ export function loadDraft(): RentalDraft | null {
   try {
     const stored = sessionStorage.getItem(DRAFT_KEY);
     if (!stored) return null;
-    return JSON.parse(stored) as RentalDraft;
+    const parsed = JSON.parse(stored) as RentalDraft;
+    return { ...parsed, selectedRentalOptionId: null };
   } catch (error) {
     console.error('Failed to load rental draft:', error);
     return null;

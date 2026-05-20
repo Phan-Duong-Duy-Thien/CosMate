@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils"
 import type { ServiceArea, ServiceItem } from "../types"
 import { SERVICE_TYPE } from "../types"
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://api.cosmate.site"
 
 function resolveMediaUrl(url: string): string {
   if (!url) return ""

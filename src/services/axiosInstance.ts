@@ -10,7 +10,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
  * - baseURL has no /api prefix - endpoints must specify their own prefix
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site',
   timeout: 120000, // tạm tăng lên 120s để loại trừ timeout
 });
 

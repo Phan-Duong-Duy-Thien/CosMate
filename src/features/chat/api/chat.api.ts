@@ -22,15 +22,53 @@ export async function getChatPartner(roomId: number, currentUserId: number): Pro
   return response.data.result
 }
 
+export interface ChatMessagesPage {
+  content: ChatMessage[];
+  number: number;
+  totalPages: number;
+  last: boolean;
+}
+
 export async function getChatMessages(
   roomId: number,
   page = 0,
-  size = 20
-): Promise<{ content: ChatMessage[]; number: number; totalPages: number; last: boolean }> {
-  const response = await axiosInstance.get<
-    ApiWrapper<{ content: ChatMessage[]; number: number; totalPages: number; last: boolean }>
-  >(`/api/chat/messages/${roomId}`, { params: { page, size } })
-  return response.data.result
+  size = 50,
+): Promise<ChatMessagesPage> {
+  const response = await axiosInstance.get<ApiWrapper<ChatMessagesPage>>(
+    `/api/chat/messages/${roomId}`,
+    { params: { page, size } },
+  )
+  const result = response.data.result
+  if (Array.isArray(result)) {
+    return { content: result, number: 0, totalPages: 1, last: true }
+  }
+  return {
+    content: result?.content ?? [],
+    number: result?.number ?? page,
+    totalPages: result?.totalPages ?? 1,
+    last: result?.last ?? true,
+  }
+}
+
+/** Fetch every page of messages for a room (oldest → newest). */
+export async function getAllChatMessages(roomId: number): Promise<ChatMessage[]> {
+  const pageSize = 50
+  let page = 0
+  const all: ChatMessage[] = []
+
+  for (let guard = 0; guard < 100; guard += 1) {
+    const batch = await getChatMessages(roomId, page, pageSize)
+    const items = batch.content ?? []
+    if (items.length > 0) {
+      all.push(...items)
+    }
+    if (batch.last || items.length < pageSize) {
+      break
+    }
+    page += 1
+  }
+
+  return all.map((msg) => ({ ...msg, roomId: msg.roomId ?? roomId }))
 }
 
 export async function getUserChatRooms(userId: number): Promise<ChatRoomListItem[]> {

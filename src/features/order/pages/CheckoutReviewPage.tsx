@@ -3,17 +3,26 @@
  * Displays order summary, address selection, and payment method selection
  */
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { useCheckoutReview } from '../hooks/useCheckoutReview';
+import { CheckoutPolicyModal } from '../components/CheckoutPolicyModal';
 import type { PaymentMethod } from '../types';
 import { message } from 'antd';
 import { CreditCard, MapPin, ShieldCheck } from 'lucide-react';
 
+const GRADIENT_TITLE =
+  'text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text';
+
+function formatVnd(amount: number): string {
+  return `${amount.toLocaleString('vi-VN')}VND`;
+}
+
 export default function CheckoutReviewPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   const {
     addresses,
     draft,
@@ -150,12 +159,9 @@ export default function CheckoutReviewPage() {
   return (
     <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent pb-16 pt-2">
       <div className="mx-auto w-full max-w-[min(1300px,100%)] px-4 pt-8">
-        {/* Page Header */}
+        {/* Page Header — breadcrumb rendered by CosplayerSiteLayout */}
         <div className="mb-6">
-          <div className="text-xs font-semibold text-indigo-800/60">
-            CosMate &gt; Thuê đồ Cosplay &gt; {VI.checkout.page.title}
-          </div>
-          <h1 className="mt-2 text-2xl font-extrabold tracking-tight text-indigo-950">
+          <h1 className={`text-2xl font-extrabold tracking-tight ${GRADIENT_TITLE}`}>
             {VI.checkout.page.title}
           </h1>
           <p className="mt-1 text-sm text-slate-600">
@@ -175,9 +181,9 @@ export default function CheckoutReviewPage() {
           <div className="space-y-6">
             {/* Address Selection */}
             <div className="rounded-[1.35rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
-              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold text-indigo-950">
-                <MapPin className="h-5 w-5" />
-                {VI.checkout.address.title}
+              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold">
+                <MapPin className="h-5 w-5 shrink-0 text-pink-600" />
+                <span className={GRADIENT_TITLE}>{VI.checkout.address.title}</span>
               </h2>
 
               {addresses.length === 0 ? (
@@ -225,7 +231,7 @@ export default function CheckoutReviewPage() {
 
             {/* Order Summary */}
             <div className="rounded-[1.35rem] border-[4px] border-indigo-950 bg-white p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.3)]">
-              <h2 className="text-lg font-extrabold text-indigo-950">
+              <h2 className={`text-lg font-extrabold ${GRADIENT_TITLE}`}>
                 {VI.checkout.summary.title}
               </h2>
 
@@ -247,7 +253,7 @@ export default function CheckoutReviewPage() {
                     <div>
                       <p className="font-medium text-slate-900">{costume.name}</p>
                       <p className="text-sm text-slate-500">
-                        {VI.checkout.summary.rentalDays}: {draft.rentDay} ngày | {VI.checkout.summary.pricePerDay}: {costume.pricePerDay.toLocaleString('vi-VN')}VNĐ
+                        {VI.checkout.summary.rentalDays}: {draft.rentDay} ngày | {VI.checkout.summary.pricePerDay}: {formatVnd(costume.pricePerDay)}
                       </p>
                       <p className="text-sm text-slate-500">
                         {VI.checkout.summary.startDate}: {draft.rentStart ? (() => {
@@ -256,16 +262,6 @@ export default function CheckoutReviewPage() {
                         })() : ''}
                       </p>
                     </div>
-                  </div>
-
-                  {/* Rental Option */}
-                  <div className="flex items-center justify-between rounded-xl border-[2px] border-indigo-950/15 px-4 py-3">
-                    <span className="text-sm text-slate-600">{VI.checkout.summary.rentalOption}</span>
-                    <span className="font-medium text-slate-900">
-                      {computed?.selectedRentalOption
-                        ? `${computed.selectedRentalOption.name} (+${computed.rentalOptionPrice.toLocaleString('vi-VN')}VNĐ)`
-                        : VI.checkout.summary.noRentalOption}
-                    </span>
                   </div>
 
                   {/* Accessories */}
@@ -283,7 +279,7 @@ export default function CheckoutReviewPage() {
                                 </span>
                               )}
                             </span>
-                            <span className="font-medium text-slate-900">+{acc.price.toLocaleString('vi-VN')}VNĐ</span>
+                            <span className="font-medium text-slate-900">{formatVnd(acc.price)}</span>
                           </div>
                         ))}
                       </div>
@@ -303,7 +299,7 @@ export default function CheckoutReviewPage() {
                         {costume.surcharges.map((s) => (
                           <div key={s.id} className="flex items-center justify-between text-sm">
                             <span className="text-slate-700">{s.name}</span>
-                            <span className="font-medium text-slate-900">+{s.price.toLocaleString('vi-VN')}VNĐ</span>
+                            <span className="font-medium text-slate-900">{formatVnd(s.price)}</span>
                           </div>
                         ))}
                       </div>
@@ -319,47 +315,43 @@ export default function CheckoutReviewPage() {
             {/* Price Breakdown */}
             {computed && (
               <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[9px_9px_0_0_rgba(30,27,75,0.32)]">
-                <h3 className="text-sm font-extrabold text-indigo-950">{VI.checkout.summary.totalToPay}</h3>
+                <h3 className={`text-sm font-extrabold uppercase tracking-wide ${GRADIENT_TITLE}`}>
+                  {VI.checkout.summary.totalToPay}
+                </h3>
                 <div className="mt-3 space-y-2 text-sm text-slate-600">
                   <div className="flex items-center justify-between">
                     <span>{VI.checkout.summary.baseRent} ({draft?.rentDay} ngày)</span>
-                    <span className="font-semibold text-slate-900">{computed.baseRent.toLocaleString('vi-VN')}VNĐ</span>
+                    <span className="font-semibold text-slate-900">{formatVnd(computed.baseRent)}</span>
                   </div>
-                  {computed.rentalOptionPrice > 0 && (
-                    <div className="flex items-center justify-between">
-                      <span>{VI.checkout.summary.rentalOptionPrice}</span>
-                      <span className="font-semibold text-slate-900">+{computed.rentalOptionPrice.toLocaleString('vi-VN')}VNĐ</span>
-                    </div>
-                  )}
                   {computed.accessoriesTotal > 0 && (
                     <div className="flex items-center justify-between">
                       <span>{VI.checkout.summary.accessoriesTotal}</span>
-                      <span className="font-semibold text-slate-900">+{computed.accessoriesTotal.toLocaleString('vi-VN')}VNĐ</span>
+                      <span className="font-semibold text-slate-900">{formatVnd(computed.accessoriesTotal)}</span>
                     </div>
                   )}
                   {computed.surchargesTotal > 0 && (
                     <div className="flex items-center justify-between">
                       <span>{VI.checkout.summary.surchargesTotal}</span>
-                      <span className="font-semibold text-slate-900">+{computed.surchargesTotal.toLocaleString('vi-VN')}VNĐ</span>
+                      <span className="font-semibold text-slate-900">{formatVnd(computed.surchargesTotal)}</span>
                     </div>
                   )}
                   <div className="flex items-center justify-between">
                     <span>{VI.checkout.summary.deposit}</span>
-                    <span className="font-semibold text-slate-900">{computed.deposit.toLocaleString('vi-VN')}VNĐ</span>
+                    <span className="font-semibold text-slate-900">{formatVnd(computed.deposit)}</span>
                   </div>
                 </div>
-                <div className="mt-4 flex items-center justify-between border-t-[3px] border-dashed border-indigo-950/25 pt-3 text-base font-extrabold text-pink-600">
+                <div className={`mt-4 flex items-center justify-between border-t-[3px] border-dashed border-indigo-950/25 pt-3 text-base font-extrabold ${GRADIENT_TITLE}`}>
                   <span>{VI.checkout.summary.total}</span>
-                  <span>{computed.totalToPay.toLocaleString('vi-VN')} VNĐ</span>
+                  <span>{formatVnd(computed.totalToPay)}</span>
                 </div>
               </div>
             )}
 
             {/* Payment Method */}
             <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-white p-5 shadow-[9px_9px_0_0_rgba(30,27,75,0.28)]">
-              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold text-indigo-950">
-                <CreditCard className="h-5 w-5" />
-                {VI.checkout.payment.title}
+              <h2 className="inline-flex items-center gap-2 text-lg font-extrabold">
+                <CreditCard className="h-5 w-5 shrink-0 text-pink-600" />
+                <span className={GRADIENT_TITLE}>{VI.checkout.payment.title}</span>
               </h2>
 
               <div className="mt-4 space-y-2">
@@ -452,7 +444,21 @@ export default function CheckoutReviewPage() {
                   className="mt-1 h-4 w-4 rounded border-slate-300 text-pink-500 focus:ring-pink-200"
                 />
                 <span className="text-sm text-slate-600">
-                  {VI.checkout.policy.label}
+                  <span className="whitespace-nowrap">
+                    {VI.checkout.policy.agreePrefix}{' '}
+                    <button
+                      type="button"
+                      className="inline text-pink-500 underline decoration-pink-300 decoration-[1.5px] underline-offset-2 transition-colors hover:text-pink-600"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsPolicyModalOpen(true);
+                      }}
+                    >
+                      {VI.checkout.policy.termsLink}
+                    </button>
+                  </span>{' '}
+                  <span>{VI.checkout.policy.agreeSuffix}</span>
                 </span>
               </label>
               {!policyAccepted && !isSubmitting && (
@@ -485,6 +491,11 @@ export default function CheckoutReviewPage() {
           </Link>
         </div>
       </div>
+
+      <CheckoutPolicyModal
+        open={isPolicyModalOpen}
+        onClose={() => setIsPolicyModalOpen(false)}
+      />
     </section>
   );
 }

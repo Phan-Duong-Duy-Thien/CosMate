@@ -4,9 +4,10 @@
  * UI-only — data fetching via hooks inside component.
  */
 
-import { useState } from 'react';
-import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Avatar, Typography, Button, Table } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useState, type ReactNode } from 'react';
+import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Typography, Button, Table } from 'antd';
+import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined, GiftOutlined, DollarOutlined } from '@ant-design/icons';
+import { cn } from '@/lib/utils';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
@@ -40,6 +41,70 @@ const formatCurrency = (amount: number) => {
     currency: 'VND',
   }).format(amount);
 };
+
+const MONEY_HIGHLIGHT = 'font-bold text-pink-600';
+const VALUE_HIGHLIGHT = 'font-semibold text-indigo-950';
+const DATE_HIGHLIGHT = 'font-medium text-violet-700';
+
+function SectionTitle({
+  icon,
+  children,
+  className,
+}: {
+  icon: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <h3
+      className={cn(
+        'mb-2 flex items-center gap-2 rounded-lg border border-indigo-950/10 bg-gradient-to-r from-pink-50 to-violet-50 px-3 py-2 text-sm font-extrabold text-indigo-950',
+        className,
+      )}
+    >
+      {icon}
+      {children}
+    </h3>
+  );
+}
+
+function NamedLineItems({
+  items,
+  emptyDescription,
+  nameFallback,
+}: {
+  items: { key: string | number; name: string; description?: string | null; badge?: string }[];
+  emptyDescription: string;
+  nameFallback: string;
+}) {
+  if (items.length === 0) {
+    return <Empty description={emptyDescription} image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  }
+
+  return (
+    <ul className="space-y-2">
+      {items.map((item) => {
+        const displayName = item.name?.trim() || nameFallback;
+        return (
+          <li
+            key={item.key}
+            className="rounded-xl border-2 border-indigo-950/15 bg-white px-3 py-2.5 shadow-[2px_2px_0_0_rgba(30,27,75,0.12)]"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={cn('text-sm', VALUE_HIGHLIGHT)}>{displayName}</span>
+              {item.badge ? (
+                <Tag className="m-0 border-pink-200 bg-pink-50 text-[11px] text-pink-700">{item.badge}</Tag>
+              ) : null}
+            </div>
+            {item.description?.trim() ? (
+              <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.description.trim()}</p>
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
 // Format date
 const formatDate = (dateString: string | null | undefined): string => {
@@ -106,7 +171,7 @@ export function OrderDetailDrawer({
   orderType,
   onClose,
   onExtendSuccess,
-  hideRentalOptions = false,
+  hideRentalOptions = true,
   hideExtendActions = false,
 }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
@@ -256,42 +321,54 @@ export function OrderDetailDrawer({
 
     const detail = orderDetail.details[0];
 
+    const labelStyle = { fontWeight: 600, color: '#475569', width: '38%' as const };
+    const contentStyle = { background: '#fffbeb' };
+
     return (
-      <Descriptions column={2} size="small" bordered>
+      <Descriptions
+        column={2}
+        size="small"
+        bordered
+        labelStyle={labelStyle}
+        contentStyle={contentStyle}
+        className="order-detail-rental-desc"
+      >
         <Descriptions.Item label={VI.order.detail.size} span={1}>
-          {detail.size || '-'}
+          <span className={VALUE_HIGHLIGHT}>{detail.size || '—'}</span>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.numberOfItems} span={1}>
-          {detail.numberOfItems || '-'}
+          <span className={VALUE_HIGHLIGHT}>{detail.numberOfItems ?? '—'}</span>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentDay} span={1}>
-          {detail.rentDay || '-'}
+          <Tag color="purple" className="m-0 font-semibold">
+            {detail.rentDay ?? '—'} {VI.order.extend.daysSuffix}
+          </Tag>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.depositAmount} span={1}>
-          {formatCurrency(detail.depositAmount || 0)}
+          <span className={MONEY_HIGHLIGHT}>{formatCurrency(detail.depositAmount || 0)}</span>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentStart} span={1}>
-          {formatDate(detail.rentStart)}
+          <span className={DATE_HIGHLIGHT}>{formatDate(detail.rentStart)}</span>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentEnd} span={1}>
-          {formatDate(detail.rentEnd)}
+          <span className={DATE_HIGHLIGHT}>{formatDate(detail.rentEnd)}</span>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentAmount} span={2}>
-          {formatCurrency(detail.rentAmount || 0)}
+          <span className={MONEY_HIGHLIGHT}>{formatCurrency(detail.rentAmount || 0)}</span>
         </Descriptions.Item>
         {detail.surchargeAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.surchargeAmount} span={2}>
-            {formatCurrency(detail.surchargeAmount)}
+            <span className={MONEY_HIGHLIGHT}>{formatCurrency(detail.surchargeAmount)}</span>
           </Descriptions.Item>
         )}
         {detail.accessoriesAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.accessoriesAmount} span={2}>
-            {formatCurrency(detail.accessoriesAmount)}
+            <span className={MONEY_HIGHLIGHT}>{formatCurrency(detail.accessoriesAmount)}</span>
           </Descriptions.Item>
         )}
         {!hideRentalOptions && detail.rentOptionAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.rentOptionAmount} span={2}>
-            {formatCurrency(detail.rentOptionAmount)}
+            <span className={MONEY_HIGHLIGHT}>{formatCurrency(detail.rentOptionAmount)}</span>
           </Descriptions.Item>
         )}
       </Descriptions>
@@ -304,18 +381,14 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.rentalOptions}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.optionName}
-              description={item.description}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedRentalOption}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.rentalOptions.map((item) => ({
+          key: item.id,
+          name: item.optionName,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -326,18 +399,13 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.accessories}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar shape="square" size="small" src={item.imageUrl} icon={<ShopOutlined />} />}
-              title={item.name}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedAccessory}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.accessories.map((item) => ({
+          key: item.id,
+          name: item.name,
+        }))}
       />
     );
   };
@@ -348,18 +416,14 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.surcharges}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.name}
-              description={item.description}
-            />
-            <Text type="danger">{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedSurcharge}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.surcharges.map((item) => ({
+          key: item.id,
+          name: item.name,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -544,23 +608,38 @@ export function OrderDetailDrawer({
     orderDetail ? (
       <div className="space-y-4 pt-1">
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalInfo}</h3>
+          <SectionTitle icon={<DollarOutlined className="text-pink-600" />}>
+            {VI.order.detail.rentalInfo}
+          </SectionTitle>
           {renderRentalInfo()}
+          {(orderDetail.accessories?.length > 0 || orderDetail.surcharges?.length > 0) && (
+            <p className="mt-2 text-xs text-slate-500">{VI.order.detail.lineItemsHint}</p>
+          )}
         </div>
-        {!hideRentalOptions && (
+        {!hideRentalOptions && orderDetail.rentalOptions?.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalOptions}</h3>
+            <SectionTitle icon={<AppstoreOutlined className="text-violet-600" />}>
+              {VI.order.detail.rentalOptions}
+            </SectionTitle>
             {renderRentalOptions()}
           </div>
         )}
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.accessories}</h3>
-          {renderAccessories()}
-        </div>
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.surcharges}</h3>
-          {renderSurcharges()}
-        </div>
+        {orderDetail.accessories?.length > 0 && (
+          <div>
+            <SectionTitle icon={<GiftOutlined className="text-pink-600" />}>
+              {VI.order.detail.accessories}
+            </SectionTitle>
+            {renderAccessories()}
+          </div>
+        )}
+        {orderDetail.surcharges?.length > 0 && (
+          <div>
+            <SectionTitle icon={<PlusCircleOutlined className="text-amber-600" />}>
+              {VI.order.detail.surcharges}
+            </SectionTitle>
+            {renderSurcharges()}
+          </div>
+        )}
       </div>
     ) : null;
 

@@ -37,7 +37,6 @@ export default function CostumeDetailPage() {
     setDays,
     startDate,
     setStartDate,
-    selectedRentalOptionId,
     checkedOptionalIds,
     toggleOptionalAccessory,
     quote,
@@ -195,7 +194,7 @@ export default function CostumeDetailPage() {
       rentDay: days,
       rentStart: rentStartFormatted,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
-      selectedRentalOptionId,
+      selectedRentalOptionId: null,
     })
 
     // Check if user has addresses

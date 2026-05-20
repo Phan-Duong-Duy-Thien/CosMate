@@ -23,15 +23,11 @@ function getDateLabel(date: Date): string {
 export function ChatMessageList({ messages, currentUserId }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
-  // Only render messages that have a valid createdAt timestamp
-  const validMessages = messages.filter((m) => m.createdAt && m.createdAt.trim() !== "")
-
-  // Build list of (dateLabel, message) pairs with a flag for first-in-group
   const items = useMemo(() => {
     const result: { msg: ChatMessage; dateLabel: string; isFirstOfDay: boolean }[] = []
     let lastDateKey = ""
 
-    for (const msg of validMessages) {
+    for (const msg of messages) {
       const date = new Date(msg.createdAt)
       const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
       const isFirstOfDay = dateKey !== lastDateKey
@@ -40,7 +36,7 @@ export function ChatMessageList({ messages, currentUserId }: ChatMessageListProp
     }
 
     return result
-  }, [validMessages])
+  }, [messages])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" })
