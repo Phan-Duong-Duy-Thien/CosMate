@@ -806,7 +806,11 @@ export default function PurchaseHistoryPage() {
     <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-[min(1460px,100%)]">
         <Card className="rounded-[1.5rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fff7fb] via-[#fffaf0] to-[#f5f3ff] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.34)] md:p-6">
-          <h1 className="text-2xl font-extrabold text-indigo-950">{VI.profile.serviceOrders.title}</h1>
+          <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+            <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+              {VI.profile.serviceOrders.pageDecorTitle}
+            </span>
+          </h1>
 
           {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
           <div className="mt-4 flex flex-wrap gap-2">
