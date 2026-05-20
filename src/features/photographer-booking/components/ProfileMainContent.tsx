@@ -17,6 +17,13 @@ import type { PortfolioImage } from "../types"
 import { usePublicProviderServices } from "@/features/service/hooks/usePublicProviderServices"
 import type { ServiceItem } from "@/features/service/types"
 import { usePhotographerPublicReviews } from "../hooks/usePhotographerPublicReviews"
+import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
+import {
+  getReviewReviewerInitial,
+  getReviewReviewerName,
+  resolveReviewAvatarUrl,
+} from "@/shared/utils/reviewDisplay"
+import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
@@ -357,10 +364,14 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                     <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border-[3px] border-indigo-950 bg-[#fffbeb] text-sm font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
-                          C
+                          {getReviewReviewerInitial(
+                            getReviewReviewerName(review, VI.provider.reviews.detailReviewerFallback)
+                          )}
                         </div>
                         <div>
-                          <h4 className="font-extrabold text-indigo-950">Cosplayer</h4>
+                          <h4 className="font-extrabold text-indigo-950">
+                            {getReviewReviewerName(review, VI.provider.reviews.detailReviewerFallback)}
+                          </h4>
                           <div className="mt-0.5 flex gap-0.5">
                             {[1, 2, 3, 4, 5].map((s) => (
                               <Star
@@ -395,6 +406,11 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                         ))}
                       </div>
                     ) : null}
+                    <ProviderReplyBlock
+                      providerReply={review.providerReply}
+                      repliedAt={review.repliedAt}
+                      variant="indigo"
+                    />
                   </div>
                 ))}
               </>
@@ -406,3 +422,4 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
     </div>
   )
 }
+

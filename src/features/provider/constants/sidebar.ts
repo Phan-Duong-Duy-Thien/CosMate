@@ -99,6 +99,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/service-orders',
   },
   {
+    key: 'reviews',
+    label: VI.provider.sidebar.photographReviews,
+    icon: Star,
+    path: '/provider-photograph/reviews',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
@@ -145,6 +151,12 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.serviceOrders.sidebar,
     icon: ClipboardList,
     path: '/provider-event-staff/service-orders',
+  },
+  {
+    key: 'reviews',
+    label: VI.provider.sidebar.eventStaffReviews,
+    icon: Star,
+    path: '/provider-event-staff/reviews',
   },
   {
     key: 'serviceCreate',
