@@ -1123,14 +1123,16 @@ export const VI = {
         addressNamePlaceholder: "Ví dụ: Nhà, Công ty, Shop",
         city: "Tỉnh/Thành phố",
         cityPlaceholder: "Chọn Tỉnh/Thành phố",
+        citySearchPlaceholder: "Tìm tỉnh/thành phố...",
         district: "Phường/Xã",
         districtPlaceholder: "Chọn Phường/Xã",
+        districtSearchPlaceholder: "Tìm phường/xã...",
         streetAddress: "Địa chỉ chi tiết",
         streetAddressPlaceholder: "Số nhà, tên đường",
       },
       validation: {
         required: "Trường này là bắt buộc",
-        invalidPhone: "Số điện thoại không hợp lệ",
+        invalidPhone: "Số điện thoại phải có đúng 10 chữ số (chỉ nhập số)",
         selectCity: "Vui lòng chọn Tỉnh/Thành phố",
         selectDistrict: "Vui lòng chọn Phường/Xã",
         selectWard: "Vui lòng chọn Phường/Xã",
@@ -1586,6 +1588,9 @@ export const VI = {
     // Validation messages
     validation: {
       missingRentStart: "Vui lòng chọn ngày bắt đầu thuê",
+      invalidRentStart: "Ngày bắt đầu thuê không hợp lệ",
+      rentStartTooSoon:
+        "Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.",
       invalidRentDay: "Số ngày thuê phải lớn hơn 0",
     },
 
