@@ -778,6 +778,7 @@ export const VI = {
       photographReviews: "Đánh giá",
       photographSettings: "Hồ sơ / Cài đặt",
       wallet: "Ví của tôi",
+      aiToken: "AI Token",
     },
 
     dashboardPhotograph: {
@@ -999,6 +1000,8 @@ export const VI = {
       title: "Token CosMate",
       hubTitle: "Quản lý Token CosMate",
       balance: "Số token hiện có",
+      unit: "xu",
+      headerHint: "Vào menu AI Token để mua thêm",
       manage: "Quản lý",
       buyMore: "Mua thêm",
       buySectionTitle: "Mua thêm token",

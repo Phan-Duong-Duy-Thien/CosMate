@@ -58,10 +58,19 @@ const PAYMENT_METHODS: PaymentMethodOption[] = [
   },
 ];
 
-export function BuyTokenPlansSection() {
+type BuyTokenPlansSectionProps = {
+  walletTopUpRedirect?: string;
+  onPurchaseSuccess?: () => void;
+};
+
+export function BuyTokenPlansSection(props?: BuyTokenPlansSectionProps) {
+  const {
+    walletTopUpRedirect = '/profile/wallet/topup?redirect=/profile/token',
+    onPurchaseSuccess,
+  } = props ?? {};
   const navigate = useNavigate();
   const { plans, loading, error } = useAiTokenPlansCatalog();
-  const { purchase, purchasingPlanId } = usePurchaseAiToken();
+  const { purchase, purchasingPlanId } = usePurchaseAiToken({ onWalletSuccess: onPurchaseSuccess });
   const { walletInfo, loadingWallet } = useWallet();
   const [paymentMethod, setPaymentMethod] = useState<TokenPaymentMethod | null>(null);
 
@@ -267,7 +276,7 @@ export function BuyTokenPlansSection() {
                     type="button"
                     size="sm"
                     className="rounded-xl border-[2px] border-amber-800 bg-amber-500 text-white hover:bg-amber-600"
-                    onClick={() => navigate('/profile/wallet/topup?redirect=/profile/token')}
+                    onClick={() => navigate(walletTopUpRedirect)}
                   >
                     {VI.wallet.checkoutValidation.topUpCta}
                   </Button>

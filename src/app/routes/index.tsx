@@ -74,6 +74,10 @@ import ProviderWalletPage from "@/features/provider/pages/ProviderWalletPage"
 import ProviderMessagesPage from "@/features/chat/pages/ProviderMessagesPage"
 import { ProviderEventStaffWalletLayout } from "@/features/provider/pages/ProviderEventStaffWalletLayout"
 import { ProviderPhotographWalletLayout } from "@/features/provider/pages/ProviderPhotographWalletLayout"
+import { ProviderTokenLayout } from "@/features/provider/pages/ProviderTokenLayout"
+import { ProviderPhotographTokenLayout } from "@/features/provider/pages/ProviderPhotographTokenLayout"
+import { ProviderEventStaffTokenLayout } from "@/features/provider/pages/ProviderEventStaffTokenLayout"
+import ProviderTokenPage from "@/features/provider/pages/ProviderTokenPage"
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
@@ -149,6 +153,9 @@ export default function AppRoutes() {
           <Route path="/provider-rental/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-rental/wallet/withdraw" element={<WalletWithdrawPage />} />
         </Route>
+        <Route element={<ProviderTokenLayout />}>
+          <Route path="/provider-rental/token" element={<ProviderTokenPage />} />
+        </Route>
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
@@ -167,6 +174,9 @@ export default function AppRoutes() {
           <Route path="/provider-photograph/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-photograph/wallet/withdraw" element={<WalletWithdrawPage />} />
         </Route>
+        <Route element={<ProviderPhotographTokenLayout />}>
+          <Route path="/provider-photograph/token" element={<ProviderTokenPage />} />
+        </Route>
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
@@ -183,6 +193,9 @@ export default function AppRoutes() {
           <Route path="/provider-event-staff/wallet" element={<ProviderWalletPage />} />
           <Route path="/provider-event-staff/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-event-staff/wallet/withdraw" element={<WalletWithdrawPage />} />
+        </Route>
+        <Route element={<ProviderEventStaffTokenLayout />}>
+          <Route path="/provider-event-staff/token" element={<ProviderTokenPage />} />
         </Route>
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />

@@ -10,6 +10,7 @@ import { Button } from '@/shared/components/Button';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
+import { getTokenHubPathForCurrentUser } from '@/features/profile/utils/tokenRoutes';
 import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
 import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
 import type { UserRole } from '@/types/auth';
@@ -132,22 +133,26 @@ export default function PaymentResultPage() {
     }
   };
 
+  const tokenHubPath = getTokenHubPathForCurrentUser();
+
+  React.useEffect(() => {
+    if (isTokenContext && isSuccess) {
+      window.dispatchEvent(new Event('profile:refresh'));
+    }
+  }, [isTokenContext, isSuccess]);
+
   const handlePrimaryAction = () => {
     if (redirectUrl) {
       const separator = redirectUrl.includes('?') ? '&' : '?';
       navigate(`${redirectUrl}${separator}topup=success`);
       return;
     }
-    if (isTokenContext && isSuccess) {
-      navigate('/profile/token');
+    if (isTokenContext) {
+      navigate(tokenHubPath);
       return;
     }
     if (isSuccess) {
       navigate('/profile/purchase-history');
-      return;
-    }
-    if (isTokenContext) {
-      navigate('/profile/token');
       return;
     }
     navigate('/profile/wallet');
