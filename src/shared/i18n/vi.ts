@@ -473,8 +473,7 @@ export const VI = {
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
       waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
-      appLoginHint:
-        "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web. App phải trỏ cùng API với web (api.cosmate.site).",
+      
       messages: {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
