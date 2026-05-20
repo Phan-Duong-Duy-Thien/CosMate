@@ -1,3 +1,4 @@
+import { useState } from "react"
 import { Star } from "lucide-react"
 
 import type { Costume, QuoteBreakdown } from "../../types"
@@ -5,6 +6,10 @@ import { Button } from "@/shared/components/Button"
 import { cn } from "@/lib/utils"
 import { PriceBreakdownCard } from "./PriceBreakdownCard"
 import { VI } from "@/shared/i18n/vi"
+import {
+  getMinRentStartDateString,
+  getRentStartDateValidationError,
+} from "../../utils/rentDateValidation"
 
 interface PurchasePanelProps {
   costume: Costume
@@ -29,11 +34,8 @@ export const PurchasePanel = ({
   onToggleOptionalAccessory,
   onRentNow,
 }: PurchasePanelProps) => {
-  const minDate = (() => {
-    const d = new Date()
-    d.setDate(d.getDate() + 3)
-    return d.toLocaleDateString('en-CA') // YYYY-MM-DD in local time (no UTC shift)
-  })()
+  const [startDateError, setStartDateError] = useState<string | undefined>()
+  const minDate = getMinRentStartDateString()
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
   const isRented = costume.status === 'RENTED'
@@ -72,14 +74,26 @@ export const PurchasePanel = ({
               value={startDate}
               min={minDate}
               disabled={isRented}
-              onChange={(e) => onStartDateChange(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value
+                onStartDateChange(next)
+                if (startDateError) {
+                  setStartDateError(getRentStartDateValidationError(next))
+                }
+              }}
+              onBlur={() => setStartDateError(getRentStartDateValidationError(startDate))}
               className={cn(
                 "h-10 w-full rounded-xl border-[3px] px-3 text-sm font-semibold focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300",
                 isRented
                   ? "cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400"
-                  : "border-indigo-950 bg-white text-indigo-950"
+                  : startDateError
+                    ? "border-[#DC2626] bg-white text-indigo-950"
+                    : "border-indigo-950 bg-white text-indigo-950"
               )}
             />
+            {startDateError && (
+              <p className="mt-1 text-xs font-semibold text-[#991B1B]">{startDateError}</p>
+            )}
             <input
               type="number"
               min={1}

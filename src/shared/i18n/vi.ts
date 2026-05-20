@@ -25,6 +25,7 @@ export const VI = {
     emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
     title: "Thông báo",
+    pageDecorTitle: "⊹ ࣪˖₊˚♡ Thông báo ♡˚₊˖ ࣪⊹",
     filterLabel: "Lọc nhanh",
     filterUnread: "Chưa đọc",
     filterRead: "Đã đọc",
@@ -51,6 +52,12 @@ export const VI = {
     railHelpTitle: "Quy định & hướng dẫn",
     railHelpBody: "Thuê đồ, hoàn tiền, khiếu nại — đọc nhanh trước khi đặt.",
     railHelpCta: "Đọc hướng dẫn",
+    toastViewLink: "Xem chi tiết",
+    quickLinksTitle: "Gợi ý nhanh",
+    toastMarkedAllRead: "Đã đánh dấu tất cả thông báo là đã đọc.",
+    toastDeleted: "Đã xóa thông báo.",
+    toastMarkAllReadFailed: "Không thể đánh dấu đã đọc. Vui lòng thử lại.",
+    toastDeleteFailed: "Không thể xóa thông báo. Vui lòng thử lại.",
   },
 
   /**
@@ -1122,14 +1129,16 @@ export const VI = {
         addressNamePlaceholder: "Ví dụ: Nhà, Công ty, Shop",
         city: "Tỉnh/Thành phố",
         cityPlaceholder: "Chọn Tỉnh/Thành phố",
+        citySearchPlaceholder: "Tìm tỉnh/thành phố...",
         district: "Phường/Xã",
         districtPlaceholder: "Chọn Phường/Xã",
+        districtSearchPlaceholder: "Tìm phường/xã...",
         streetAddress: "Địa chỉ chi tiết",
         streetAddressPlaceholder: "Số nhà, tên đường",
       },
       validation: {
         required: "Trường này là bắt buộc",
-        invalidPhone: "Số điện thoại không hợp lệ",
+        invalidPhone: "Số điện thoại phải có đúng 10 chữ số (chỉ nhập số)",
         selectCity: "Vui lòng chọn Tỉnh/Thành phố",
         selectDistrict: "Vui lòng chọn Phường/Xã",
         selectWard: "Vui lòng chọn Phường/Xã",
@@ -1283,6 +1292,7 @@ export const VI = {
 
     serviceOrders: {
       title: "Lịch sử đơn hàng",
+      pageDecorTitle: "⊹ ࣪˖₊˚♡ Lịch sử đơn hàng ♡˚₊˖ ࣪⊹",
       tabCostume: "Đơn thuê trang phục",
       tabService: "Đơn đặt dịch vụ",
       empty: "Chưa có đơn đặt dịch vụ nào",
@@ -1585,6 +1595,9 @@ export const VI = {
     // Validation messages
     validation: {
       missingRentStart: "Vui lòng chọn ngày bắt đầu thuê",
+      invalidRentStart: "Ngày bắt đầu thuê không hợp lệ",
+      rentStartTooSoon:
+        "Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.",
       invalidRentDay: "Số ngày thuê phải lớn hơn 0",
     },
 
@@ -2617,6 +2630,12 @@ export const VI = {
           desc: "CosMate có quyền hạn chế hoặc chấm dứt quyền sử dụng dịch vụ của khách nếu vi phạm nhiều lần, gian lận, hoặc gây ảnh hưởng nghiêm trọng đến hệ thống và cộng đồng.",
         },
       },
+    },
+    decorPageTitles: {
+      photographers: "⊹ ࣪˖₊˚♡ Tìm kiếm Photographer ♡˚₊˖ ࣪⊹",
+      staffs: "⊹ ࣪˖₊˚♡ Tìm Đội Ngũ Hỗ Trợ ♡˚₊˖ ࣪⊹",
+      styleQuiz: "⊹ ࣪˖₊˚♡ Quiz Phong Cách ♡˚₊˖ ࣪⊹",
+      poseBattle: "⊹ ࣪˖₊˚♡ Pose Battle ♡˚₊˖ ࣪⊹",
     },
   },
 

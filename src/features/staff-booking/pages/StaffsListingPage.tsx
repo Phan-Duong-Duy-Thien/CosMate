@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react"
-import { Sparkles, Users } from "lucide-react"
+import { Sparkles } from "lucide-react"
 
 import { StaffCard } from "@/features/staff-booking/components/StaffCard"
 import { ListingFilterBar } from "@/features/staff-booking/components/ListingFilterBar"
 import { ListingPagination } from "@/features/photographer-booking/components/ListingPagination"
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 import {
   useProvidersByRole,
   PROVIDER_ROLE,
@@ -54,16 +55,11 @@ export default function StaffsListingPage() {
             )}
           >
             <div className="min-w-0 space-y-3">
-              <div className="flex flex-wrap items-center gap-3">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-violet-400 via-fuchsia-500 to-pink-500 text-white shadow-[5px_5px_0_0_#1e1b4b]">
-                  <Users className="h-5 w-5" aria-hidden />
+              <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                  {VI.general.decorPageTitles.staffs}
                 </span>
-                <h1 className="text-2xl font-extrabold leading-tight tracking-tight text-indigo-950 md:text-3xl md:leading-tight">
-                  <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                    「 Tìm Đội Ngũ Hỗ Trợ 」
-                  </span>
-                </h1>
-              </div>
+              </h1>
               <p className="max-w-2xl rounded-2xl border-[3px] border-indigo-950/25 bg-white/80 px-4 py-3 text-sm font-semibold leading-relaxed text-indigo-950 shadow-[4px_4px_0_0_rgba(30,27,75,0.12)]">
                 Khám phá và đặt lịch các chuyên gia hỗ trợ Cosplay tốt nhất trong cộng đồng.
               </p>

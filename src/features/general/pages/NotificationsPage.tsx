@@ -3,7 +3,6 @@ import { useNavigate } from "react-router-dom"
 import { Modal } from "antd"
 import {
   Bell,
-  ArrowLeft,
   Loader2,
   Trash2,
   Mail,
@@ -21,121 +20,77 @@ import { VI } from "@/shared/i18n/vi"
 import { isAuthenticated } from "@/features/auth/utils/authStorage"
 import { cn } from "@/lib/utils"
 import type { NotificationItem } from "@/features/notification/types"
-import mascotQuiz from "@/assets/mascot-quiz.png"
-import mascotSearch from "@/assets/mascot-search.png"
+import {
+  showNotificationActionToast,
+  showNotificationDetailToast,
+} from "@/features/notification/utils/showNotificationToast"
 
-const railPanel =
-  "rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.32)] outline-none transition hover:-translate-y-0.5 hover:shadow-[8px_8px_0_0_rgba(30,27,75,0.22)] focus-visible:ring-4 focus-visible:ring-pink-400"
+const quickLinkCard =
+  "flex flex-col gap-1 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-3 text-left shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] outline-none transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.22)] focus-visible:ring-4 focus-visible:ring-pink-400 sm:p-3.5"
 
-function NotificationsRailLeft() {
-  const navigate = useNavigate()
-  return (
-    <aside className="flex flex-col gap-4" aria-label="Gợi ý và khuyến mãi">
-      <button
-        type="button"
-        onClick={() => navigate("/style-quiz")}
-        className={cn(railPanel, "group w-full overflow-hidden text-left")}
-      >
-        <div className="relative h-36 w-full shrink-0 border-b-[3px] border-indigo-950 bg-indigo-950 md:h-40">
-          <img
-            src={mascotQuiz}
-            alt=""
-            className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-indigo-950/35 to-transparent" />
-          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md border-2 border-white/90 bg-white/20 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white backdrop-blur-sm">
-            <Sparkles className="h-3 w-3" aria-hidden />
-            {VI.notification.railQuizBadge}
-          </span>
-        </div>
-        <div className="space-y-2 p-3">
-          <p className="text-sm font-extrabold leading-snug text-indigo-950">
-            {VI.notification.railQuizTitle}
-          </p>
-          <span className="inline-flex rounded-lg border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-2.5 py-1 text-[11px] font-extrabold text-white shadow-[3px_3px_0_0_#1e1b4b]">
-            {VI.notification.railQuizCta}
-          </span>
-        </div>
-      </button>
-
-      <div className={cn(railPanel, "p-3.5")}>
-        <p className="inline-flex items-center gap-1 rounded-md border-2 border-amber-600 bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-amber-950">
-          <Sparkles className="h-3 w-3" aria-hidden />
-          {VI.notification.railTipsBadge}
-        </p>
-        <p className="mt-2 text-sm font-extrabold text-indigo-950">{VI.notification.railTipsTitle}</p>
-        <p className="mt-1.5 text-xs font-semibold leading-relaxed text-indigo-900/85">
-          {VI.notification.railTipsBody}
-        </p>
-      </div>
-    </aside>
-  )
-}
-
-function NotificationsRailRight() {
+function NotificationsQuickLinks() {
   const navigate = useNavigate()
   const { openChat } = useChatPopup()
   return (
-    <aside className="flex flex-col gap-4" aria-label="Tiện ích nhanh">
-      <button
-        type="button"
-        onClick={() => navigate("/costumes")}
-        className={cn(railPanel, "group w-full overflow-hidden text-left")}
-      >
-        <div className="relative h-36 w-full border-b-[3px] border-indigo-950 bg-violet-900 md:h-40">
-          <img
-            src={mascotSearch}
-            alt=""
-            className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105 motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-          />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-indigo-950/90 via-fuchsia-900/25 to-transparent" />
-          <span className="absolute bottom-2 left-2 inline-flex items-center gap-1 rounded-md border-2 border-white/90 bg-white/20 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-white backdrop-blur-sm">
+    <div className="mt-8 border-t-[3px] border-dashed border-indigo-950/25 pt-8">
+      <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-indigo-800/75">
+        {VI.notification.quickLinksTitle}
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          onClick={() => navigate("/style-quiz")}
+          className={quickLinkCard}
+        >
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-pink-700">
+            <Sparkles className="h-3 w-3" aria-hidden />
+            {VI.notification.railQuizBadge}
+          </span>
+          <span className="text-sm font-extrabold text-indigo-950">{VI.notification.railQuizTitle}</span>
+          <span className="text-[11px] font-bold text-cosmate-pink">{VI.notification.railQuizCta} →</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/costumes")}
+          className={quickLinkCard}
+        >
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-violet-800">
             <Shirt className="h-3 w-3" aria-hidden />
             {VI.notification.railShopBadge}
           </span>
-        </div>
-        <div className="space-y-2 p-3">
-          <p className="text-sm font-extrabold leading-snug text-indigo-950">
-            {VI.notification.railShopTitle}
-          </p>
-          <span className="inline-flex rounded-lg border-[2px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 px-2.5 py-1 text-[11px] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
-            {VI.notification.railShopCta}
+          <span className="text-sm font-extrabold text-indigo-950">{VI.notification.railShopTitle}</span>
+          <span className="text-[11px] font-bold text-indigo-900">{VI.notification.railShopCta} →</span>
+        </button>
+        <button type="button" onClick={() => openChat(0, 0)} className={quickLinkCard}>
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-sky-800">
+            <MessageCircle className="h-3 w-3" aria-hidden />
+            {VI.notification.railChatBadge}
           </span>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => openChat(0, 0)}
-        className={cn(railPanel, "w-full p-3.5 text-left")}
-      >
-        <p className="inline-flex items-center gap-1 rounded-md border-2 border-sky-700 bg-sky-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-sky-950">
-          <MessageCircle className="h-3 w-3" aria-hidden />
-          {VI.notification.railChatBadge}
-        </p>
-        <p className="mt-2 text-sm font-extrabold text-indigo-950">{VI.notification.railChatTitle}</p>
-        <p className="mt-1.5 text-xs font-semibold text-indigo-900/85">{VI.notification.railChatBody}</p>
-        <span className="mt-3 inline-flex rounded-lg border-[2px] border-indigo-950 bg-white px-2.5 py-1 text-[11px] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
-          {VI.notification.railChatCta}
-        </span>
-      </button>
-
-      <button
-        type="button"
-        onClick={() => navigate("/guidelines-rules")}
-        className={cn(railPanel, "w-full p-3.5 text-left")}
-      >
-        <p className="inline-flex items-center gap-1 rounded-md border-2 border-violet-700 bg-violet-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide text-violet-950">
-          <BookOpen className="h-3 w-3" aria-hidden />
-          {VI.notification.railHelpBadge}
-        </p>
-        <p className="mt-2 text-sm font-extrabold text-indigo-950">{VI.notification.railHelpTitle}</p>
-        <p className="mt-1.5 text-xs font-semibold text-indigo-900/85">{VI.notification.railHelpBody}</p>
-        <span className="mt-3 inline-flex rounded-lg border-[2px] border-indigo-950 bg-[#fce7f3] px-2.5 py-1 text-[11px] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
-          {VI.notification.railHelpCta}
-        </span>
-      </button>
-    </aside>
+          <span className="text-sm font-extrabold text-indigo-950">{VI.notification.railChatTitle}</span>
+          <span className="text-[11px] font-semibold text-indigo-900/85 line-clamp-2">
+            {VI.notification.railChatBody}
+          </span>
+        </button>
+        <button
+          type="button"
+          onClick={() => navigate("/guidelines-rules")}
+          className={quickLinkCard}
+        >
+          <span className="inline-flex items-center gap-1 text-[10px] font-extrabold uppercase tracking-wide text-violet-800">
+            <BookOpen className="h-3 w-3" aria-hidden />
+            {VI.notification.railHelpBadge}
+          </span>
+          <span className="text-sm font-extrabold text-indigo-950">{VI.notification.railHelpTitle}</span>
+          <span className="text-[11px] font-semibold text-indigo-900/85 line-clamp-2">
+            {VI.notification.railHelpBody}
+          </span>
+        </button>
+      </div>
+      <p className="mt-4 rounded-xl border-[2px] border-indigo-950/30 bg-amber-50/80 px-3 py-2 text-xs font-semibold text-indigo-900/90">
+        <Sparkles className="mb-0.5 mr-1 inline h-3.5 w-3.5 text-amber-700" aria-hidden />
+        {VI.notification.railTipsTitle}: {VI.notification.railTipsBody}
+      </p>
+    </div>
   )
 }
 
@@ -515,16 +470,22 @@ export default function NotificationsPage() {
   ])
 
   const handleOpenNotification = React.useCallback(
-    async (n: { id: number; isRead: boolean; link?: string }) => {
+    async (n: NotificationItem) => {
       if (!n.isRead) {
         await markNotificationRead(n.id)
       }
-      if (!n.link) return
-      if (n.link.startsWith("http")) {
-        window.open(n.link, "_blank", "noopener,noreferrer")
-      } else {
-        navigate(n.link.startsWith("/") ? n.link : `/${n.link}`)
-      }
+      const followLink =
+        n.link?.trim()
+          ? () => {
+              const link = n.link!.trim()
+              if (link.startsWith("http")) {
+                window.open(link, "_blank", "noopener,noreferrer")
+              } else {
+                navigate(link.startsWith("/") ? link : `/${link}`)
+              }
+            }
+          : undefined
+      showNotificationDetailToast(n, { onViewLink: followLink })
     },
     [markNotificationRead, navigate]
   )
@@ -536,7 +497,10 @@ export default function NotificationsPage() {
         okText: VI.common.actions.delete,
         cancelText: VI.common.actions.cancel,
         okButtonProps: { danger: true },
-        onOk: () => void deleteNotification(id),
+        onOk: async () => {
+          const ok = await deleteNotification(id)
+          showNotificationActionToast("delete", ok)
+        },
       })
     },
     [deleteNotification]
@@ -569,34 +533,12 @@ export default function NotificationsPage() {
 
   return (
     <section className="relative min-h-screen overflow-x-clip pb-24 home-anime bg-transparent">
-
-      <div className="relative z-[1] w-full min-w-0 pt-2 md:pt-4">
-        <div className="lg:grid lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)_minmax(0,240px)] lg:items-start lg:gap-4 xl:grid-cols-[minmax(0,280px)_minmax(0,1fr)_minmax(0,280px)] xl:gap-5 2xl:grid-cols-[minmax(0,310px)_minmax(0,1fr)_minmax(0,310px)] 2xl:gap-6">
-          <div className="relative hidden min-w-0 lg:block">
-            <div className="sticky top-[88px] z-[1]">
-              <NotificationsRailLeft />
-            </div>
-          </div>
-
-          <div className="min-w-0 lg:py-1">
-            <div className="relative">
-              <div className="relative z-[1]">
+      <div className="relative z-[1] mx-auto w-full max-w-5xl min-w-0 px-4 pt-2 md:px-5 md:pt-4">
         <div className="mb-6 flex flex-wrap items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] outline-none transition hover:bg-pink-100 focus-visible:ring-4 focus-visible:ring-pink-400"
-            aria-label="Quay lại"
-          >
-            <ArrowLeft className="h-5 w-5" />
-          </button>
           <div className="min-w-0 flex-1">
-            <h1 className="flex flex-wrap items-center gap-2 text-xl font-extrabold leading-tight text-indigo-950 md:text-[1.65rem]">
-              <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border-[3px] border-indigo-950 bg-gradient-to-br from-amber-300 to-pink-500 text-white shadow-[3px_3px_0_0_#1e1b4b]">
-                <Bell className="h-4 w-4" aria-hidden />
-              </span>
+            <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
               <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                「 {VI.notification.title} 」
+                {VI.notification.pageDecorTitle}
               </span>
             </h1>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-indigo-800/70">
@@ -607,7 +549,12 @@ export default function NotificationsPage() {
           {notifications.some((n) => !n.isRead) && (
             <button
               type="button"
-              onClick={() => void markAllRead()}
+              onClick={() =>
+                void (async () => {
+                  const ok = await markAllRead()
+                  showNotificationActionToast("readAll", ok)
+                })()
+              }
               className="shrink-0 rounded-xl border-[3px] border-indigo-950 bg-white px-3 py-2 text-[11px] font-extrabold uppercase tracking-wide text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:bg-teal-200"
             >
               Đánh dấu đã đọc
@@ -615,117 +562,111 @@ export default function NotificationsPage() {
           )}
         </div>
 
-        <div className="lg:grid lg:grid-cols-[minmax(0,260px)_minmax(0,1fr)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,288px)_minmax(0,1fr)] xl:gap-8 2xl:grid-cols-[minmax(0,300px)_minmax(0,1fr)]">
-          <aside className="mb-6 min-w-0 lg:sticky lg:top-[88px] lg:mb-0">
-            <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-indigo-800/75">
-              {VI.notification.filterLabel}
-            </p>
-            <nav
-              aria-label={VI.notification.filterLabel}
-              className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden"
-            >
-              {filterTabs.map((t) => {
-                const Icon = t.icon
-                const active = listTab === t.id
-                return (
-                  <button
-                    key={t.id}
-                    type="button"
-                    onClick={() => setListTab(t.id)}
-                    className={cn(
-                      "flex min-w-[9.75rem] shrink-0 items-center justify-between gap-2 rounded-xl border-[3px] px-3 py-2.5 text-left shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] outline-none transition lg:min-w-0 lg:w-full",
-                      active
-                        ? "border-indigo-950 bg-gradient-to-br from-pink-200 to-amber-100 text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b]"
-                        : "border-indigo-950/60 bg-[#fffbeb]/95 text-indigo-900 hover:border-indigo-950 hover:bg-white",
-                      active && "ring-2 ring-pink-400/80"
-                    )}
-                  >
-                    <span className="flex min-w-0 items-center gap-2">
-                      <span
-                        className={cn(
-                          "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-indigo-950 bg-white shadow-[2px_2px_0_0_#1e1b4b]",
-                          active && "bg-pink-100"
-                        )}
-                      >
-                        <Icon className="h-4 w-4 shrink-0" aria-hidden />
-                      </span>
-                      <span className="min-w-0 truncate text-xs font-extrabold">{t.label}</span>
-                    </span>
-                    <span
+        <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb]/95 p-4 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)] md:p-5">
+          <div className="lg:grid lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] lg:items-start lg:gap-6 xl:grid-cols-[minmax(0,260px)_minmax(0,1fr)] xl:gap-8">
+            <aside className="mb-6 min-w-0 lg:sticky lg:top-[88px] lg:mb-0">
+              <p className="mb-3 text-[11px] font-extrabold uppercase tracking-[0.12em] text-indigo-800/75">
+                {VI.notification.filterLabel}
+              </p>
+              <nav
+                aria-label={VI.notification.filterLabel}
+                className="flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] lg:flex-col lg:overflow-visible lg:pb-0 [&::-webkit-scrollbar]:hidden"
+              >
+                {filterTabs.map((t) => {
+                  const Icon = t.icon
+                  const active = listTab === t.id
+                  return (
+                    <button
+                      key={t.id}
+                      type="button"
+                      onClick={() => setListTab(t.id)}
                       className={cn(
-                        "inline-flex min-w-[1.5rem] justify-center rounded-md border-[2px] border-indigo-950 px-1.5 py-0.5 text-[11px] font-extrabold tabular-nums",
-                        active ? "bg-white" : "bg-white/70"
+                        "flex min-w-[9.75rem] shrink-0 items-center justify-between gap-2 rounded-xl border-[3px] px-3 py-2.5 text-left shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] outline-none transition lg:min-w-0 lg:w-full",
+                        active
+                          ? "border-indigo-950 bg-gradient-to-br from-pink-200 to-amber-100 text-indigo-950 shadow-[6px_6px_0_0_#1e1b4b]"
+                          : "border-indigo-950/60 bg-white/90 text-indigo-900 hover:border-indigo-950 hover:bg-white",
+                        active && "ring-2 ring-pink-400/80"
                       )}
                     >
-                      {t.count}
-                    </span>
-                  </button>
-                )
-              })}
-            </nav>
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className={cn(
+                            "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border-2 border-indigo-950 bg-white shadow-[2px_2px_0_0_#1e1b4b]",
+                            active && "bg-pink-100"
+                          )}
+                        >
+                          <Icon className="h-4 w-4 shrink-0" aria-hidden />
+                        </span>
+                        <span className="min-w-0 truncate text-xs font-extrabold">{t.label}</span>
+                      </span>
+                      <span
+                        className={cn(
+                          "inline-flex min-w-[1.5rem] justify-center rounded-md border-[2px] border-indigo-950 px-1.5 py-0.5 text-[11px] font-extrabold tabular-nums",
+                          active ? "bg-white" : "bg-white/70"
+                        )}
+                      >
+                        {t.count}
+                      </span>
+                    </button>
+                  )
+                })}
+              </nav>
 
-            <div className="mt-5 hidden rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 text-xs font-semibold leading-relaxed text-indigo-900/85 shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] lg:block">
-              {VI.notification.filterHintSidebar}
-            </div>
-          </aside>
+              <div className="mt-5 rounded-xl border-[3px] border-indigo-950/80 bg-white/80 p-4 text-xs font-semibold leading-relaxed text-indigo-900/85 shadow-[3px_3px_0_0_rgba(30,27,75,0.18)]">
+                {VI.notification.filterHintSidebar}
+              </div>
+            </aside>
 
-          <div className="min-w-0 rounded-[1.2rem] border-[4px] border-indigo-950 bg-[#fffbeb]/90 p-3 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)] backdrop-blur-sm md:p-4">
-            {loading ? (
-              <div className="flex flex-col items-center gap-4 py-16">
-                <Loader2 className="h-10 w-10 animate-spin text-pink-600" aria-hidden />
-                <span className="text-sm font-extrabold text-indigo-950">
-                  {VI.common.status.loading}
-                </span>
-              </div>
-            ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center px-4 py-16 text-center">
-                <span className="flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 shadow-[5px_5px_0_0_#1e1b4b]">
-                  <Bell className="h-8 w-8 text-pink-500" aria-hidden />
-                </span>
-                <p className="mt-5 text-base font-extrabold text-indigo-950">{VI.notification.empty}</p>
-                <Button
-                  variant="soft"
-                  className="mt-6 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b]"
-                  onClick={() => navigate("/")}
-                >
-                  Về trang chủ
-                </Button>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="flex flex-col items-center px-4 py-14 text-center">
-                <span className="flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-violet-100 shadow-[5px_5px_0_0_#1e1b4b]">
-                  <Mail className="h-7 w-7 text-violet-700" aria-hidden />
-                </span>
-                <p className="mt-4 text-base font-extrabold text-indigo-950">
-                  {VI.notification.emptyInFilter}
-                </p>
-                <p className="mt-2 max-w-sm text-sm font-semibold text-slate-600">
-                  {VI.notification.filterEmptyHintMobile}
-                </p>
-              </div>
-            ) : (
-              <ul className="flex flex-col gap-4">
-                {filtered.map((n) => (
-                  <NotificationRow
-                    key={n.id}
-                    item={n}
-                    onOpen={handleOpenNotification}
-                    onDeleteRequest={requestDelete}
-                  />
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-              </div>
+            <div className="min-w-0 rounded-xl border-[3px] border-indigo-950/40 bg-white/60 p-3 backdrop-blur-sm md:p-4">
+              {loading ? (
+                <div className="flex flex-col items-center gap-4 py-16">
+                  <Loader2 className="h-10 w-10 animate-spin text-pink-600" aria-hidden />
+                  <span className="text-sm font-extrabold text-indigo-950">
+                    {VI.common.status.loading}
+                  </span>
+                </div>
+              ) : notifications.length === 0 ? (
+                <div className="flex flex-col items-center px-4 py-16 text-center">
+                  <span className="flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 shadow-[5px_5px_0_0_#1e1b4b]">
+                    <Bell className="h-8 w-8 text-pink-500" aria-hidden />
+                  </span>
+                  <p className="mt-5 text-base font-extrabold text-indigo-950">{VI.notification.empty}</p>
+                  <Button
+                    variant="soft"
+                    className="mt-6 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b]"
+                    onClick={() => navigate("/")}
+                  >
+                    Về trang chủ
+                  </Button>
+                </div>
+              ) : filtered.length === 0 ? (
+                <div className="flex flex-col items-center px-4 py-14 text-center">
+                  <span className="flex h-14 w-14 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-violet-100 shadow-[5px_5px_0_0_#1e1b4b]">
+                    <Mail className="h-7 w-7 text-violet-700" aria-hidden />
+                  </span>
+                  <p className="mt-4 text-base font-extrabold text-indigo-950">
+                    {VI.notification.emptyInFilter}
+                  </p>
+                  <p className="mt-2 max-w-sm text-sm font-semibold text-slate-600">
+                    {VI.notification.filterEmptyHintMobile}
+                  </p>
+                </div>
+              ) : (
+                <ul className="flex flex-col gap-4">
+                  {filtered.map((n) => (
+                    <NotificationRow
+                      key={n.id}
+                      item={n}
+                      onOpen={handleOpenNotification}
+                      onDeleteRequest={requestDelete}
+                    />
+                  ))}
+                </ul>
+              )}
             </div>
           </div>
 
-          <div className="relative hidden min-w-0 lg:block">
-            <div className="sticky top-[88px] z-[1]">
-              <NotificationsRailRight />
-            </div>
-          </div>
+          <NotificationsQuickLinks />
         </div>
       </div>
     </section>

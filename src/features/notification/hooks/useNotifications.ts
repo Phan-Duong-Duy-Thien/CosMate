@@ -14,8 +14,8 @@ interface UseNotificationsResult {
   refetch: () => void
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>
   markNotificationRead: (id: number) => Promise<void>
-  markAllRead: () => Promise<void>
-  deleteNotification: (id: number) => Promise<void>
+  markAllRead: () => Promise<boolean>
+  deleteNotification: (id: number) => Promise<boolean>
 }
 
 export function useNotifications(): UseNotificationsResult {
@@ -61,9 +61,11 @@ export function useNotifications(): UseNotificationsResult {
     try {
       await markAllReadService()
       console.log("[useNotifications] Mark all as read success")
+      return true
     } catch (err) {
       setNotifications(previous)
       console.error("[useNotifications] Mark all as read failed:", err)
+      return false
     }
   }, [notifications])
 
@@ -73,9 +75,11 @@ export function useNotifications(): UseNotificationsResult {
     try {
       await removeNotification(id)
       console.log("[useNotifications] Delete success:", id)
+      return true
     } catch (err) {
       setNotifications(previous)
       console.error("[useNotifications] Delete failed:", err)
+      return false
     }
   }, [notifications])
 
