@@ -4,7 +4,8 @@ import type { NavigateFunction } from 'react-router';
 import { getUserAddresses } from '@/features/profile/services/userAddress.service';
 import { fetchWalletInfo } from '@/features/profile/services/wallet.service';
 import { submitOrderAndHandleResult } from '../services/order.service';
-import { loadDraft, loadCheckoutSelections, saveCheckoutSelections, clearCheckoutSelections } from '../utils/rentalDraftStorage';
+import { loadDraft, saveDraft, loadCheckoutSelections, saveCheckoutSelections, clearCheckoutSelections } from '../utils/rentalDraftStorage';
+import { buildAddressCreateFromCheckoutUrl, buildWalletTopUpFromCheckoutUrl } from '../utils/checkoutNavigation';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume } from '@/features/costume-rental/types';
 import type { PaymentMethod } from '../types';
@@ -32,8 +33,10 @@ interface CheckoutActions {
   setPaymentMethod: (method: PaymentMethod) => void;
   submitOrder: () => Promise<void>;
   refetchAddresses: () => Promise<void>;
-  /** Save current checkout selections and navigate to wallet top-up */
+  /** Save selections and navigate to wallet top-up (resume checkout after) */
   navigateToTopUp: () => void;
+  /** Save selections and navigate to add address (resume checkout after) */
+  navigateToAddAddress: () => void;
 }
 
 export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
@@ -70,9 +73,8 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
       const userId = getUserId();
       const draft = loadDraft();
 
-      // Restore checkout selections if returning from wallet top-up
-      const isReturningFromTopUp = new URLSearchParams(window.location.search).get('topup') === 'success';
-      const savedSelections = isReturningFromTopUp ? loadCheckoutSelections() : null;
+      // Restore checkout selections when returning from address / wallet top-up
+      const savedSelections = loadCheckoutSelections();
 
       setState((prev) => ({
         ...prev,
@@ -105,7 +107,13 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
       if (draft?.costumeId) {
         promises.push(
           getCostumeById(draft.costumeId)
-            .then((res) => setState((prev) => ({ ...prev, costume: res.result })))
+            .then((res) => {
+              const costume = res.result;
+              setState((prev) => ({ ...prev, costume }));
+              if (draft && costume.name && draft.costumeName !== costume.name) {
+                saveDraft({ ...draft, costumeName: costume.name });
+              }
+            })
             .catch(() => { message.error('Không thể tải thông tin trang phục.'); setState((prev) => ({ ...prev, error: 'Không thể tải thông tin trang phục.' })); })
         );
       }
@@ -261,15 +269,33 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     }
   }, [state, computed, navigate]);
 
-  /** Save current checkout selections to sessionStorage and navigate to wallet top-up */
-  const navigateToTopUp = useCallback(() => {
+  const persistCheckoutSelections = useCallback(() => {
     saveCheckoutSelections({
       selectedAddressId: state.selectedAddressId,
       paymentMethod: state.paymentMethod,
       policyAccepted: state.policyAccepted,
     });
-    navigate('/profile/wallet/topup?redirect=/rent/checkout');
-  }, [state.selectedAddressId, state.paymentMethod, state.policyAccepted, navigate]);
+  }, [state.selectedAddressId, state.paymentMethod, state.policyAccepted]);
 
-  return { ...state, computed, setSelectedAddressId, setPolicyAccepted, setPaymentMethod, submitOrder, refetchAddresses, navigateToTopUp };
+  const navigateToTopUp = useCallback(() => {
+    persistCheckoutSelections();
+    navigate(buildWalletTopUpFromCheckoutUrl());
+  }, [persistCheckoutSelections, navigate]);
+
+  const navigateToAddAddress = useCallback(() => {
+    persistCheckoutSelections();
+    navigate(buildAddressCreateFromCheckoutUrl());
+  }, [persistCheckoutSelections, navigate]);
+
+  return {
+    ...state,
+    computed,
+    setSelectedAddressId,
+    setPolicyAccepted,
+    setPaymentMethod,
+    submitOrder,
+    refetchAddresses,
+    navigateToTopUp,
+    navigateToAddAddress,
+  };
 }

@@ -60,6 +60,38 @@ export function clearDraft(): void {
   }
 }
 
+/** Form state restored on costume detail when returning from checkout. */
+export interface CostumeDetailFormRestore {
+  days: number;
+  startDate: string;
+  checkedOptionalIds: Set<number>;
+}
+
+/**
+ * Build purchase-panel state from session draft when costumeId matches.
+ */
+export function getCostumeDetailFormRestore(
+  costumeId: number,
+  accessories: { id: number; isRequired: boolean }[] = [],
+): CostumeDetailFormRestore | null {
+  const draft = loadDraft();
+  if (!draft || draft.costumeId !== costumeId) return null;
+
+  const startDate = draft.rentStart
+    ? draft.rentStart.split('T')[0]
+    : '';
+
+  const optionalIds = accessories
+    .filter((a) => !a.isRequired && draft.selectedAccessoryIds.includes(a.id))
+    .map((a) => a.id);
+
+  return {
+    days: draft.rentDay > 0 ? draft.rentDay : 1,
+    startDate,
+    checkedOptionalIds: new Set(optionalIds),
+  };
+}
+
 // ── Checkout Selections (address, payment method, policy) ───────────────────
 
 /**
