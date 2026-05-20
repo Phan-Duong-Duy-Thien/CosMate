@@ -8,7 +8,7 @@ import { Button } from '@/shared/components/Button'
 import { VI } from '@/shared/i18n/vi'
 import { cn } from '@/lib/utils'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''

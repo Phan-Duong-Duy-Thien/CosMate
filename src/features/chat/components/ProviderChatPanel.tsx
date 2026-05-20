@@ -1,13 +1,13 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Send, Image } from "lucide-react"
 import { message } from "antd"
-import { useChatRooms } from "../hooks/useChatRooms"
+import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
 import {
-  getChatMessagesService,
   getOrCreateChatRoomService,
   markRoomAsReadService,
   uploadImageService,
 } from "../services/chat.service"
+import { useLoadChatHistory } from "../hooks/useLoadChatHistory"
 import type { SearchUserResult } from "../services/user.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatInboxSidebar } from "./ChatInboxSidebar"
@@ -32,7 +32,7 @@ function computeInitials(fullName: string | null | undefined): string {
 }
 
 export function ProviderChatPanel() {
-  const { rooms, loading: roomsLoading, refetch: refetchRooms } = useChatRooms()
+  const { rooms, loading: roomsLoading } = useChatRooms()
   const [activeRoom, setActiveRoom] = useState<ChatRoomListItem | null>(null)
   const [inputValue, setInputValue] = useState("")
   const bottomRef = useRef<HTMLDivElement>(null)
@@ -41,23 +41,15 @@ export function ProviderChatPanel() {
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Message store (single source of truth) ────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const activeRoomId = activeRoom?.roomId ?? null
+  const { messages, setMessages, mergeServerMessage, addOptimisticMessage, removeOptimisticMessage } =
+    useChatMessageStore(activeRoomId)
+  const isLoadingHistory = useLoadChatHistory(activeRoomId, setMessages)
+  const showHistoryLoader = isLoadingHistory && messages.length === 0
   const [isConnected, setIsConnected] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Load history from REST API when room changes
-  useEffect(() => {
-    if (activeRoom?.roomId == null) return
-    setIsLoadingHistory(true)
-    clearMessages()
-    getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data?.content ?? []))
-      .catch(() => setMessages([]))
-      .finally(() => setIsLoadingHistory(false))
-  }, [activeRoom?.roomId, setMessages, clearMessages])
 
   // Mark room as read when user opens it
   useEffect(() => {
@@ -113,7 +105,7 @@ export function ProviderChatPanel() {
     }
     try {
       const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
-      refetchRooms()
+      refreshChatRoomsList()
       setActiveRoom({
         roomId: newRoom.id,
         partnerId: user.id,
@@ -249,7 +241,7 @@ export function ProviderChatPanel() {
               <p className="text-sm font-medium">Select a conversation</p>
               <p className="text-xs">Choose a chat from the left</p>
             </div>
-          ) : isLoadingHistory ? (
+          ) : showHistoryLoader ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
               <p className="text-sm font-medium">Loading...</p>

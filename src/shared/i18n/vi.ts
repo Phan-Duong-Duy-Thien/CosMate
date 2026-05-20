@@ -629,7 +629,7 @@ export const VI = {
 
       messages: {
         registrationFailed: "Đăng ký thất bại. Vui lòng thử lại.",
-        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng đăng nhập để tiếp tục.",
+        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng xác nhận bằng email để tiếp tục.",
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
       },
     },
@@ -1452,7 +1452,11 @@ export const VI = {
       providerAddress: "Địa chỉ nhà cung cấp",
       trackings: "Theo dõi vận chuyển",
       images: "Hình ảnh",
-      empty: "Không có dữ liệu",
+      empty: "Chưa có dữ liệu",
+      lineItemsHint: "Giá từng mục đã hiển thị ở bảng trên; danh sách bên dưới chỉ ghi tên chi tiết.",
+      unnamedAccessory: "Phụ kiện (chưa có tên)",
+      unnamedSurcharge: "Phụ phí (chưa có tên)",
+      unnamedRentalOption: "Gói thuê (chưa có tên)",
       trackingCode: "Mã vận đơn",
       trackingStatus: "Trạng thái",
       stage: "Giai đoạn",
@@ -2666,6 +2670,9 @@ export const VI = {
     // Policy
     policy: {
       label: "Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật",
+      agreePrefix: "Tôi đồng ý với",
+      termsLink: "Điều khoản dịch vụ",
+      agreeSuffix: "và Chính sách bảo mật",
       required: "Bạn cần đồng ý với điều khoản để tiếp tục",
     },
 

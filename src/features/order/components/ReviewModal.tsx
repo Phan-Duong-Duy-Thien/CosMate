@@ -39,7 +39,7 @@ export function ReviewModal({
 
   const isReadOnly = !!existingReview
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://api.cosmate.site"
   const resolveImageUrl = (url: string) =>
     !url ? "" : url.startsWith("http://") || url.startsWith("https://") ? url : `${API_BASE}${url}`
   const normalizeReviewImages = (images: Array<{ id?: number; url?: string } | string> = []) =>

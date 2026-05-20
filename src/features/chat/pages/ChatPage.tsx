@@ -14,7 +14,8 @@ import {
   subscribeChatRoom,
   sendChatMessage,
 } from "../services/chatSocket.service"
-import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
+import { markRoomAsReadService, uploadImageService } from "../services/chat.service"
+import { useLoadChatHistory } from "../hooks/useLoadChatHistory"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import type { ChatPartner, ChatMessage } from "../types"
 
@@ -61,22 +62,13 @@ export default function ChatPage() {
   const partnerLoading = false
 
   // ── Message store (single source of truth) ──────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const { messages, setMessages, mergeServerMessage, addOptimisticMessage, removeOptimisticMessage } =
+    useChatMessageStore(resolvedRoomId)
+  const isLoadingHistory = useLoadChatHistory(resolvedRoomId, setMessages)
+  const showHistoryLoader = isLoadingHistory && messages.length === 0
   const [isConnected, setIsConnected] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
-
-  // Load history from REST API
-  useEffect(() => {
-    if (resolvedRoomId === null) return
-    setIsLoadingHistory(true)
-    clearMessages()
-    getChatMessagesService(resolvedRoomId)
-      .then((data) => setMessages(data?.content ?? []))
-      .catch(() => setMessages([]))
-      .finally(() => setIsLoadingHistory(false))
-  }, [resolvedRoomId, setMessages, clearMessages])
 
   // Mark room as read when user opens it
   useEffect(() => {
@@ -249,7 +241,7 @@ export default function ChatPage() {
         {/* Message List */}
         {isInChat ? (
           <div className="flex flex-1 min-h-0 flex-col overflow-hidden">
-            {isLoadingHistory ? (
+            {showHistoryLoader ? (
               <div className="flex h-full min-h-0 flex-1 flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
                 <p className="text-sm font-medium">Loading...</p>

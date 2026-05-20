@@ -4,7 +4,7 @@
  * Must point to BE callback endpoints (not FE) so gateways can notify the server.
  */
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080').replace(
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site').replace(
   /\/+$/,
   ''
 );

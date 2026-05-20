@@ -147,24 +147,18 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     // Get selected accessories
     const selectedAccessories = costume.accessories.filter(a => finalAccessoryIds.includes(a.id));
 
-    // Get selected rental option
-    const selectedRentalOption = costume.rentalOptions.find(o => o.id === draft.selectedRentalOptionId) ?? null;
-
-    // Calculate prices
+    // Calculate prices (gói thuê không áp dụng — không cộng vào tổng)
     const baseRent = costume.pricePerDay * draft.rentDay;
-    const rentalOptionPrice = selectedRentalOption?.price ?? 0;
     const accessoriesTotal = selectedAccessories.reduce((sum, a) => sum + a.price, 0);
     const surchargesTotal = costume.surcharges.reduce((sum, s) => sum + s.price, 0);
     const deposit = costume.depositAmount;
-    const totalToPay = baseRent + rentalOptionPrice + accessoriesTotal + surchargesTotal + deposit;
+    const totalToPay = baseRent + accessoriesTotal + surchargesTotal + deposit;
 
     return {
       requiredAccessoryIds,
       finalAccessoryIds,
       selectedAccessories,
-      selectedRentalOption,
       baseRent,
-      rentalOptionPrice,
       accessoriesTotal,
       surchargesTotal,
       deposit,
@@ -233,7 +227,7 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
         paymentMethod,
         cosplayerAddressId: selectedAddressId,
         selectedAccessoryIds: draft.selectedAccessoryIds,
-        selectedRentalOptionId: draft.selectedRentalOptionId,
+        selectedRentalOptionId: null,
       };
 
       // returnUrl must point to BE callback endpoints so BE can receive the payment gateway callback,
