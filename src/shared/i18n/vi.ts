@@ -940,7 +940,7 @@ export const VI = {
         ghnFeeError: "Không thể ước tính phí vận chuyển",
         ghnFeeUnavailable: "Không thể ước tính phí. Kiểm tra địa chỉ trên đơn hoặc cấu hình vận chuyển.",
         shippingFeeApproximateHint:
-          "Phí ước tính gần đúng (địa chỉ chưa có phường/xã chính xác — nên cập nhật địa chỉ).",
+          "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
         shippingFeeResolveFailedHint:
           "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",

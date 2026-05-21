@@ -1,7 +1,7 @@
 /**
  * Hook for fetching provider orders with filtering
  */
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import {
   fetchProviderOrders,
   prepareProviderOrder,
@@ -10,9 +10,14 @@ import {
   completeProviderOrder,
 } from '../services/order.service';
 import { getAuth } from '@/features/auth/services/tokenStorage';
-import { getUserById } from '@/features/admin/api/adminUsers.api';
 import { notifyOrdersChanged } from '@/shared/sync/dataSync';
-import { mergeOrderFromMutation, patchOrderStatus } from '@/shared/sync/patchOrderList';
+import {
+  mergeOrderFromMutation,
+  mergeOrdersWithPendingStatus,
+  patchOrderStatus,
+  type PendingOrderStatus,
+} from '@/shared/sync/patchOrderList';
+import { enrichOrderCosplayerNames } from '@/shared/utils/enrichOrderCosplayerNames';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 import type { OrderItem, OrderStatus } from '../types';
@@ -39,26 +44,8 @@ const STATUS_AFTER_ACTION: Record<string, OrderStatus> = {
   ship: 'SHIPPING_OUT',
 };
 
-async function enrichCosplayerNames(orders: OrderItem[]): Promise<OrderItem[]> {
-  const ordersNeedingName = orders.filter((o) => !o.cosplayerName);
-  if (ordersNeedingName.length === 0) return orders;
-
-  const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
-  const userResults = await Promise.all(
-    uniqueCosplayerIds.map((id) => getUserById(id).catch(() => null)),
-  );
-  const cosplayerMap = Object.fromEntries(
-    userResults
-      .filter((u): u is NonNullable<typeof u> => u !== null)
-      .map((u) => [u.id, u.fullName ?? '—']),
-  );
-
-  return orders.map((order) =>
-    !order.cosplayerName
-      ? { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName }
-      : order,
-  );
-}
+/** Background sync after mutation — avoid overwriting optimistic UI with stale list. */
+const REFETCH_AFTER_MUTATION_MS = 4000;
 
 export function useProviderOrders() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
@@ -70,6 +57,7 @@ export function useProviderOrders() {
   const [deliveringOutOrderId, setDeliveringOutOrderId] = useState<number | null>(null);
   const [shippingOrderId, setShippingOrderId] = useState<number | null>(null);
   const [completingOrderId, setCompletingOrderId] = useState<number | null>(null);
+  const pendingStatusRef = useRef<Map<number, PendingOrderStatus>>(new Map());
 
   const providerId = useMemo(() => {
     const auth = getAuth();
@@ -110,7 +98,7 @@ export function useProviderOrders() {
       try {
         const result = await fetchProviderOrders(providerId);
         let costumeOrders = result.filter((o) => o.orderType === 'RENT_COSTUME');
-        costumeOrders = await enrichCosplayerNames(costumeOrders);
+        costumeOrders = await enrichOrderCosplayerNames(costumeOrders);
 
         const unexpected = result.filter((o) => o.orderType !== 'RENT_COSTUME');
         if (unexpected.length > 0) {
@@ -121,7 +109,10 @@ export function useProviderOrders() {
             unexpected.map((o) => ({ id: o.id, type: o.orderType })),
           );
         }
-        setOrders(costumeOrders);
+
+        const merged = mergeOrdersWithPendingStatus(costumeOrders, pendingStatusRef.current);
+        pendingStatusRef.current = merged.pending;
+        setOrders(merged.orders);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to fetch orders';
         setError(message);
@@ -142,6 +133,7 @@ export function useProviderOrders() {
 
   const applyOrderMutation = useCallback(
     (orderId: number, nextStatus: OrderStatus, partial?: Partial<OrderItem>) => {
+      pendingStatusRef.current.set(orderId, { status: nextStatus, updatedAt: Date.now() });
       setOrders((prev) =>
         partial
           ? mergeOrderFromMutation(prev, orderId, { ...partial, status: nextStatus })
@@ -152,6 +144,12 @@ export function useProviderOrders() {
     [],
   );
 
+  const scheduleBackgroundRefetch = useCallback(() => {
+    window.setTimeout(() => {
+      void refetch({ silent: true });
+    }, REFETCH_AFTER_MUTATION_MS);
+  }, [refetch]);
+
   const runMutation = useCallback(
     async (
       orderId: number,
@@ -160,18 +158,21 @@ export function useProviderOrders() {
     ): Promise<boolean> => {
       try {
         const result = await action();
-        if (result && typeof result === 'object' && 'status' in result) {
-          applyOrderMutation(orderId, result.status as OrderStatus, result);
-        } else {
-          applyOrderMutation(orderId, nextStatus);
-        }
-        void refetch({ silent: true });
+        const partial =
+          result && typeof result === 'object'
+            ? (() => {
+                const { status: _ignored, ...rest } = result as OrderItem;
+                return rest as Partial<OrderItem>;
+              })()
+            : undefined;
+        applyOrderMutation(orderId, nextStatus, partial);
+        scheduleBackgroundRefetch();
         return true;
       } catch {
         return false;
       }
     },
-    [applyOrderMutation, refetch],
+    [applyOrderMutation, scheduleBackgroundRefetch],
   );
 
   const filteredOrders = useMemo(() => {

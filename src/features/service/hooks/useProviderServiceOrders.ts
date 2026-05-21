@@ -14,6 +14,7 @@ import { setWaitingStatus, fetchProviderServiceOrders, startService } from '../s
 import { completeService } from '../services/serviceOrder.service';
 import type { ServiceOrder } from '../api/booking.api';
 import { getUserById } from '@/features/admin/api/adminUsers.api';
+import { canFetchOtherUserProfiles } from '@/shared/utils/canFetchUserProfile';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import {
   DATA_SYNC_EVENTS,
@@ -76,24 +77,24 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       const apiStatuses = status && status !== 'all' ? status : undefined;
       let data = await fetchProviderServiceOrders(apiStatuses);
 
-      // Batch resolve missing cosplayerName from cosplayerId
-      const ordersNeedingName = data.filter((o) => !o.cosplayerName);
-      if (ordersNeedingName.length > 0) {
-        const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
-        const userResults = await Promise.all(
-          uniqueCosplayerIds.map((id) => getUserById(id).catch(() => null))
-        );
-        const cosplayerMap = Object.fromEntries(
-          userResults
-            .filter((u): u is NonNullable<typeof u> => u !== null)
-            .map((u) => [u.id, u.fullName ?? '—'])
-        );
-        data = data.map((order) => {
-          if (!order.cosplayerName) {
-            return { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName };
-          }
-          return order;
-        });
+      if (canFetchOtherUserProfiles()) {
+        const ordersNeedingName = data.filter((o) => !o.cosplayerName?.trim());
+        if (ordersNeedingName.length > 0) {
+          const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
+          const userResults = await Promise.all(
+            uniqueCosplayerIds.map((id) => getUserById(id)),
+          );
+          const cosplayerMap = Object.fromEntries(
+            userResults
+              .filter((u): u is NonNullable<typeof u> => u !== null)
+              .map((u) => [u.id, u.fullName ?? '—']),
+          );
+          data = data.map((order) =>
+            !order.cosplayerName?.trim()
+              ? { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName }
+              : order,
+          );
+        }
       }
 
       const sorted = [...data].sort(
