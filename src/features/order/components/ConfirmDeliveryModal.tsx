@@ -44,9 +44,27 @@ export function ConfirmDeliveryModal({
     onSubmittingChange?.(isConfirming ? orderId : null)
   }, [isConfirming, orderId, onSubmittingChange])
 
-  const handleConfirm = async () => {
+  const runConfirm = async () => {
     const ok = await confirmSession()
     if (ok) onSuccess()
+  }
+
+  const handleConfirm = () => {
+    if (previewImages.length > 0) {
+      void runConfirm()
+      return
+    }
+
+    Modal.confirm({
+      title: VI.profile.orders.confirmDeliveryQr.noImagesWarningTitle,
+      content: VI.profile.orders.confirmDeliveryQr.noImagesWarningContent,
+      okText: VI.profile.orders.confirmDeliveryQr.noImagesWarningConfirm,
+      cancelText: VI.profile.orders.confirmDeliveryQr.noImagesWarningCancel,
+      okButtonProps: { className: "!rounded-lg !font-bold" },
+      cancelButtonProps: { className: "!rounded-lg" },
+      centered: true,
+      onOk: () => runConfirm(),
+    })
   }
 
   return (

@@ -1232,7 +1232,7 @@ export const VI = {
       actionConfirmDelivery: "Xác nhận nhận hàng",
       confirmDeliveryQr: {
         intro:
-          "Dùng app CosMate trên điện thoại để chụp ảnh xác nhận. Sau khi ảnh hiển thị bên dưới (1–5 tấm), bấm xác nhận trên máy tính.",
+          "Bạn có thể quét mã QR bằng app CosMate để chụp ảnh xác nhận (khuyến nghị 1–5 tấm). Không bắt buộc có ảnh vẫn có thể xác nhận nhận hàng trên máy tính.",
         steps: [
           "Mở app CosMate và đăng nhập cùng tài khoản với web",
           "Vào mục Quét QR trong app",
@@ -1249,6 +1249,11 @@ export const VI = {
         imageLoadFailed: "Không tải được ảnh xác nhận từ máy chủ",
         apiPending: "Chưa thể hoàn tất — đang chờ API xác nhận từ backend.",
         needImages: "Cần ít nhất 1 ảnh từ điện thoại trước khi xác nhận.",
+        noImagesWarningTitle: "Xác nhận không kèm ảnh?",
+        noImagesWarningContent:
+          "Bạn chưa gửi ảnh xác nhận từ điện thoại. Nếu không chụp ảnh, quyền lợi của bạn (khiếu nại, hoàn tiền, tranh chấp đơn hàng…) có thể bị ảnh hưởng theo quy định của CosMate.",
+        noImagesWarningConfirm: "Vẫn xác nhận nhận hàng",
+        noImagesWarningCancel: "Quay lại chụp ảnh",
         tooManyImages: "Tối đa 5 ảnh xác nhận.",
         sessionFailed: "Không tạo được phiên QR. Vui lòng thử lại.",
         sessionExpired:
