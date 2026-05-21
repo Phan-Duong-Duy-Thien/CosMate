@@ -181,3 +181,10 @@ export interface OrderDetail {
   images: OrderImage[];
   trackings: OrderTracking[];
 }
+
+/** Địa chỉ text từ DB/đơn hàng — input cho map GHN. */
+export interface AddressFieldsForGhn {
+  city: string;
+  district: string;
+  address?: string;
+}

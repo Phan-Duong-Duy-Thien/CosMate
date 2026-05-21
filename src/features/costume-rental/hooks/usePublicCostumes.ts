@@ -9,6 +9,8 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch'
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync'
 import { getCostumes } from '../api/costume.api'
 import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
@@ -138,6 +140,8 @@ export function usePublicCostumes() {
   useEffect(() => {
     fetchCostumes()
   }, [fetchCostumes])
+
+  useDataSyncRefetch(fetchCostumes, DATA_SYNC_EVENTS.COSTUMES_CHANGED)
 
   return { items, isLoading, error, refetch: fetchCostumes }
 }

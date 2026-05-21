@@ -8,6 +8,9 @@ import { getOrdersByUserId, getAllOrdersByUserId } from '@/features/order/api/or
 import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
 import { getCostumeById } from '@/features/costume-rental/api/costume.api';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { DATA_SYNC_EVENTS, notifyOrdersChanged } from '@/shared/sync/dataSync';
+import { mergeOrderFromMutation } from '@/shared/sync/patchOrderList';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
 
 // Map UI tab to backend status
@@ -48,7 +51,14 @@ export interface UsePurchaseOrdersResult {
   refetch: () => Promise<void>;
   confirmDelivery: (orderId: number, images: File[], notes: string[]) => Promise<boolean>;
   confirmingDeliveryId: number | null;
-  returnOrder: (orderId: number, trackingCode: string, images: File[], notes: string[]) => Promise<boolean>;
+  returnOrder: (
+    orderId: number,
+    trackingCode: string,
+    shippingCarrierName: string,
+    images: File[],
+    notes: string[],
+    autoCreateGhn?: boolean
+  ) => Promise<boolean>;
   returningOrderId: number | null;
   costumeImageMap: Record<number, string>;
   page: number;
@@ -200,12 +210,16 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     }
   }, [userId]);
 
+  useDataSyncRefetch(refetch, DATA_SYNC_EVENTS.ORDERS_CHANGED, Boolean(userId));
+
   const confirmDelivery = useCallback(
     async (orderId: number, images: File[], notes: string[]) => {
       setConfirmingDeliveryId(orderId);
       try {
-        await confirmDeliveryOrder(orderId, images, notes);
-        await refetch();
+        const updated = await confirmDeliveryOrder(orderId, images, notes);
+        setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
+        notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
+        void refetch();
         return true;
       } catch {
         return false;
@@ -217,11 +231,29 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   );
 
   const returnOrder = useCallback(
-    async (orderId: number, trackingCode: string, images: File[], notes: string[]) => {
+    async (
+      orderId: number,
+      trackingCode: string,
+      shippingCarrierName: string,
+      images: File[],
+      notes: string[],
+      autoCreateGhn = false
+    ) => {
       setReturningOrderId(orderId);
       try {
-        await returnCosplayerOrder(orderId, trackingCode, notes, images);
-        await refetch();
+        const updated = await returnCosplayerOrder(
+          orderId,
+          trackingCode,
+          shippingCarrierName,
+          notes,
+          images,
+          { autoCreateGhn }
+        );
+        if (updated && typeof updated === 'object' && 'status' in updated) {
+          setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
+        }
+        notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
+        void refetch();
         return true;
       } catch {
         return false;

@@ -6,7 +6,7 @@ import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { useServiceOrders, type ServiceOrderTab } from "../hooks/useServiceOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
-import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
+import { ReturnOrderModal, type ReturnOrderSubmitData } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
 import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
@@ -16,6 +16,7 @@ import { getReviewByOrderId, type ReviewItem } from "@/features/costume-rental/a
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
 import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
 import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
+import { notifyOrdersChanged } from "@/shared/sync/dataSync"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
@@ -279,9 +280,16 @@ export default function PurchaseHistoryPage() {
     setReturnModalOpen(true)
   }
 
-  const handleReturnSubmit = async (data: { trackingCode: string; images: File[]; notes: string[] }) => {
+  const handleReturnSubmit = async (data: ReturnOrderSubmitData) => {
     if (!returnOrderId) return
-    const success = await returnOrder(returnOrderId, data.trackingCode, data.images, data.notes)
+    const success = await returnOrder(
+      returnOrderId,
+      data.trackingCode,
+      data.shippingCarrierName,
+      data.images,
+      data.notes,
+      data.autoCreateGhn
+    )
     if (success) {
       message.success(VI.profile.orders.toastReturnSuccess)
       setReturnModalOpen(false)
@@ -324,6 +332,7 @@ export default function PurchaseHistoryPage() {
       message.success(VI.profile.orders.toastCancelSuccess)
       setCancelModalOpen(false)
       setCancelOrderId(null)
+      notifyOrdersChanged({ orderId: cancelOrderId, orderType: 'RENT_COSTUME' })
       costumeRefetch()
     } else {
       message.error(VI.profile.orders.toastCancelFailed)

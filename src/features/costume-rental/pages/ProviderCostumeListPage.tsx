@@ -40,6 +40,7 @@ import { ProviderActivationGate } from '@/features/provider/components/ProviderA
 import { VI } from '@/shared/i18n/vi'
 import { Button as UiButton } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { notifyCostumesChanged } from '@/shared/sync/dataSync'
 
 const { Text } = Typography
 
@@ -254,7 +255,12 @@ export default function ProviderCostumeListPage() {
     setStatusFilter,
   } = useProviderCostumes()
 
-  const editModal = useEditCostumeModal({ onSuccess: refetch })
+  const editModal = useEditCostumeModal({
+    onSuccess: () => {
+      refetch()
+      notifyCostumesChanged()
+    },
+  })
 
   const sidebarItems = buildSidebarItems()
 

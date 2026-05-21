@@ -22,7 +22,7 @@ import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '@/features/provider/constants/sidebar';
 import { useProviderOrders, ORDER_STATUS_TABS } from '../hooks/useProviderOrders';
-import { ShipOrderModal } from '../components/ShipOrderModal';
+import { ShipOrderModal, type ShipOrderSubmitData } from '../components/ShipOrderModal';
 import { OrderDetailDrawer } from '../components/OrderDetailDrawer';
 import { CreateDisputeModal } from '../components/CreateDisputeModal';
 import { useCreateDispute } from '../hooks/useCreateDispute';
@@ -178,10 +178,17 @@ export default function ProviderOrdersPage() {
   };
 
   // Handle ship submit
-  const handleShipSubmit = async (data: { trackingCode: string; shippingCarrierName: string; notes: string[]; images: File[] }) => {
+  const handleShipSubmit = async (data: ShipOrderSubmitData) => {
     if (!shipOrderId) return;
 
-    const success = await shipOrder(shipOrderId, data.trackingCode, data.shippingCarrierName, data.notes, data.images);
+    const success = await shipOrder(
+      shipOrderId,
+      data.trackingCode,
+      data.shippingCarrierName,
+      data.notes,
+      data.images,
+      data.autoCreateGhn
+    );
     if (success) {
       message.success(VI.provider.orders.toast.shipSuccess);
       setShipModalOpen(false);

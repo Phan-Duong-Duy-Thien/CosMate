@@ -4,6 +4,7 @@
  */
 import * as userAddressApi from '../api/userAddress.api';
 import type { UserAddress, UpsertUserAddressPayload } from '../types';
+import { buildLegacyAddressPayload } from './addressPayload.service';
 
 /**
  * Get a single user address by ID
@@ -36,23 +37,26 @@ export async function fetchAddresses(userId: number): Promise<UserAddress[]> {
 }
 
 /**
- * Create a new user address
- * Maps form data to API payload
+ * Create a new user address (legacy BE fields only)
  */
 export async function createUserAddress(
   userId: number,
   formData: CreateAddressFormData,
   provinceName: string,
-  districtName: string
+  wardName: string
 ): Promise<UserAddress> {
-  const payload: UpsertUserAddressPayload = {
+  if (formData.provinceCode == null || formData.districtCode == null) {
+    throw new Error('provinceCode and wardCode are required');
+  }
+
+  const payload = buildLegacyAddressPayload({
     name: formData.name,
     phone: formData.phone,
-    city: provinceName,
-    district: districtName,
-    address: formData.streetAddress,
     addressName: formData.addressName,
-  };
+    provinceName,
+    wardName,
+    detailAddress: formData.streetAddress,
+  });
 
   return userAddressApi.createUserAddress(userId, payload);
 }
@@ -79,11 +83,8 @@ export async function editAddress(
 }
 
 /**
- * Delete address (prepared for future UI usage)
+ * Delete address
  */
-export async function deleteAddress(
-  userId: number,
-  addressId: number
-): Promise<void> {
+export async function deleteAddress(userId: number, addressId: number): Promise<void> {
   await userAddressApi.deleteUserAddress(userId, addressId);
 }

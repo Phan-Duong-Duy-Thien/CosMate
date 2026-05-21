@@ -16,6 +16,11 @@ import { useServiceOrderVerification } from '@/features/service/hooks/useService
 import { CHECKOUT_PATH } from '@/features/order/utils/checkoutNavigation';
 import type { UserRole } from '@/types/auth';
 import { CheckCircle2, XCircle, Clock } from 'lucide-react';
+import {
+  notifyOrdersChanged,
+  notifyServiceOrdersChanged,
+  notifyWalletChanged,
+} from '@/shared/sync/dataSync';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'pending' | 'unknown';
 
@@ -145,10 +150,20 @@ export default function PaymentResultPage() {
   const tokenHubPath = getTokenHubPathForCurrentUser();
 
   React.useEffect(() => {
-    if (isTokenContext && isSuccess) {
+    if (!isSuccess) return;
+    if (isTokenContext) {
       window.dispatchEvent(new Event('profile:refresh'));
     }
-  }, [isTokenContext, isSuccess]);
+    if (isWalletContext) {
+      notifyWalletChanged();
+      return;
+    }
+    if (serviceResolved) {
+      notifyServiceOrdersChanged();
+      return;
+    }
+    notifyOrdersChanged();
+  }, [isSuccess, isTokenContext, isWalletContext, serviceResolved]);
 
   const handlePrimaryAction = () => {
     if (redirectUrl) {

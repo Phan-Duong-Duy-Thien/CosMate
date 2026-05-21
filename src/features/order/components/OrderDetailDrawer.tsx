@@ -5,6 +5,8 @@
  */
 
 import { useState, type ReactNode } from 'react';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Typography, Button, Table } from 'antd';
 import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined, GiftOutlined, DollarOutlined } from '@ant-design/icons';
 import { cn } from '@/lib/utils';
@@ -175,6 +177,12 @@ export function OrderDetailDrawer({
   hideExtendActions = false,
 }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
+
+  useDataSyncRefetch(
+    () => (orderId ? refetch() : undefined),
+    DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(orderId),
+  );
   const { extendOrder, isExtending } = useExtendOrder();
 
   // Extend modal state
@@ -447,7 +455,9 @@ export function OrderDetailDrawer({
             <Descriptions column={1} size="small">
               <Descriptions.Item label={VI.order.detail.orderId}>{cosplayerAddress.name}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{cosplayerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{cosplayerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {cosplayerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{cosplayerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {cosplayerAddress.phone}
@@ -464,7 +474,9 @@ export function OrderDetailDrawer({
             <Descriptions column={1} size="small">
               <Descriptions.Item label={VI.order.detail.orderId}>{providerAddress.name}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{providerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{providerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {providerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{providerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {providerAddress.phone}

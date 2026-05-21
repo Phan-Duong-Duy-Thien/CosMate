@@ -933,6 +933,16 @@ export const VI = {
         trackingCodePlaceholder: "Nhập mã vận đơn",
         carrierName: "Đơn vị vận chuyển",
         selectCarrier: "Chọn đơn vị vận chuyển",
+        autoTrackingHint:
+          "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi hàng.",
+        shippingFeeLabel: "Ước tính phí vận chuyển",
+        ghnFeeLoading: "Đang tính phí...",
+        ghnFeeError: "Không thể ước tính phí vận chuyển",
+        ghnFeeUnavailable: "Không thể ước tính phí. Kiểm tra địa chỉ trên đơn hoặc cấu hình vận chuyển.",
+        shippingFeeApproximateHint:
+          "Phí ước tính gần đúng (địa chỉ chưa có phường/xã chính xác — nên cập nhật địa chỉ).",
+        shippingFeeResolveFailedHint:
+          "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",
         carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
@@ -947,6 +957,7 @@ export const VI = {
       validation: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
         carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
@@ -1157,6 +1168,10 @@ export const VI = {
         deleteSuccess: "Xóa địa chỉ thành công!",
         createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
         saveError: "Không thể lưu địa chỉ. Vui lòng thử lại.",
+        ghnApproximate:
+          "Địa chỉ đã lưu. Ước tính phí vận chuyển có thể chưa chính xác — nên chọn đúng Phường/Xã từ danh sách.",
+        ghnNotResolvable:
+          "Địa chỉ đã lưu nhưng chưa map được với GHN. Vui lòng chọn lại Tỉnh/Thành phố và Phường/Xã từ danh sách để ước tính phí vận chuyển.",
       },
       confirm: {
         delete: "Bạn có chắc muốn xóa địa chỉ này không?",
@@ -1251,6 +1266,10 @@ export const VI = {
       actionReturn: "Trả hàng",
       returnTrackingCode: "Mã vận đơn",
       returnTrackingCodePlaceholder: "Nhập mã vận đơn",
+      returnCarrierName: "Đơn vị vận chuyển",
+      returnSelectCarrier: "Chọn đơn vị vận chuyển",
+      returnAutoTrackingHint:
+        "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi trả hàng.",
       returnImages: "Hình ảnh xác nhận",
       // Validation
       validation: {
@@ -1258,6 +1277,7 @@ export const VI = {
       },
       validationReturn: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       // Review action
