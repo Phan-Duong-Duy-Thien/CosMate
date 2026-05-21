@@ -39,6 +39,11 @@ export const RelatedCostumeList = ({ items, onSelect }: RelatedCostumeListProps)
             <p className="line-clamp-2 text-sm font-semibold text-slate-800">
               {item.name}
             </p>
+            {item.shopName?.trim() ? (
+              <p className="truncate text-[11px] font-medium text-slate-500" title={item.shopName}>
+                {item.shopName}
+              </p>
+            ) : null}
             <p className="text-[11px] font-medium text-slate-500">
               {item.priceMin.toLocaleString("vi-VN")} VND / ngày
             </p>

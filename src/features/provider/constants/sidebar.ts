@@ -7,6 +7,7 @@ import {
   PlusCircle,
   MessageCircle,
   Wallet,
+  Coins,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -74,6 +75,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     icon: Wallet,
     path: '/provider-rental/wallet',
   },
+  {
+    key: 'aiToken',
+    label: VI.provider.sidebar.aiToken,
+    icon: Coins,
+    path: '/provider-rental/token',
+  },
 ];
 
 /**
@@ -99,6 +106,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/service-orders',
   },
   {
+    key: 'reviews',
+    label: VI.provider.sidebar.photographReviews,
+    icon: Star,
+    path: '/provider-photograph/reviews',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
@@ -121,6 +134,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.wallet,
     icon: Wallet,
     path: '/provider-photograph/wallet',
+  },
+  {
+    key: 'aiToken',
+    label: VI.provider.sidebar.aiToken,
+    icon: Coins,
+    path: '/provider-photograph/token',
   },
 ];
 
@@ -147,6 +166,12 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-event-staff/service-orders',
   },
   {
+    key: 'reviews',
+    label: VI.provider.sidebar.eventStaffReviews,
+    icon: Star,
+    path: '/provider-event-staff/reviews',
+  },
+  {
     key: 'serviceCreate',
     label: VI.service.sidebar.createService,
     icon: PlusCircle,
@@ -169,5 +194,11 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.wallet,
     icon: Wallet,
     path: '/provider-event-staff/wallet',
+  },
+  {
+    key: 'aiToken',
+    label: VI.provider.sidebar.aiToken,
+    icon: Coins,
+    path: '/provider-event-staff/token',
   },
 ];

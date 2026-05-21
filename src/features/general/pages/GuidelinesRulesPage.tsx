@@ -1,5 +1,5 @@
 import * as React from "react"
-import { BookOpen, Sparkles } from "lucide-react"
+import { Sparkles } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
 
 import { Card } from "@/shared/components/Card"
@@ -105,16 +105,11 @@ export default function GuidelinesRulesPage() {
         >
           <div className="space-y-8 p-6 md:p-8">
             <header className="flex flex-col items-center gap-5 text-center">
-              <div className="flex flex-wrap items-center justify-center gap-3">
-                <span className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-amber-300 via-orange-400 to-pink-400 text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b]">
-                  <BookOpen className="h-5 w-5" aria-hidden />
+              <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                  {VI.general.guidelinesRules.pageTitle}
                 </span>
-                <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
-                  <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-                    {VI.general.guidelinesRules.pageTitle}
-                  </span>
-                </h1>
-              </div>
+              </h1>
               <p className="max-w-2xl text-pretty rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] px-4 py-3 text-sm font-semibold leading-relaxed text-indigo-950 shadow-[6px_6px_0_0_rgba(30,27,75,0.75)] md:text-base">
                 {VI.general.guidelinesRules.pageSubtitle}
               </p>

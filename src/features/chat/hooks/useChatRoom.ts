@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react"
 import { getOrCreateChatRoomService } from "../services/chat.service"
+import { refreshChatRoomsList } from "./useChatRooms"
 import type { ChatRoom } from "../types"
 
 interface UseChatRoomResult {
@@ -21,6 +22,7 @@ export function useChatRoom(user1Id: number | null, user2Id: number | null): Use
     try {
       const data = await getOrCreateChatRoomService(user1Id, user2Id);
       setRoom(data);
+      refreshChatRoomsList();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load chat room");
     } finally {

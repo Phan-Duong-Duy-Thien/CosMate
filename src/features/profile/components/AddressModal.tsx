@@ -2,12 +2,17 @@ import * as React from "react"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { Button } from "@/components/ui/button"
 import { PROFILE_MODAL_UI } from "../constants/profileUi"
-import type { UpsertUserAddressPayload, UserAddress, Province, District } from "../types"
+import type { AddressFormState, UserAddress, Province, District } from "../types"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
 import { useVnLocation } from "../hooks/useVnLocation"
 import { message, Modal } from "antd"
+import { AddressOptionalLabel, AddressRequiredLabel } from "./AddressRequiredLabel"
+import { DistrictSelect, ProvinceSelect } from "./AddressLocationSelects"
+import { AddressPhoneInput } from "./AddressPhoneInput"
+import { getPhoneValidationError } from "../utils/addressValidation"
+import { buildLegacyAddressPayload } from "../services/addressPayload.service"
 
 function normalizeVnName(n: string | undefined | null): string {
   if (!n) return ""
@@ -55,7 +60,7 @@ export function AddressModal({
 }: AddressModalProps) {
   const [isAddressFormOpen, setIsAddressFormOpen] = React.useState(false)
   const [editingAddressId, setEditingAddressId] = React.useState<number | null>(null)
-  const [addressForm, setAddressForm] = React.useState<UpsertUserAddressPayload>({
+  const [addressForm, setAddressForm] = React.useState<AddressFormState>({
     name: "",
     city: "",
     district: "",
@@ -64,7 +69,7 @@ export function AddressModal({
     addressName: "",
   })
   const [addressFieldErrors, setAddressFieldErrors] = React.useState<
-    Partial<Record<keyof UpsertUserAddressPayload, string>>
+    Partial<Record<keyof AddressFormState, string>>
   >({})
   const [editingAddressCity, setEditingAddressCity] = React.useState<string | null>(null)
   const [editingAddressDistrict, setEditingAddressDistrict] = React.useState<string | null>(null)
@@ -125,16 +130,24 @@ export function AddressModal({
     setIsAddressFormOpen(true)
   }
 
+  const validatePhoneField = (phone: string) => {
+    const phoneError = getPhoneValidationError(phone)
+    setAddressFieldErrors((prev) => {
+      const next = { ...prev }
+      if (phoneError) next.phone = phoneError
+      else delete next.phone
+      return next
+    })
+    return phoneError
+  }
+
   const validateAddress = (): boolean => {
-    const nextErrors: Partial<Record<keyof UpsertUserAddressPayload, string>> = {}
+    const nextErrors: Partial<Record<keyof AddressFormState, string>> = {}
     if (!addressForm.name.trim()) nextErrors.name = VI.profile.address.validation.required
-    if (!addressForm.phone.trim()) {
-      nextErrors.phone = VI.profile.address.validation.required
-    } else if (!/^\+?[0-9]{9,15}$/.test(addressForm.phone.trim())) {
-      nextErrors.phone = VI.profile.address.validation.invalidPhone
-    }
-    if (!addressForm.city.trim()) nextErrors.city = VI.profile.address.validation.required
-    if (!addressForm.district.trim()) nextErrors.district = VI.profile.address.validation.required
+    const phoneError = getPhoneValidationError(addressForm.phone)
+    if (phoneError) nextErrors.phone = phoneError
+    if (provinceCode == null) nextErrors.city = VI.profile.address.validation.required
+    if (districtCode == null) nextErrors.district = VI.profile.address.validation.required
     if (!addressForm.address.trim()) nextErrors.address = VI.profile.address.validation.required
     setAddressFieldErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
@@ -143,14 +156,18 @@ export function AddressModal({
   const handleSaveAddress = async () => {
     if (!validateAddress()) return
 
-    const payload: UpsertUserAddressPayload = {
+    const province = provinces.find((p) => p.code === provinceCode)
+    const ward = districts.find((d) => d.code === districtCode)
+    if (!province || !ward) return
+
+    const payload = buildLegacyAddressPayload({
       name: addressForm.name.trim(),
-      city: addressForm.city.trim(),
-      district: addressForm.district.trim(),
-      address: addressForm.address.trim(),
       phone: addressForm.phone.trim(),
       addressName: addressForm.addressName.trim(),
-    }
+      provinceName: province.name,
+      wardName: ward.name,
+      detailAddress: addressForm.address.trim(),
+    })
 
     const ok =
       editingAddressId == null
@@ -326,9 +343,12 @@ export function AddressModal({
 
               <div className="space-y-3">
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.recipientName} <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
+                  <AddressRequiredLabel
+                    className={PROFILE_MODAL_UI.label}
+                    requiredClassName={PROFILE_MODAL_UI.required}
+                  >
+                    {VI.profile.address.form.recipientName}
+                  </AddressRequiredLabel>
                   <input
                     value={addressForm.name}
                     onChange={(e) =>
@@ -343,16 +363,23 @@ export function AddressModal({
                 </div>
 
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.phone} <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
-                  <input
+                  <AddressRequiredLabel
+                    className={PROFILE_MODAL_UI.label}
+                    requiredClassName={PROFILE_MODAL_UI.required}
+                  >
+                    {VI.profile.address.form.phone}
+                  </AddressRequiredLabel>
+                  <AddressPhoneInput
                     value={addressForm.phone}
-                    onChange={(e) =>
-                      setAddressForm((prev) => ({ ...prev, phone: e.target.value }))
+                    onChange={(phone) =>
+                      setAddressForm((prev) => ({ ...prev, phone }))
                     }
-                    placeholder={VI.profile.address.form.phonePlaceholder}
-                    className={cn(PROFILE_MODAL_UI.input, addressFieldErrors.phone && PROFILE_MODAL_UI.inputError)}
+                    onBlur={() => validatePhoneField(addressForm.phone)}
+                    hasError={Boolean(addressFieldErrors.phone)}
+                    className={cn(
+                      PROFILE_MODAL_UI.input,
+                      addressFieldErrors.phone && PROFILE_MODAL_UI.inputError,
+                    )}
                   />
                   {addressFieldErrors.phone && (
                     <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.phone}</p>
@@ -360,9 +387,9 @@ export function AddressModal({
                 </div>
 
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.addressName} <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
+                  <AddressOptionalLabel className={PROFILE_MODAL_UI.label}>
+                    {VI.profile.address.form.addressName}
+                  </AddressOptionalLabel>
                   <input
                     value={addressForm.addressName}
                     onChange={(e) =>
@@ -377,72 +404,55 @@ export function AddressModal({
                 </div>
 
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.city} <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
-                  <select
-                    value={provinceCode ?? ""}
-                    onChange={(e) => {
-                      const nextCode = e.target.value ? Number(e.target.value) : null
-                      const selectedProvince = provinces.find(
-                        (province) => province.code === nextCode
-                      )
+                  <AddressRequiredLabel
+                    className={PROFILE_MODAL_UI.label}
+                    requiredClassName={PROFILE_MODAL_UI.required}
+                  >
+                    {VI.profile.address.form.city}
+                  </AddressRequiredLabel>
+                  <ProvinceSelect
+                    variant="modal"
+                    provinceCode={provinceCode}
+                    provinces={provinces}
+                    loading={loadingProvinces}
+                    hasError={Boolean(addressFieldErrors.city)}
+                    onProvinceChange={(nextCode, selectedProvince) => {
                       setProvinceCode(nextCode)
+                      setDistrictCode(null)
                       setAddressForm((prev) => ({
                         ...prev,
                         city: selectedProvince?.name ?? "",
                         district: "",
                       }))
                     }}
-                    disabled={loadingProvinces}
-                    className={cn(
-                      PROFILE_MODAL_UI.select,
-                      addressFieldErrors.city && PROFILE_MODAL_UI.inputError,
-                    )}
-                  >
-                    <option value="">{VI.profile.address.form.cityPlaceholder}</option>
-                    {provinces.map((province) => (
-                      <option key={province.code} value={province.code}>
-                        {province.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {addressFieldErrors.city && (
                     <p className={PROFILE_MODAL_UI.fieldError}>{addressFieldErrors.city}</p>
                   )}
                 </div>
 
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.district}{" "}
-                    <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
-                  <select
-                    value={districtCode ?? ""}
-                    onChange={(e) => {
-                      const nextCode = e.target.value ? Number(e.target.value) : null
-                      const selectedDistrict = districts.find(
-                        (d) => d.code === nextCode
-                      )
+                  <AddressRequiredLabel
+                    className={PROFILE_MODAL_UI.label}
+                    requiredClassName={PROFILE_MODAL_UI.required}
+                  >
+                    {VI.profile.address.form.district}
+                  </AddressRequiredLabel>
+                  <DistrictSelect
+                    variant="modal"
+                    provinceCode={provinceCode}
+                    districtCode={districtCode}
+                    districts={districts}
+                    loading={loadingDistricts}
+                    hasError={Boolean(addressFieldErrors.district)}
+                    onDistrictChange={(nextCode, selectedDistrict) => {
                       setDistrictCode(nextCode)
                       setAddressForm((prev) => ({
                         ...prev,
                         district: selectedDistrict?.name ?? "",
                       }))
                     }}
-                    disabled={provinceCode == null || loadingDistricts}
-                    className={cn(
-                      PROFILE_MODAL_UI.select,
-                      addressFieldErrors.district && PROFILE_MODAL_UI.inputError,
-                    )}
-                  >
-                    <option value="">{VI.profile.address.form.districtPlaceholder}</option>
-                    {districts.map((district) => (
-                      <option key={district.code} value={district.code}>
-                        {district.name}
-                      </option>
-                    ))}
-                  </select>
+                  />
                   {addressFieldErrors.district && (
                     <p className={PROFILE_MODAL_UI.fieldError}>
                       {addressFieldErrors.district}
@@ -452,10 +462,12 @@ export function AddressModal({
 
 
                 <div>
-                  <label className={PROFILE_MODAL_UI.label}>
-                    {VI.profile.address.form.streetAddress}{" "}
-                    <span className={PROFILE_MODAL_UI.required}>*</span>
-                  </label>
+                  <AddressRequiredLabel
+                    className={PROFILE_MODAL_UI.label}
+                    requiredClassName={PROFILE_MODAL_UI.required}
+                  >
+                    {VI.profile.address.form.streetAddress}
+                  </AddressRequiredLabel>
                   <input
                     value={addressForm.address}
                     onChange={(e) =>

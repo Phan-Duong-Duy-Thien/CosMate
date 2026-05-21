@@ -9,12 +9,23 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
+import { DATA_SYNC_EVENTS } from "@/shared/sync/dataSync"
 import { getCostumeById } from "../api/costume.api"
 import type { Costume, QuoteBreakdown } from "../types"
 import { resolveCostumeImageUrl } from "../utils/resolveCostumeImageUrl"
+import { getCostumeDetailFormRestore } from "@/features/order/utils/rentalDraftStorage"
 
 export function resolveImageUrl(url: string): string {
   return resolveCostumeImageUrl(url)
+}
+
+function applyFormDefaults(): {
+  days: number
+  startDate: string
+  checkedOptionalIds: Set<number>
+} {
+  return { days: 1, startDate: "", checkedOptionalIds: new Set() }
 }
 
 export function usePublicCostumeDetail(costumeId: string | undefined) {
@@ -23,27 +34,36 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
   const [error, setError] = useState<string | null>(null)
   const [days, setDays] = useState(1)
   const [startDate, setStartDate] = useState("")
-  const [selectedRentalOptionId, setSelectedRentalOptionId] = useState<number | null>(null)
   const [checkedOptionalIds, setCheckedOptionalIds] = useState<Set<number>>(new Set())
 
   const fetchDetail = useCallback(async () => {
     if (!costumeId) return
+
     const numId = Number(costumeId)
     if (isNaN(numId)) {
       setError("ID trang phuc khong hop le.")
       setIsLoading(false)
       return
     }
+
     setIsLoading(true)
     setError(null)
+
     try {
       const data = await getCostumeById(numId)
       setCostume(data)
-      const firstOption = data.rentalOptions?.[0] ?? null
-      setSelectedRentalOptionId(firstOption?.id ?? null)
-      setCheckedOptionalIds(new Set())
-      setDays(1)
-      setStartDate("")
+
+      const restored = getCostumeDetailFormRestore(numId, data.accessories ?? [])
+      if (restored) {
+        setDays(restored.days)
+        setStartDate(restored.startDate)
+        setCheckedOptionalIds(restored.checkedOptionalIds)
+      } else {
+        const defaults = applyFormDefaults()
+        setDays(defaults.days)
+        setStartDate(defaults.startDate)
+        setCheckedOptionalIds(defaults.checkedOptionalIds)
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Khong the tai chi tiet trang phuc.")
     } finally {
@@ -51,7 +71,11 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     }
   }, [costumeId])
 
-  useEffect(() => { fetchDetail() }, [fetchDetail])
+  useEffect(() => {
+    fetchDetail()
+  }, [fetchDetail])
+
+  useDataSyncRefetch(fetchDetail, DATA_SYNC_EVENTS.COSTUMES_CHANGED, Boolean(costumeId))
 
   const resolvedImages = useMemo(
     () => (costume?.imageUrls ?? []).map(resolveImageUrl).filter(Boolean),
@@ -61,31 +85,64 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
   const toggleOptionalAccessory = useCallback((id: number) => {
     setCheckedOptionalIds((prev) => {
       const next = new Set(prev)
-      if (next.has(id)) { next.delete(id) } else { next.add(id) }
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
       return next
     })
   }, [])
 
   const quote = useMemo<QuoteBreakdown>(() => {
     if (!costume) {
-      return { rentalPrice: 0, accessoryTotal: 0, surchargesTotal: 0, rentalOptionPrice: 0, deposit: 0, laundryFee: 0, total: 0 }
+      return {
+        rentalPrice: 0,
+        accessoryTotal: 0,
+        surchargesTotal: 0,
+        rentalOptionPrice: 0,
+        deposit: 0,
+        laundryFee: 0,
+        total: 0,
+      }
     }
+
     const baseDaily = costume.pricePerDay ?? 0
     const deposit = costume.depositAmount ?? 0
-    const requiredSum = (costume.accessories ?? []).filter((a) => a.isRequired).reduce((sum, a) => sum + (a.price ?? 0), 0)
-    const optionalSum = (costume.accessories ?? []).filter((a) => !a.isRequired && checkedOptionalIds.has(a.id)).reduce((sum, a) => sum + (a.price ?? 0), 0)
+    const requiredSum = (costume.accessories ?? [])
+      .filter((a) => a.isRequired)
+      .reduce((sum, a) => sum + (a.price ?? 0), 0)
+    const optionalSum = (costume.accessories ?? [])
+      .filter((a) => !a.isRequired && checkedOptionalIds.has(a.id))
+      .reduce((sum, a) => sum + (a.price ?? 0), 0)
     const accessoryTotal = requiredSum + optionalSum
     const surchargesTotal = (costume.surcharges ?? []).reduce((sum, s) => sum + (s.price ?? 0), 0)
     const rentalPrice = baseDaily * days
     const total = rentalPrice + deposit + accessoryTotal + surchargesTotal
-    return { rentalPrice, accessoryTotal, surchargesTotal, rentalOptionPrice: 0, deposit, laundryFee: 0, total }
+
+    return {
+      rentalPrice,
+      accessoryTotal,
+      surchargesTotal,
+      rentalOptionPrice: 0,
+      deposit,
+      laundryFee: 0,
+      total,
+    }
   }, [costume, days, checkedOptionalIds])
 
   return {
-    costume, isLoading, error, resolvedImages,
-    days, setDays, startDate, setStartDate,
-    selectedRentalOptionId, setSelectedRentalOptionId,
-    checkedOptionalIds, toggleOptionalAccessory,
-    quote, refetch: fetchDetail,
+    costume,
+    isLoading,
+    error,
+    resolvedImages,
+    days,
+    setDays,
+    startDate,
+    setStartDate,
+    checkedOptionalIds,
+    toggleOptionalAccessory,
+    quote,
+    refetch: fetchDetail,
   }
 }

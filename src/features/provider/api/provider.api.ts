@@ -15,6 +15,39 @@ interface ApiResponse<T> {
  * GET /api/providers/user/{userId}
  * Returns the provider profile for the given user ID.
  */
+export interface ProviderStatisticsLabelValue {
+  label: string;
+  value: number;
+}
+
+export interface ProviderStatistics {
+  totalCostumes: number;
+  totalOrders: number;
+  totalOrderItems: number;
+  completedOrders: number;
+  totalRevenue: number;
+  revenueByMonth: ProviderStatisticsLabelValue[];
+  revenueByQuarter: ProviderStatisticsLabelValue[];
+}
+
+/**
+ * GET /api/providers/{id}/statistics
+ * Provider dashboard statistics (optional months query for chart range).
+ */
+export async function getProviderStatistics(
+  providerId: number,
+  months?: number
+): Promise<ProviderStatistics> {
+  const response = await axiosInstance.get<ApiResponse<ProviderStatistics>>(
+    `/api/providers/${providerId}/statistics`,
+    { params: months != null ? { months } : undefined }
+  );
+  if (response.data.code !== 0) {
+    throw new Error(response.data.message || 'Không thể tải thống kê');
+  }
+  return response.data.result;
+}
+
 export async function getProviderByUserId(userId: number): Promise<ProviderProfile> {
   console.log('[getProviderByUserId] userId:', userId);
   const response = await axiosInstance.get<ApiResponse<ProviderProfile>>(
@@ -30,6 +63,9 @@ export async function getProviderByUserId(userId: number): Promise<ProviderProfi
 export interface ProviderReview {
   id: number;
   orderId: number;
+  username?: string | null;
+  userName?: string | null;
+  avatarUrl?: string | null;
   rating: number;
   comment: string;
   createdAt: string;
@@ -37,6 +73,9 @@ export interface ProviderReview {
     id: number;
     url: string;
   }[];
+  providerReply?: string | null;
+  repliedAt?: string | null;
+  repliedByProviderId?: number | null;
 }
 
 /** Detail payload (GET by id) — may include reviewer fields from backend */

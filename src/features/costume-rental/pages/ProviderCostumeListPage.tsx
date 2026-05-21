@@ -40,6 +40,7 @@ import { ProviderActivationGate } from '@/features/provider/components/ProviderA
 import { VI } from '@/shared/i18n/vi'
 import { Button as UiButton } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { notifyCostumesChanged } from '@/shared/sync/dataSync'
 
 const { Text } = Typography
 
@@ -91,8 +92,7 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
   const extrasEmpty =
     !costume ||
     ((!costume.surcharges || costume.surcharges.length === 0) &&
-      (!costume.accessories || costume.accessories.length === 0) &&
-      (!costume.rentalOptions || costume.rentalOptions.length === 0))
+      (!costume.accessories || costume.accessories.length === 0))
 
   return (
     <Modal
@@ -169,7 +169,7 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
               children: (
                 <div className="space-y-4 pt-1">
                   {extrasEmpty ? (
-                    <Empty description="Chưa có phụ phí, phụ kiện hay gói thuê" image={Empty.PRESENTED_IMAGE_SIMPLE} />
+                    <Empty description="Chưa có phụ phí hay phụ kiện" image={Empty.PRESENTED_IMAGE_SIMPLE} />
                   ) : (
                     <>
                       {costume.surcharges && costume.surcharges.length > 0 && (
@@ -207,26 +207,6 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
                                 <Text type="secondary" style={{ marginLeft: 8 }}>
                                   {a.price.toLocaleString('vi-VN')} VNĐ
                                   {a.isRequired ? ' (bắt buộc)' : ''} — {a.description}
-                                </Text>
-                              </List.Item>
-                            )}
-                          />
-                        </div>
-                      )}
-                      {costume.rentalOptions && costume.rentalOptions.length > 0 && (
-                        <div>
-                          <Text strong className="mb-2 block">
-                            Gói thuê
-                          </Text>
-                          <List
-                            size="small"
-                            bordered
-                            dataSource={costume.rentalOptions}
-                            renderItem={(r) => (
-                              <List.Item>
-                                <Text>{r.name}</Text>
-                                <Text type="secondary" style={{ marginLeft: 8 }}>
-                                  {r.price.toLocaleString('vi-VN')} VNĐ — {r.description}
                                 </Text>
                               </List.Item>
                             )}
@@ -275,7 +255,12 @@ export default function ProviderCostumeListPage() {
     setStatusFilter,
   } = useProviderCostumes()
 
-  const editModal = useEditCostumeModal({ onSuccess: refetch })
+  const editModal = useEditCostumeModal({
+    onSuccess: () => {
+      refetch()
+      notifyCostumesChanged()
+    },
+  })
 
   const sidebarItems = buildSidebarItems()
 

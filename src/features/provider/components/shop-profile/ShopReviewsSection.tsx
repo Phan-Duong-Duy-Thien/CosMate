@@ -1,10 +1,16 @@
 import { Star } from 'lucide-react'
 import { Card } from '@/shared/components/Card'
-import type { ShopReview } from '../../mocks/shopReviews.mock'
+import { ProviderReplyBlock } from '@/shared/components/ProviderReplyBlock'
+import {
+  getReviewReviewerInitial,
+  getReviewReviewerName,
+  resolveReviewAvatarUrl,
+} from '@/shared/utils/reviewDisplay'
+import type { ProviderReview } from '../../api/provider.api'
 import { VI } from '@/shared/i18n/vi'
 
 interface ShopReviewsSectionProps {
-  reviews: ShopReview[]
+  reviews: ProviderReview[]
   stats: {
     averageRating: number
     totalReviews: number
@@ -22,7 +28,6 @@ function formatDate(dateString: string): string {
 }
 
 export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) {
-  // Convert 5-star to 10-point scale
   const rating10 = (stats.averageRating * 2).toFixed(1)
 
   return (
@@ -33,7 +38,6 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
         </h3>
       </div>
 
-      {/* Rating Summary */}
       <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
@@ -56,7 +60,6 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
             </div>
           </div>
 
-          {/* Rating Distribution */}
           <div className="flex-1 space-y-1">
             {[5, 4, 3, 2, 1].map(star => {
               const count = stats.ratingDistribution[star] || 0
@@ -79,7 +82,6 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
         </div>
       </Card>
 
-      {/* Reviews List */}
       {reviews.length === 0 ? (
         <Card className="rounded-2xl border-[3px] border-indigo-950/30 bg-white p-5 text-center text-sm font-semibold text-indigo-900/75 shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
           {VI.provider.shop.reviews.noReviews}
@@ -95,20 +97,34 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
   )
 }
 
-function ReviewCard({ review }: { review: ShopReview }) {
+function ReviewCard({ review }: { review: ProviderReview }) {
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
+  const resolveUrl = (url: string) =>
+    !url ? '' : url.startsWith('http') ? url : `${API_BASE}${url}`
+
+  const displayName = getReviewReviewerName(review, VI.provider.reviews.detailReviewerFallback)
+  const avatarUrl = resolveReviewAvatarUrl(review.avatarUrl)
+  const initial = getReviewReviewerInitial(displayName)
+
   return (
     <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
       <div className="flex items-start gap-3">
-        <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-extrabold text-indigo-950">
-          {review.userName.charAt(0).toUpperCase()}
-        </div>
+        {avatarUrl ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            className="h-10 w-10 shrink-0 rounded-xl border-[3px] border-indigo-950 object-cover"
+          />
+        ) : (
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-[#fbcfe8] to-[#ddd6fe] text-sm font-extrabold text-indigo-950">
+            {initial}
+          </div>
+        )}
         <div className="flex-1">
           <div className="flex items-center justify-between">
             <div>
-              <p className="font-extrabold text-indigo-950">{review.userName}</p>
-              {review.productName && (
-                <p className="text-xs font-semibold text-indigo-900/55">đã thuê: {review.productName}</p>
-              )}
+              <p className="font-extrabold text-indigo-950">{displayName}</p>
+              <p className="text-xs font-semibold text-indigo-900/55">#{review.orderId}</p>
             </div>
             <span className="text-xs font-semibold text-indigo-900/60">{formatDate(review.createdAt)}</span>
           </div>
@@ -125,16 +141,23 @@ function ReviewCard({ review }: { review: ShopReview }) {
             <div className="mt-2 flex gap-2">
               {review.images.map((img, idx) => (
                 <img
-                  key={idx}
-                  src={img}
-                  alt={`Review ${idx + 1}`}
+                  key={img.id ?? idx}
+                  src={resolveUrl(img.url)}
+                  alt=""
                   className="h-16 w-16 rounded-xl border-[3px] border-indigo-950 object-cover"
                 />
               ))}
             </div>
           )}
+          <ProviderReplyBlock
+            providerReply={review.providerReply}
+            repliedAt={review.repliedAt}
+            variant="indigo"
+          />
         </div>
       </div>
     </Card>
   )
 }
+
+

@@ -3,6 +3,7 @@ import { Empty, Input, Pagination, Popconfirm, Spin, Tag, Upload, notification }
 import type { UploadProps } from "antd"
 import { ClockCircleOutlined, DeleteOutlined, ShareAltOutlined, UploadOutlined } from "@ant-design/icons"
 
+import { VI } from "@/shared/i18n/vi"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
@@ -94,6 +95,14 @@ export default function PoseBattlePage() {
 
   return (
     <section className="relative mx-auto max-w-7xl space-y-4 py-4">
+      <header className="relative z-[1] text-center">
+        <h1 className="mx-auto max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+          <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+            {VI.general.decorPageTitles.poseBattle}
+          </span>
+        </h1>
+      </header>
+
       <div className="pointer-events-none absolute left-4 top-4 h-24 w-24 rounded-full bg-fuchsia-300/30 blur-3xl" />
       <div className="pointer-events-none absolute right-6 top-10 h-28 w-28 rounded-full bg-cyan-300/30 blur-3xl" />
 

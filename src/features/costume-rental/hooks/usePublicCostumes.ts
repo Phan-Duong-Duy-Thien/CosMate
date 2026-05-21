@@ -9,12 +9,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch'
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync'
 import { getCostumes } from '../api/costume.api'
 import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
 import { VI } from '@/shared/i18n/vi'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''
@@ -29,13 +31,8 @@ function roundToNearest10k(value: number): number {
 function computePriceRange(costume: Costume): { priceMin: number; priceMax: number }{
   const baseDaily = costume.pricePerDay ?? 0
   const deposit = costume.depositAmount ?? 0
-  const options = costume.rentalOptions ?? []
-  const optionAvg =
-    options.length > 0
-      ? options.reduce((sum, o) => sum + (o.price ?? 0), 0) / options.length
-      : 0
-  const minTotal = 1 * baseDaily + deposit + optionAvg
-  const maxTotal = 3 * baseDaily + deposit + optionAvg
+  const minTotal = 1 * baseDaily + deposit
+  const maxTotal = 3 * baseDaily + deposit
   const minVnd = roundToNearest10k(minTotal)
   const maxVnd = roundToNearest10k(maxTotal)
   return { priceMin: minVnd, priceMax: maxVnd }
@@ -143,6 +140,8 @@ export function usePublicCostumes() {
   useEffect(() => {
     fetchCostumes()
   }, [fetchCostumes])
+
+  useDataSyncRefetch(fetchCostumes, DATA_SYNC_EVENTS.COSTUMES_CHANGED)
 
   return { items, isLoading, error, refetch: fetchCostumes }
 }

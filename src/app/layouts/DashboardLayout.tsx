@@ -9,6 +9,7 @@ import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
+import { isProviderDashboardPath } from '@/features/profile/utils/tokenRoutes';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 
@@ -255,6 +256,11 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-rental/wallet' },
         { label: VI.wallet.topup },
       ]);
+    } else if (path === '/provider-rental/token') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.profile.token.hubTitle },
+      ]);
     } else if (path === '/provider-photograph') {
       setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
     } else if (path === '/provider-photograph/wallet') {
@@ -274,6 +280,11 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-photograph/wallet' },
         { label: VI.wallet.topup },
       ]);
+    } else if (path === '/provider-photograph/token') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.profile.token.hubTitle },
+      ]);
     } else if (path === '/provider-photograph/services') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
@@ -288,6 +299,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
         { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-photograph/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.sidebar.photographReviews },
       ]);
     } else if (path === '/provider-photograph/settings') {
       setItems([
@@ -335,6 +351,11 @@ export function DashboardLayout({
         { label: VI.wallet.title, to: '/provider-event-staff/wallet' },
         { label: VI.wallet.topup },
       ]);
+    } else if (path === '/provider-event-staff/token') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.profile.token.hubTitle },
+      ]);
     } else if (path === '/provider-event-staff/services') {
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
@@ -349,6 +370,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
         { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-event-staff/reviews') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.sidebar.eventStaffReviews },
       ]);
     } else if (path === '/provider-event-staff/settings') {
       setItems([
@@ -434,11 +460,14 @@ export function DashboardLayout({
     setTokenLoading(true);
     try {
       const profile = await getUserProfile(userId);
-      if (profile?.avatarUrl || profile?.fullName) {
-        setUserProfile({
-          avatarUrl: profile.avatarUrl ?? null,
-          fullName: profile.fullName ?? null,
-        });
+      if (profile) {
+        setTokenBalance(profile.numberOfToken ?? 0);
+        if (profile.avatarUrl || profile.fullName) {
+          setUserProfile({
+            avatarUrl: profile.avatarUrl ?? null,
+            fullName: profile.fullName ?? null,
+          });
+        }
       }
     } catch {
       // Silently fail
@@ -447,11 +476,15 @@ export function DashboardLayout({
     }
   }, [setUserProfile]);
 
-  // Fetch account profile for header: need avatar even when fullName was cached without photo
+  const showTokenBadge = isProviderDashboardPath(location.pathname);
+
+  // Fetch account profile for header: avatar for all; token balance for provider dashboards
   useEffect(() => {
-    if (userProfile.avatarUrl && tokenBalance !== null) return;
+    const needsAvatar = !userProfile.avatarUrl;
+    const needsToken = showTokenBadge && tokenBalance === null;
+    if (!needsAvatar && !needsToken) return;
     void refreshHeaderProfile();
-  }, [userProfile.avatarUrl, tokenBalance, refreshHeaderProfile]);
+  }, [userProfile.avatarUrl, tokenBalance, refreshHeaderProfile, showTokenBadge]);
 
   useEffect(() => {
     const handleProfileRefresh = () => {
@@ -598,13 +631,20 @@ export function DashboardLayout({
           </div>
 
           <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
-            <div className="hidden min-w-[110px] items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex">
-              {tokenLoading ? (
-                <Spin size="small" />
-              ) : (
-                <span>🪙 {typeof tokenBalance === 'number' ? tokenBalance : '—'} xu</span>
-              )}
-            </div>
+            {showTokenBadge && (
+              <div
+                className="hidden min-w-[110px] cursor-default items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex"
+                title={VI.profile.token.headerHint}
+              >
+                {tokenLoading ? (
+                  <Spin size="small" />
+                ) : (
+                  <span>
+                    🪙 {(tokenBalance ?? 0).toLocaleString('vi-VN')} {VI.profile.token.unit}
+                  </span>
+                )}
+              </div>
+            )}
             {showChatButton && (
               <button
                 type="button"

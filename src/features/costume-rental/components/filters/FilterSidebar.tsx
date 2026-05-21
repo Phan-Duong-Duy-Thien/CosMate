@@ -173,11 +173,7 @@ export const FilterSidebar = ({
                 checked: filters.onlyAvailable,
                 key: "onlyAvailable",
               },
-              {
-                label: "Bán chạy",
-                checked: filters.onlyBestSeller,
-                key: "onlyBestSeller",
-              },
+              
             ].map((toggle) => (
               <label
                 key={toggle.key}

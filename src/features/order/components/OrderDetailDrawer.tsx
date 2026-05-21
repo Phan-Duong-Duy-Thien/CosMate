@@ -4,9 +4,11 @@
  * UI-only — data fetching via hooks inside component.
  */
 
-import { useState } from 'react';
-import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Avatar, Typography, Button, Table } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useState, type ReactNode } from 'react';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
+import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Typography, Button, Table } from 'antd';
+import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined, GiftOutlined, DollarOutlined } from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
@@ -40,6 +42,53 @@ const formatCurrency = (amount: number) => {
     currency: 'VND',
   }).format(amount);
 };
+
+function SubsectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+      {icon}
+      {children}
+    </h3>
+  );
+}
+
+function NamedLineItems({
+  items,
+  emptyDescription,
+  nameFallback,
+}: {
+  items: { key: string | number; name: string; description?: string | null; badge?: string }[];
+  emptyDescription: string;
+  nameFallback: string;
+}) {
+  if (items.length === 0) {
+    return <Empty description={emptyDescription} image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  }
+
+  return (
+    <List
+      size="small"
+      bordered
+      dataSource={items}
+      renderItem={(item) => {
+        const displayName = item.name?.trim() || nameFallback;
+        return (
+          <List.Item>
+            <List.Item.Meta
+              title={
+                <span className="flex flex-wrap items-center gap-2">
+                  <Text strong>{displayName}</Text>
+                  {item.badge ? <Tag>{item.badge}</Tag> : null}
+                </span>
+              }
+              description={item.description?.trim() || undefined}
+            />
+          </List.Item>
+        );
+      }}
+    />
+  );
+}
 
 // Format date
 const formatDate = (dateString: string | null | undefined): string => {
@@ -106,10 +155,16 @@ export function OrderDetailDrawer({
   orderType,
   onClose,
   onExtendSuccess,
-  hideRentalOptions = false,
+  hideRentalOptions = true,
   hideExtendActions = false,
 }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
+
+  useDataSyncRefetch(
+    () => (orderId ? refetch() : undefined),
+    DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(orderId),
+  );
   const { extendOrder, isExtending } = useExtendOrder();
 
   // Extend modal state
@@ -259,39 +314,43 @@ export function OrderDetailDrawer({
     return (
       <Descriptions column={2} size="small" bordered>
         <Descriptions.Item label={VI.order.detail.size} span={1}>
-          {detail.size || '-'}
+          <Text strong>{detail.size || '—'}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.numberOfItems} span={1}>
-          {detail.numberOfItems || '-'}
+          <Text strong>{detail.numberOfItems ?? '—'}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentDay} span={1}>
-          {detail.rentDay || '-'}
+          <Text strong>
+            {detail.rentDay ?? '—'} {VI.order.extend.daysSuffix}
+          </Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.depositAmount} span={1}>
-          {formatCurrency(detail.depositAmount || 0)}
+          <Text strong type="danger">
+            {formatCurrency(detail.depositAmount || 0)}
+          </Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentStart} span={1}>
-          {formatDate(detail.rentStart)}
+          <Text strong>{formatDate(detail.rentStart)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentEnd} span={1}>
-          {formatDate(detail.rentEnd)}
+          <Text strong>{formatDate(detail.rentEnd)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentAmount} span={2}>
-          {formatCurrency(detail.rentAmount || 0)}
+          <Text strong type="success">{formatCurrency(detail.rentAmount || 0)}</Text>
         </Descriptions.Item>
         {detail.surchargeAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.surchargeAmount} span={2}>
-            {formatCurrency(detail.surchargeAmount)}
+            <Text strong type="success">{formatCurrency(detail.surchargeAmount)}</Text>
           </Descriptions.Item>
         )}
         {detail.accessoriesAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.accessoriesAmount} span={2}>
-            {formatCurrency(detail.accessoriesAmount)}
+            <Text strong type="success">{formatCurrency(detail.accessoriesAmount)}</Text>
           </Descriptions.Item>
         )}
         {!hideRentalOptions && detail.rentOptionAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.rentOptionAmount} span={2}>
-            {formatCurrency(detail.rentOptionAmount)}
+            <Text strong type="success">{formatCurrency(detail.rentOptionAmount)}</Text>
           </Descriptions.Item>
         )}
       </Descriptions>
@@ -304,18 +363,14 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.rentalOptions}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.optionName}
-              description={item.description}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedRentalOption}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.rentalOptions.map((item) => ({
+          key: item.id,
+          name: item.optionName,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -326,18 +381,13 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.accessories}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar shape="square" size="small" src={item.imageUrl} icon={<ShopOutlined />} />}
-              title={item.name}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedAccessory}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.accessories.map((item) => ({
+          key: item.id,
+          name: item.name,
+        }))}
       />
     );
   };
@@ -348,18 +398,14 @@ export function OrderDetailDrawer({
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.surcharges}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.name}
-              description={item.description}
-            />
-            <Text type="danger">{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedSurcharge}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.surcharges.map((item) => ({
+          key: item.id,
+          name: item.name,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -383,7 +429,9 @@ export function OrderDetailDrawer({
             <Descriptions column={1} size="small">
               <Descriptions.Item label={VI.order.detail.orderId}>{cosplayerAddress.name}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{cosplayerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{cosplayerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {cosplayerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{cosplayerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {cosplayerAddress.phone}
@@ -400,7 +448,9 @@ export function OrderDetailDrawer({
             <Descriptions column={1} size="small">
               <Descriptions.Item label={VI.order.detail.orderId}>{providerAddress.name}</Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{providerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{providerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {providerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{providerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {providerAddress.phone}
@@ -544,23 +594,40 @@ export function OrderDetailDrawer({
     orderDetail ? (
       <div className="space-y-4 pt-1">
         <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalInfo}</h3>
+          <SubsectionTitle icon={<DollarOutlined className="text-purple-600" />}>
+            {VI.order.detail.rentalInfo}
+          </SubsectionTitle>
           {renderRentalInfo()}
+          {(orderDetail.accessories?.length > 0 || orderDetail.surcharges?.length > 0) && (
+            <Text type="secondary" className="mt-2 block text-xs">
+              {VI.order.detail.lineItemsHint}
+            </Text>
+          )}
         </div>
-        {!hideRentalOptions && (
+        {!hideRentalOptions && orderDetail.rentalOptions?.length > 0 && (
           <div>
-            <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.rentalOptions}</h3>
+            <SubsectionTitle icon={<AppstoreOutlined className="text-purple-600" />}>
+              {VI.order.detail.rentalOptions}
+            </SubsectionTitle>
             {renderRentalOptions()}
           </div>
         )}
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.accessories}</h3>
-          {renderAccessories()}
-        </div>
-        <div>
-          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.surcharges}</h3>
-          {renderSurcharges()}
-        </div>
+        {orderDetail.accessories?.length > 0 && (
+          <div>
+            <SubsectionTitle icon={<GiftOutlined className="text-purple-600" />}>
+              {VI.order.detail.accessories}
+            </SubsectionTitle>
+            {renderAccessories()}
+          </div>
+        )}
+        {orderDetail.surcharges?.length > 0 && (
+          <div>
+            <SubsectionTitle icon={<PlusCircleOutlined className="text-purple-600" />}>
+              {VI.order.detail.surcharges}
+            </SubsectionTitle>
+            {renderSurcharges()}
+          </div>
+        )}
       </div>
     ) : null;
 

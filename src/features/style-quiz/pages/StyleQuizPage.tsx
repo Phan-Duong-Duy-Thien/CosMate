@@ -3,6 +3,7 @@ import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import ResultCostumeGrid from "../components/ResultCostumeGrid"
 import { useStyleQuiz } from "../hooks/useStyleQuiz"
@@ -70,6 +71,14 @@ export default function StyleQuizPage() {
 
   return (
     <section className="mx-auto max-w-6xl space-y-4 py-4">
+      <header className="text-center">
+        <h1 className="mx-auto max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+          <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+            {VI.general.decorPageTitles.styleQuiz}
+          </span>
+        </h1>
+      </header>
+
       <Modal open={quiz.showResumeModal} title="Tiếp tục bài quiz đang làm dở?" okText="Tiếp tục" cancelText="Bắt đầu mới" onOk={quiz.restoreDraft} onCancel={quiz.discardDraftAndStartNew} closable={false} maskClosable={false}>
         <p>Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục không?</p>
       </Modal>

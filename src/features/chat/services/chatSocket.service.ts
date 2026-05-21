@@ -4,13 +4,16 @@ import SockJS from "sockjs-client"
 import { getAuth } from "@/features/auth/services/tokenStorage"
 import type { SendMessagePayload, ChatMessage } from "../types"
 
-const WS_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/+$/, "")
+const WS_BASE_URL = (import.meta.env.VITE_API_BASE_URL || "https://api.cosmate.site").replace(/\/+$/, "")
 const WS_ENDPOINT = `${WS_BASE_URL}/ws`
 const SEND_DESTINATION = "/app/chat.sendMessage"
 
 let stompClient: Client | null = null
 let connectionCallbacks: Array<() => void> = []
 const connectionListeners: Set<(connected: boolean) => void> = new Set()
+const roomListRefreshListeners = new Set<(hint: ChatMessage | null) => void>()
+let roomListRefreshTimer: ReturnType<typeof setTimeout> | null = null
+let pendingRoomListHint: ChatMessage | null = null
 
 // Module-level flags to prevent race conditions
 let isConnecting = false
@@ -182,6 +185,29 @@ export function disconnectChatSocket(): void {
  * Subscribe to a STOMP topic (e.g. `/topic/ws-image/{sessionId}`).
  * Caller must ensure `connectChatSocket()` ran first.
  */
+/**
+ * Notify subscribers that the inbox room list may have changed (new room or new message).
+ * Debounced so bursts of messages do not spam the API.
+ */
+export function notifyRoomListRefresh(hint: ChatMessage | null = null): void {
+  if (hint) pendingRoomListHint = hint
+  if (roomListRefreshTimer !== null) return
+  roomListRefreshTimer = setTimeout(() => {
+    roomListRefreshTimer = null
+    const payload = pendingRoomListHint
+    pendingRoomListHint = null
+    roomListRefreshListeners.forEach((cb) => cb(payload))
+  }, 250)
+}
+
+/** Subscribe to inbox refresh signals (message received/sent, room created). */
+export function onRoomListRefresh(listener: (hint: ChatMessage | null) => void): () => void {
+  roomListRefreshListeners.add(listener)
+  return () => {
+    roomListRefreshListeners.delete(listener)
+  }
+}
+
 export function subscribeStompTopic(
   destination: string,
   onMessage: (body: string) => void
@@ -215,6 +241,7 @@ export function subscribeChatRoom(
       try {
         const message: ChatMessage = JSON.parse(frame.body)
         console.log("[chatSocket] Received message for room", roomId, ":", message)
+        notifyRoomListRefresh(message)
         onMessage(message)
       } catch (err) {
         console.error("[chatSocket] Failed to parse message:", err)
@@ -237,6 +264,15 @@ export function sendChatMessage(payload: SendMessagePayload): void {
   stompClient.publish({
     destination: SEND_DESTINATION,
     body: JSON.stringify(payload),
+  })
+  notifyRoomListRefresh({
+    id: 0,
+    roomId: payload.roomId,
+    senderId: payload.senderId,
+    messageType: payload.messageType ?? "TEXT",
+    content: payload.content,
+    createdAt: new Date().toISOString(),
+    isRead: true,
   })
 }
 

@@ -6,7 +6,11 @@ import { VI } from '@/shared/i18n/vi';
 import * as aiTokenPurchaseService from '../services/aiTokenPurchase.service';
 import type { TokenPaymentMethod } from '../types';
 
-export function usePurchaseAiToken() {
+type UsePurchaseAiTokenOptions = {
+  onWalletSuccess?: () => void;
+};
+
+export function usePurchaseAiToken(options?: UsePurchaseAiTokenOptions) {
   const navigate = useNavigate();
   const [purchasingPlanId, setPurchasingPlanId] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +34,8 @@ export function usePurchaseAiToken() {
         });
 
         if (result.type === 'wallet') {
+          window.dispatchEvent(new Event('profile:refresh'));
+          options?.onWalletSuccess?.();
           const purchaseQuery = result.purchaseId ? `&purchaseId=${result.purchaseId}` : '';
           navigate(
             `/payment/result?context=token&status=${result.status}${purchaseQuery}`
@@ -57,7 +63,7 @@ export function usePurchaseAiToken() {
         setPurchasingPlanId(null);
       }
     },
-    [navigate]
+    [navigate, options]
   );
 
   return {

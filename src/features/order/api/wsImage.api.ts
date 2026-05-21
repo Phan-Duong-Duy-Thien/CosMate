@@ -1,6 +1,6 @@
 import { getAuth } from "@/features/auth/services/tokenStorage"
 
-const API_BASE = (import.meta.env.VITE_API_BASE_URL || "http://localhost:8080").replace(/\/+$/, "")
+const API_BASE = (import.meta.env.VITE_API_BASE_URL || "https://api.cosmate.site").replace(/\/+$/, "")
 
 const IMAGE_FILE_EXTENSION = /\.(jpe?g|png|gif|webp|heic|bmp)$/i
 

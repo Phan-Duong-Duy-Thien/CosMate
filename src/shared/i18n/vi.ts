@@ -25,6 +25,7 @@ export const VI = {
     emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
     title: "Thông báo",
+    pageDecorTitle: "⊹ ࣪˖₊˚♡ Thông báo ♡˚₊˖ ࣪⊹",
     filterLabel: "Lọc nhanh",
     filterUnread: "Chưa đọc",
     filterRead: "Đã đọc",
@@ -51,6 +52,12 @@ export const VI = {
     railHelpTitle: "Quy định & hướng dẫn",
     railHelpBody: "Thuê đồ, hoàn tiền, khiếu nại — đọc nhanh trước khi đặt.",
     railHelpCta: "Đọc hướng dẫn",
+    toastViewLink: "Xem chi tiết",
+    quickLinksTitle: "Gợi ý nhanh",
+    toastMarkedAllRead: "Đã đánh dấu tất cả thông báo là đã đọc.",
+    toastDeleted: "Đã xóa thông báo.",
+    toastMarkAllReadFailed: "Không thể đánh dấu đã đọc. Vui lòng thử lại.",
+    toastDeleteFailed: "Không thể xóa thông báo. Vui lòng thử lại.",
   },
 
   /**
@@ -105,6 +112,7 @@ export const VI = {
     breadcrumb: {
       home: "Trang chủ",
       costumes: "Thuê đồ Cosplay",
+      costumeDetail: "Chi tiết trang phục",
       checkout: "Xác nhận đơn thuê",
       profile: "Hồ sơ",
       addresses: "Địa chỉ",
@@ -473,8 +481,7 @@ export const VI = {
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
       waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
-      appLoginHint:
-        "Nếu app báo phiên đăng nhập hết hạn: mở app CosMate → đăng xuất → đăng nhập lại → quét mã mới trên web. App phải trỏ cùng API với web (api.cosmate.site).",
+      
       messages: {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
@@ -629,7 +636,7 @@ export const VI = {
 
       messages: {
         registrationFailed: "Đăng ký thất bại. Vui lòng thử lại.",
-        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng đăng nhập để tiếp tục.",
+        registrationSuccess: "Tài khoản đã được tạo thành công! Vui lòng xác nhận bằng email để tiếp tục.",
         unableToRegister: "Không thể tạo tài khoản. Vui lòng thử lại.",
       },
     },
@@ -739,13 +746,27 @@ export const VI = {
         pendingBookings: "Đơn đặt đang chờ",
         upcomingSchedule: "Lịch trình sắp tới",
         averageRating: "Đánh giá trung bình",
+        totalCostumes: "Tổng trang phục",
+        totalOrders: "Tổng đơn hàng",
+        totalOrderItems: "Tổng mặt hàng",
+        completedOrders: "Đơn hoàn thành",
+        totalRevenue: "Tổng doanh thu",
+      },
+
+      charts: {
+        revenueByMonth: "Doanh thu theo tháng",
+        revenueByQuarter: "Doanh thu theo quý",
+        noData: "Chưa có dữ liệu",
+        monthsFilter: "Khoảng thời gian",
+        monthsOption: "{count} tháng gần đây",
+        loadError: "Không thể tải thống kê",
       },
 
       sections: {
         recentBookings: "Đơn đặt gần đây",
         performanceOverview: "Tổng quan hiệu suất",
         quickTips: "Mẹo nhanh",
-        recentBookingsPlaceholder: "TODO: Hiển thị yêu cầu đặt chỗ gần đây và cập nhật trạng thái",
+        recentBookingsPlaceholder: "Xem chi tiết đơn đặt tại mục Quản lý đơn hàng.",
         performancePlaceholder: "TODO: Hiển thị biểu đồ cho đơn đặt, doanh thu và đánh giá theo thời gian",
       },
 
@@ -780,6 +801,7 @@ export const VI = {
       photographReviews: "Đánh giá",
       photographSettings: "Hồ sơ / Cài đặt",
       wallet: "Ví của tôi",
+      aiToken: "AI Token",
     },
 
     dashboardPhotograph: {
@@ -911,6 +933,16 @@ export const VI = {
         trackingCodePlaceholder: "Nhập mã vận đơn",
         carrierName: "Đơn vị vận chuyển",
         selectCarrier: "Chọn đơn vị vận chuyển",
+        autoTrackingHint:
+          "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi hàng.",
+        shippingFeeLabel: "Ước tính phí vận chuyển",
+        ghnFeeLoading: "Đang tính phí...",
+        ghnFeeError: "Không thể ước tính phí vận chuyển",
+        ghnFeeUnavailable: "Không thể ước tính phí. Kiểm tra địa chỉ trên đơn hoặc cấu hình vận chuyển.",
+        shippingFeeApproximateHint:
+          "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
+        shippingFeeResolveFailedHint:
+          "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",
         carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
@@ -925,6 +957,7 @@ export const VI = {
       validation: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
         carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
@@ -948,6 +981,7 @@ export const VI = {
         comment: "Nội dung",
         images: "Hình ảnh",
         createdAt: "Ngày tạo",
+        replyStatus: "Phản hồi",
         action: "Thao tác",
       },
       viewDetail: "Xem chi tiết",
@@ -960,6 +994,19 @@ export const VI = {
       detailNoComment: "Không có nội dung",
       empty: "Chưa có đánh giá nào",
       loadError: "Không thể tải danh sách đánh giá",
+      replySection: "Phản hồi của shop",
+      replyPlaceholder: "Nhập phản hồi cho khách hàng...",
+      replySubmit: "Gửi phản hồi",
+      replyEdit: "Chỉnh sửa",
+      replySave: "Lưu phản hồi",
+      replyCancel: "Hủy",
+      replyStatusReplied: "Đã trả lời",
+      replyStatusPending: "Chưa trả lời",
+      replyAt: "Phản hồi lúc",
+      replySuccess: "Gửi phản hồi thành công",
+      replyError: "Không thể gửi phản hồi",
+      replyValidationRequired: "Vui lòng nhập nội dung phản hồi",
+      replyValidationMax: "Phản hồi không được vượt quá {max} ký tự",
     },
 
     serviceOrders: {
@@ -1001,6 +1048,8 @@ export const VI = {
       title: "Token CosMate",
       hubTitle: "Quản lý Token CosMate",
       balance: "Số token hiện có",
+      unit: "xu",
+      headerHint: "Vào menu AI Token để mua thêm",
       manage: "Quản lý",
       buyMore: "Mua thêm",
       buySectionTitle: "Mua thêm token",
@@ -1092,14 +1141,16 @@ export const VI = {
         addressNamePlaceholder: "Ví dụ: Nhà, Công ty, Shop",
         city: "Tỉnh/Thành phố",
         cityPlaceholder: "Chọn Tỉnh/Thành phố",
+        citySearchPlaceholder: "Tìm tỉnh/thành phố...",
         district: "Phường/Xã",
         districtPlaceholder: "Chọn Phường/Xã",
+        districtSearchPlaceholder: "Tìm phường/xã...",
         streetAddress: "Địa chỉ chi tiết",
         streetAddressPlaceholder: "Số nhà, tên đường",
       },
       validation: {
         required: "Trường này là bắt buộc",
-        invalidPhone: "Số điện thoại không hợp lệ",
+        invalidPhone: "Số điện thoại phải có đúng 10 chữ số (chỉ nhập số)",
         selectCity: "Vui lòng chọn Tỉnh/Thành phố",
         selectDistrict: "Vui lòng chọn Phường/Xã",
         selectWard: "Vui lòng chọn Phường/Xã",
@@ -1117,6 +1168,10 @@ export const VI = {
         deleteSuccess: "Xóa địa chỉ thành công!",
         createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
         saveError: "Không thể lưu địa chỉ. Vui lòng thử lại.",
+        ghnApproximate:
+          "Địa chỉ đã lưu. Ước tính phí vận chuyển có thể chưa chính xác — nên chọn đúng Phường/Xã từ danh sách.",
+        ghnNotResolvable:
+          "Địa chỉ đã lưu nhưng chưa map được với GHN. Vui lòng chọn lại Tỉnh/Thành phố và Phường/Xã từ danh sách để ước tính phí vận chuyển.",
       },
       confirm: {
         delete: "Bạn có chắc muốn xóa địa chỉ này không?",
@@ -1211,6 +1266,10 @@ export const VI = {
       actionReturn: "Trả hàng",
       returnTrackingCode: "Mã vận đơn",
       returnTrackingCodePlaceholder: "Nhập mã vận đơn",
+      returnCarrierName: "Đơn vị vận chuyển",
+      returnSelectCarrier: "Chọn đơn vị vận chuyển",
+      returnAutoTrackingHint:
+        "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi trả hàng.",
       returnImages: "Hình ảnh xác nhận",
       // Validation
       validation: {
@@ -1218,10 +1277,12 @@ export const VI = {
       },
       validationReturn: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       // Review action
       actionReview: "Đánh giá",
+      actionReviewDone: "Đã đánh giá",
       reviewModal: {
         ratingLabel: "Chọn số sao",
         commentLabel: "Nội dung đánh giá",
@@ -1253,6 +1314,7 @@ export const VI = {
 
     serviceOrders: {
       title: "Lịch sử đơn hàng",
+      pageDecorTitle: "⊹ ࣪˖₊˚♡ Lịch sử đơn hàng ♡˚₊˖ ࣪⊹",
       tabCostume: "Đơn thuê trang phục",
       tabService: "Đơn đặt dịch vụ",
       empty: "Chưa có đơn đặt dịch vụ nào",
@@ -1424,7 +1486,11 @@ export const VI = {
       providerAddress: "Địa chỉ nhà cung cấp",
       trackings: "Theo dõi vận chuyển",
       images: "Hình ảnh",
-      empty: "Không có dữ liệu",
+      empty: "Chưa có dữ liệu",
+      lineItemsHint: "Giá từng mục đã hiển thị ở bảng trên; danh sách bên dưới chỉ ghi tên chi tiết.",
+      unnamedAccessory: "Phụ kiện (chưa có tên)",
+      unnamedSurcharge: "Phụ phí (chưa có tên)",
+      unnamedRentalOption: "Gói thuê (chưa có tên)",
       trackingCode: "Mã vận đơn",
       trackingStatus: "Trạng thái",
       stage: "Giai đoạn",
@@ -1530,7 +1596,7 @@ export const VI = {
       myReviewTitle: "Đánh giá của tôi",
       ratingOfYou: "Đánh giá của bạn:",
       rentedBanner: "Trang phục này hiện đang được thuê. Vui lòng quay lại sau.",
-      rentedButton: "Đã được thuê",
+      rentedButton: "Đang được thuê",
       writeReviewPlaceholder: "Chia sẻ cảm nhận của bạn...",
       submitReview: "Gửi đánh giá",
       moreFromShop: "Sản phẩm khác của shop",
@@ -1551,6 +1617,9 @@ export const VI = {
     // Validation messages
     validation: {
       missingRentStart: "Vui lòng chọn ngày bắt đầu thuê",
+      invalidRentStart: "Ngày bắt đầu thuê không hợp lệ",
+      rentStartTooSoon:
+        "Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.",
       invalidRentDay: "Số ngày thuê phải lớn hơn 0",
     },
 
@@ -2584,6 +2653,12 @@ export const VI = {
         },
       },
     },
+    decorPageTitles: {
+      photographers: "⊹ ࣪˖₊˚♡ Tìm kiếm Photographer ♡˚₊˖ ࣪⊹",
+      staffs: "⊹ ࣪˖₊˚♡ Tìm Đội Ngũ Hỗ Trợ ♡˚₊˖ ࣪⊹",
+      styleQuiz: "⊹ ࣪˖₊˚♡ Quiz Phong Cách ♡˚₊˖ ࣪⊹",
+      poseBattle: "⊹ ࣪˖₊˚♡ Pose Battle ♡˚₊˖ ࣪⊹",
+    },
   },
 
   /**
@@ -2638,6 +2713,9 @@ export const VI = {
     // Policy
     policy: {
       label: "Tôi đồng ý với Điều khoản dịch vụ và Chính sách bảo mật",
+      agreePrefix: "Tôi đồng ý với",
+      termsLink: "Điều khoản dịch vụ",
+      agreeSuffix: "và Chính sách bảo mật",
       required: "Bạn cần đồng ý với điều khoản để tiếp tục",
     },
 
@@ -2930,6 +3008,10 @@ export const VI = {
     tokenSuccessTitle: "Mua token thành công!",
     tokenSuccessDesc: "Token đã được cộng vào tài khoản của bạn. Bạn có thể sử dụng ngay.",
     tokenPrimarySuccessCta: "Về trang quản lý token",
+    walletSuccessTitle: "Nạp tiền thành công!",
+    walletSuccessDesc: "Số dư ví đã được cập nhật. Bạn có thể tiếp tục thanh toán đơn thuê.",
+    walletPrimarySuccessCta: "Tiếp tục thanh toán",
+    walletPrimaryFailedCta: "Quay lại nạp tiền",
     verifying: "Đang xác minh trạng thái thanh toán...",
   },
 };

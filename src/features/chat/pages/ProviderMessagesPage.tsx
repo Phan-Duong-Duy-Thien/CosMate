@@ -4,13 +4,13 @@ import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
 import type { SearchUserResult } from "../services/user.service"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
-import { useChatRooms } from "../hooks/useChatRooms"
+import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
 import {
-  getChatMessagesService,
   getOrCreateChatRoomService,
   markRoomAsReadService,
   uploadImageService,
 } from "../services/chat.service"
+import { useLoadChatHistory } from "../hooks/useLoadChatHistory"
 import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatInboxSidebar } from "../components/ChatInboxSidebar"
 import { ChatMessageList } from "../components/ChatMessageList"
@@ -60,7 +60,7 @@ export default function ProviderMessagesPage() {
   const [form] = Form.useForm()
 
   const currentUserId = getUserId()
-  const { rooms, loading: roomsLoading, refetch: refetchRooms } = useChatRooms()
+  const { rooms, loading: roomsLoading } = useChatRooms()
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Provider profile (needed for providerId to fetch services) ────────
@@ -76,28 +76,18 @@ export default function ProviderMessagesPage() {
   const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
 
   // ── Message store (single source of truth) ────────────────────────────────
+  const activeRoomId = activeRoom?.roomId ?? null
   const {
     messages,
     setMessages,
     mergeServerMessage,
-    clearMessages,
     addOptimisticMessage,
     removeOptimisticMessage,
-  } = useChatMessageStore()
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  } = useChatMessageStore(activeRoomId)
+  const isLoadingHistory = useLoadChatHistory(activeRoomId, setMessages)
+  const showHistoryLoader = isLoadingHistory && messages.length === 0
   const [isConnected, setIsConnected] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
-
-  // Load history from REST API
-  useEffect(() => {
-    if (activeRoom?.roomId == null) return
-    setIsLoadingHistory(true)
-    clearMessages()
-    getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data?.content ?? []))
-      .catch(() => setMessages([]))
-      .finally(() => setIsLoadingHistory(false))
-  }, [activeRoom?.roomId, setMessages, clearMessages])
 
   // Mark room as read when user opens it
   useEffect(() => {
@@ -148,7 +138,7 @@ export default function ProviderMessagesPage() {
     }
     try {
       const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
-      refetchRooms()
+      refreshChatRoomsList()
       setActiveRoom({
         roomId: newRoom.id,
         partnerId: user.id,
@@ -328,7 +318,7 @@ export default function ProviderMessagesPage() {
                 <p className="text-base font-medium">{VI.common.messages.noConversation}</p>
                 <p className="text-sm">{VI.common.messages.selectConversation}</p>
               </div>
-            ) : isLoadingHistory ? (
+            ) : showHistoryLoader ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
                 <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
                 <p className="text-sm font-medium">{VI.common.status.loading}</p>

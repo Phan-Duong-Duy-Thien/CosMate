@@ -48,27 +48,44 @@ export interface UpdateUserProfilePayload {
 }
 
 // ============ USER ADDRESS TYPES ============
+/**
+ * Province Open API V2 semantics on forms:
+ * - city    → Tỉnh / Thành phố (province name)
+ * - district → Phường / Xã (ward name)
+ * - address → địa chỉ chi tiết
+ */
 
 export interface UserAddress {
   id: number
   userId: number
   name: string
+  phone: string
   city: string
   district: string
   address: string
-  phone: string
+  addressName?: string
 }
 
 export interface UpsertUserAddressPayload {
   name: string
+  phone: string
+  addressName: string
   city: string
   district: string
   address: string
-  phone: string
-  addressName: string
 }
 
 export type CreateUserAddressPayload = UpsertUserAddressPayload
+
+/** UI form state before province/ward codes are selected */
+export interface AddressFormState {
+  name: string
+  phone: string
+  addressName: string
+  city: string
+  district: string
+  address: string
+}
 
 // ============ VIETNAM LOCATION TYPES ============
 

@@ -19,9 +19,11 @@ import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserAddresses } from "@/features/profile/services/userAddress.service"
 import { saveDraft } from "@/features/order/utils/rentalDraftStorage"
+import { buildAddressCreateFromCheckoutUrl } from "@/features/order/utils/checkoutNavigation"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
 import { VI } from "@/shared/i18n/vi"
 import { publicCostumeStatusLabel } from "../utils/publicCostumeStatusLabel"
+import { getRentStartDateValidationError } from "../utils/rentDateValidation"
 
 export default function CostumeDetailPage() {
   const { costumeId } = useParams()
@@ -37,7 +39,6 @@ export default function CostumeDetailPage() {
     setDays,
     startDate,
     setStartDate,
-    selectedRentalOptionId,
     checkedOptionalIds,
     toggleOptionalAccessory,
     quote,
@@ -149,27 +150,14 @@ export default function CostumeDetailPage() {
   const handleRentNow = async () => {
     if (!costume) return
 
-    // Validate rentStart is selected
-    if (!startDate) {
-      setValidationError(VI.costumeRental.validation.missingRentStart)
+    const rentStartError = getRentStartDateValidationError(startDate)
+    if (rentStartError) {
+      setValidationError(rentStartError)
       return
     }
 
-    // Validate rentDay is valid
     if (!days || days <= 0) {
       setValidationError(VI.costumeRental.validation.invalidRentDay)
-      return
-    }
-
-    // Validate startDate is at least 3 days from today
-    const today = new Date()
-    today.setHours(0, 0, 0, 0)
-    const minDate = new Date(today)
-    minDate.setDate(minDate.getDate() + 3)
-    const selected = new Date(startDate)
-    selected.setHours(0, 0, 0, 0)
-    if (selected < minDate) {
-      setValidationError('Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.')
       return
     }
 
@@ -192,10 +180,11 @@ export default function CostumeDetailPage() {
     // Save rental draft to sessionStorage
     saveDraft({
       costumeId: costume.id,
+      costumeName: costume.name,
       rentDay: days,
       rentStart: rentStartFormatted,
       selectedAccessoryIds: Array.from(checkedOptionalIds),
-      selectedRentalOptionId,
+      selectedRentalOptionId: null,
     })
 
     // Check if user has addresses
@@ -218,7 +207,7 @@ export default function CostumeDetailPage() {
 
   const handleNoAddressConfirm = () => {
     setShowNoAddressModal(false)
-    navigate('/profile/addresses/new?returnTo=/rent/checkout')
+    navigate(buildAddressCreateFromCheckoutUrl())
   }
 
   const handleNoAddressCancel = () => {

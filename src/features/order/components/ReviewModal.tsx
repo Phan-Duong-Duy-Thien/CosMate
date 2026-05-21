@@ -10,6 +10,7 @@ import { InboxOutlined } from "@ant-design/icons"
 import type { UploadFile, UploadProps } from "antd"
 import { Star, X } from "lucide-react"
 import { VI } from "@/shared/i18n/vi"
+import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
 import type { ReviewItem } from "@/features/costume-rental/api/review.api"
 
 interface ReviewModalProps {
@@ -38,7 +39,7 @@ export function ReviewModal({
 
   const isReadOnly = !!existingReview
 
-  const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080"
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || "https://api.cosmate.site"
   const resolveImageUrl = (url: string) =>
     !url ? "" : url.startsWith("http://") || url.startsWith("https://") ? url : `${API_BASE}${url}`
   const normalizeReviewImages = (images: Array<{ id?: number; url?: string } | string> = []) =>
@@ -201,6 +202,14 @@ export function ReviewModal({
             )}
           </div>
         )}
+
+        {isReadOnly && existingReview?.providerReply?.trim() ? (
+          <ProviderReplyBlock
+            providerReply={existingReview.providerReply}
+            repliedAt={existingReview.repliedAt}
+            variant="neutral"
+          />
+        ) : null}
       </div>
     </Modal>
   )

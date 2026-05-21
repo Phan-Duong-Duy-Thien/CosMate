@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef, Fragment } from "react"
 import { X, Send, MessageCircle, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
-import { useChatRooms } from "../hooks/useChatRooms"
+import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
 import {
-  getChatMessagesService,
   getOrCreateChatRoomService,
   markRoomAsReadService,
   uploadImageService,
@@ -16,6 +15,7 @@ import {
 } from "../services/chatSocket.service"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
+import { useLoadChatHistory } from "../hooks/useLoadChatHistory"
 import type { SearchUserResult } from "../services/user.service"
 import { message } from "antd"
 import { cn } from "@/lib/utils"
@@ -83,7 +83,7 @@ export function ChatPopup() {
     partnerName: initialPartnerName,
     closeChat,
   } = useChatPopup()
-  const { rooms, loading: roomsLoading, refetch: refetchRooms } = useChatRooms()
+  const { rooms, loading: roomsLoading } = useChatRooms()
   const [currentUserId, setCurrentUserId] = useState<number | null>(getUserId())
 
   // Keep currentUserId in sync with auth changes (login/logout)
@@ -114,25 +114,17 @@ export function ChatPopup() {
     }
   }, [initialRoomId, initialPartnerId, initialPartnerName])
 
-  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const roomId = activeRoom?.roomId ?? null
+  const { messages, setMessages, mergeServerMessage, addOptimisticMessage, removeOptimisticMessage } =
+    useChatMessageStore(roomId)
+  const isLoadingHistory = useLoadChatHistory(roomId, setMessages)
+  const showHistoryLoader = isLoadingHistory && messages.length === 0
   const [isConnected, setIsConnected] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [inputValue, setInputValue] = useState("")
   const fileInputRef = useRef<HTMLInputElement>(null)
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
-
-  // Load history when room changes
-  useEffect(() => {
-    if (activeRoom === null) return
-    setIsLoadingHistory(true)
-    clearMessages()
-    getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data?.content ?? []))
-      .catch(() => setMessages([]))
-      .finally(() => setIsLoadingHistory(false))
-  }, [activeRoom?.roomId, setMessages, clearMessages])
 
   // Mark room as read when user opens it
   useEffect(() => {
@@ -259,7 +251,7 @@ export function ChatPopup() {
 
     try {
       const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
-      refetchRooms()
+      refreshChatRoomsList()
       setActiveRoom({
         roomId: newRoom.id,
         partnerId: user.id,
@@ -276,8 +268,6 @@ export function ChatPopup() {
 
   const displayName = activeRoom?.partnerName ?? "Chat"
   const avatar = activeRoom?.partnerAvatar
-  const validMessages = messages.filter((m) => m.createdAt && m.createdAt.trim() !== "")
-
   return (
     <div className={CHAT_UI.popupShell}>
 
@@ -343,30 +333,26 @@ export function ChatPopup() {
               <p className="text-sm font-medium">Select a conversation</p>
               <p className="text-xs text-muted-foreground">Choose a chat from the left</p>
             </div>
-          ) : isLoadingHistory || validMessages.length === 0 ? (
+          ) : showHistoryLoader ? (
             <div className={CHAT_UI.messageEmpty}>
-              {isLoadingHistory ? (
-                <>
-                  <div className={CHAT_UI.spinner} />
-                  <p className="text-sm font-medium">Loading...</p>
-                </>
-              ) : (
-                <>
-                  <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
-                  <p className="text-sm font-medium">No messages yet</p>
-                  <p className="text-xs text-muted-foreground">Say hi to start the conversation!</p>
-                </>
-              )}
+              <div className={CHAT_UI.spinner} />
+              <p className="text-sm font-medium">Loading...</p>
+            </div>
+          ) : messages.length === 0 ? (
+            <div className={CHAT_UI.messageEmpty}>
+              <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
+              <p className="text-sm font-medium">No messages yet</p>
+              <p className="text-xs text-muted-foreground">Say hi to start the conversation!</p>
             </div>
           ) : (
             <div className={cn(CHAT_UI.messageScroll, CHAT_UI.messageScrollPad)}>
               {/* Messages anchored to bottom */}
               <div className="mt-auto flex flex-col gap-2">
-                {validMessages.map((msg, idx) => {
+                {messages.map((msg, idx) => {
                   const isMine = currentUserId !== null ? msg.senderId === currentUserId : false
                   const time = formatMessageTime(msg.createdAt)
                   const dateKey = getDateKey(msg.createdAt)
-                  const prevDateKey = idx > 0 ? getDateKey(validMessages[idx - 1].createdAt) : null
+                  const prevDateKey = idx > 0 ? getDateKey(messages[idx - 1].createdAt) : null
                   const showDateSeparator = idx === 0 || dateKey !== prevDateKey
                   return (
                     <Fragment key={msg.id}>

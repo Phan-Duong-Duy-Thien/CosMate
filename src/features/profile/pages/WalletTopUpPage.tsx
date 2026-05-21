@@ -26,6 +26,14 @@ export default function WalletTopUpPage() {
 
   const isSubmitDisabled = loading || !amount || !paymentMethod
 
+  const handleBack = () => {
+    if (redirectUrl) {
+      navigate(redirectUrl)
+      return
+    }
+    navigate(walletBase)
+  }
+
   const paymentMethods: {
     value: PaymentMethod
     label: string
@@ -65,7 +73,7 @@ export default function WalletTopUpPage() {
                 type="button"
                 variant="ghost"
                 className="mt-0.5 h-10 w-10 shrink-0 rounded-xl border-[2px] border-transparent p-0 text-indigo-900/70 hover:border-indigo-950/20 hover:bg-pink-100 hover:text-indigo-950"
-                onClick={() => navigate(walletBase)}
+                onClick={handleBack}
                 aria-label={VI.common.actions.back}
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -176,7 +184,7 @@ export default function WalletTopUpPage() {
                   type="button"
                   variant="outline"
                   className="w-full sm:w-auto"
-                  onClick={() => navigate(walletBase)}
+                  onClick={handleBack}
                 >
                   {VI.common.actions.back}
                 </Button>

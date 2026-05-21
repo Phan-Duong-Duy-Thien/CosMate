@@ -181,16 +181,20 @@ export async function prepareOrder(orderId: number): Promise<OrderItem> {
  * @param images - Array of image files
  * @returns Ship order result with images and tracking info
  */
+export interface ShipReturnQueryOptions {
+  autoCreateGhn?: boolean;
+}
+
 export async function shipOrder(
   orderId: number,
   trackingCode: string,
   shippingCarrierName: string,
   notes: string[],
-  images: File[]
+  images: File[],
+  options?: ShipReturnQueryOptions
 ): Promise<ShipOrderResult> {
   const formData = new FormData();
 
-  // Append each image with the same key 'images'
   images.forEach((file) => {
     formData.append('images', file);
   });
@@ -200,9 +204,10 @@ export async function shipOrder(
     formData,
     {
       params: {
-        trackingCode,
+        trackingCode: trackingCode || undefined,
         shippingCarrierName: shippingCarrierName || undefined,
         notes,
+        autoCreateGhn: options?.autoCreateGhn ?? false,
       },
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -307,22 +312,26 @@ export async function cancelOrder(orderId: number): Promise<void> {
 export async function returnOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
-  images: File[]
+  images: File[],
+  options?: ShipReturnQueryOptions
 ): Promise<OrderItem> {
   const formData = new FormData();
 
-  // Append each image with the same key 'images'
   images.forEach((file) => {
     formData.append('images', file);
   });
 
   const response = await axiosInstance.post<ApiResponse<OrderItem>>(
-    `/api/orders/${orderId}/return?trackingCode=${encodeURIComponent(trackingCode)}`,
+    `/api/orders/${orderId}/return`,
     formData,
     {
       params: {
-        notes: notes,
+        trackingCode: trackingCode || undefined,
+        shippingCarrierName: shippingCarrierName || undefined,
+        notes,
+        autoCreateGhn: options?.autoCreateGhn ?? false,
       },
       headers: {
         'Content-Type': 'multipart/form-data',
