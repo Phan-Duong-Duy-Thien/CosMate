@@ -1282,6 +1282,7 @@ export const VI = {
       },
       // Review action
       actionReview: "Đánh giá",
+      actionReviewDone: "Đã đánh giá",
       reviewModal: {
         ratingLabel: "Chọn số sao",
         commentLabel: "Nội dung đánh giá",
