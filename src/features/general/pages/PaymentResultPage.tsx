@@ -6,8 +6,9 @@
  */
 import * as React from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/shared/components/Button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { VI } from '@/shared/i18n/vi';
+import { cn } from '@/lib/utils';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import { getTokenHubPathForCurrentUser } from '@/features/profile/utils/tokenRoutes';
@@ -15,7 +16,7 @@ import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerific
 import { useServiceOrderVerification } from '@/features/service/hooks/useServiceOrderVerification';
 import { CHECKOUT_PATH } from '@/features/order/utils/checkoutNavigation';
 import type { UserRole } from '@/types/auth';
-import { CheckCircle2, XCircle, Clock } from 'lucide-react';
+import { CheckCircle2, XCircle, Clock, Loader2, Sparkles } from 'lucide-react';
 import {
   notifyOrdersChanged,
   notifyServiceOrdersChanged,
@@ -141,7 +142,7 @@ export default function PaymentResultPage() {
       case 'cancelled':
         return VI.paymentResult.cancelledDesc;
       case 'pending':
-        return VI.paymentResult.pendingDesc ?? 'Thanh toÃ¡n Ä‘ang Ä‘Æ°á»£c xá»­ lÃ½. Vui lÃ²ng chá».';
+        return VI.paymentResult.pendingDesc;
       default:
         return VI.paymentResult.unknownDesc;
     }
@@ -216,68 +217,113 @@ export default function PaymentResultPage() {
   const showTransactionId =
     rawOrderId && rawOrderId !== 'unknown' && (!isWalletContext || isSuccess);
 
+  const statusIconShell = isLoading
+    ? 'border-indigo-950/30 bg-white'
+    : isSuccess
+      ? 'border-indigo-950 bg-gradient-to-br from-pink-200 via-rose-100 to-violet-100'
+      : finalStatus === 'pending'
+        ? 'border-amber-800 bg-amber-50'
+        : 'border-red-800/80 bg-red-50';
+
   return (
-    <section className="min-h-screen bg-[image:var(--gradient-shop-page)] bg-[length:100%_100%] bg-no-repeat pb-20">
-      <div className="mx-auto flex max-w-lg items-center justify-center px-4 pt-16">
-        <div className="w-full rounded-3xl border border-white/80 bg-white/80 p-8 text-center shadow-xl">
-          <div className="mb-6 flex justify-center">
-            {isLoading ? (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-slate-100">
-                <svg className="h-10 w-10 animate-spin text-slate-400" fill="none" viewBox="0 0 24 24">
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  />
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                  />
-                </svg>
-              </div>
-            ) : isSuccess ? (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-pink-100">
-                <CheckCircle2 className="h-10 w-10 text-pink-500" strokeWidth={2} />
-              </div>
-            ) : finalStatus === 'pending' ? (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-amber-100">
-                <Clock className="h-10 w-10 text-amber-600" strokeWidth={2} />
-              </div>
-            ) : (
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-red-100">
-                <XCircle className="h-10 w-10 text-red-600" strokeWidth={2} />
-              </div>
-            )}
+    <div className="home-anime relative isolate min-h-screen overflow-x-clip bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] pb-20">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[min(50vh,420px)] w-full opacity-[0.35]"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at center, rgba(76, 29, 149, 0.1) 1px, transparent 1px)',
+          backgroundSize: '14px 14px',
+        }}
+      />
+
+      <main className="relative z-[1] mx-auto flex min-h-[calc(100vh-5rem)] max-w-lg items-center justify-center px-4 py-10 sm:py-14">
+        <section
+          className={cn(
+            'w-full rounded-[1.35rem] border-[4px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] via-pink-50/80 to-violet-100',
+            'p-6 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.35)] sm:p-8'
+          )}
+        >
+          <div className="mb-5 flex justify-center">
+            <span
+              className={cn(
+                'inline-flex h-[4.5rem] w-[4.5rem] items-center justify-center rounded-2xl border-[3px] shadow-[5px_5px_0_0_#1e1b4b]',
+                statusIconShell
+              )}
+            >
+              {isLoading ? (
+                <Loader2 className="h-10 w-10 animate-spin text-indigo-950/50" aria-hidden />
+              ) : isSuccess ? (
+                <CheckCircle2 className="h-10 w-10 text-pink-600" strokeWidth={2.25} aria-hidden />
+              ) : finalStatus === 'pending' ? (
+                <Clock className="h-10 w-10 text-amber-700" strokeWidth={2.25} aria-hidden />
+              ) : (
+                <XCircle className="h-10 w-10 text-red-600" strokeWidth={2.25} aria-hidden />
+              )}
+            </span>
           </div>
 
-          <h1 className="text-2xl font-semibold text-slate-900">{getTitle()}</h1>
+          {isSuccess && !isLoading && (
+            <p className="mb-2 inline-flex items-center justify-center gap-1.5 rounded-full border-2 border-indigo-950 bg-white px-3 py-1 text-[10px] font-extrabold uppercase tracking-wide text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
+              <Sparkles className="h-3 w-3 text-cosmate-pink" aria-hidden />
+              CosMate
+            </p>
+          )}
 
-          <p className="mt-3 text-sm leading-relaxed text-slate-600">{getDescription()}</p>
+          <h1
+            className={cn(
+              'text-2xl font-extrabold leading-tight tracking-tight text-indigo-950 sm:text-[1.65rem]',
+              isSuccess &&
+                !isLoading &&
+                'bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent'
+            )}
+          >
+            {getTitle()}
+          </h1>
+
+          <p className="mx-auto mt-3 max-w-sm text-sm font-semibold leading-relaxed text-indigo-950/80">
+            {getDescription()}
+          </p>
 
           {showTransactionId && (
-            <div className="mt-6 rounded-2xl bg-slate-50 p-4">
-              <p className="text-xs text-slate-500">{idLabel}</p>
-              <p className="mt-1 font-mono text-sm font-semibold text-slate-900">{rawOrderId}</p>
+            <div className="mx-auto mt-6 max-w-xs rounded-2xl border-[3px] border-indigo-950/25 bg-white/90 px-4 py-3 shadow-[4px_4px_0_0_rgba(30,27,75,0.12)]">
+              <p className="text-[11px] font-extrabold uppercase tracking-wide text-indigo-800/65">
+                {idLabel}
+              </p>
+              <p className="mt-1 font-mono text-lg font-extrabold tabular-nums text-indigo-950">
+                {rawOrderId}
+              </p>
             </div>
           )}
 
           <div className="mt-8 flex flex-col gap-3">
-            <Button variant="default" size="lg" className="w-full rounded-full" onClick={handlePrimaryAction}>
+            <Button
+              type="button"
+              size="lg"
+              className={cn(
+                'h-12 w-full rounded-xl border-[3px] border-indigo-950 text-base font-extrabold shadow-[6px_6px_0_0_#1e1b4b]',
+                isSuccess
+                  ? 'bg-gradient-to-r from-pink-500 to-fuchsia-600 text-white hover:brightness-105'
+                  : 'bg-cosmate-soft-pink text-indigo-950 hover:bg-cosmate-pink/35'
+              )}
+              onClick={handlePrimaryAction}
+              disabled={isLoading}
+            >
               {getPrimaryCtaLabel()}
             </Button>
-            <Link to={getHomeRedirectPath()}>
-              <Button variant="outline" size="lg" className="w-full rounded-full">
-                {VI.paymentResult.homeCta}
-              </Button>
+            <Link
+              to={getHomeRedirectPath()}
+              className={cn(
+                buttonVariants({ variant: 'cosmateOutline', size: 'lg' }),
+                'inline-flex h-12 w-full rounded-xl border-[3px] border-indigo-950 bg-white font-extrabold text-indigo-950 shadow-[4px_4px_0_0_rgba(30,27,75,0.2)] hover:bg-amber-50'
+              )}
+            >
+              {VI.paymentResult.homeCta}
             </Link>
           </div>
-        </div>
-      </div>
-    </section>
+        </section>
+      </main>
+    </div>
   );
 }
 
