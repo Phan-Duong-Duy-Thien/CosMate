@@ -145,9 +145,10 @@ export async function shipProviderOrder(
   trackingCode: string,
   shippingCarrierName: string,
   notes: string[],
-  images: File[]
+  images: File[],
+  options?: orderApi.ShipReturnQueryOptions
 ) {
-  return orderApi.shipOrder(orderId, trackingCode, shippingCarrierName, notes, images);
+  return orderApi.shipOrder(orderId, trackingCode, shippingCarrierName, notes, images, options);
 }
 
 /**
@@ -222,10 +223,19 @@ export async function cancelOrder(orderId: number) {
 export async function returnCosplayerOrder(
   orderId: number,
   trackingCode: string,
+  shippingCarrierName: string,
   notes: string[],
-  images: File[]
+  images: File[],
+  options?: orderApi.ShipReturnQueryOptions
 ) {
-  return orderApi.returnOrder(orderId, trackingCode, notes, images);
+  return orderApi.returnOrder(
+    orderId,
+    trackingCode,
+    shippingCarrierName,
+    notes,
+    images,
+    options
+  );
 }
 
 /**

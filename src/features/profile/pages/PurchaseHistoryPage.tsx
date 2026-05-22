@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useCallback } from "react"
 import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
 import { message, Tooltip, Modal, Table } from "antd"
@@ -6,7 +6,7 @@ import { VI } from "@/shared/i18n/vi"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { useServiceOrders, type ServiceOrderTab } from "../hooks/useServiceOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
-import { ReturnOrderModal } from "@/features/order/components/ReturnOrderModal"
+import { ReturnOrderModal, type ReturnOrderSubmitData } from "@/features/order/components/ReturnOrderModal"
 import { OrderDetailDrawer } from "@/features/order/components/OrderDetailDrawer"
 import { ReviewModal } from "@/features/order/components/ReviewModal"
 import { CreateDisputeModal } from "@/features/order/components/CreateDisputeModal"
@@ -16,6 +16,7 @@ import { getReviewByOrderId, type ReviewItem } from "@/features/costume-rental/a
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
 import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
 import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
+import { notifyOrdersChanged } from "@/shared/sync/dataSync"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
@@ -174,8 +175,56 @@ export default function PurchaseHistoryPage() {
   const [reviewOrderId, setReviewOrderId] = useState<number | null>(null)
   const [reviewCosplayerId, setReviewCosplayerId] = useState<number | null>(null)
   const [existingReview, setExistingReview] = useState<ReviewItem | null>(null)
+  const [reviewedOrderIds, setReviewedOrderIds] = useState<Set<number>>(() => new Set())
 
   const { submit: submitReview, loading: isReviewSubmitting } = useCreateReview()
+
+  const markOrderReviewed = useCallback((orderId: number) => {
+    setReviewedOrderIds((prev) => {
+      if (prev.has(orderId)) return prev
+      const next = new Set(prev)
+      next.add(orderId)
+      return next
+    })
+  }, [])
+
+  useEffect(() => {
+    const orderIdsToCheck = [
+      ...filteredOrders
+        .filter((o) => o.status === "RETURNED" || o.status === "COMPLETED")
+        .map((o) => o.id),
+      ...serviceFilteredOrders
+        .filter((o) => o.status === "COMPLETED" && o.cosplayerId != null)
+        .map((o) => o.id),
+    ]
+
+    if (orderIdsToCheck.length === 0) return
+
+    let cancelled = false
+
+    void (async () => {
+      const reviewed = await Promise.all(
+        orderIdsToCheck.map(async (orderId) => {
+          const review = await getReviewByOrderId(orderId)
+          return review ? orderId : null
+        })
+      )
+
+      if (cancelled) return
+
+      setReviewedOrderIds((prev) => {
+        const next = new Set(prev)
+        for (const id of reviewed) {
+          if (id != null) next.add(id)
+        }
+        return next
+      })
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [filteredOrders, serviceFilteredOrders])
   const { createDispute, disputingOrderId } = useCreateDispute()
   const { cancelOrder, cancellingOrderId } = useCancelOrder()
   const { extendOrder, isExtending, getDetailIdFromOrder } = useExtendOrder()
@@ -279,9 +328,16 @@ export default function PurchaseHistoryPage() {
     setReturnModalOpen(true)
   }
 
-  const handleReturnSubmit = async (data: { trackingCode: string; images: File[]; notes: string[] }) => {
+  const handleReturnSubmit = async (data: ReturnOrderSubmitData) => {
     if (!returnOrderId) return
-    const success = await returnOrder(returnOrderId, data.trackingCode, data.images, data.notes)
+    const success = await returnOrder(
+      returnOrderId,
+      data.trackingCode,
+      data.shippingCarrierName,
+      data.images,
+      data.notes,
+      data.autoCreateGhn
+    )
     if (success) {
       message.success(VI.profile.orders.toastReturnSuccess)
       setReturnModalOpen(false)
@@ -324,6 +380,7 @@ export default function PurchaseHistoryPage() {
       message.success(VI.profile.orders.toastCancelSuccess)
       setCancelModalOpen(false)
       setCancelOrderId(null)
+      notifyOrdersChanged({ orderId: cancelOrderId, orderType: 'RENT_COSTUME' })
       costumeRefetch()
     } else {
       message.error(VI.profile.orders.toastCancelFailed)
@@ -332,6 +389,7 @@ export default function PurchaseHistoryPage() {
 
   const handleReviewOrder = async (orderId: number, cosplayerId: number) => {
     const found = await getReviewByOrderId(orderId)
+    if (found) markOrderReviewed(orderId)
     setExistingReview(found)
     setReviewOrderId(orderId)
     setReviewCosplayerId(cosplayerId)
@@ -348,6 +406,7 @@ export default function PurchaseHistoryPage() {
       images: data.images,
     })
     if (success) {
+      markOrderReviewed(reviewOrderId)
       message.success(VI.profile.orders.toastReviewSuccess)
       setReviewModalOpen(false)
       setReviewOrderId(null)
@@ -400,6 +459,7 @@ export default function PurchaseHistoryPage() {
     const isCancellable = order.status === 'UNPAID' || order.status === 'PAID'
 
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
+    const hasReviewed = reviewedOrderIds.has(order.id)
 
     const orderCode = formatCostumeOrderCode(order.id)
 
@@ -526,10 +586,18 @@ export default function PurchaseHistoryPage() {
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
                 disabled={isReviewSubmitting && reviewOrderId === order.id}
-                className="flex items-center gap-1 rounded-xl border-[2px] border-amber-900 bg-amber-500 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                className={
+                  hasReviewed
+                    ? "flex items-center gap-1 rounded-xl border-[2px] border-slate-300 bg-slate-200 px-3 py-1.5 text-sm font-bold text-slate-500 transition-colors hover:bg-slate-200 disabled:opacity-50"
+                    : "flex items-center gap-1 rounded-xl border-[2px] border-amber-900 bg-amber-500 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:bg-amber-600 disabled:opacity-50"
+                }
               >
                 <Star className="h-3.5 w-3.5" />
-                {isReviewSubmitting && reviewOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReview}
+                {isReviewSubmitting && reviewOrderId === order.id
+                  ? VI.profile.orders.actionProcessing
+                  : hasReviewed
+                    ? VI.profile.orders.actionReviewDone
+                    : VI.profile.orders.actionReview}
               </button>
             )}
           </div>
@@ -560,6 +628,7 @@ export default function PurchaseHistoryPage() {
     const isConfirmProcessing = confirmingOrderId === order.id
     const isPayProcessing = payingOrderId === order.id
     const isServiceCompleted = order.status === 'COMPLETED'
+    const hasServiceReviewed = reviewedOrderIds.has(order.id)
 
     return (
       <div
@@ -629,10 +698,16 @@ export default function PurchaseHistoryPage() {
               <button
                 type="button"
                 onClick={() => handleReviewOrder(order.id, order.cosplayerId)}
-                className="flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+                className={
+                  hasServiceReviewed
+                    ? "flex items-center gap-1 rounded-lg border border-slate-300 bg-slate-200 px-3 py-1.5 text-sm font-medium text-slate-500 transition-colors hover:bg-slate-200"
+                    : "flex items-center gap-1 rounded-lg bg-amber-500 px-3 py-1.5 text-sm font-medium text-white transition-colors hover:bg-amber-600"
+                }
               >
                 <Star className="h-3.5 w-3.5" />
-                {VI.profile.orders.actionReview}
+                {hasServiceReviewed
+                  ? VI.profile.orders.actionReviewDone
+                  : VI.profile.orders.actionReview}
               </button>
             )}
           </div>

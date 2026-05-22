@@ -7,6 +7,8 @@ import { getUserId } from '@/features/auth/services/tokenStorage';
 import { fetchServiceOrders, confirmServiceOrder, payServiceOrderFn } from '@/features/service/services/booking.service';
 import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
 import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 
 export type ServiceOrderTab = 'all' | 'UNCONFIRM' | 'UNPAID' | 'PAID' | 'WAITING_SERVICE_DATE' | 'IN_SERVICE' | 'COMPLETED' | 'DISPUTE' | 'CANCELLED';
 
@@ -166,6 +168,8 @@ export function useServiceOrders(): UseServiceOrdersResult {
     await fetchData(selectedStatus, page);
     await fetchCounts();
   }, [fetchData, selectedStatus, page, fetchCounts]);
+
+  useDataSyncRefetch(refetch, DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED, Boolean(userId));
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.

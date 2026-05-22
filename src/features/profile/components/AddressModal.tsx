@@ -2,7 +2,7 @@ import * as React from "react"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { Button } from "@/components/ui/button"
 import { PROFILE_MODAL_UI } from "../constants/profileUi"
-import type { UpsertUserAddressPayload, UserAddress, Province, District } from "../types"
+import type { AddressFormState, UserAddress, Province, District } from "../types"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useUserAddressesCrud } from "../hooks/useUserAddressesCrud"
@@ -12,6 +12,7 @@ import { AddressOptionalLabel, AddressRequiredLabel } from "./AddressRequiredLab
 import { DistrictSelect, ProvinceSelect } from "./AddressLocationSelects"
 import { AddressPhoneInput } from "./AddressPhoneInput"
 import { getPhoneValidationError } from "../utils/addressValidation"
+import { buildLegacyAddressPayload } from "../services/addressPayload.service"
 
 function normalizeVnName(n: string | undefined | null): string {
   if (!n) return ""
@@ -59,7 +60,7 @@ export function AddressModal({
 }: AddressModalProps) {
   const [isAddressFormOpen, setIsAddressFormOpen] = React.useState(false)
   const [editingAddressId, setEditingAddressId] = React.useState<number | null>(null)
-  const [addressForm, setAddressForm] = React.useState<UpsertUserAddressPayload>({
+  const [addressForm, setAddressForm] = React.useState<AddressFormState>({
     name: "",
     city: "",
     district: "",
@@ -68,7 +69,7 @@ export function AddressModal({
     addressName: "",
   })
   const [addressFieldErrors, setAddressFieldErrors] = React.useState<
-    Partial<Record<keyof UpsertUserAddressPayload, string>>
+    Partial<Record<keyof AddressFormState, string>>
   >({})
   const [editingAddressCity, setEditingAddressCity] = React.useState<string | null>(null)
   const [editingAddressDistrict, setEditingAddressDistrict] = React.useState<string | null>(null)
@@ -141,12 +142,12 @@ export function AddressModal({
   }
 
   const validateAddress = (): boolean => {
-    const nextErrors: Partial<Record<keyof UpsertUserAddressPayload, string>> = {}
+    const nextErrors: Partial<Record<keyof AddressFormState, string>> = {}
     if (!addressForm.name.trim()) nextErrors.name = VI.profile.address.validation.required
     const phoneError = getPhoneValidationError(addressForm.phone)
     if (phoneError) nextErrors.phone = phoneError
-    if (!addressForm.city.trim()) nextErrors.city = VI.profile.address.validation.required
-    if (!addressForm.district.trim()) nextErrors.district = VI.profile.address.validation.required
+    if (provinceCode == null) nextErrors.city = VI.profile.address.validation.required
+    if (districtCode == null) nextErrors.district = VI.profile.address.validation.required
     if (!addressForm.address.trim()) nextErrors.address = VI.profile.address.validation.required
     setAddressFieldErrors(nextErrors)
     return Object.keys(nextErrors).length === 0
@@ -155,14 +156,18 @@ export function AddressModal({
   const handleSaveAddress = async () => {
     if (!validateAddress()) return
 
-    const payload: UpsertUserAddressPayload = {
+    const province = provinces.find((p) => p.code === provinceCode)
+    const ward = districts.find((d) => d.code === districtCode)
+    if (!province || !ward) return
+
+    const payload = buildLegacyAddressPayload({
       name: addressForm.name.trim(),
-      city: addressForm.city.trim(),
-      district: addressForm.district.trim(),
-      address: addressForm.address.trim(),
       phone: addressForm.phone.trim(),
       addressName: addressForm.addressName.trim(),
-    }
+      provinceName: province.name,
+      wardName: ward.name,
+      detailAddress: addressForm.address.trim(),
+    })
 
     const ok =
       editingAddressId == null

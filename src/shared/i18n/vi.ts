@@ -933,6 +933,16 @@ export const VI = {
         trackingCodePlaceholder: "Nhập mã vận đơn",
         carrierName: "Đơn vị vận chuyển",
         selectCarrier: "Chọn đơn vị vận chuyển",
+        autoTrackingHint:
+          "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi hàng.",
+        shippingFeeLabel: "Ước tính phí vận chuyển",
+        ghnFeeLoading: "Đang tính phí...",
+        ghnFeeError: "Không thể ước tính phí vận chuyển",
+        ghnFeeUnavailable: "Không thể ước tính phí. Kiểm tra địa chỉ trên đơn hoặc cấu hình vận chuyển.",
+        shippingFeeApproximateHint:
+          "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
+        shippingFeeResolveFailedHint:
+          "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",
         carrierNameOtherPlaceholder: "Nhập tên đơn vị vận chuyển",
         images: "Hình ảnh",
@@ -947,6 +957,7 @@ export const VI = {
       validation: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
         carrierRequired: "Vui lòng nhập tên đơn vị vận chuyển",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       toast: {
@@ -1157,6 +1168,10 @@ export const VI = {
         deleteSuccess: "Xóa địa chỉ thành công!",
         createError: "Không thể thêm địa chỉ. Vui lòng thử lại.",
         saveError: "Không thể lưu địa chỉ. Vui lòng thử lại.",
+        ghnApproximate:
+          "Địa chỉ đã lưu. Ước tính phí vận chuyển có thể chưa chính xác — nên chọn đúng Phường/Xã từ danh sách.",
+        ghnNotResolvable:
+          "Địa chỉ đã lưu nhưng chưa map được với GHN. Vui lòng chọn lại Tỉnh/Thành phố và Phường/Xã từ danh sách để ước tính phí vận chuyển.",
       },
       confirm: {
         delete: "Bạn có chắc muốn xóa địa chỉ này không?",
@@ -1217,7 +1232,7 @@ export const VI = {
       actionConfirmDelivery: "Xác nhận nhận hàng",
       confirmDeliveryQr: {
         intro:
-          "Dùng app CosMate trên điện thoại để chụp ảnh xác nhận. Sau khi ảnh hiển thị bên dưới (1–5 tấm), bấm xác nhận trên máy tính.",
+          "Bạn có thể quét mã QR bằng app CosMate để chụp ảnh xác nhận (khuyến nghị 1–5 tấm). Không bắt buộc có ảnh vẫn có thể xác nhận nhận hàng trên máy tính.",
         steps: [
           "Mở app CosMate và đăng nhập cùng tài khoản với web",
           "Vào mục Quét QR trong app",
@@ -1234,6 +1249,11 @@ export const VI = {
         imageLoadFailed: "Không tải được ảnh xác nhận từ máy chủ",
         apiPending: "Chưa thể hoàn tất — đang chờ API xác nhận từ backend.",
         needImages: "Cần ít nhất 1 ảnh từ điện thoại trước khi xác nhận.",
+        noImagesWarningTitle: "Xác nhận không kèm ảnh?",
+        noImagesWarningContent:
+          "Bạn chưa gửi ảnh xác nhận từ điện thoại. Nếu không chụp ảnh, quyền lợi của bạn (khiếu nại, hoàn tiền, tranh chấp đơn hàng…) có thể bị ảnh hưởng theo quy định của CosMate.",
+        noImagesWarningConfirm: "Vẫn xác nhận nhận hàng",
+        noImagesWarningCancel: "Quay lại chụp ảnh",
         tooManyImages: "Tối đa 5 ảnh xác nhận.",
         sessionFailed: "Không tạo được phiên QR. Vui lòng thử lại.",
         sessionExpired:
@@ -1251,6 +1271,10 @@ export const VI = {
       actionReturn: "Trả hàng",
       returnTrackingCode: "Mã vận đơn",
       returnTrackingCodePlaceholder: "Nhập mã vận đơn",
+      returnCarrierName: "Đơn vị vận chuyển",
+      returnSelectCarrier: "Chọn đơn vị vận chuyển",
+      returnAutoTrackingHint:
+        "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi trả hàng.",
       returnImages: "Hình ảnh xác nhận",
       // Validation
       validation: {
@@ -1258,10 +1282,12 @@ export const VI = {
       },
       validationReturn: {
         trackingRequired: "Vui lòng nhập mã vận đơn",
+        carrierSelectRequired: "Vui lòng chọn đơn vị vận chuyển",
         imagesRequired: "Vui lòng tải lên ít nhất một hình ảnh",
       },
       // Review action
       actionReview: "Đánh giá",
+      actionReviewDone: "Đã đánh giá",
       reviewModal: {
         ratingLabel: "Chọn số sao",
         commentLabel: "Nội dung đánh giá",

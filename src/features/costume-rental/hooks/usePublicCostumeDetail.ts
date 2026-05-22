@@ -9,6 +9,8 @@
  */
 
 import { useState, useEffect, useCallback, useMemo } from "react"
+import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
+import { DATA_SYNC_EVENTS } from "@/shared/sync/dataSync"
 import { getCostumeById } from "../api/costume.api"
 import type { Costume, QuoteBreakdown } from "../types"
 import { resolveCostumeImageUrl } from "../utils/resolveCostumeImageUrl"
@@ -72,6 +74,8 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
   useEffect(() => {
     fetchDetail()
   }, [fetchDetail])
+
+  useDataSyncRefetch(fetchDetail, DATA_SYNC_EVENTS.COSTUMES_CHANGED, Boolean(costumeId))
 
   const resolvedImages = useMemo(
     () => (costume?.imageUrls ?? []).map(resolveImageUrl).filter(Boolean),

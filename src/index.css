@@ -252,6 +252,20 @@
 
 @layer base {
   /*
+   * Global UI scale ~80% at browser zoom 100% (instructor / readability feedback).
+   * `zoom` scales px, rem, Ant Design, and fixed arbitrary Tailwind sizes consistently.
+   */
+  html {
+    zoom: 0.8;
+  }
+
+  @supports not (zoom: 0.8) {
+    html {
+      font-size: 80%;
+    }
+  }
+
+  /*
    * Shadcn-style default border token. Use :where(*) so specificity stays 0 and
    * Ant Design css-in-js (esp. with StyleProvider hashPriority="high") wins on components.
    */

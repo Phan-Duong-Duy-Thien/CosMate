@@ -30,6 +30,7 @@ export const CostumeCard = ({
   const costumeId = Number(costume.id)
   const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
+  const shopDisplay = costume.shopName?.trim() || ""
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
 
   return (
@@ -158,6 +159,17 @@ export const CostumeCard = ({
             </span>
           </span>
         </h3>
+        {shopDisplay ? (
+          <p
+            className={cn(
+              "truncate font-semibold text-indigo-900/65",
+              compact ? "text-[10px] leading-tight" : "text-xs"
+            )}
+            title={`${VI.costumeRental.listShopLabel}: ${shopDisplay}`}
+          >
+            {shopDisplay}
+          </p>
+        ) : null}
         <div
           className={cn(
             "flex items-baseline gap-0.5 font-extrabold leading-tight",
