@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from "react-router-dom"
 import { Card } from "@/shared/components/Card"
 import { message, Tooltip, Modal, Table } from "antd"
 import { VI } from "@/shared/i18n/vi"
-import { ORDER_LIST_PAGINATION_THRESHOLD } from "../constants/orderListPagination"
 import { usePurchaseOrders, type OrderTab } from "../hooks/usePurchaseOrders"
 import { useServiceOrders, type ServiceOrderTab } from "../hooks/useServiceOrders"
 import { ConfirmDeliveryModal } from "@/features/order/components/ConfirmDeliveryModal"
@@ -778,8 +777,6 @@ export default function PurchaseHistoryPage() {
     onPageChange: (page: number) => void,
     label: string
   ) => {
-    if (total <= ORDER_LIST_PAGINATION_THRESHOLD) return null
-
     const totalPages = Math.ceil(total / pageSize)
     if (totalPages <= 1) return null
 
