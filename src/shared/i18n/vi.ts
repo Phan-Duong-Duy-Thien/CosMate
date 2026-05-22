@@ -24,6 +24,7 @@ export const VI = {
     empty: "Không có thông báo nào",
     emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
+    markAllRead: "Đánh dấu đã đọc",
     title: "Thông báo",
     pageDecorTitle: "⊹ ࣪˖₊˚♡ Thông báo ♡˚₊˖ ࣪⊹",
     filterLabel: "Lọc nhanh",

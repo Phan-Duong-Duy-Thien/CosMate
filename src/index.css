@@ -296,6 +296,23 @@
   background: color-mix(in oklch, var(--muted-foreground) 45%, var(--border));
 }
 
+/* Header notification popover: gap below site header (popover anchors to bell) */
+.cosmate-notif-popover.ant-popover {
+  margin-top: 12px !important;
+}
+
+/* Header notification popover: remove Ant Design default white card wrapper */
+.cosmate-notif-popover.ant-popover .ant-popover-container,
+.cosmate-notif-popover.ant-popover .ant-popover-inner,
+.cosmate-notif-popover.ant-popover .ant-popover-content,
+.cosmate-notif-popover > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
 /* Ant Design Message — use default animations, no custom overrides */
 
 /*
