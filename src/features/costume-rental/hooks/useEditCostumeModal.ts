@@ -13,7 +13,11 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { message } from 'antd'
+import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
+import { notifyTokenChanged } from '@/shared/sync/dataSync'
+import { mapGenerateDescriptionError } from '../utils/costumeAiErrors'
 import { generateCostumeDescriptionByAI, getCostumeById } from '../api/costumeRental.api'
 import {
   updateCostumeBasic,
@@ -71,6 +75,12 @@ interface UseEditCostumeModalOptions {
 }
 
 export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = {}) {
+  const { pathname } = useLocation()
+  const tokenGate = useAiTokenGate({
+    feature: 'provider.generateDescription',
+    pathname,
+  })
+
   // ── Modal open/close ──────────────────────────────────────────────────────
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -348,6 +358,9 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
       message.warning('Cần có ít nhất một ảnh (tab Ảnh) để AI tham chiếu.')
       return
     }
+    if (!tokenGate.assertCanUse()) {
+      return
+    }
     setIsGeneratingDescription(true)
     try {
       const file = await imageUrlToFile(refUrl, 'costume-ai-ref.jpg')
@@ -355,19 +368,25 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
         message.error('Không tải được ảnh. Thử kiểm tra đường dẫn ảnh.')
         return
       }
-      const ai = await generateCostumeDescriptionByAI(detail.name, [file], descriptionPrompt.trim())
+      const ai = await generateCostumeDescriptionByAI(
+        detail.name,
+        [file],
+        Number(descriptionPrompt) || 1,
+      )
       if (ai.trim()) {
         setDetail((prev) => (prev ? { ...prev, description: ai.trim() } : null))
         message.success('Đã tạo mô tả. Nhớ bấm cập nhật để lưu!')
+        notifyTokenChanged()
       } else {
         message.warning('AI chưa trả về mô tả. Vui lòng thử lại.')
       }
     } catch (err) {
-      message.error(err instanceof Error ? err.message : 'Không thể tạo mô tả AI.')
+      if (tokenGate.handleApiError(err)) return
+      message.error(mapGenerateDescriptionError(err))
     } finally {
       setIsGeneratingDescription(false)
     }
-  }, [detail, mainImages, detailImages, descriptionPrompt])
+  }, [detail, mainImages, detailImages, descriptionPrompt, tokenGate])
 
   return {
     // Modal state
@@ -411,6 +430,7 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setDescriptionPrompt,
     isGeneratingDescription,
     onGenerateDescription,
+    aiTokenGate: tokenGate,
 
     // Image hooks
     mainImages,

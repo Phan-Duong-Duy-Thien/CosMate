@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import { useLocation } from 'react-router-dom'
 import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
 import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
@@ -15,6 +16,11 @@ import { createCharacterRequest } from '../../api/characterRequests.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import AILoadingMascot from '@/shared/components/AILoadingMascot'
+import { AiTokenEmptyState } from '@/features/profile/components/AiTokenEmptyState'
+import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
+import { VI } from '@/shared/i18n/vi'
+import { notifyTokenChanged } from '@/shared/sync/dataSync'
+import { mapGenerateDescriptionError } from '../../utils/costumeAiErrors'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -59,6 +65,11 @@ interface Props {
 }
 
 export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
+  const { pathname } = useLocation()
+  const tokenGate = useAiTokenGate({
+    feature: 'provider.generateDescription',
+    pathname,
+  })
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [characters, setCharacters] = useState<CharacterOption[]>([])
@@ -176,19 +187,24 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       return
     }
 
+    if (!tokenGate.assertCanUse()) {
+      return
+    }
+
     setIsAiGenerating(true)
     try {
       const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
+        notifyTokenChanged()
       } else {
         message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
       }
     } catch (err: unknown) {
+      if (tokenGate.handleApiError(err)) return
       if (!applyFormValidationErrors(form, err)) {
-        const errMsg = err instanceof Error ? err.message : 'Không thể tạo mô tả bằng AI.'
-        message.error(errMsg)
+        message.error(mapGenerateDescriptionError(err))
       }
     } finally {
       setIsAiGenerating(false)
@@ -335,6 +351,19 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             borderColor: "color-mix(in oklch, var(--cosmate-info) 35%, var(--border))",
           }}
         >
+          {(tokenGate.blocked || (!tokenGate.loading && !tokenGate.canUse)) && (
+            <div style={{ marginBottom: 16 }}>
+              <AiTokenEmptyState
+                cost={tokenGate.cost}
+                balance={tokenGate.balance}
+                tokenHubPath={tokenGate.tokenHubPath}
+                featureLabel={tokenGate.featureLabel}
+                message={tokenGate.blockedMessage}
+                compact
+              />
+            </div>
+          )}
+
           {isAiGenerating && (
             <div style={{ marginBottom: 16 }}>
               <AILoadingMascot type="content" variant="inline" />
@@ -358,9 +387,27 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </Radio.Group>
           </Form.Item>
 
-          <Row justify="end">
+          <Row justify="end" align="middle" gutter={8}>
             <Col>
-              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>
+                {VI.profile.token.costPerUse(tokenGate.featureLabel, tokenGate.cost)}
+              </span>
+            </Col>
+            <Col>
+              <Button
+                type="primary"
+                icon={<RobotOutlined />}
+                onClick={handleGenerateDescription}
+                loading={isAiGenerating}
+                disabled={
+                  disabled ||
+                  loading ||
+                  isAiGenerating ||
+                  !canGenerateAI ||
+                  tokenGate.loading ||
+                  !tokenGate.canUse
+                }
+              >
                 AI tự viết mô tả
               </Button>
             </Col>

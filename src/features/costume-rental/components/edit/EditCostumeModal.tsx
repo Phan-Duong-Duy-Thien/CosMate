@@ -5,6 +5,10 @@ import EditBasicInfoForm from './EditBasicInfoForm'
 import FeesTab from './FeesTab'
 import ImagesTab from './ImagesTab'
 import { VI } from '@/shared/i18n/vi'
+import { AiTokenEmptyState } from '@/features/profile/components/AiTokenEmptyState'
+import type { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
+
+type AiTokenGateState = ReturnType<typeof useAiTokenGate>
 
 interface Props {
   open: boolean
@@ -30,6 +34,7 @@ interface Props {
   onCreateAccessory: (values: AccessoryInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
   onGenerateDescription: () => void
+  aiTokenGate: AiTokenGateState
   isGeneratingDescription: boolean
   descriptionPrompt: string
   setDescriptionPrompt: (value: string) => void
@@ -70,6 +75,7 @@ export default function EditCostumeModal({
   onCreateAccessory,
   onUpdateAccessory,
   onGenerateDescription,
+  aiTokenGate,
   isGeneratingDescription,
   descriptionPrompt,
   setDescriptionPrompt,
@@ -99,15 +105,29 @@ export default function EditCostumeModal({
                 providerIdMissing={providerId === null}
               />
               <div className="rounded-xl border border-pink-100 bg-pink-50/40 p-4 space-y-3">
+                {(aiTokenGate.blocked || (!aiTokenGate.loading && !aiTokenGate.canUse)) && (
+                  <AiTokenEmptyState
+                    cost={aiTokenGate.cost}
+                    balance={aiTokenGate.balance}
+                    tokenHubPath={aiTokenGate.tokenHubPath}
+                    featureLabel={aiTokenGate.featureLabel}
+                    message={aiTokenGate.blockedMessage}
+                    compact
+                  />
+                )}
                 <div className="flex items-center justify-between gap-3">
                   <div>
                     <p className="text-sm font-semibold text-slate-700">AI tạo mô tả cho trang phục</p>
-                    <p className="text-xs text-slate-500">Nhập prompt tuỳ chỉnh rồi bấm tạo mô tả. Có thể dùng lại cho việc cập nhật.</p>
+                    <p className="text-xs text-slate-500">
+                      {VI.profile.token.costPerUse(aiTokenGate.featureLabel, aiTokenGate.cost)}
+                    </p>
                   </div>
                   <button
                     type="button"
                     onClick={onGenerateDescription}
-                    disabled={isGeneratingDescription}
+                    disabled={
+                      isGeneratingDescription || aiTokenGate.loading || !aiTokenGate.canUse
+                    }
                     className="rounded-xl bg-pink-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {isGeneratingDescription ? 'Đang tạo...' : 'AI tự viết mô tả'}
