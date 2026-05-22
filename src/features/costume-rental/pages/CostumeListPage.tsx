@@ -160,6 +160,17 @@ export default function CostumeListPage() {
     }))
   }, [aiResults])
 
+  const exactMatches = React.useMemo(() => {
+    return aiGridItems.filter((item) => (item.aiSimilarityScore ?? 0) > 70)
+  }, [aiGridItems])
+
+  const suggestedMatches = React.useMemo(() => {
+    return aiGridItems.filter((item) => {
+      const score = item.aiSimilarityScore ?? 0
+      return score <= 70 && score > 50
+    })
+  }, [aiGridItems])
+
   const handleViewDetail = (costumeId: string) => {
     navigate(`/costumes/${costumeId}`)
   }
@@ -255,13 +266,32 @@ export default function CostumeListPage() {
                   </Button>
                 </div>
 
-                <CostumeGrid
-                  costumes={aiGridItems}
-                  onViewDetail={handleViewDetail}
-                  isWishlisted={isInWishlist}
-                  wishlistLoadingId={wishlistTogglingId}
-                  onToggleWishlist={handleToggleWishlist}
-                />
+                {exactMatches.length > 0 && (
+                  <>
+                    <h3 className="mb-3 text-lg font-bold text-indigo-900">Kết quả chính xác nhất</h3>
+                    <CostumeGrid
+                      costumes={exactMatches}
+                      onViewDetail={handleViewDetail}
+                      isWishlisted={isInWishlist}
+                      wishlistLoadingId={wishlistTogglingId}
+                      onToggleWishlist={handleToggleWishlist}
+                    />
+                  </>
+                )}
+
+                {suggestedMatches.length > 0 && (
+                  <>
+                    {exactMatches.length > 0 && <hr className="my-6 border-indigo-950/10" />}
+                    <h3 className="mb-3 text-lg font-bold text-indigo-800">Có thể bạn cũng thích</h3>
+                    <CostumeGrid
+                      costumes={suggestedMatches}
+                      onViewDetail={handleViewDetail}
+                      isWishlisted={isInWishlist}
+                      wishlistLoadingId={wishlistTogglingId}
+                      onToggleWishlist={handleToggleWishlist}
+                    />
+                  </>
+                )}
               </div>
             )}
 

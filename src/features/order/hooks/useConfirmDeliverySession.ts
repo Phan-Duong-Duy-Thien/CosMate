@@ -298,10 +298,6 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
   const confirmSession = useCallback(async (): Promise<boolean> => {
     if (!orderId) return false
 
-    if (previewImages.length < 1) {
-      message.error(VI.profile.orders.confirmDeliveryQr.needImages)
-      return false
-    }
     if (previewImages.length > MAX_IMAGES) {
       message.error(VI.profile.orders.confirmDeliveryQr.tooManyImages)
       return false
@@ -337,7 +333,6 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
   }, [orderId, previewImages])
 
   const canConfirm =
-    previewImages.length >= 1 &&
     previewImages.length <= MAX_IMAGES &&
     !sessionLoading &&
     !isConfirming &&
