@@ -404,7 +404,8 @@ export async function getOrderExtends(orderId: number): Promise<OrderExtend[]> {
   const response = await axiosInstance.get<ApiResponse<OrderExtend[]>>(
     `/api/orders/${orderId}/extends`
   );
-  return response.data.result;
+  const result = response.data.result;
+  return Array.isArray(result) ? result : [];
 }
 
 /**

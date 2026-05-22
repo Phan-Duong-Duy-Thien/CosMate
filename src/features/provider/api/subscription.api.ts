@@ -3,7 +3,7 @@
  * HTTP layer only — no business logic.
  */
 import axiosInstance from '@/services/axiosInstance';
-import type { SubscriptionPlan, SubscribeRequest } from '../types';
+import type { ProviderSubscriptionInfo, SubscriptionPlan, SubscribeRequest } from '../types';
 
 interface ApiResponse<T> {
   code: number;
@@ -38,4 +38,21 @@ export async function subscribeProvider(payload: SubscribeRequest): Promise<stri
   console.log('[subscribeProvider] result field:', raw.result, '| type:', typeof raw.result);
   // Backend trả result là string URL trực tiếp
   return raw.result;
+}
+
+/**
+ * GET /api/providers/id/{providerId}/subscriptions-info
+ * Returns current plan name and remaining days for the provider.
+ */
+export async function getProviderSubscriptionInfo(
+  providerId: number,
+): Promise<ProviderSubscriptionInfo> {
+  const response = await axiosInstance.get<ApiResponse<ProviderSubscriptionInfo>>(
+    `/api/providers/id/${providerId}/subscriptions-info`,
+  );
+  const { code, message, result } = response.data;
+  if (code !== 0) {
+    throw new Error(message || 'Không thể tải thông tin gói dịch vụ.');
+  }
+  return result;
 }

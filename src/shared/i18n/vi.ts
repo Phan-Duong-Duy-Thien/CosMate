@@ -802,6 +802,26 @@ export const VI = {
       photographSettings: "Hồ sơ / Cài đặt",
       wallet: "Ví của tôi",
       aiToken: "AI Token",
+      packageManagement: "Quản lý gói",
+    },
+
+    subscription: {
+      pageTitle: "Quản lý gói",
+      pageSubtitle: "Theo dõi gói dịch vụ đang dùng và số ngày còn lại trên CosMate.",
+      renewButton: "Gia hạn gói",
+      renewModalTitle: "Gia hạn / mua thêm gói",
+      renewModalSubtitle:
+        "Chọn gói và thanh toán — số ngày sẽ được cộng thêm vào tài khoản provider của bạn sau khi thanh toán thành công.",
+      renewSubmit: "Thanh toán gia hạn",
+      renewSubmitting: "Đang chuyển đến cổng thanh toán...",
+      currentPlan: "Gói hiện tại",
+      currentDaysRemaining: "Ngày còn lại (gói hiện tại)",
+      totalRemainingDays: "Tổng ngày còn lại",
+      daysSuffix: "ngày",
+      summaryTitle: "Tóm tắt gói dịch vụ",
+      headerBadgeTitle: "Gói dịch vụ hiện tại",
+      empty: "Chưa có thông tin gói dịch vụ.",
+      loadError: "Không thể tải thông tin gói dịch vụ.",
     },
 
     dashboardPhotograph: {
@@ -1488,7 +1508,9 @@ export const VI = {
       surcharges: "Phụ phí",
       addresses: "Địa chỉ",
       cosplayerAddress: "Địa chỉ người thuê",
+      cosplayerName: "Tên người thuê",
       providerAddress: "Địa chỉ nhà cung cấp",
+      providerName: "Tên nhà cung cấp",
       trackings: "Theo dõi vận chuyển",
       images: "Hình ảnh",
       empty: "Chưa có dữ liệu",

@@ -8,7 +8,18 @@ import { useState, type ReactNode } from 'react';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Typography, Button, Table } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined, GiftOutlined, DollarOutlined } from '@ant-design/icons';
+import {
+  UserOutlined,
+  ShopOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  AppstoreOutlined,
+  PlusCircleOutlined,
+  HistoryOutlined,
+  GiftOutlined,
+  DollarOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
@@ -16,6 +27,7 @@ import { ExtendRentalModal } from './ExtendRentalModal';
 import { useExtendOrder } from '../hooks/useExtendOrder';
 import { useOrderExtends } from '../hooks/useOrderExtends';
 import { useExtendDetail } from '../hooks/useExtendDetail';
+import { cn } from '@/lib/utils';
 import { VI } from '@/shared/i18n/vi';
 import type { OrderStatus } from '../types';
 import type { PaymentMethod } from '../utils/paymentReturnUrls';
@@ -33,6 +45,16 @@ interface OrderDetailDrawerProps {
   hideRentalOptions?: boolean;
   /** Hide extend-rental actions and history (staff/admin). */
   hideExtendActions?: boolean;
+  /** Provider portal: show extend CTA disabled (cosplayer-only action). */
+  disableExtendButton?: boolean;
+  /** Cosplayer site: pink gradient extend button. */
+  extendButtonVariant?: 'default' | 'cosplayer';
+  /** Cosplayer: Xác nhận nhận hàng + Khiếu nại khi đơn DELIVERING_OUT. */
+  enableDeliveringOutActions?: boolean;
+  onConfirmDelivery?: () => void;
+  onCreateDispute?: () => void;
+  confirmDeliveryLoading?: boolean;
+  disputeLoading?: boolean;
 }
 
 // Format currency
@@ -157,6 +179,13 @@ export function OrderDetailDrawer({
   onExtendSuccess,
   hideRentalOptions = true,
   hideExtendActions = false,
+  disableExtendButton = false,
+  extendButtonVariant = 'default',
+  enableDeliveringOutActions = false,
+  onConfirmDelivery,
+  onCreateDispute,
+  confirmDeliveryLoading = false,
+  disputeLoading = false,
 }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
 
@@ -427,7 +456,9 @@ export function OrderDetailDrawer({
               {VI.order.detail.cosplayerAddress}
             </div>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label={VI.order.detail.orderId}>{cosplayerAddress.name}</Descriptions.Item>
+              <Descriptions.Item label={VI.order.detail.cosplayerName}>
+                {cosplayerAddress.name}
+              </Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{cosplayerAddress.address}</Descriptions.Item>
               <Descriptions.Item label={VI.profile.address.form.district}>
                 {cosplayerAddress.district}
@@ -446,7 +477,9 @@ export function OrderDetailDrawer({
               {VI.order.detail.providerAddress}
             </div>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label={VI.order.detail.orderId}>{providerAddress.name}</Descriptions.Item>
+              <Descriptions.Item label={VI.order.detail.providerName}>
+                {providerAddress.name}
+              </Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{providerAddress.address}</Descriptions.Item>
               <Descriptions.Item label={VI.profile.address.form.district}>
                 {providerAddress.district}
@@ -519,9 +552,39 @@ export function OrderDetailDrawer({
           {renderBasicInfo()}
         </div>
 
+        {enableDeliveringOutActions && orderDetail.status === 'DELIVERING_OUT' && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              type="primary"
+              loading={confirmDeliveryLoading}
+              onClick={onConfirmDelivery}
+              className="!h-auto !border-2 !border-green-900 !bg-green-600 !px-4 !py-1.5 !text-sm !font-bold hover:!bg-green-700"
+            >
+              {VI.profile.orders.actionConfirmDelivery}
+            </Button>
+            <Button
+              icon={<FlagOutlined />}
+              loading={disputeLoading}
+              onClick={onCreateDispute}
+              className="!h-auto !border-2 !border-red-400 !bg-white !px-4 !py-1.5 !text-sm !font-bold !text-red-600 hover:!bg-red-50"
+            >
+              {VI.dispute.button}
+            </Button>
+          </div>
+        )}
+
         {!hideExtendActions && orderDetail.status === 'IN_USE' && (
-          <div className="flex flex-wrap items-center gap-3">
-            <Button type="primary" icon={<PlusCircleOutlined />} onClick={() => setExtendModalOpen(true)}>
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              disabled={disableExtendButton}
+              onClick={() => setExtendModalOpen(true)}
+              className={cn(
+                extendButtonVariant === 'cosplayer' &&
+                  '!h-auto !border-2 !border-indigo-950 !bg-gradient-to-r !from-pink-500 !to-fuchsia-600 !px-4 !py-1.5 !text-sm !font-bold !text-white !shadow-none hover:!brightness-110 disabled:!opacity-50',
+              )}
+            >
               {VI.provider.orders.tabs.extending}
             </Button>
           </div>
@@ -537,7 +600,7 @@ export function OrderDetailDrawer({
               <div className="flex justify-center py-4">
                 <Spin size="small" />
               </div>
-            ) : extendsList.length === 0 ? (
+            ) : (extendsList?.length ?? 0) === 0 ? (
               <p className="py-2 text-sm text-muted-foreground">{VI.order.extend.empty}</p>
             ) : (
               <Table
@@ -708,6 +771,7 @@ export function OrderDetailDrawer({
       footer={null}
       centered
       width={500}
+      zIndex={1101}
       styles={{ body: { paddingTop: 8 } }}
     >
       {extendDetailLoading ? (

@@ -240,7 +240,7 @@ export default function ProviderMessagesPage() {
 
   return (
     <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
-      <div className="flex h-[calc(100vh-180px)] overflow-hidden rounded-xl border border-slate-200 bg-white">
+      <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white">
 
         <ChatInboxSidebar
           variant="comfortable"

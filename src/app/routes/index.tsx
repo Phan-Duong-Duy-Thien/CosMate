@@ -68,6 +68,7 @@ import ProviderServiceListPage from "@/features/service/pages/ProviderServiceLis
 import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
+import ProviderPackageManagementPage from "@/features/provider/pages/ProviderPackageManagementPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
 import { ProviderWalletLayout } from "@/features/provider/pages/ProviderWalletLayout"
 import ProviderWalletPage from "@/features/provider/pages/ProviderWalletPage"
@@ -159,6 +160,8 @@ export default function AppRoutes() {
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
+        <Route path="/provider-rental/packages" element={<Navigate to="/provider-rental/subscription" replace />} />
+        <Route path="/provider-rental/subscription" element={<ProviderPackageManagementPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider/settings/edit" element={<ProviderProfileEditPage />} />
@@ -180,6 +183,8 @@ export default function AppRoutes() {
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-photograph/packages" element={<Navigate to="/provider-photograph/subscription" replace />} />
+        <Route path="/provider-photograph/subscription" element={<ProviderPackageManagementPage />} />
         <Route path="/provider-photograph/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
@@ -201,6 +206,8 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-event-staff/packages" element={<Navigate to="/provider-event-staff/subscription" replace />} />
+        <Route path="/provider-event-staff/subscription" element={<ProviderPackageManagementPage />} />
         <Route path="/provider-event-staff/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />

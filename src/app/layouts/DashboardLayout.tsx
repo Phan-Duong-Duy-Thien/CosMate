@@ -12,6 +12,7 @@ import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import { isProviderDashboardPath } from '@/features/profile/utils/tokenRoutes';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
+import { ProviderSubscriptionBadge } from '@/features/provider/components/ProviderSubscriptionBadge';
 
 const { Header, Sider, Content } = Layout;
 
@@ -212,6 +213,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
         { label: VI.provider.orders.title },
       ]);
+    } else if (path === '/provider-rental/subscription') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.provider.subscription.pageTitle },
+      ]);
     } else if (path === '/provider/reviews') {
       setItems([
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
@@ -300,6 +306,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
         { label: VI.provider.serviceOrders.sidebar },
       ]);
+    } else if (path === '/provider-photograph/subscription') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.provider.subscription.pageTitle },
+      ]);
     } else if (path === '/provider-photograph/reviews') {
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
@@ -370,6 +381,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
         { label: VI.provider.serviceOrders.sidebar },
+      ]);
+    } else if (path === '/provider-event-staff/subscription') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.provider.subscription.pageTitle },
       ]);
     } else if (path === '/provider-event-staff/reviews') {
       setItems([
@@ -609,7 +625,16 @@ export function DashboardLayout({
         />
       </Sider>
 
-      <Layout style={{ marginLeft: collapsed ? 80 : 240, transition: 'margin-left 0.2s' }}>
+      <Layout
+        style={{
+          marginLeft: collapsed ? 80 : 240,
+          transition: 'margin-left 0.2s',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
+          background: 'var(--background)',
+        }}
+      >
         <Header
           className="sticky top-0 z-10 flex h-16 min-h-16 shrink-0 items-center justify-between overflow-hidden border-b border-border px-6 shadow-[0_1px_0_0_color-mix(in_oklch,var(--cosmate-pink)_22%,transparent)]"
           style={{
@@ -631,6 +656,7 @@ export function DashboardLayout({
           </div>
 
           <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
+            {showTokenBadge && <ProviderSubscriptionBadge />}
             {showTokenBadge && (
               <div
                 className="hidden min-w-[110px] cursor-default items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex"
@@ -675,15 +701,18 @@ export function DashboardLayout({
 
         <Content
           style={{
+            flex: 1,
             margin: 16,
             padding: 20,
-            background: "var(--card)",
+            background: 'var(--card)',
             borderRadius: 8,
-            minHeight: 280,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
           }}
         >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 12 }}>
+            <div style={{ marginBottom: 12, flexShrink: 0 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? (
@@ -707,7 +736,9 @@ export function DashboardLayout({
               ))}
             </div>
           )}
-          {children || <Outlet />}
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            {children || <Outlet />}
+          </div>
         </Content>
       </Layout>
     </Layout>

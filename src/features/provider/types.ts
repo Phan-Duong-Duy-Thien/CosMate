@@ -74,5 +74,14 @@ export interface SubscribeRequest {
  */
 export type SubscribeResponse = string;
 
+/**
+ * Current provider subscription summary from GET /api/providers/id/{id}/subscriptions-info
+ */
+export interface ProviderSubscriptionInfo {
+  currentPlanName: string;
+  currentDaysRemaining: number;
+  totalRemainingDays: number;
+}
+
 // Placeholder to allow component file creation
 export type PaymentMethod = 'VNPAY' | 'MOMO';

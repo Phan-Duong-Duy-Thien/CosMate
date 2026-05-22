@@ -1028,6 +1028,16 @@ export default function PurchaseHistoryPage() {
         open={detailDrawerOpen}
         orderId={detailOrderId}
         orderType={detailOrderType}
+        extendButtonVariant="cosplayer"
+        enableDeliveringOutActions
+        onConfirmDelivery={() => {
+          if (detailOrderId != null) handleConfirmDelivery(detailOrderId)
+        }}
+        onCreateDispute={() => {
+          if (detailOrderId != null) handleCreateDispute(detailOrderId, 'DELIVERING_OUT')
+        }}
+        confirmDeliveryLoading={confirmSubmittingOrderId === detailOrderId}
+        disputeLoading={disputingOrderId === detailOrderId}
         onClose={() => {
           setDetailDrawerOpen(false)
           setDetailOrderId(null)

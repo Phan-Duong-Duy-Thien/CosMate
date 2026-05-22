@@ -8,6 +8,7 @@ import {
   MessageCircle,
   Wallet,
   Coins,
+  Crown,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -70,6 +71,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     path: '/provider/messages',
   },
   {
+    key: 'packageManagement',
+    label: VI.provider.sidebar.packageManagement,
+    icon: Crown,
+    path: '/provider-rental/subscription',
+  },
+  {
     key: 'wallet',
     label: VI.provider.sidebar.wallet,
     icon: Wallet,
@@ -130,6 +137,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/messages',
   },
   {
+    key: 'packageManagement',
+    label: VI.provider.sidebar.packageManagement,
+    icon: Crown,
+    path: '/provider-photograph/subscription',
+  },
+  {
     key: 'wallet',
     label: VI.provider.sidebar.wallet,
     icon: Wallet,
@@ -188,6 +201,12 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.messages,
     icon: MessageCircle,
     path: '/provider-event-staff/messages',
+  },
+  {
+    key: 'packageManagement',
+    label: VI.provider.sidebar.packageManagement,
+    icon: Crown,
+    path: '/provider-event-staff/subscription',
   },
   {
     key: 'wallet',

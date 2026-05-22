@@ -102,7 +102,7 @@ export default function WalletPage({ walletBase = "/profile/wallet" }: WalletPag
   const walletParentPath = walletBase.replace(/\/wallet\/?$/, "") || "/profile"
 
   return (
-    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
+    <section className="home-anime flex min-h-0 flex-1 flex-col bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-3xl">
         <Card className="overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
           <div className="p-6 sm:p-8">

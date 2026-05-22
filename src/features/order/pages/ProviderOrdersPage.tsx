@@ -381,6 +381,7 @@ export default function ProviderOrdersPage() {
       <OrderDetailDrawer
         open={detailModalOpen}
         orderId={selectedOrderId}
+        disableExtendButton
         onClose={() => {
           setDetailModalOpen(false);
           setSelectedOrderId(null);

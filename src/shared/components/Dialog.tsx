@@ -8,9 +8,11 @@ interface DialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   children: React.ReactNode
+  /** Tailwind z-index classes for overlay (e.g. above Ant Design Modal ~1000). */
+  overlayClassName?: string
 }
 
-export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
+export const Dialog = ({ open, onOpenChange, children, overlayClassName }: DialogProps) => {
   React.useEffect(() => {
     if (!open) return
     const originalOverflow = document.body.style.overflow
@@ -23,7 +25,12 @@ export const Dialog = ({ open, onOpenChange, children }: DialogProps) => {
   if (!open) return null
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div
+      className={cn(
+        "fixed inset-0 z-50 flex items-center justify-center",
+        overlayClassName,
+      )}
+    >
       <button
         type="button"
         aria-label="Đóng"

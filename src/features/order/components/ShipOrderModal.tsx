@@ -43,12 +43,13 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
 
   useEffect(() => {
     if (!open) {
-      form.resetFields();
       setFileList([]);
       setNoteMap({});
       setSelectedCarrier(null);
       setCustomCarrier('');
+      return;
     }
+    form.resetFields();
   }, [open, form]);
 
   const handleCarrierChange = (value: string) => {
