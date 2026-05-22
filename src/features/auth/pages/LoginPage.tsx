@@ -1,5 +1,5 @@
 import { useCallback, useState } from "react"
-import { Link, useNavigate } from "react-router-dom"
+import { Link, Navigate, useNavigate } from "react-router-dom"
 
 import loginHero from "@/assets/saukura.jpg"
 import { useLogin } from "../hooks/useLogin"
@@ -12,6 +12,7 @@ import { getRedirectPath } from "../utils/roleRedirect"
 import type { LoginFormValues } from "../types"
 import { VI } from "@/shared/i18n/vi"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
+import { isAuthenticated } from "../utils/authStorage"
 
 export default function LoginPage() {
   const { submitting, formError, handleEmailLogin } = useLogin()
@@ -41,6 +42,10 @@ export default function LoginPage() {
     },
     [completeLogin]
   )
+
+  if (isAuthenticated()) {
+    return <Navigate to="/" replace />
+  }
 
   return (
     <AuthLayout left={<AuthMarketingHero imageSrc={loginHero} imageAlt="Cosmate login hero" />}>

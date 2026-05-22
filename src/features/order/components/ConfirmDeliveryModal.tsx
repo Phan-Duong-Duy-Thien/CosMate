@@ -3,12 +3,13 @@
  */
 
 import * as React from "react"
-import { Modal, Button, QRCode, Spin } from "antd"
-import { ImageIcon, RefreshCw, Smartphone } from "lucide-react"
+import { Modal, Button, QRCode, Spin, Image } from "antd"
+import { ImageIcon, Package, RefreshCw, Smartphone } from "lucide-react"
 
 import { VI } from "@/shared/i18n/vi"
 import { cn } from "@/lib/utils"
 import { useConfirmDeliverySession } from "../hooks/useConfirmDeliverySession"
+import { useOrderDetail } from "../hooks/useOrderDetail"
 
 interface ConfirmDeliveryModalProps {
   open: boolean
@@ -39,6 +40,15 @@ export function ConfirmDeliveryModal({
     refreshCooldownLabel,
     maxImages,
   } = useConfirmDeliverySession({ orderId, open })
+
+  const { orderDetail, loading: orderDetailLoading } = useOrderDetail(
+    open && orderId ? orderId : null
+  )
+
+  const providerShipImages = React.useMemo(
+    () => orderDetail?.images?.filter((img) => img.stage === "SHIPPING_OUT") ?? [],
+    [orderDetail?.images]
+  )
 
   React.useEffect(() => {
     onSubmittingChange?.(isConfirming ? orderId : null)
@@ -138,6 +148,43 @@ export function ConfirmDeliveryModal({
               ? VI.profile.orders.confirmDeliveryQr.refreshQr
               : VI.profile.orders.confirmDeliveryQr.refreshQrWait(refreshCooldownLabel ?? "")}
           </Button>
+        </div>
+
+        <div className="rounded-2xl border-[3px] border-indigo-950/20 bg-[#f0f9ff] p-4">
+          <div className="mb-3 flex items-center gap-2">
+            <Package className="h-4 w-4 text-cosmate-pink" aria-hidden />
+            <p className="text-sm font-extrabold text-indigo-950">
+              {VI.profile.orders.confirmDeliveryQr.providerShipImagesTitle}
+            </p>
+          </div>
+
+          {orderDetailLoading ? (
+            <div className="flex justify-center py-6">
+              <Spin size="small" />
+            </div>
+          ) : providerShipImages.length === 0 ? (
+            <p className="text-sm font-semibold text-indigo-900/65">
+              {VI.profile.orders.confirmDeliveryQr.providerShipImagesEmpty}
+            </p>
+          ) : (
+            <Image.PreviewGroup>
+              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                {providerShipImages.map((img) => (
+                  <li
+                    key={img.id}
+                    className="aspect-square overflow-hidden rounded-xl border-[2px] border-indigo-950/30 bg-white"
+                  >
+                    <Image
+                      src={img.imageUrl}
+                      alt=""
+                      className="!h-full !w-full !object-cover"
+                      rootClassName="!h-full !w-full"
+                    />
+                  </li>
+                ))}
+              </ul>
+            </Image.PreviewGroup>
+          )}
         </div>
 
         <div className="rounded-2xl border-[3px] border-indigo-950/20 bg-white p-4">

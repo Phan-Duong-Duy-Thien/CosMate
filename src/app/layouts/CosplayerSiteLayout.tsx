@@ -19,9 +19,9 @@ import {
   FileText,
   UserRound,
   Youtube,
+  Trash2,
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
-import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
@@ -40,7 +40,7 @@ import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
-import { SITE_HEADER_UI } from "@/app/constants/homeAnimeUi"
+import { NOTIFICATION_POPOVER_UI, SITE_HEADER_UI } from "@/app/constants/homeAnimeUi"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
 import ghnLogo from "@/assets/ghn.jpg"
@@ -282,31 +282,33 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div className="w-[320px] rounded-xl bg-card text-card-foreground shadow-lg ring-1 ring-border/80">
-      <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
-        <p className="m-0 text-sm font-semibold text-foreground">{VI.notification.title}</p>
-        {unreadCount > 0 && (
-          <button
-            type="button"
-            onClick={() =>
-              void (async () => {
-                const ok = await markAllRead()
-                showNotificationActionToast("readAll", ok)
-              })()
-            }
-            className="border-0 bg-transparent p-0 text-xs font-medium text-cosmate-pink hover:underline"
-          >
-            Đánh dấu đã đọc
-          </button>
-        )}
+    <div className={NOTIFICATION_POPOVER_UI.shell}>
+      <div className={NOTIFICATION_POPOVER_UI.header}>
+        <p className={NOTIFICATION_POPOVER_UI.title}>{VI.notification.title}</p>
+        <button
+          type="button"
+          disabled={unreadCount === 0 || notifLoading}
+          onClick={() =>
+            void (async () => {
+              const ok = await markAllRead()
+              showNotificationActionToast("readAll", ok)
+            })()
+          }
+          className={cn(
+            NOTIFICATION_POPOVER_UI.markAllBtn,
+            (unreadCount === 0 || notifLoading) && "cursor-not-allowed opacity-45 no-underline",
+          )}
+        >
+          {VI.notification.markAllRead}
+        </button>
       </div>
-      <div className="max-h-[360px] overflow-y-auto">
+      <div className={NOTIFICATION_POPOVER_UI.list}>
         {notifLoading ? (
           <div className="flex items-center justify-center p-8">
             <Spin size="small" />
           </div>
         ) : notifications.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted-foreground">{VI.notification.empty}</div>
+          <div className={NOTIFICATION_POPOVER_UI.empty}>{VI.notification.empty}</div>
         ) : (
           <>
             {notifications.slice(0, 10).map((n) => {
@@ -344,16 +346,27 @@ export default function CosplayerSiteLayout() {
                   }
                 }}
                 onClick={() => void handleActivate()}
-                className="cursor-pointer border-b border-border/60 px-4 py-2.5 transition-colors last:border-b-0 hover:bg-accent"
+                className={cn(
+                  NOTIFICATION_POPOVER_UI.item,
+                  !n.isRead && NOTIFICATION_POPOVER_UI.itemUnread,
+                )}
               >
-                <div className="flex items-start gap-2">
+                <div className="flex items-start gap-2.5">
+                  <span
+                    className={n.isRead ? NOTIFICATION_POPOVER_UI.readDot : NOTIFICATION_POPOVER_UI.unreadDot}
+                    aria-hidden
+                  />
                   <div className="min-w-0 flex-1">
                     <p
-                      className={`m-0 text-sm ${n.isRead ? "font-normal text-muted-foreground" : "font-semibold text-foreground"}`}
+                      className={
+                        n.isRead
+                          ? NOTIFICATION_POPOVER_UI.itemHeaderRead
+                          : NOTIFICATION_POPOVER_UI.itemHeaderUnread
+                      }
                     >
                       {n.header}
                     </p>
-                    <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">{n.content}</p>
+                    <p className={NOTIFICATION_POPOVER_UI.itemContent}>{n.content}</p>
                   </div>
                   <button
                     type="button"
@@ -371,9 +384,9 @@ export default function CosplayerSiteLayout() {
                         },
                       })
                     }}
-                    className="cursor-pointer border-0 bg-transparent p-0.5 leading-none text-muted-foreground hover:text-foreground"
+                    className={NOTIFICATION_POPOVER_UI.deleteBtn}
                   >
-                    <DeleteOutlined />
+                    <Trash2 className="h-4 w-4" aria-hidden />
                   </button>
                 </div>
               </div>
@@ -384,13 +397,22 @@ export default function CosplayerSiteLayout() {
       </div>
       {notifications.length > 0 && (
         <div
-          className="cursor-pointer border-t border-border px-4 py-2.5 text-center text-sm font-medium text-cosmate-pink hover:underline"
+          role="button"
+          tabIndex={0}
+          className={NOTIFICATION_POPOVER_UI.footer}
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              navigate("/notifications")
+              setNotifOpen(false)
+            }
+          }}
         >
-          {VI.notification.viewAll}
+          {VI.notification.viewAll} →
         </div>
       )}
     </div>
@@ -587,6 +609,27 @@ export default function CosplayerSiteLayout() {
                   onOpenChange={setNotifOpen}
                   placement="bottomRight"
                   arrow={false}
+                  align={{ offset: [0, 12] }}
+                  classNames={{ root: "cosmate-notif-popover" }}
+                  styles={{
+                    root: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                    },
+                    container: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                      border: "none",
+                      borderRadius: 0,
+                    },
+                    body: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                    },
+                  }}
                 >
                   <button
                     type="button"
