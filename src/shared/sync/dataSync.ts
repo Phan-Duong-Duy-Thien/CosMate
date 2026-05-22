@@ -20,6 +20,8 @@ export const DATA_SYNC_EVENTS = {
   NOTIFICATIONS_CHANGED: 'cosmate:notifications-changed',
   /** User profile / avatar (legacy — also profile:refresh on window) */
   PROFILE_CHANGED: 'profile:refresh',
+  /** AI token balance (numberOfToken) */
+  TOKEN_CHANGED: 'cosmate:token-changed',
 } as const;
 
 export type DataSyncEventName = (typeof DATA_SYNC_EVENTS)[keyof typeof DATA_SYNC_EVENTS];
@@ -62,6 +64,10 @@ export function notifyCostumesChanged(detail?: CostumesChangedDetail): void {
 
 export function notifyNotificationsChanged(): void {
   dispatch(DATA_SYNC_EVENTS.NOTIFICATIONS_CHANGED);
+}
+
+export function notifyTokenChanged(): void {
+  dispatch(DATA_SYNC_EVENTS.TOKEN_CHANGED);
 }
 
 export function subscribeDataSync<T = unknown>(

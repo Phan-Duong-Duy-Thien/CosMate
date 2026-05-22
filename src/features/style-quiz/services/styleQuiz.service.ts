@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { mapAiFeatureError } from "@/features/profile/utils/aiTokenErrors"
 import axiosInstance from "@/services/axiosInstance"
 import type {
   ApiResponse,
@@ -45,6 +46,9 @@ export async function recommendByStyle(payload: RecommendationRequestPayload): P
 }
 
 export function mapQuizError(error: unknown): string {
+  const tokenMsg = mapAiFeatureError(error, "")
+  if (tokenMsg) return tokenMsg
+
   if (axios.isAxiosError(error)) {
     const status = error.response?.status
     if (status === 429 || status === 503) {

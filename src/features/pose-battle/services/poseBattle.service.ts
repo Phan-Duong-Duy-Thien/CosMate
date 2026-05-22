@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { mapAiFeatureError } from "@/features/profile/utils/aiTokenErrors"
 import axiosInstance from "@/services/axiosInstance"
 import type { PoseBattleApiResponse, PoseHistoryItem, PoseScoringResult } from "../types"
 
@@ -54,6 +55,9 @@ export async function deletePoseHistory(id: number): Promise<void> {
 }
 
 export function mapPoseError(error: unknown): string {
+  const tokenMsg = mapAiFeatureError(error, "")
+  if (tokenMsg) return tokenMsg
+
   if (axios.isAxiosError(error)) {
     const errorText = [
       error.response?.data?.message,

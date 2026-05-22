@@ -9,7 +9,11 @@ import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
-import { isProviderDashboardPath } from '@/features/profile/utils/tokenRoutes';
+import {
+  getTokenHubPathFromPathname,
+  isProviderDashboardPath,
+} from '@/features/profile/utils/tokenRoutes';
+import { DATA_SYNC_EVENTS, subscribeDataSync } from '@/shared/sync/dataSync';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 import { ProviderSubscriptionBadge } from '@/features/provider/components/ProviderSubscriptionBadge';
@@ -508,8 +512,17 @@ export function DashboardLayout({
     };
 
     window.addEventListener('profile:refresh', handleProfileRefresh);
-    return () => window.removeEventListener('profile:refresh', handleProfileRefresh);
+    const unsubToken = subscribeDataSync(DATA_SYNC_EVENTS.TOKEN_CHANGED, () => {
+      void refreshHeaderProfile();
+    });
+    return () => {
+      window.removeEventListener('profile:refresh', handleProfileRefresh);
+      unsubToken();
+    };
   }, [refreshHeaderProfile]);
+
+  const providerTokenHubPath =
+    getTokenHubPathFromPathname(location.pathname) ?? '/provider-rental/token';
 
   const userName = userProfile.fullName || 'Admin';
   const currentPath = location.pathname;
@@ -658,8 +671,10 @@ export function DashboardLayout({
           <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
             {showTokenBadge && <ProviderSubscriptionBadge />}
             {showTokenBadge && (
-              <div
-                className="hidden min-w-[110px] cursor-default items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex"
+              <button
+                type="button"
+                onClick={() => navigate(providerTokenHubPath)}
+                className="hidden min-w-[110px] cursor-pointer items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm transition hover:border-pink-200 hover:bg-pink-100/80 sm:flex"
                 title={VI.profile.token.headerHint}
               >
                 {tokenLoading ? (
@@ -669,7 +684,7 @@ export function DashboardLayout({
                     🪙 {(tokenBalance ?? 0).toLocaleString('vi-VN')} {VI.profile.token.unit}
                   </span>
                 )}
-              </div>
+              </button>
             )}
             {showChatButton && (
               <button

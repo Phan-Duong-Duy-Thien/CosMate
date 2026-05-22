@@ -6,6 +6,8 @@ import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import ResultCostumeGrid from "../components/ResultCostumeGrid"
+import { AiTokenEmptyState } from "@/features/profile/components/AiTokenEmptyState"
+import { useAiTokenGate } from "@/features/profile/hooks/useAiTokenGate"
 import { useStyleQuiz } from "../hooks/useStyleQuiz"
 
 const { Search } = Input
@@ -57,7 +59,11 @@ const QUIZ_GRADIENT_CTA_CLASSNAME =
 
 export default function StyleQuizPage() {
   const navigate = useNavigate()
-  const quiz = useStyleQuiz()
+  const tokenGate = useAiTokenGate({ feature: "cosplayer.styleQuiz" })
+  const quiz = useStyleQuiz({
+    assertCanUse: tokenGate.assertCanUse,
+    handleApiError: tokenGate.handleApiError,
+  })
 
   const [sortBy, setSortBy] = useState<SortValue>("similarity")
   const [nameFilter, setNameFilter] = useState("")
@@ -78,6 +84,16 @@ export default function StyleQuizPage() {
           </span>
         </h1>
       </header>
+
+      {(tokenGate.blocked || (!tokenGate.loading && !tokenGate.canUse)) && (
+        <AiTokenEmptyState
+          cost={tokenGate.cost}
+          balance={tokenGate.balance}
+          tokenHubPath={tokenGate.tokenHubPath}
+          featureLabel={tokenGate.featureLabel}
+          message={tokenGate.blockedMessage}
+        />
+      )}
 
       <Modal open={quiz.showResumeModal} title="Tiếp tục bài quiz đang làm dở?" okText="Tiếp tục" cancelText="Bắt đầu mới" onOk={quiz.restoreDraft} onCancel={quiz.discardDraftAndStartNew} closable={false} maskClosable={false}>
         <p>Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục không?</p>
@@ -129,11 +145,20 @@ export default function StyleQuizPage() {
             <Input.TextArea value={quiz.currentCustomAnswer} onChange={(event) => quiz.setCustomAnswer(event.target.value)} placeholder="Nhập suy nghĩ riêng của bạn nếu không thấy option phù hợp..." autoSize={{ minRows: 2, maxRows: 4 }} className="!rounded-2xl border-cosmate-pink/30" />
           </div>
 
+          {quiz.isQuizSubmitStep && (
+            <p className="text-center text-xs font-bold text-indigo-800/75">
+              {VI.profile.token.costPerUse(tokenGate.featureLabel, tokenGate.cost)}
+            </p>
+          )}
+
           <div className="flex justify-center">
             <button
               type="button"
               onClick={quiz.next}
-              disabled={quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()}
+              disabled={
+                (quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()) ||
+                (quiz.isQuizSubmitStep && (tokenGate.loading || !tokenGate.canUse))
+              }
               className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}
             >
               <span

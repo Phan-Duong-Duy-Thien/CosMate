@@ -528,6 +528,7 @@ export default function ProviderCostumeListPage() {
         onCreateAccessory={editModal.handleCreateAccessory}
         onUpdateAccessory={editModal.handleUpdateAccessory}
         onGenerateDescription={editModal.onGenerateDescription}
+        aiTokenGate={editModal.aiTokenGate}
         isGeneratingDescription={editModal.isGeneratingDescription}
         descriptionPrompt={editModal.descriptionPrompt}
         setDescriptionPrompt={editModal.setDescriptionPrompt}

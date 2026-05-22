@@ -3,6 +3,7 @@ import { notification } from "antd"
 import axios from "axios"
 
 import axiosInstance from "@/services/axiosInstance"
+import { notifyTokenChanged } from "@/shared/sync/dataSync"
 
 export interface AISearchRequest {
   files: File[]
@@ -61,6 +62,7 @@ export function useAISearch(): UseAISearchResult {
 
       const result = response.data?.result ?? []
       setData(result)
+      notifyTokenChanged()
       return result
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status && [429, 503].includes(err.response.status)) {
