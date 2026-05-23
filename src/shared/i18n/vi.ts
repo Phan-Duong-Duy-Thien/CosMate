@@ -1400,6 +1400,8 @@ export const VI = {
       totalLabel: "Tổng cần thanh toán",
       btnConfirm: "Xác nhận",
       btnProcessing: "Đang xử lý...",
+      btnConfirming: "Đang xác nhận...",
+      btnPaying: "Đang chuyển đến thanh toán...",
     },
   },
 

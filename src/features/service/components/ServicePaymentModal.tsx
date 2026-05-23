@@ -16,11 +16,14 @@ import type { PaymentMethod } from '@/features/order/utils/paymentReturnUrls'
 import { VI } from '@/shared/i18n/vi'
 import { cn } from '@/lib/utils'
 
+export type ServicePaymentLoadingPhase = 'confirm' | 'pay' | null
+
 export interface ServicePaymentModalProps {
   open: boolean
   onClose: () => void
   onConfirm: (paymentMethod: PaymentMethod) => void
   loading?: boolean
+  loadingPhase?: ServicePaymentLoadingPhase
   totalAmount?: number
 }
 
@@ -71,6 +74,7 @@ export function ServicePaymentModal({
   onClose,
   onConfirm,
   loading = false,
+  loadingPhase = null,
   totalAmount,
 }: ServicePaymentModalProps) {
   const [selected, setSelected] = useState<PaymentMethod | null>(null)
@@ -84,6 +88,13 @@ export function ServicePaymentModal({
     if (!selected || loading) return
     onConfirm(selected)
   }
+
+  const loadingLabel =
+    loadingPhase === 'confirm'
+      ? VI.profile.servicePayment.btnConfirming
+      : loadingPhase === 'pay'
+        ? VI.profile.servicePayment.btnPaying
+        : VI.profile.servicePayment.btnProcessing
 
   const formatCurrency = (amount: number): string =>
     new Intl.NumberFormat('vi-VN', {
@@ -182,7 +193,7 @@ export function ServicePaymentModal({
             loading={loading}
             onClick={handleConfirm}
           >
-            {loading ? VI.profile.servicePayment.btnProcessing : VI.profile.servicePayment.btnConfirm}
+            {loading ? loadingLabel : VI.profile.servicePayment.btnConfirm}
           </Button>
         </div>
       </DialogContent>

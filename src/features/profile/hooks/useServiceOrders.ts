@@ -9,7 +9,7 @@ import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPaginatio
 import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
 import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
-import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
+import { DATA_SYNC_EVENTS, notifyServiceOrdersChanged } from '@/shared/sync/dataSync';
 
 export type ServiceOrderTab = 'all' | 'UNCONFIRM' | 'UNPAID' | 'PAID' | 'WAITING_SERVICE_DATE' | 'IN_SERVICE' | 'COMPLETED' | 'DISPUTE' | 'CANCELLED';
 
@@ -25,13 +25,16 @@ export interface ServiceOrderCounts {
   CANCELLED: number;
 }
 
+type FetchOptions = { silent?: boolean };
+
 export interface UseServiceOrdersResult {
   serviceOrders: ServiceOrder[];
   filteredOrders: ServiceOrder[];
   counts: ServiceOrderCounts;
   loading: boolean;
+  isRefreshing: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: (options?: FetchOptions) => Promise<void>;
   selectedStatus: ServiceOrderTab;
   setStatus: (status: ServiceOrderTab) => void;
   confirmingOrderId: number | null;
@@ -45,9 +48,23 @@ export interface UseServiceOrdersResult {
   total: number;
 }
 
+function adjustCount(
+  counts: ServiceOrderCounts,
+  status: string,
+  delta: number,
+): ServiceOrderCounts {
+  if (status === 'all' || !(status in counts)) return counts;
+  const key = status as keyof ServiceOrderCounts;
+  return {
+    ...counts,
+    [key]: Math.max(0, (counts[key] as number) + delta),
+  };
+}
+
 export function useServiceOrders(): UseServiceOrdersResult {
   const [serviceOrders, setServiceOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStatus, setSelectedStatus] = useState<ServiceOrderTab>('all');
   const [confirmingOrderId, setConfirmingOrderId] = useState<number | null>(null);
@@ -69,15 +86,23 @@ export function useServiceOrders(): UseServiceOrdersResult {
 
   const userId = getUserId();
 
-  const fetchData = useCallback(async (status?: ServiceOrderTab, pageNum: number = 1) => {
+  const fetchData = useCallback(async (
+    status?: ServiceOrderTab,
+    pageNum: number = 1,
+    options?: FetchOptions,
+  ) => {
     if (!userId) {
       setError('User not found');
-      setLoading(false);
+      if (!options?.silent) setLoading(false);
       return;
     }
 
-    try {
+    const silent = options?.silent ?? false;
+    if (!silent) {
       setLoading(true);
+    }
+
+    try {
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
       let { orders, total: fetchedTotal } = await fetchServiceOrders(
@@ -96,16 +121,7 @@ export function useServiceOrders(): UseServiceOrdersResult {
         orders = fullPage.orders;
         fetchedTotal = fullPage.total;
       }
-      // Defensive: only keep RENT_SERVICE orders. If BE ever returns RENT_COSTUME
-      // from this endpoint, filter it out to prevent cross-contamination.
       const serviceOrdersList = orders.filter((o) => o.orderType === 'RENT_SERVICE');
-      serviceOrdersList.forEach((order) => {
-        console.log('[ORDER DEBUG]', {
-          id: order.id,
-          type: order.orderType,
-          status: order.status,
-        });
-      });
       const unexpected = orders.filter((o) => o.orderType !== 'RENT_SERVICE');
       if (unexpected.length > 0) {
         console.warn(
@@ -121,7 +137,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
       console.error('[useServiceOrders] Failed to fetch service orders:', err);
       setError('Failed to load service orders');
     } finally {
-      setLoading(false);
+      if (!silent) {
+        setLoading(false);
+      }
     }
   }, [userId]);
 
@@ -129,7 +147,6 @@ export function useServiceOrders(): UseServiceOrdersResult {
     fetchData(selectedStatus, page);
   }, [fetchData, selectedStatus, page]);
 
-  // Filter orders based on selected status (server-side filter applied, client-side for counts)
   const filteredOrders = useMemo(() => {
     if (selectedStatus === 'all') {
       return serviceOrders;
@@ -180,23 +197,51 @@ export function useServiceOrders(): UseServiceOrdersResult {
     fetchData(status, 1);
   }, [fetchData]);
 
-  const refetch = useCallback(async () => {
-    await fetchData(selectedStatus, page);
-    await fetchCounts();
+  const refetch = useCallback(async (options?: FetchOptions) => {
+    const silent = options?.silent ?? false;
+    if (silent) setIsRefreshing(true);
+    try {
+      await fetchData(selectedStatus, page, { silent: true });
+      await fetchCounts();
+    } finally {
+      if (silent) setIsRefreshing(false);
+    }
   }, [fetchData, selectedStatus, page, fetchCounts]);
 
-  useDataSyncRefetch(refetch, DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED, Boolean(userId));
+  useDataSyncRefetch(
+    () => refetch({ silent: true }),
+    DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED,
+    Boolean(userId),
+  );
+
+  const patchOrderStatus = useCallback((orderId: number, nextStatus: string) => {
+    setServiceOrders((prev) => {
+      const order = prev.find((o) => o.id === orderId);
+      if (!order || order.status === nextStatus) return prev;
+
+      const prevStatus = order.status;
+      setCounts((c) => {
+        let next = adjustCount(c, prevStatus, -1);
+        next = adjustCount(next, nextStatus, 1);
+        return next;
+      });
+
+      return prev.map((o) => (o.id === orderId ? { ...o, status: nextStatus } : o));
+    });
+    notifyServiceOrdersChanged({ orderId });
+  }, []);
 
   const confirmAndPay = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
-    // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.
-    // Using FE URL here would bypass BE → order stays UNPAID.
     const returnUrl = getReturnUrl(paymentMethod);
-    console.log('[useServiceOrders] confirmAndPay → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setConfirmingOrderId(orderId);
     try {
       await confirmServiceOrder(orderId);
+      patchOrderStatus(orderId, 'UNPAID');
+      void refetch({ silent: true });
+
+      setConfirmingOrderId(null);
+      setPayingOrderId(orderId);
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
-      console.log('[useServiceOrders] confirmAndPay ← paymentUrl:', paymentUrl);
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] confirmAndPay failed:', err);
@@ -206,35 +251,34 @@ export function useServiceOrders(): UseServiceOrdersResult {
       throw new Error(message || 'Xác nhận và thanh toán thất bại');
     } finally {
       setConfirmingOrderId(null);
+      setPayingOrderId(null);
     }
-  }, []);
+  }, [patchOrderStatus, refetch]);
 
   const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
-    // returnUrl must point to BE callback so BE can receive payment confirmation and update order status.
-    // Using FE URL here would bypass BE → order stays UNPAID.
     const returnUrl = getReturnUrl(paymentMethod);
-    console.log('[useServiceOrders] payOnly → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
     setPayingOrderId(orderId);
     try {
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
-      console.log('[useServiceOrders] payOnly ← paymentUrl:', paymentUrl);
+      void refetch({ silent: true });
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] payOnly failed:', err);
       const message = err && typeof err === 'object' && 'response' in err
         ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
         : 'Thanh toán thất bại';
-      throw new Error(message || 'Thanh toán thất toán thất bại');
+      throw new Error(message || 'Thanh toán thất bại');
     } finally {
       setPayingOrderId(null);
     }
-  }, []);
+  }, [refetch]);
 
   return {
     serviceOrders,
     filteredOrders,
     counts,
     loading,
+    isRefreshing,
     error,
     refetch,
     selectedStatus,

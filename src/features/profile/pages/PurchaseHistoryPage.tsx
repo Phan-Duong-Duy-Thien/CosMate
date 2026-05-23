@@ -21,7 +21,7 @@ import { ServicePaymentModal } from "@/features/service/components/ServicePaymen
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
   PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw,
-  CalendarClock, WalletCards, Ban
+  CalendarClock, WalletCards, Ban, RefreshCw
 } from "lucide-react"
 import type { ServiceOrder, ServiceOrderBooking } from "@/features/service/api/booking.api"
 // ─── Parent Tab ────────────────────────────────────────────────────────────────
@@ -145,6 +145,7 @@ export default function PurchaseHistoryPage() {
     returnOrder,
     returningOrderId,
     refetch: costumeRefetch,
+    isRefreshing: costumeRefreshing,
     costumeImageMap,
     page: costumePage,
     setPage: setCostumePage,
@@ -158,6 +159,7 @@ export default function PurchaseHistoryPage() {
     loading: serviceLoading,
     error: serviceError,
     refetch: serviceRefetch,
+    isRefreshing: serviceRefreshing,
     selectedStatus,
     setStatus,
     confirmingOrderId,
@@ -302,11 +304,23 @@ export default function PurchaseHistoryPage() {
       if (paymentUrl) {
         message.info(VI.profile.serviceOrders.toastPaySuccess)
         window.location.href = paymentUrl
+      } else {
+        message.success(VI.profile.serviceOrders.toastConfirmPaySuccess)
+        await serviceRefetch({ silent: true })
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : VI.profile.serviceOrders.toastPayFailed
       message.error(msg)
-      // Keep modal open on error
+    }
+  }
+
+  const isListRefreshing = parentTab === 'service' ? serviceRefreshing : costumeRefreshing
+
+  const handleRefreshList = () => {
+    if (parentTab === 'service') {
+      void serviceRefetch({ silent: true })
+    } else {
+      void costumeRefetch({ silent: true })
     }
   }
 
@@ -881,11 +895,22 @@ export default function PurchaseHistoryPage() {
     <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-[min(1460px,100%)]">
         <Card className="rounded-[1.5rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fff7fb] via-[#fffaf0] to-[#f5f3ff] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.34)] md:p-6">
-          <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
-            <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
-              {VI.profile.serviceOrders.pageDecorTitle}
-            </span>
-          </h1>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+              <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                {VI.profile.serviceOrders.pageDecorTitle}
+              </span>
+            </h1>
+            <button
+              type="button"
+              onClick={handleRefreshList}
+              disabled={isListRefreshing}
+              className="inline-flex items-center gap-2 rounded-xl border-[2px] border-indigo-900/25 bg-white px-3 py-2 text-sm font-bold text-slate-700 transition-colors hover:bg-pink-50 hover:text-[#d61f91] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              <RefreshCw className={`h-4 w-4 ${isListRefreshing ? 'animate-spin' : ''}`} />
+              {VI.common.actions.refresh}
+            </button>
+          </div>
 
           {/* ── Parent Tab Navigation ──────────────────────────────────────── */}
           <div className="mt-4 flex flex-wrap gap-2">
@@ -1200,6 +1225,13 @@ export default function PurchaseHistoryPage() {
         onClose={() => setPaymentModalOpen(false)}
         onConfirm={handlePaymentConfirm}
         loading={confirmingOrderId !== null || payingOrderId !== null}
+        loadingPhase={
+          confirmingOrderId !== null
+            ? 'confirm'
+            : payingOrderId !== null
+              ? 'pay'
+              : null
+        }
         totalAmount={
           paymentOrderId != null
             ? (serviceFilteredOrders.find(

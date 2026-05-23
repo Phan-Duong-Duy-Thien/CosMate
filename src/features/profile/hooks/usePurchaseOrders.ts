@@ -44,12 +44,15 @@ export interface OrderCounts {
   shipping_combined: number;
 }
 
+type FetchOptions = { silent?: boolean };
+
 export interface UsePurchaseOrdersResult {
   filteredOrders: OrderItem[];
   counts: OrderCounts;
   loading: boolean;
+  isRefreshing: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: (options?: FetchOptions) => Promise<void>;
   confirmDelivery: (orderId: number, images: File[], notes: string[]) => Promise<boolean>;
   confirmingDeliveryId: number | null;
   returnOrder: (
@@ -72,6 +75,7 @@ export interface UsePurchaseOrdersResult {
 export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResult {
   const [allOrders, setAllOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
   const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
@@ -184,10 +188,17 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     };
   }, [allOrders]);
 
-  // Refetch
-  const refetch = useCallback(async () => {
-    setPage(1);
+  const refetch = useCallback(async (options?: FetchOptions) => {
+    const silent = options?.silent ?? false;
     if (!userId) return;
+
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
+      setPage(1);
+      setLoading(true);
+    }
+
     try {
       let fetchedOrders = await getAllOrdersByUserId(userId);
       fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
@@ -209,10 +220,20 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       );
     } catch (err) {
       console.error('Failed to refetch orders:', err);
+    } finally {
+      if (silent) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
   }, [userId]);
 
-  useDataSyncRefetch(refetch, DATA_SYNC_EVENTS.ORDERS_CHANGED, Boolean(userId));
+  useDataSyncRefetch(
+    () => refetch({ silent: true }),
+    DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(userId),
+  );
 
   const confirmDelivery = useCallback(
     async (orderId: number, images: File[], notes: string[]) => {
@@ -221,7 +242,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         const updated = await confirmDeliveryOrder(orderId, images, notes);
         setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
         notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
-        void refetch();
+        void refetch({ silent: true });
         return true;
       } catch {
         return false;
@@ -255,7 +276,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
           setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
         }
         notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
-        void refetch();
+        void refetch({ silent: true });
         return true;
       } catch {
         return false;
@@ -270,6 +291,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     filteredOrders,
     counts,
     loading,
+    isRefreshing,
     error,
     refetch,
     confirmDelivery,
