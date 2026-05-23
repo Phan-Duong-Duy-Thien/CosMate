@@ -12,6 +12,7 @@ import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import { DATA_SYNC_EVENTS, notifyOrdersChanged } from '@/shared/sync/dataSync';
 import { mergeOrderFromMutation } from '@/shared/sync/patchOrderList';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
+import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPagination';
 
 // Map UI tab to backend status
 const TAB_STATUS_MAP: Record<string, OrderStatus[]> = {
@@ -143,25 +144,26 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     fetchOrders();
   }, [userId]);
 
+  const tabFilteredOrders = useMemo(() => {
+    if (tab === 'all') return allOrders;
+    const allowed = TAB_STATUS_MAP[tab];
+    if (!allowed) return allOrders;
+    return allOrders.filter((o) => allowed.includes(o.status));
+  }, [allOrders, tab]);
+
+  const listTotal = tabFilteredOrders.length;
+
   // Filter + paginate from full list
   const filteredOrders = useMemo(() => {
-    let filtered = allOrders;
+    if (isPaginated) return tabFilteredOrders;
 
-    if (tab !== 'all') {
-      const allowed = TAB_STATUS_MAP[tab];
-      if (allowed) {
-        filtered = filtered.filter((o) => allowed.includes(o.status));
-      }
+    if (listTotal <= ORDER_LIST_PAGINATION_THRESHOLD) {
+      return tabFilteredOrders;
     }
 
-    // Apply client-side slice only when BE doesn't support server pagination
-    if (!isPaginated) {
-      const start = (page - 1) * PAGE_SIZE;
-      filtered = filtered.slice(start, start + PAGE_SIZE);
-    }
-
-    return filtered;
-  }, [allOrders, tab, page, isPaginated]);
+    const start = (page - 1) * PAGE_SIZE;
+    return tabFilteredOrders.slice(start, start + PAGE_SIZE);
+  }, [tabFilteredOrders, listTotal, page, isPaginated]);
 
   // Counts computed from full list (not filtered/paginated slice)
   const counts = useMemo(() => {
@@ -278,7 +280,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     page,
     setPage,
     pageSize: PAGE_SIZE,
-    total,
+    total: listTotal,
     isPaginated,
   };
 }

@@ -8,6 +8,8 @@ interface ChatRoomListProps {
   rooms: ChatRoomListItem[];
   activeRoomId: number | null;
   onSelectRoom: (room: ChatRoomListItem) => void;
+  /** Compact sidebar: native title only (avoids tooltip clipped by overflow) */
+  showHoverTooltip?: boolean;
 }
 
 function computeInitials(fullName: string | null | undefined): string {
@@ -18,7 +20,12 @@ function computeInitials(fullName: string | null | undefined): string {
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase()
 }
 
-export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomListProps) {
+export function ChatRoomList({
+  rooms,
+  activeRoomId,
+  onSelectRoom,
+  showHoverTooltip = true,
+}: ChatRoomListProps) {
   if (rooms.length === 0) {
     return (
       <div className={CHAT_UI.emptyInbox}>
@@ -36,6 +43,7 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
           <button
             key={room.roomId}
             type="button"
+            title={!showHoverTooltip ? room.partnerName || "Unknown" : undefined}
             onClick={() => onSelectRoom(room)}
             className={cn(
               CHAT_UI.roomRow,
@@ -54,10 +62,12 @@ export function ChatRoomList({ rooms, activeRoomId, onSelectRoom }: ChatRoomList
                   {computeInitials(room.partnerName)}
                 </div>
               )}
-              <div className={CHAT_UI.tooltip}>
-                <span className="block font-medium">{room.partnerName || "Unknown"}</span>
-                <div className={CHAT_UI.tooltipArrow} />
-              </div>
+              {showHoverTooltip ? (
+                <div className={CHAT_UI.tooltip}>
+                  <span className="block font-medium">{room.partnerName || "Unknown"}</span>
+                  <div className={CHAT_UI.tooltipArrow} />
+                </div>
+              ) : null}
             </div>
 
             <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">

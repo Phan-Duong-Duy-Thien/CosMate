@@ -24,6 +24,7 @@ export const VI = {
     empty: "Không có thông báo nào",
     emptyInFilter: "Không có thông báo trong mục này",
     viewAll: "Xem tất cả thông báo",
+    markAllRead: "Đánh dấu đã đọc",
     title: "Thông báo",
     pageDecorTitle: "⊹ ࣪˖₊˚♡ Thông báo ♡˚₊˖ ࣪⊹",
     filterLabel: "Lọc nhanh",
@@ -1263,7 +1264,9 @@ export const VI = {
         refreshQrWait: (time: string) => `Tạo mã mới sau ${time}`,
         refreshQrCooldown: (time: string) =>
           `Bạn chỉ có thể tạo mã QR mới sau ${time} (tối đa 1 lần / 15 phút).`,
-        previewTitle: "Ảnh từ điện thoại",
+        providerShipImagesTitle: "Ảnh nhà cung cấp khi gửi hàng",
+        providerShipImagesEmpty: "Nhà cung cấp chưa đính kèm ảnh khi gửi hàng.",
+        previewTitle: "Ảnh xác nhận của bạn (từ điện thoại)",
         waitingImages: "Chưa có ảnh — đang chờ bạn gửi từ app…",
         apiNote: "Ảnh từ điện thoại hiện tự động khi app gửi thành công. Sau đó bấm xác nhận để hoàn tất đơn.",
         imageLoadFailed: "Không tải được ảnh xác nhận từ máy chủ",

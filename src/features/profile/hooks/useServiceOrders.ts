@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { fetchServiceOrders, confirmServiceOrder, payServiceOrderFn } from '@/features/service/services/booking.service';
+import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPagination';
 import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
 import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
@@ -79,7 +80,22 @@ export function useServiceOrders(): UseServiceOrdersResult {
       setLoading(true);
       setError(null);
       const apiStatuses = status && status !== 'all' ? status : undefined;
-      const { orders, total: fetchedTotal } = await fetchServiceOrders(userId, apiStatuses, pageNum, PAGE_SIZE);
+      let { orders, total: fetchedTotal } = await fetchServiceOrders(
+        userId,
+        apiStatuses,
+        pageNum,
+        PAGE_SIZE
+      );
+
+      if (
+        fetchedTotal <= ORDER_LIST_PAGINATION_THRESHOLD &&
+        pageNum === 1 &&
+        orders.length < fetchedTotal
+      ) {
+        const fullPage = await fetchServiceOrders(userId, apiStatuses, 1, fetchedTotal);
+        orders = fullPage.orders;
+        fetchedTotal = fullPage.total;
+      }
       // Defensive: only keep RENT_SERVICE orders. If BE ever returns RENT_COSTUME
       // from this endpoint, filter it out to prevent cross-contamination.
       const serviceOrdersList = orders.filter((o) => o.orderType === 'RENT_SERVICE');

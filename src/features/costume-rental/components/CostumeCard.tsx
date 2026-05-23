@@ -1,5 +1,5 @@
 import { Heart, Image as ImageIcon } from "lucide-react"
-import { Tag } from "antd"
+
 
 import type { CostumeItem } from "../types"
 import { Badge } from "@/shared/components/Badge"
@@ -91,15 +91,17 @@ export const CostumeCard = ({
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
-          <div className={cn("absolute", compact ? "right-2 top-2" : "right-3 top-3")}>
-            <Tag
-              className={cn(
-                "m-0 rounded-full border-0 bg-primary font-semibold !text-primary-foreground shadow-sm",
-                compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1"
-              )}
-            >
-              ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
-            </Tag>
+          <div
+            className={cn(
+              "absolute z-10 flex items-center gap-1 rounded-full bg-indigo-950/90 font-bold shadow-md backdrop-blur-sm",
+              compact
+                ? "right-2 top-2 px-2 py-0.5 text-[10px]"
+                : "right-2 top-2 px-2.5 py-1 text-xs"
+            )}
+          >
+            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-500 bg-clip-text text-transparent">
+              ✨ {costume.aiSimilarityScore.toFixed(0)}%
+            </span>
           </div>
         )}
         <button

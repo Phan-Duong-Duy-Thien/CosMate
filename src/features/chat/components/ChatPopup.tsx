@@ -330,19 +330,19 @@ export function ChatPopup() {
           {!activeRoom ? (
             <div className={CHAT_UI.messageEmpty}>
               <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
-              <p className="text-sm font-medium">Select a conversation</p>
-              <p className="text-xs text-muted-foreground">Choose a chat from the left</p>
+              <p className={CHAT_UI.emptyTitle}>Chọn cuộc trò chuyện</p>
+              <p className={CHAT_UI.emptySubtitle}>Chọn một mục bên trái để bắt đầu</p>
             </div>
           ) : showHistoryLoader ? (
             <div className={CHAT_UI.messageEmpty}>
               <div className={CHAT_UI.spinner} />
-              <p className="text-sm font-medium">Loading...</p>
+              <p className={CHAT_UI.emptyTitle}>{VI.common.status.loading}</p>
             </div>
           ) : messages.length === 0 ? (
             <div className={CHAT_UI.messageEmpty}>
               <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
-              <p className="text-sm font-medium">No messages yet</p>
-              <p className="text-xs text-muted-foreground">Say hi to start the conversation!</p>
+              <p className={CHAT_UI.emptyTitle}>Chưa có tin nhắn</p>
+              <p className={CHAT_UI.emptySubtitle}>Gửi lời chào để bắt đầu trò chuyện nhé!</p>
             </div>
           ) : (
             <div className={cn(CHAT_UI.messageScroll, CHAT_UI.messageScrollPad)}>
