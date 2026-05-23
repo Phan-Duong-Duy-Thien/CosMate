@@ -6,7 +6,7 @@ import {
   removeFromWishlist,
 } from '../services/wishlist.service'
 import { getUserId } from '@/features/auth/services/tokenStorage'
-import { isAuthenticated } from '@/features/auth/utils/authStorage'
+import { getAccessToken, isAuthenticated } from '@/features/auth/utils/authStorage'
 import { VI } from '@/shared/i18n/vi'
 import type { WishlistItem } from '../types'
 
@@ -61,7 +61,7 @@ export function useWishlist() {
   // Re-fetch when auth changes
   useEffect(() => {
     const handleAuthChange = () => {
-      const token = localStorage.getItem('cosmate_access_token')
+      const token = getAccessToken()
       if (token && !fetchCalled.current) {
         fetchCalled.current = true
         fetchWishlist()
