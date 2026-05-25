@@ -9,6 +9,7 @@ import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/ser
 import { getCostumeById } from '@/features/costume-rental/api/costume.api';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { useRefetchOnWindowFocus } from '@/shared/hooks/useRefetchOnWindowFocus';
 import { DATA_SYNC_EVENTS, notifyOrdersChanged } from '@/shared/sync/dataSync';
 import { mergeOrderFromMutation } from '@/shared/sync/patchOrderList';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
@@ -232,6 +233,11 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   useDataSyncRefetch(
     () => refetch({ silent: true }),
     DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(userId),
+  );
+
+  useRefetchOnWindowFocus(
+    () => refetch({ silent: true }),
     Boolean(userId),
   );
 

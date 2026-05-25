@@ -22,7 +22,7 @@ const { TextArea } = Input;
 export default function ProviderProfileCompletionPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { profile, refetch } = useProviderVerification();
+  const { profile, refetch, loading: profileLoading } = useProviderVerification();
 
   // Determine which home page to navigate to based on current route
   const homePath = location.pathname.startsWith('/provider-photograph')
@@ -48,10 +48,12 @@ export default function ProviderProfileCompletionPage() {
     districts,
     locationLoading,
     loadDistricts,
-    providerId,
     uploadAvatar,
     uploadCoverImage,
-  } = useProviderProfileCompletion();
+    canProceedToPhase2,
+    canSubmitProfile,
+    profileLoadError,
+  } = useProviderProfileCompletion(profile);
 
   // Sync API profile data into form when profile loads
   useEffect(() => {
@@ -128,8 +130,12 @@ export default function ProviderProfileCompletionPage() {
     }
   };
 
-  const canProceedToPhase2 = selectedAddressId !== null;
-  const canProceedToPhase2Check = formData.shopName && formData.bio && formData.bankAccountNumber && formData.bankName;
+  const phase2MissingFields = [
+    !formData.shopName.trim() && VI.provider.profileCompletion.formShopName,
+    !formData.bio.trim() && VI.provider.profileCompletion.formBio,
+    !formData.bankAccountNumber.trim() && VI.provider.profileCompletion.formBankNumber,
+    !formData.bankName.trim() && VI.provider.profileCompletion.formBankName,
+  ].filter(Boolean) as string[];
 
   return (
     <DashboardLayout
@@ -139,6 +145,15 @@ export default function ProviderProfileCompletionPage() {
       brandName={brandName}
     >
       <Card style={{ borderRadius: 12 }}>
+        {(profileLoadError || (!profileLoading && !profile)) && (
+          <Alert
+            type="warning"
+            showIcon
+            style={{ marginBottom: 16 }}
+            message={profileLoadError || 'Không tải được hồ sơ nhà cung cấp. Một số thao tác có thể bị hạn chế.'}
+          />
+        )}
+
         {/* Phase indicator */}
         <Steps
           current={currentPhase}
@@ -166,13 +181,15 @@ export default function ProviderProfileCompletionPage() {
             </Paragraph>
 
             {addressesLoading ? (
-              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+              <div style={{ textAlign: 'center', padding: '24px 0' }}>
                 <Spin />
                 <Text type="secondary" style={{ display: 'block', marginTop: 8 }}>
                   {VI.provider.profileCompletion.loadingAddresses}
                 </Text>
               </div>
-            ) : (
+            ) : null}
+
+            {!addressesLoading && (
               <>
                 {/* Existing addresses */}
                 {addresses.length > 0 && (
@@ -313,18 +330,27 @@ export default function ProviderProfileCompletionPage() {
                   </Button>
                 )}
 
-                {/* Phase 1 nav */}
-                <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
-                  <Button
-                    type="primary"
-                    disabled={!canProceedToPhase2}
-                    onClick={() => setCurrentPhase(1)}
-                  >
-                    {VI.common.actions.next}
-                  </Button>
-                </div>
+                {!canProceedToPhase2 && addresses.length === 0 && (
+                  <Alert
+                    type="info"
+                    showIcon
+                    style={{ marginTop: 16 }}
+                    message="Vui lòng thêm ít nhất một địa chỉ cửa hàng để tiếp tục."
+                  />
+                )}
               </>
             )}
+
+            {/* Phase 1 nav — luôn hiển thị (kể cả khi đang tải địa chỉ) */}
+            <div style={{ marginTop: 24, display: 'flex', justifyContent: 'flex-end' }}>
+              <Button
+                type="primary"
+                disabled={addressesLoading || !canProceedToPhase2}
+                onClick={() => setCurrentPhase(1)}
+              >
+                {VI.common.actions.next}
+              </Button>
+            </div>
           </div>
         )}
 
@@ -353,6 +379,7 @@ export default function ProviderProfileCompletionPage() {
 
               <Form.Item
                 label={VI.provider.profileCompletion.formBio}
+                required
               >
                 <TextArea
                   value={formData.bio}
@@ -366,6 +393,7 @@ export default function ProviderProfileCompletionPage() {
                 <Col xs={24} sm={12}>
                   <Form.Item
                     label={VI.provider.profileCompletion.formBankNumber}
+                    required
                   >
                     <Input
                       value={formData.bankAccountNumber}
@@ -377,6 +405,7 @@ export default function ProviderProfileCompletionPage() {
                 <Col xs={24} sm={12}>
                   <Form.Item
                     label={VI.provider.profileCompletion.formBankName}
+                    required
                   >
                     <Select
                       value={formData.bankName || undefined}
@@ -397,7 +426,7 @@ export default function ProviderProfileCompletionPage() {
             </Form>
 
             {/* Avatar & Cover Image Upload */}
-            {providerId && (
+            {profile && (
               <div style={{ marginTop: 24 }}>
                 <Title level={5} style={{ marginBottom: 12 }}>
                   Ảnh đại diện & Ảnh bìa
@@ -413,7 +442,14 @@ export default function ProviderProfileCompletionPage() {
                       }}
                       bodyStyle={{ padding: 16 }}
                     >
-                      <div style={{ textAlign: 'center' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          textAlign: 'center',
+                        }}
+                      >
                         {profile?.avatarUrl ? (
                           <img
                             src={profile.avatarUrl}
@@ -425,6 +461,7 @@ export default function ProviderProfileCompletionPage() {
                               objectFit: 'cover',
                               border: "3px solid var(--border)",
                               marginBottom: 12,
+                              display: 'block',
                             }}
                           />
                         ) : (
@@ -440,7 +477,7 @@ export default function ProviderProfileCompletionPage() {
                               fontSize: 28,
                               fontWeight: 700,
                               color: "var(--primary)",
-                              margin: '0 auto 12px',
+                              marginBottom: 12,
                             }}
                           >
                             {formData.shopName?.charAt(0)?.toUpperCase() ?? 'S'}
@@ -494,7 +531,15 @@ export default function ProviderProfileCompletionPage() {
                       }}
                       bodyStyle={{ padding: 16 }}
                     >
-                      <div style={{ textAlign: 'center' }}>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          alignItems: 'center',
+                          width: '100%',
+                          textAlign: 'center',
+                        }}
+                      >
                         {profile?.coverImageUrl ? (
                           <img
                             src={profile.coverImageUrl}
@@ -506,6 +551,7 @@ export default function ProviderProfileCompletionPage() {
                               borderRadius: 6,
                               border: "2px solid var(--border)",
                               marginBottom: 12,
+                              display: 'block',
                             }}
                           />
                         ) : (
@@ -571,6 +617,15 @@ export default function ProviderProfileCompletionPage() {
               <Alert type="error" description={saveError} style={{ marginBottom: 16 }} showIcon />
             )}
 
+            {!canSubmitProfile && phase2MissingFields.length > 0 && (
+              <Alert
+                type="info"
+                showIcon
+                style={{ marginBottom: 16 }}
+                message={`Vui lòng điền đầy đủ: ${phase2MissingFields.join(', ')}`}
+              />
+            )}
+
             <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               <Button onClick={() => setCurrentPhase(0)}>
                 {VI.common.actions.previous}
@@ -578,16 +633,10 @@ export default function ProviderProfileCompletionPage() {
               <Button
                 type="primary"
                 loading={saving}
-                onClick={async () => {
-                  const ok = await submit(selectedAddressId!);
-                  if (ok) {
-                    await refetch();
-                    navigate(homePath);
-                  }
-                }}
-                disabled={!canProceedToPhase2Check}
+                onClick={() => void handleSubmit()}
+                disabled={!canSubmitProfile}
               >
-                Tiếp tục
+                {VI.common.actions.next}
               </Button>
             </div>
           </div>

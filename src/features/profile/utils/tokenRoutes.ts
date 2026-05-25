@@ -14,7 +14,10 @@ export function isProviderDashboardPath(pathname: string): boolean {
   return (
     pathname.startsWith('/provider-rental') ||
     pathname.startsWith('/provider-photograph') ||
-    pathname.startsWith('/provider-event-staff')
+    pathname.startsWith('/provider-event-staff') ||
+    pathname.startsWith('/provider/reviews') ||
+    pathname.startsWith('/provider/settings') ||
+    pathname.startsWith('/provider/messages')
   );
 }
 

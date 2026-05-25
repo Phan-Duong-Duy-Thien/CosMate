@@ -75,6 +75,7 @@ export function ChatInboxSidebar({
         CHAT_UI.sidebar,
         CHAT_UI.sidebarBorder,
         isCompact ? CHAT_UI.sidebarCompact : CHAT_UI.sidebarComfortable,
+        "shrink-0",
       )}
     >
       <div

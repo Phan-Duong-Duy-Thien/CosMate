@@ -35,7 +35,8 @@ export default function PhotographerProfilePage() {
   }
 
   const handleChat = () => {
-    if (provider.userId) startChat(provider.userId, provider.shopName ?? undefined)
+    if (!provider.verified || !provider.userId) return
+    startChat(provider.userId, provider.shopName ?? undefined)
   }
 
   const reviewCount = provider.totalReviews ?? 0

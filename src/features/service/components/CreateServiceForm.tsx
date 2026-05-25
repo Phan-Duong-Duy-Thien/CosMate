@@ -9,7 +9,7 @@
  * Uses shared Vietnam location hook for area selection.
  * All text via i18n.
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   Form,
   Input,
@@ -21,7 +21,6 @@ import {
   Typography,
   Space,
   Tag,
-  Modal,
 } from 'antd';
 import { PlusOutlined, UploadOutlined } from '@ant-design/icons';
 import type { UploadFile } from 'antd';
@@ -32,6 +31,12 @@ import { useCreateService } from '../hooks/useCreateService';
 import { useUpdateService } from '../hooks/useUpdateService';
 import { VI } from '@/shared/i18n/vi';
 import { getServiceTypeDisplayLabel } from '../utils/serviceTypeDisplay';
+import { computeServiceMinPrice } from '../utils/computeServiceMinPrice';
+import {
+  CREATE_SERVICE_FORM_DEFAULTS,
+  serviceToFormValues,
+  type ServiceFormValues,
+} from '../utils/serviceFormValues';
 
 const { TextArea } = Input;
 const { Text } = Typography;
@@ -91,45 +96,55 @@ export function CreateServiceForm({
     selectedDistrict,
   } = useAreaLocations();
 
-  // Prefill form when mode or editingService changes.
-  // resetFields() must be called FIRST to clear stale state, then setFieldsValue()
-  // sets the correct values immediately — all in one synchronous batch.
+  const formInitialValues = useMemo((): ServiceFormValues => {
+    if (mode === 'edit' && editingService) {
+      return serviceToFormValues(editingService);
+    }
+    return CREATE_SERVICE_FORM_DEFAULTS;
+  }, [mode, editingService]);
+
+  const syncMinPriceFromPricingFields = (values: Partial<ServiceFormValues>) => {
+    form.setFieldValue(
+      'minPrice',
+      computeServiceMinPrice(
+        values.pricePerSlot,
+        values.equipmentDepreciationCost,
+        values.depositAmount,
+      ),
+    );
+  };
+
+  const numberRules = (required: boolean) =>
+    required
+      ? [
+          { required: true, message: VI.service.create.validation.required },
+          {
+            type: 'number' as const,
+            min: 0,
+            message: VI.service.create.validation.nonNegativeNumber,
+          },
+        ]
+      : [
+          {
+            type: 'number' as const,
+            min: 0,
+            message: VI.service.create.validation.nonNegativeNumber,
+          },
+        ];
+
   useEffect(() => {
-    form.resetFields();
-    setAreas([]);
-    setFiles([]);
+    form.setFieldsValue(formInitialValues);
+  }, [form, formInitialValues]);
 
-    if (mode === 'create') {
-      form.setFieldsValue({
-        serviceName: '',
-        pricePerSlot: 0,
-        equipmentDepreciationCost: 0,
-        depositAmount: 0,
-        minPrice: 0,
-        maxPrice: 0,
-        slotDurationHours: 1,
-        description: '',
-      });
-    } else if (mode === 'edit' && editingService) {
-      form.setFieldsValue({
-        serviceName: editingService.serviceName ?? '',
-        description: editingService.description ?? '',
-        slotDurationHours: editingService.slotDurationHours ?? 1,
-        pricePerSlot: editingService.pricePerSlot ?? 0,
-        equipmentDepreciationCost: editingService.equipmentDepreciationCost ?? 0,
-        depositAmount: editingService.depositAmount ?? 0,
-        minPrice: editingService.minPrice ?? 0,
-        maxPrice: editingService.maxPrice ?? 0,
-      });
-
-      // Parse API string areas into structured ServiceArea[]
+  // Areas + album when editing
+  useEffect(() => {
+    if (mode === 'edit' && editingService) {
       const parsedAreas: ServiceArea[] = (editingService.areas ?? []).map((area) => {
         if (typeof area === 'string') return parseAreaString(area);
         return area;
       });
       setAreas(parsedAreas);
 
-      // Auto-select province dropdown to match the first area
       if (parsedAreas.length > 0) {
         const first = parsedAreas[0];
         const matchedProvince = provinces.find((p) => p.name === first.city);
@@ -138,18 +153,20 @@ export function CreateServiceForm({
         }
       }
 
-      // Convert existing imageUrls to UploadFile[] for display
       setFiles(
         (editingService.imageUrls ?? []).map((url, idx) => ({
           uid: String(idx),
           name: url.split('/').pop() ?? url,
           status: 'done' as const,
           url,
-        }))
+        })),
       );
+    } else if (mode === 'create') {
+      setAreas([]);
+      setFiles([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode, editingService]);
+  }, [mode, editingService?.id]);
 
   // Auto-select district when districts are loaded in edit mode
   useEffect(() => {
@@ -229,7 +246,11 @@ export function CreateServiceForm({
         depositAmount: values.depositAmount ?? 0,
         areas,
         albumFiles,
-        minPrice: values.minPrice ?? 0,
+        minPrice: computeServiceMinPrice(
+          values.pricePerSlot,
+          values.equipmentDepreciationCost,
+          values.depositAmount,
+        ),
         maxPrice: values.maxPrice ?? 0,
       };
 
@@ -329,7 +350,20 @@ export function CreateServiceForm({
 
       {/* Basic Info */}
       <Card title={VI.service.create.form.basicInfo} style={{ borderRadius: 12 }}>
-        <Form form={form} layout="vertical">
+        <Form
+          form={form}
+          layout="vertical"
+          initialValues={formInitialValues}
+          onValuesChange={(changed, allValues) => {
+            if (
+              'pricePerSlot' in changed ||
+              'equipmentDepreciationCost' in changed ||
+              'depositAmount' in changed
+            ) {
+              syncMinPriceFromPricingFields(allValues as ServiceFormValues);
+            }
+          }}
+        >
           <Form.Item
             name="serviceName"
             label={VI.service.create.form.serviceName}
@@ -345,8 +379,7 @@ export function CreateServiceForm({
           <Form.Item
             name="description"
             label={VI.service.create.form.description}
-            rules={[{ required: true }]}
-            initialValue=""
+            rules={[{ required: true, message: VI.service.create.validation.required }]}
           >
             <TextArea
               rows={4}
@@ -360,77 +393,90 @@ export function CreateServiceForm({
             <Form.Item
               name="slotDurationHours"
               label={VI.service.create.form.slotDurationHours}
-              rules={[{ required: true, min: 0.5 }]}
-              initialValue={1}
+              rules={[
+                { required: true, message: VI.service.create.validation.required },
+                {
+                  type: 'number' as const,
+                  min: 0.5,
+                  message: VI.service.create.validation.positiveNumber,
+                },
+              ]}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber min={0.5} step={0.5} style={{ width: '100%' }} />
-                <Input suffix="h" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0.5}
+                step={0.5}
+                style={{ width: '100%' }}
+                addonAfter="h"
+              />
             </Form.Item>
 
             <Form.Item
               name="pricePerSlot"
               label={VI.service.create.form.pricePerSlot}
-              rules={[{ required: true, min: 0 }]}
-              initialValue={0}
+              rules={numberRules(true)}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber
-                  min={0}
-                  step={10000}
-                  style={{ width: '100%' }}
-                />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0}
+                step={10000}
+                style={{ width: '100%' }}
+                addonAfter="VND"
+              />
             </Form.Item>
 
             <Form.Item
               name="equipmentDepreciationCost"
               label={VI.service.create.form.equipmentDepreciationCost}
-              rules={[{ required: false }]}
-              initialValue={0}
+              rules={numberRules(false)}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0}
+                step={10000}
+                style={{ width: '100%' }}
+                addonAfter="VND"
+              />
             </Form.Item>
 
             <Form.Item
               name="depositAmount"
               label={VI.service.create.form.depositAmount}
-              rules={[{ required: true }]}
-              initialValue={0}
+              rules={numberRules(true)}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0}
+                step={10000}
+                style={{ width: '100%' }}
+                addonAfter="VND"
+              />
             </Form.Item>
 
             <Form.Item
               name="minPrice"
               label={VI.service.create.form.minPrice}
-              rules={[{ required: true }]}
-              initialValue={0}
+              extra={VI.service.create.form.minPriceAutoHint}
+              rules={numberRules(true)}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0}
+                step={10000}
+                style={{ width: '100%' }}
+                addonAfter="VND"
+                readOnly
+                disabled
+              />
             </Form.Item>
 
             <Form.Item
               name="maxPrice"
               label={VI.service.create.form.maxPrice}
-              rules={[{ required: false }]}
-              initialValue={0}
+              extra={VI.service.create.form.maxPriceHint}
+              rules={numberRules(false)}
             >
-              <Space.Compact style={{ width: '100%' }}>
-                <InputNumber min={0} step={10000} style={{ width: '100%' }} />
-                <Input suffix="VND" style={{ width: 60 }} disabled />
-              </Space.Compact>
+              <InputNumber
+                min={0}
+                step={10000}
+                style={{ width: '100%' }}
+                addonAfter="VND"
+              />
             </Form.Item>
           </div>
         </Form>

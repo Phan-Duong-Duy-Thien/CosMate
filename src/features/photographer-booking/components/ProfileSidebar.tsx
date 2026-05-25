@@ -101,7 +101,8 @@ export function ProfileSidebar({
           <button
             type="button"
             onClick={onChat}
-            disabled={chatLoading}
+            disabled={chatLoading || !verified}
+            title={!verified ? "Nhiếp ảnh gia chưa được xác minh" : undefined}
             className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-white py-3.5 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_rgba(30,27,75,0.25)] transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-400"
           >
             {chatLoading ? (

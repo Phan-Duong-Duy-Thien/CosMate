@@ -1817,7 +1817,9 @@ export const VI = {
         equipmentDepreciationCost: "Chi phí khấu hao thiết bị",
         depositAmount: "Tiền cọc",
         minPrice: "Giá tối thiểu",
+       
         maxPrice: "Giá tối đa",
+      
         albumFiles: "Hình ảnh portfolio",
         uploadButton: "Tải lên",
       },

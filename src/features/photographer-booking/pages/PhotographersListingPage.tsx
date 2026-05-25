@@ -11,7 +11,9 @@ import { useProvidersByRole, PROVIDER_ROLE } from "@/features/photographer-booki
 const PAGE_SIZE = 8
 
 export default function PhotographersListingPage() {
-  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER)
+  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER, {
+    verifiedOnly: true,
+  })
   const [currentPage, setCurrentPage] = useState(1)
 
   const totalPages = Math.max(1, Math.ceil(providers.length / PAGE_SIZE))

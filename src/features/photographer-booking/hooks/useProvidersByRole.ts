@@ -12,6 +12,11 @@ export const PROVIDER_ROLE = {
   EVENT_STAFF: 'PROVIDER_EVENT_STAFF',
 } as const;
 
+export type UseProvidersByRoleOptions = {
+  /** When true, only providers with verified === true (subscription active). */
+  verifiedOnly?: boolean;
+};
+
 interface UseProvidersByRoleResult {
   providers: ProviderProfile[];
   loading: boolean;
@@ -20,8 +25,10 @@ interface UseProvidersByRoleResult {
 }
 
 export function useProvidersByRole(
-  roleName: (typeof PROVIDER_ROLE)[keyof typeof PROVIDER_ROLE]
+  roleName: (typeof PROVIDER_ROLE)[keyof typeof PROVIDER_ROLE],
+  options?: UseProvidersByRoleOptions,
 ): UseProvidersByRoleResult {
+  const verifiedOnly = options?.verifiedOnly ?? false;
   const [providers, setProviders] = useState<ProviderProfile[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -31,14 +38,14 @@ export function useProvidersByRole(
     setError(null);
     try {
       const data = await getProvidersByRole(roleName);
-      setProviders(data);
+      setProviders(verifiedOnly ? data.filter((p) => p.verified) : data);
     } catch (err) {
       console.error('[useProvidersByRole] fetch error:', err);
       setError('Failed to load providers. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [roleName]);
+  }, [roleName, verifiedOnly]);
 
   useEffect(() => {
     refetch();

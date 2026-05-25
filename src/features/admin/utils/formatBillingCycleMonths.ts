@@ -28,12 +28,28 @@ const SPECIAL_CYCLE_LABEL_VI: Record<string, string> = {
 
 const VI_CHARS = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵđ]/i;
 
-export function formatBillingCycleMonths(cycleMonths: number, billingCycle: string): string {
+/** Resolve month count from API fields (cycleMonths + billingCycle string). */
+export function resolveBillingCycleMonthsCount(
+  cycleMonths: number | undefined | null,
+  billingCycle: string | undefined | null,
+): number {
   const raw = (billingCycle ?? '').trim();
   const key = raw.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
 
   let months = Number(cycleMonths);
   if (!Number.isFinite(months) || months <= 0) {
+    months = MONTHS_FROM_BILLING_KEY[key] ?? 0;
+  }
+
+  return months > 0 ? months : 0;
+}
+
+export function formatBillingCycleMonths(cycleMonths: number, billingCycle: string): string {
+  const raw = (billingCycle ?? '').trim();
+  const key = raw.toLowerCase().replace(/\s+/g, '_').replace(/-/g, '_');
+
+  let months = resolveBillingCycleMonthsCount(cycleMonths, billingCycle);
+  if (months <= 0 && key) {
     months = MONTHS_FROM_BILLING_KEY[key] ?? 0;
   }
 

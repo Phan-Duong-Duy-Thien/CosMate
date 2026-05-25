@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback } from "react"
 import { MessageCircle, Plus } from "lucide-react"
 import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
 import type { SearchUserResult } from "../services/user.service"
@@ -15,6 +15,7 @@ import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatInboxSidebar } from "../components/ChatInboxSidebar"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
+import { CHAT_UI } from "../constants/chatUi"
 import {
   connectChatSocket,
   subscribeChatRoom,
@@ -65,12 +66,9 @@ export default function ProviderMessagesPage() {
 
   // ── Provider profile (needed for providerId to fetch services) ────────
   const { provider } = useCurrentProviderProfile()
-  console.log("[ProviderMessages] provider:", provider)
 
   // ── Provider services (for booking modal) ──────────────────────────────
   const { services } = useProviderServices(provider?.id ?? 0)
-  console.log("[ProviderMessages] providerId for services:", provider?.id ?? 0)
-  console.log("[ProviderMessages] services:", services)
 
   // ── Booking hook ──────────────────────────────────────────────────────────
   const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
@@ -196,15 +194,38 @@ export default function ProviderMessagesPage() {
     }
   }
 
-  const handleOpenBookingModal = () => {
+  const resetBookingDraft = useCallback(() => {
     setSelectedServiceId(null)
     setBookingDate(null)
     setTimeSlot("09:00")
     setNumberOfHuman(1)
     setRentSlotAmount(1)
     form.resetFields()
+  }, [form])
+
+  const handleOpenBookingModal = () => {
+    form.setFieldsValue({
+      service: selectedServiceId ?? undefined,
+      bookingDate: bookingDate ?? undefined,
+      numberOfHuman,
+      rentSlotAmount,
+    })
     setShowBookingModal(true)
   }
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false)
+  }
+
+  const prevBookingRoomIdRef = useRef<number | null>(null)
+  useEffect(() => {
+    const roomId = activeRoom?.roomId ?? null
+    if (prevBookingRoomIdRef.current !== null && prevBookingRoomIdRef.current !== roomId) {
+      resetBookingDraft()
+      setShowBookingModal(false)
+    }
+    prevBookingRoomIdRef.current = roomId
+  }, [activeRoom?.roomId, resetBookingDraft])
 
   const handleSubmitBooking = async () => {
     if (!selectedServiceId || !bookingDate || !activeRoom) return
@@ -219,6 +240,7 @@ export default function ProviderMessagesPage() {
     })
 
     if (result) {
+      resetBookingDraft()
       setShowBookingModal(false)
       message.success(VI.booking.create.success)
     }
@@ -239,9 +261,15 @@ export default function ProviderMessagesPage() {
   const canCreateBooking = canBooking && !roles.includes(ROLE.PROVIDER_RENTAL)
 
   return (
-    <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white">
-
+    <DashboardLayout
+      title={VI.provider.sidebar.messages}
+      sidebarItems={sidebarItems}
+      brandName="CosMate Provider"
+      showChatButton={false}
+      contentMode="fill"
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className={CHAT_UI.providerDashboardShell}>
         <ChatInboxSidebar
           variant="comfortable"
           headerStart={<h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
@@ -254,7 +282,7 @@ export default function ProviderMessagesPage() {
         />
 
         {/* RIGHT: Chat Window */}
-        <div className="flex flex-1 min-h-0 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 pt-3.5 pb-3">
             <div className="flex items-start gap-3">
@@ -346,15 +374,17 @@ export default function ProviderMessagesPage() {
             />
           )}
         </div>
+        </div>
       </div>
 
       {/* Create Booking Modal */}
       <Modal
         open={showBookingModal}
         title={VI.booking.create.title}
-        onCancel={() => setShowBookingModal(false)}
+        onCancel={handleCloseBookingModal}
         footer={null}
-        destroyOnClose
+        destroyOnClose={false}
+        maskClosable
         className="booking-modal"
       >
         <p className="text-sm text-slate-500 mb-4">
@@ -455,7 +485,7 @@ export default function ProviderMessagesPage() {
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => setShowBookingModal(false)}
+              onClick={handleCloseBookingModal}
               className="px-5 py-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
               {VI.booking.create.cancel}

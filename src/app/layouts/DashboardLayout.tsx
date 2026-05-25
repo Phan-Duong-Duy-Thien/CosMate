@@ -2,7 +2,7 @@ import { useState, useEffect, createElement, type ReactNode, useCallback } from 
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { ConfigProvider, Layout, Menu, Dropdown, Avatar, Spin } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
+import { LogOut, User, ChevronRight, ChevronLeft, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -10,6 +10,12 @@ import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import { isProviderDashboardPath } from '@/features/profile/utils/tokenRoutes';
+import {
+  resolveDashboardContentMode,
+  type DashboardContentMode,
+} from '@/app/layouts/dashboardContentMode';
+import { cn } from '@/lib/utils';
+import { ProviderGateBoundary } from '@/features/provider/components/ProviderGateBoundary';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
 import { ProviderSubscriptionBadge } from '@/features/provider/components/ProviderSubscriptionBadge';
@@ -89,6 +95,8 @@ type DashboardLayoutProps = {
   children?: ReactNode;
   /** Hide the chat button in the header (used for provider dashboards) */
   showChatButton?: boolean;
+  /** scroll = form/list (default); fill = full-height panel e.g. messages */
+  contentMode?: DashboardContentMode;
 };
 
 export function DashboardLayout({
@@ -98,6 +106,7 @@ export function DashboardLayout({
   brandShort = 'CM',
   children,
   showChatButton = true,
+  contentMode: contentModeProp,
 }: DashboardLayoutProps) {
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
@@ -572,6 +581,9 @@ export function DashboardLayout({
 
   const displayTitle = breadcrumbItems.length > 0 ? breadcrumbItems[breadcrumbItems.length - 1].label : title;
   const antdColorPrimary = useSyncedCosmatePrimaryForAntd();
+  const applyProviderGate = isProviderDashboardPath(location.pathname);
+  const contentMode = resolveDashboardContentMode(location.pathname, contentModeProp);
+  const isFillContent = contentMode === 'fill';
 
   return (
     <ConfigProvider
@@ -582,13 +594,19 @@ export function DashboardLayout({
         },
       }}
     >
-    <Layout style={{ minHeight: '100vh' }}>
+    <Layout
+      className="cosmate-dashboard-root"
+      style={{ height: '100vh', minHeight: '100vh', overflow: 'hidden' }}
+    >
       <Sider
+        className="cosmate-dashboard-sider"
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
+        trigger={null}
         theme="light"
         width={240}
+        collapsedWidth={80}
         style={{
           overflow: 'auto',
           height: '100vh',
@@ -600,19 +618,26 @@ export function DashboardLayout({
         }}
       >
         <div
-          style={{
-            height: 64,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: collapsed ? 'center' : 'flex-start',
-            paddingLeft: collapsed ? 0 : 24,
-            borderBottom: "1px solid var(--border)",
-            fontWeight: 700,
-            fontSize: 18,
-            color: "var(--cosmate-pink)",
-          }}
+          className={cn(
+            'flex h-16 shrink-0 items-center border-b border-border',
+            collapsed ? 'justify-center px-2' : 'justify-between gap-2 px-4',
+          )}
         >
-          {collapsed ? brandShort : brandName}
+          {!collapsed && (
+            <span className="min-w-0 truncate text-lg font-bold text-cosmate-pink">{brandName}</span>
+          )}
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className={cn(
+              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors',
+              'hover:border-cosmate-pink/30 hover:bg-cosmate-soft-pink/40 hover:text-cosmate-pink',
+            )}
+            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
+            title={collapsed ? brandName : undefined}
+          >
+            {collapsed ? <ChevronRight size={18} aria-hidden /> : <ChevronLeft size={18} aria-hidden />}
+          </button>
         </div>
 
         <Menu
@@ -626,12 +651,17 @@ export function DashboardLayout({
       </Sider>
 
       <Layout
+        className="cosmate-dashboard-main"
         style={{
           marginLeft: collapsed ? 80 : 240,
           transition: 'margin-left 0.2s',
+          flex: 1,
           minHeight: '100vh',
+          height: '100vh',
+          minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
+          overflow: 'hidden',
           background: 'var(--background)',
         }}
       >
@@ -709,6 +739,7 @@ export function DashboardLayout({
             display: 'flex',
             flexDirection: 'column',
             minHeight: 0,
+            overflow: 'hidden',
           }}
         >
           {breadcrumbItems.length > 0 && (
@@ -736,8 +767,27 @@ export function DashboardLayout({
               ))}
             </div>
           )}
-          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
-            {children || <Outlet />}
+          <div
+            data-cosmate-dashboard-scroll
+            className={cn(
+              'flex min-h-0 min-w-0 flex-1 flex-col',
+              isFillContent ? 'overflow-hidden' : 'overflow-y-auto',
+            )}
+          >
+            {applyProviderGate ? (
+              <ProviderGateBoundary contentMode={contentMode}>
+                {children ?? <Outlet />}
+              </ProviderGateBoundary>
+            ) : (
+              <div
+                className={cn(
+                  'min-h-0 w-full',
+                  isFillContent ? 'flex min-h-0 flex-1 flex-col' : undefined,
+                )}
+              >
+                {children || <Outlet />}
+              </div>
+            )}
           </div>
         </Content>
       </Layout>

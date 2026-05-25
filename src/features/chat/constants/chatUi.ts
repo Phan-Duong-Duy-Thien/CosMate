@@ -5,11 +5,14 @@
 export const CHAT_UI = {
   /** Beside chat FAB: right-6 + 4rem button + 0.75rem gap */
   popupShell:
-    "home-anime fixed bottom-6 right-[5.75rem] z-50 flex h-[min(500px,calc(100vh-3rem))] w-[min(460px,calc(100vw-6.5rem))] overflow-hidden rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb]/95 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]",
+    "home-anime pointer-events-auto fixed bottom-6 right-[5.75rem] z-[100] flex h-[min(500px,calc(100vh-3rem))] w-[min(460px,calc(100vw-6.5rem))] overflow-hidden rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb]/95 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]",
   panel:
     "home-anime overflow-hidden rounded-[1.25rem] border-[3px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.28)]",
   providerShell:
     "home-anime flex h-[calc(100vh-180px)] overflow-hidden rounded-[1.25rem] border-[3px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.28)]",
+  /** Full-height chat inside DashboardLayout — row: inbox | conversation. */
+  providerDashboardShell:
+    "flex min-h-0 flex-1 flex-row w-full overflow-hidden rounded-xl border border-slate-200 bg-white",
   pageCanvas:
     "home-anime min-h-0 bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]",
   sidebar:
