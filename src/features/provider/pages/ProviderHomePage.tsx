@@ -6,10 +6,7 @@ import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
-import { useProviderGate } from '../hooks/useProviderGate';
 import { useProviderStatistics } from '../hooks/useProviderStatistics';
-import { ProviderActivationGate } from '../components/ProviderActivationGate';
-import { ProviderProfileCompletionGate } from '../components/ProviderProfileCompletionGate';
 import { ProviderRevenueChart } from '../components/ProviderRevenueChart';
 
 const { Text } = Typography;
@@ -19,14 +16,6 @@ const MONTHS_OPTIONS = [3, 6, 12] as const;
 export default function ProviderHomePage() {
   const navigate = useNavigate();
   const [chartMonths, setChartMonths] = useState<number>(6);
-
-  const {
-    verified, profileComplete, profileLoading,
-    plans, plansLoading, plansError,
-    selectedPlanId, setSelectedPlanId,
-    selectedMethod, setSelectedMethod,
-    handleSubscribe, subscribing, subscribeError,
-  } = useProviderGate();
 
   const { statistics, loading: statsLoading, error: statsError, refetch } =
     useProviderStatistics(chartMonths);
@@ -72,39 +61,8 @@ export default function ProviderHomePage() {
     ];
   }, [statistics]);
 
-  const showDashboard = !profileLoading && verified === true && profileComplete === true;
-
   return (
     <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
-      {profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" />
-          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {!profileLoading && verified === false && (
-        <ProviderActivationGate
-          plans={plans}
-          plansLoading={plansLoading}
-          plansError={plansError}
-          selectedPlanId={selectedPlanId}
-          onSelectPlan={setSelectedPlanId}
-          selectedMethod={selectedMethod}
-          onSelectMethod={setSelectedMethod}
-          onSubscribe={handleSubscribe}
-          subscribing={subscribing}
-          subscribeError={subscribeError}
-        />
-      )}
-
-      {!profileLoading && verified === true && profileComplete === false && (
-        <ProviderProfileCompletionGate
-          onComplete={() => navigate('/provider/settings/completion')}
-        />
-      )}
-
-      {showDashboard && (
         <>
           <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
             <div>
@@ -270,7 +228,6 @@ export default function ProviderHomePage() {
             </>
           )}
         </>
-      )}
     </DashboardLayout>
   );
 }

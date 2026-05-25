@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react"
+import { createPortal } from "react-dom"
 import { X, Send, MessageCircle, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
@@ -85,6 +86,11 @@ export function ChatPopup() {
   } = useChatPopup()
   const { rooms, loading: roomsLoading } = useChatRooms()
   const [currentUserId, setCurrentUserId] = useState<number | null>(getUserId())
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
 
   // Keep currentUserId in sync with auth changes (login/logout)
   useEffect(() => {
@@ -264,12 +270,12 @@ export function ChatPopup() {
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !portalReady) return null
 
   const displayName = activeRoom?.partnerName ?? "Chat"
   const avatar = activeRoom?.partnerAvatar
-  return (
-    <div className={CHAT_UI.popupShell}>
+  return createPortal(
+    <div className={CHAT_UI.popupShell} role="dialog" aria-modal="true" aria-label={VI.common.messages.title}>
 
       <ChatInboxSidebar
         variant="compact"
@@ -450,6 +456,7 @@ export function ChatPopup() {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

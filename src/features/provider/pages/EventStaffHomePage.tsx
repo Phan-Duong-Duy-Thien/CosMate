@@ -3,28 +3,17 @@
  * Portal entry page for PROVIDER_EVENT_STAFF role.
  * Uses DashboardLayout + subscription gating via useProviderGate.
  */
-import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
+import { Card, Row, Col, Statistic, Button, Space, Typography } from 'antd';
 import { Briefcase, Calendar, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { eventStaffSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
-import { useProviderGate } from '../hooks/useProviderGate';
-import { ProviderActivationGate } from '../components/ProviderActivationGate';
-import { ProviderProfileCompletionGate } from '../components/ProviderProfileCompletionGate';
 
 const { Text } = Typography;
 
 export default function EventStaffHomePage() {
-  const {
-    verified, profileComplete, profileLoading,
-    plans, plansLoading, plansError,
-    selectedPlanId, setSelectedPlanId,
-    selectedMethod, setSelectedMethod,
-    handleSubscribe, subscribing, subscribeError,
-  } = useProviderGate();
-
   const navigate = useNavigate();
 
   const sidebarItems: DashboardSidebarItem[] = eventStaffSidebarItems.map((item) => {
@@ -61,33 +50,6 @@ export default function EventStaffHomePage() {
 
   return (
     <DashboardLayout title={VI.provider.dashboardEventStaff.title} sidebarItems={sidebarItems} brandName="CosMate Event Staff" showChatButton={false}>
-      {profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" />
-          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {!profileLoading && verified === false && (
-        <ProviderActivationGate
-          plans={plans}
-          plansLoading={plansLoading}
-          plansError={plansError}
-          selectedPlanId={selectedPlanId}
-          onSelectPlan={setSelectedPlanId}
-          selectedMethod={selectedMethod}
-          onSelectMethod={setSelectedMethod}
-          onSubscribe={handleSubscribe}
-          subscribing={subscribing}
-          subscribeError={subscribeError}
-        />
-      )}
-
-      {!profileLoading && verified === true && profileComplete === false && (
-        <ProviderProfileCompletionGate onComplete={() => navigate('/provider-event-staff/settings/completion')} />
-      )}
-
-      {!profileLoading && verified === true && profileComplete === true && (
         <>
           <div style={{ marginBottom: 24 }}>
             <h2 style={{ fontSize: 24, fontWeight: 600, marginBottom: 8 }}>{VI.provider.dashboardEventStaff.welcome}</h2>
@@ -158,7 +120,6 @@ export default function EventStaffHomePage() {
             </Col>
           </Row>
         </>
-      )}
     </DashboardLayout>
   );
 }

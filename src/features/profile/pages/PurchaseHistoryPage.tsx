@@ -190,8 +190,8 @@ export default function PurchaseHistoryPage() {
     })
   }, [])
 
-  useEffect(() => {
-    const orderIdsToCheck = [
+  const reviewCheckOrderIds = useMemo(() => {
+    const ids = [
       ...filteredOrders
         .filter((o) => o.status === "RETURNED" || o.status === "COMPLETED")
         .map((o) => o.id),
@@ -199,14 +199,19 @@ export default function PurchaseHistoryPage() {
         .filter((o) => o.status === "COMPLETED" && o.cosplayerId != null)
         .map((o) => o.id),
     ]
+    return [...new Set(ids)].sort((a, b) => a - b)
+  }, [filteredOrders, serviceFilteredOrders])
 
-    if (orderIdsToCheck.length === 0) return
+  const reviewCheckOrderIdsKey = reviewCheckOrderIds.join(",")
+
+  useEffect(() => {
+    if (reviewCheckOrderIds.length === 0) return
 
     let cancelled = false
 
     void (async () => {
       const reviewed = await Promise.all(
-        orderIdsToCheck.map(async (orderId) => {
+        reviewCheckOrderIds.map(async (orderId) => {
           const review = await getReviewByOrderId(orderId)
           return review ? orderId : null
         })
@@ -226,7 +231,7 @@ export default function PurchaseHistoryPage() {
     return () => {
       cancelled = true
     }
-  }, [filteredOrders, serviceFilteredOrders])
+  }, [reviewCheckOrderIdsKey, reviewCheckOrderIds])
   const { createDispute, disputingOrderId } = useCreateDispute()
   const { cancelOrder, cancellingOrderId } = useCancelOrder()
   const { extendOrder, isExtending, getDetailIdFromOrder } = useExtendOrder()
@@ -306,7 +311,7 @@ export default function PurchaseHistoryPage() {
         window.location.href = paymentUrl
       } else {
         message.success(VI.profile.serviceOrders.toastConfirmPaySuccess)
-        await serviceRefetch({ silent: true })
+        await serviceRefetch({ silent: true, includeCounts: true })
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : VI.profile.serviceOrders.toastPayFailed
@@ -318,7 +323,7 @@ export default function PurchaseHistoryPage() {
 
   const handleRefreshList = () => {
     if (parentTab === 'service') {
-      void serviceRefetch({ silent: true })
+      void serviceRefetch({ silent: true, includeCounts: true })
     } else {
       void costumeRefetch({ silent: true })
     }
@@ -421,6 +426,8 @@ export default function PurchaseHistoryPage() {
     })
     if (success) {
       markOrderReviewed(reviewOrderId)
+      const saved = await getReviewByOrderId(reviewOrderId)
+      if (saved) markOrderReviewed(reviewOrderId)
       message.success(VI.profile.orders.toastReviewSuccess)
       setReviewModalOpen(false)
       setReviewOrderId(null)

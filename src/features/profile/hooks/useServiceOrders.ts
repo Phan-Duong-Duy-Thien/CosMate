@@ -9,6 +9,7 @@ import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPaginatio
 import type { ServiceOrder, PaymentMethod } from '@/features/service/api/booking.api';
 import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { useRefetchOnWindowFocus } from '@/shared/hooks/useRefetchOnWindowFocus';
 import { DATA_SYNC_EVENTS, notifyServiceOrdersChanged } from '@/shared/sync/dataSync';
 
 export type ServiceOrderTab = 'all' | 'UNCONFIRM' | 'UNPAID' | 'PAID' | 'WAITING_SERVICE_DATE' | 'IN_SERVICE' | 'COMPLETED' | 'DISPUTE' | 'CANCELLED';
@@ -25,7 +26,7 @@ export interface ServiceOrderCounts {
   CANCELLED: number;
 }
 
-type FetchOptions = { silent?: boolean };
+type FetchOptions = { silent?: boolean; /** Refresh tab badge counts (9 API calls) */ includeCounts?: boolean };
 
 export interface UseServiceOrdersResult {
   serviceOrders: ServiceOrder[];
@@ -202,7 +203,9 @@ export function useServiceOrders(): UseServiceOrdersResult {
     if (silent) setIsRefreshing(true);
     try {
       await fetchData(selectedStatus, page, { silent: true });
-      await fetchCounts();
+      if (options?.includeCounts) {
+        await fetchCounts();
+      }
     } finally {
       if (silent) setIsRefreshing(false);
     }
@@ -211,6 +214,11 @@ export function useServiceOrders(): UseServiceOrdersResult {
   useDataSyncRefetch(
     () => refetch({ silent: true }),
     DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED,
+    Boolean(userId),
+  );
+
+  useRefetchOnWindowFocus(
+    () => refetch({ silent: true }),
     Boolean(userId),
   );
 
@@ -237,7 +245,6 @@ export function useServiceOrders(): UseServiceOrdersResult {
     try {
       await confirmServiceOrder(orderId);
       patchOrderStatus(orderId, 'UNPAID');
-      void refetch({ silent: true });
 
       setConfirmingOrderId(null);
       setPayingOrderId(orderId);
@@ -253,14 +260,13 @@ export function useServiceOrders(): UseServiceOrdersResult {
       setConfirmingOrderId(null);
       setPayingOrderId(null);
     }
-  }, [patchOrderStatus, refetch]);
+  }, [patchOrderStatus]);
 
   const payOnly = useCallback(async (orderId: number, paymentMethod: PaymentMethod): Promise<string | null> => {
     const returnUrl = getReturnUrl(paymentMethod);
     setPayingOrderId(orderId);
     try {
       const paymentUrl = await payServiceOrderFn(orderId, paymentMethod, returnUrl);
-      void refetch({ silent: true });
       return paymentUrl;
     } catch (err: unknown) {
       console.error('[useServiceOrders] payOnly failed:', err);
@@ -271,7 +277,7 @@ export function useServiceOrders(): UseServiceOrdersResult {
     } finally {
       setPayingOrderId(null);
     }
-  }, [refetch]);
+  }, []);
 
   return {
     serviceOrders,

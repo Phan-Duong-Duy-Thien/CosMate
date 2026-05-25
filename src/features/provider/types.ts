@@ -53,6 +53,11 @@ export interface SubscriptionPlan {
   description: string | null;
   price: number;
   billingCycleMonths: number;
+  /** From BE admin catalog (optional). */
+  cycleMonths?: number;
+  billingCycle?: string;
+  /** Precomputed display label for activation UI. */
+  cycleLabel?: string;
   isActive: boolean;
   features: string[];
   createdAt: string;

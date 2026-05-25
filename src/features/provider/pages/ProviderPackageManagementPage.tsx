@@ -49,7 +49,7 @@ export default function ProviderPackageManagementPage() {
       brandName={brandName}
       showChatButton={false}
     >
-      <div className="flex min-h-0 flex-1 flex-col">
+      <>
         <div className="mb-4 flex shrink-0 flex-wrap items-start justify-between gap-3">
           <div>
             <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>
@@ -66,12 +66,12 @@ export default function ProviderPackageManagementPage() {
           </Button>
         </div>
         <ProviderSubscriptionOverview info={info} loading={loading} error={error} />
-      </div>
 
       <ProviderRenewSubscriptionModal
         open={renewModalOpen}
         onClose={() => setRenewModalOpen(false)}
       />
+      </>
     </DashboardLayout>
   );
 }
