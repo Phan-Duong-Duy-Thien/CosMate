@@ -1926,8 +1926,6 @@ export const VI = {
         recentEvents: "Sự kiện gần đây",
       },
       browseByTheme: "Khám phá theo chủ đề",
-      browseByThemeHint:
-        "Chọn chủ đề yêu thích — banner và các nút khám phá sẽ gắn với chủ đề này khi bạn tương tác.",
       trustedShopsTitle: "Shop cho thuê uy tín",
       trustedShopsHint:
         "Cửa hàng được đánh giá cao, minh bạch và được nhiều khách tin chọn.",
