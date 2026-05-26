@@ -1,20 +1,21 @@
 /**
- * ProviderSubscriptionOverview — presentational subscription summary (Ant Design).
+ * ProviderSubscriptionOverview — styled status card + progress (subscriptions-info API).
  */
-import { Alert, Card, Col, Row, Spin, Statistic } from 'antd';
-import { CrownOutlined } from '@ant-design/icons';
+import { Alert, Progress, Spin } from 'antd';
+import { CalendarOutlined, CrownOutlined, FieldTimeOutlined } from '@ant-design/icons';
 import { VI } from '@/shared/i18n/vi';
 import type { ProviderSubscriptionInfo } from '../types';
 
-const STAT_CARD_STYLE = {
-  borderRadius: 10,
-  boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-} as const;
+const LOW_DAYS_THRESHOLD = 30;
 
 interface ProviderSubscriptionOverviewProps {
   info: ProviderSubscriptionInfo | null;
   loading: boolean;
   error: string | null;
+}
+
+function formatDays(value: number): string {
+  return `${value.toLocaleString('vi-VN')} ${VI.provider.subscription.daysSuffix}`;
 }
 
 export function ProviderSubscriptionOverview({
@@ -24,7 +25,7 @@ export function ProviderSubscriptionOverview({
 }: ProviderSubscriptionOverviewProps) {
   if (loading) {
     return (
-      <div className="flex flex-1 items-center justify-center py-16">
+      <div className="flex items-center justify-center rounded-2xl border border-cosmate-lavender-border bg-gradient-to-br from-cosmate-soft-pink/40 to-cosmate-lavender-surface py-16">
         <Spin size="large" />
       </div>
     );
@@ -38,65 +39,96 @@ export function ProviderSubscriptionOverview({
     return <Alert type="info" showIcon message={VI.provider.subscription.empty} />;
   }
 
-  return (
-    <div className="space-y-4">
-      <Row gutter={[12, 12]}>
-        <Col xs={24} sm={12} lg={8}>
-          <Card bordered={false} style={STAT_CARD_STYLE}>
-            <Statistic
-              title={VI.provider.subscription.currentPlan}
-              value={info.currentPlanName}
-              prefix={<CrownOutlined style={{ color: 'var(--cosmate-pink)' }} />}
-              valueStyle={{ fontSize: 20, fontWeight: 700, color: 'var(--cosmate-pink)' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card bordered={false} style={STAT_CARD_STYLE}>
-            <Statistic
-              title={VI.provider.subscription.currentDaysRemaining}
-              value={info.currentDaysRemaining}
-              suffix={VI.provider.subscription.daysSuffix}
-              valueStyle={{ fontSize: 22, fontWeight: 700, color: 'var(--primary)' }}
-            />
-          </Card>
-        </Col>
-        <Col xs={24} sm={12} lg={8}>
-          <Card bordered={false} style={STAT_CARD_STYLE}>
-            <Statistic
-              title={VI.provider.subscription.totalRemainingDays}
-              value={info.totalRemainingDays}
-              suffix={VI.provider.subscription.daysSuffix}
-              valueStyle={{ fontSize: 22, fontWeight: 700, color: 'var(--cosmate-success)' }}
-            />
-          </Card>
-        </Col>
-      </Row>
+  const stackedExtraDays = Math.max(0, info.totalRemainingDays - info.currentDaysRemaining);
+  const progressPercent = Math.min(
+    100,
+    Math.round((info.currentDaysRemaining / Math.max(info.totalRemainingDays, 1)) * 100),
+  );
+  const showLowDaysWarning = info.currentDaysRemaining <= LOW_DAYS_THRESHOLD;
 
-      <Card
-        bordered={false}
-        title={VI.provider.subscription.summaryTitle}
-        style={STAT_CARD_STYLE}
-      >
-        <Row gutter={[16, 8]}>
-          <Col xs={24} md={8}>
-            <div className="text-sm text-muted-foreground">{VI.provider.subscription.currentPlan}</div>
-            <div className="mt-1 text-base font-semibold text-foreground">{info.currentPlanName}</div>
-          </Col>
-          <Col xs={24} md={8}>
-            <div className="text-sm text-muted-foreground">{VI.provider.subscription.currentDaysRemaining}</div>
-            <div className="mt-1 text-base font-semibold text-foreground">
-              {info.currentDaysRemaining} {VI.provider.subscription.daysSuffix}
+  return (
+    <div className="space-y-3">
+      {showLowDaysWarning && (
+        <Alert type="warning" showIcon message={VI.provider.subscription.lowDaysWarning} />
+      )}
+
+      <div className="overflow-hidden rounded-2xl border border-cosmate-lavender-border bg-gradient-to-br from-cosmate-soft-pink/50 via-card to-cosmate-lavender-surface/80 shadow-[0_4px_24px_color-mix(in_oklch,var(--cosmate-pink)_12%,transparent)]">
+        <div className="border-b border-cosmate-lavender-border/80 bg-gradient-to-r from-cosmate-pink/10 to-cosmate-lavender-surface/60 px-5 py-4 sm:px-6">
+          <p className="text-xs font-semibold uppercase tracking-wider text-cosmate-mauve">
+            {VI.provider.subscription.statusHeroTitle}
+          </p>
+          <div className="mt-2 flex items-center gap-2.5">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-cosmate-pink/15 text-cosmate-pink">
+              <CrownOutlined style={{ fontSize: 20 }} />
+            </span>
+            <span className="text-xl font-bold text-cosmate-ink sm:text-2xl">{info.currentPlanName}</span>
+          </div>
+        </div>
+
+        <div className="space-y-5 p-5 sm:p-6">
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-xl border border-cosmate-lavender-border bg-card/90 p-4 shadow-sm backdrop-blur-sm">
+              <div className="mb-2 flex items-center gap-2 text-cosmate-mauve">
+                <CalendarOutlined />
+                <span className="text-sm font-medium">
+                  {VI.provider.subscription.currentDaysRemaining}
+                </span>
+              </div>
+              <p className="text-2xl font-bold tabular-nums text-primary sm:text-3xl">
+                {info.currentDaysRemaining.toLocaleString('vi-VN')}
+                <span className="ml-1.5 text-base font-semibold text-cosmate-mauve">
+                  {VI.provider.subscription.daysSuffix}
+                </span>
+              </p>
             </div>
-          </Col>
-          <Col xs={24} md={8}>
-            <div className="text-sm text-muted-foreground">{VI.provider.subscription.totalRemainingDays}</div>
-            <div className="mt-1 text-base font-semibold text-foreground">
-              {info.totalRemainingDays} {VI.provider.subscription.daysSuffix}
+
+            <div className="rounded-xl border border-emerald-200/80 bg-gradient-to-br from-emerald-50/90 to-card p-4 shadow-sm dark:border-emerald-900/40 dark:from-emerald-950/30">
+              <div className="mb-2 flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                <FieldTimeOutlined />
+                <span className="text-sm font-medium">
+                  {VI.provider.subscription.totalRemainingDays}
+                </span>
+              </div>
+              <p className="text-2xl font-bold tabular-nums text-cosmate-success sm:text-3xl">
+                {info.totalRemainingDays.toLocaleString('vi-VN')}
+                <span className="ml-1.5 text-base font-semibold text-emerald-700/80 dark:text-emerald-400/90">
+                  {VI.provider.subscription.daysSuffix}
+                </span>
+              </p>
+              {stackedExtraDays > 0 && (
+                <span className="mt-2 inline-block rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300">
+                  {VI.provider.subscription.stackedDaysBadge.replace(
+                    '{count}',
+                    stackedExtraDays.toLocaleString('vi-VN'),
+                  )}
+                </span>
+              )}
             </div>
-          </Col>
-        </Row>
-      </Card>
+          </div>
+
+          <div className="rounded-xl border border-cosmate-lavender-border/80 bg-cosmate-lavender-surface/40 px-4 py-3">
+            <div className="mb-2 flex items-center justify-between gap-2 text-sm">
+              <span className="font-medium text-cosmate-ink">{VI.provider.subscription.progressLabel}</span>
+              <span className="font-bold tabular-nums text-cosmate-pink">{progressPercent}%</span>
+            </div>
+            <Progress
+              percent={progressPercent}
+              showInfo={false}
+              strokeColor={{
+                '0%': 'var(--cosmate-pink)',
+                '100%': 'var(--cosmate-lavender)',
+              }}
+              trailColor="color-mix(in oklch, var(--cosmate-lavender-border) 70%, transparent)"
+              size={['100%', 10]}
+              className="[&_.ant-progress-bg]:!rounded-full [&_.ant-progress-inner]:!rounded-full"
+            />
+            <p className="mt-2 text-xs leading-relaxed text-cosmate-mauve">
+              {formatDays(info.currentDaysRemaining)} / {formatDays(info.totalRemainingDays)}
+              {stackedExtraDays > 0 && ` · ${VI.provider.subscription.stackedDaysHint}`}
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
