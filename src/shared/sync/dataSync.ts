@@ -26,6 +26,8 @@ export const DATA_SYNC_EVENTS = {
   SUBSCRIPTION_PLANS_CHANGED: 'cosmate:subscription-plans-changed',
   /** User profile / avatar (legacy — also profile:refresh on window) */
   PROFILE_CHANGED: 'profile:refresh',
+  /** Current provider verification / profile completion (gate) */
+  PROVIDER_PROFILE_CHANGED: 'cosmate:provider-profile-changed',
 } as const;
 
 export type DataSyncEventName = (typeof DATA_SYNC_EVENTS)[keyof typeof DATA_SYNC_EVENTS];
@@ -80,6 +82,10 @@ export function notifyProvidersChanged(detail?: { providerId?: number }): void {
 
 export function notifySubscriptionPlansChanged(detail?: { planId?: number }): void {
   dispatch(DATA_SYNC_EVENTS.SUBSCRIPTION_PLANS_CHANGED, detail);
+}
+
+export function notifyProviderProfileChanged(detail?: { providerId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.PROVIDER_PROFILE_CHANGED, detail);
 }
 
 export function subscribeDataSync<T = unknown>(

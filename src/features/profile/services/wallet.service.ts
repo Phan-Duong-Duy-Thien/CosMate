@@ -1,5 +1,6 @@
 import * as walletApi from "../api/wallet.api"
 import { PAYMENT_RETURN_URLS } from "@/features/order/utils/paymentReturnUrls"
+import { resolveAppPath } from "@/shared/config/env"
 import type { WalletInfo, WalletTransaction } from "../types"
 
 /**
@@ -41,7 +42,7 @@ function appendWalletReturnParams(baseUrl: string, redirectUrl?: string): string
   const params = new URLSearchParams()
   params.set('context', 'wallet')
   if (redirectUrl) {
-    params.set('redirect', redirectUrl)
+    params.set('redirect', resolveAppPath(redirectUrl))
   }
   return `${baseUrl}${separator}${params.toString()}`
 }

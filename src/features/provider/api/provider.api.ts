@@ -59,7 +59,10 @@ export function normalizeProviderProfile(raw: RawProviderProfile): ProviderProfi
     id,
     userId,
     shopName: (raw.shopName ?? raw.shop_name ?? null) as string | null,
-    shopAddressId: Number(raw.shopAddressId ?? raw.shop_address_id) || null,
+    shopAddressId: (() => {
+      const n = Number(raw.shopAddressId ?? raw.shop_address_id);
+      return Number.isFinite(n) ? n : null;
+    })(),
     avatarUrl: (raw.avatarUrl ?? raw.avatar_url ?? null) as string | null,
     coverImageUrl: (raw.coverImageUrl ?? raw.cover_image_url ?? null) as string | null,
     bio: (raw.bio ?? null) as string | null,
