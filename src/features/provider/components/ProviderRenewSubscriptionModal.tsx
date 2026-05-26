@@ -14,9 +14,14 @@ const { Paragraph } = Typography;
 interface ProviderRenewSubscriptionModalProps {
   open: boolean;
   onClose: () => void;
+  initialPlanId?: number | null;
 }
 
-export function ProviderRenewSubscriptionModal({ open, onClose }: ProviderRenewSubscriptionModalProps) {
+export function ProviderRenewSubscriptionModal({
+  open,
+  onClose,
+  initialPlanId = null,
+}: ProviderRenewSubscriptionModalProps) {
   const { plans, loading: plansLoading, error: plansError } = useSubscriptionPlans(open);
   const { subscribe, loading: subscribing, error: subscribeError } = useProviderSubscribe();
 
@@ -29,6 +34,12 @@ export function ProviderRenewSubscriptionModal({ open, onClose }: ProviderRenewS
       setSelectedMethod(null);
     }
   }, [open]);
+
+  useEffect(() => {
+    if (open && initialPlanId != null) {
+      setSelectedPlanId(initialPlanId);
+    }
+  }, [open, initialPlanId]);
 
   const handleSubscribe = () => {
     if (!selectedPlanId || !selectedMethod) return;

@@ -819,7 +819,18 @@ export const VI = {
       currentDaysRemaining: "Ngày còn lại (gói hiện tại)",
       totalRemainingDays: "Tổng ngày còn lại",
       daysSuffix: "ngày",
-      summaryTitle: "Tóm tắt gói dịch vụ",
+      statusHeroTitle: "Trạng thái gói dịch vụ",
+      stackedDaysLabel: "Ngày cộng dồn",
+      stackedDaysHint:
+        "Tổng ngày còn lại bao gồm các lần gia hạn trước đó. Ngày gói hiện tại là thời hạn của chu kỳ đang active.",
+      stackedDaysBadge: "+{count} ngày cộng dồn",
+      progressLabel: "Ngày gói hiện tại trong tổng pool",
+      lowDaysWarning: "Gói sắp hết hạn — hãy gia hạn sớm để không bị gián đoạn dịch vụ.",
+      plansSectionTitle: "Các gói có thể mua",
+      plansSectionSubtitle: "Chọn gói để mở bước thanh toán và cộng thêm ngày sử dụng.",
+      selectPlanCta: "Chọn gói này",
+      plansLoadError: "Không thể tải danh sách gói.",
+      plansEmpty: "Hiện chưa có gói dịch vụ khả dụng.",
       headerBadgeTitle: "Gói dịch vụ hiện tại",
       empty: "Chưa có thông tin gói dịch vụ.",
       loadError: "Không thể tải thông tin gói dịch vụ.",
@@ -1412,6 +1423,8 @@ export const VI = {
    */
   wallet: {
     title: "Ví của tôi",
+    pageSubtitle: "Quản lý số dư ví, nạp tiền và theo dõi lịch sử giao dịch trên CosMate.",
+    statusHeroTitle: "Trạng thái ví",
     balance: "Số dư ví",
     depositBalance: "Tiền cọc",
     manage: "Quản lý ví",
@@ -1447,12 +1460,21 @@ export const VI = {
     statusFailed: "Thất bại",
     statusPending: "Đang chờ",
 
-    // Transaction types
-    typeTopUp: "Nạp tiền",
-    typePayment: "Thanh toán",
-    typeRefund: "Hoàn tiền",
-    typeDeposit: "Đặt cọc",
-    typeOther: "Khác",
+    // Wallet transaction types (BE enum → Vietnamese)
+    transactionTypes: {
+      CREDIT: "Nạp tiền vào ví",
+      SUBSCRIPTION: "Mua / gia hạn gói đăng ký",
+      DEBIT: "Trừ tiền ví",
+      DEPOSIT_PENALTY: "Phạt tiền cọc",
+      ORDER_PAYOUT: "Thanh toán đơn hàng",
+      SUBSCRIPTION_TOKEN: "Mua gói AI Token",
+      ORDER_REFUND: "Hoàn tiền đơn hàng",
+      EXTEND: "Gia hạn thuê",
+      DEPOSIT_RETURN: "Hoàn tiền cọc",
+      PROVIDER_PAYOUT: "Giải ngân cho Provider",
+      CANCEL_PENALTY: "Phạt hủy đơn",
+    },
+    transactionTypeUnknown: "Giao dịch khác",
 
     // Top-up form
     topUpTitle: "Nạp tiền vào ví",

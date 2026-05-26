@@ -35,6 +35,7 @@ import {
   showNotificationActionToast,
   showNotificationDetailToast,
 } from "@/features/notification/utils/showNotificationToast"
+import { formatNotificationDisplayText } from "@/features/notification/utils/formatNotificationDisplayText"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
@@ -366,7 +367,9 @@ export default function CosplayerSiteLayout() {
                     >
                       {n.header}
                     </p>
-                    <p className={NOTIFICATION_POPOVER_UI.itemContent}>{n.content}</p>
+                    <p className={NOTIFICATION_POPOVER_UI.itemContent}>
+                      {formatNotificationDisplayText(n.content)}
+                    </p>
                   </div>
                   <button
                     type="button"

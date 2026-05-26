@@ -2,6 +2,7 @@ import * as React from "react"
 import { Button, notification } from "antd"
 import { VI } from "@/shared/i18n/vi"
 import type { NotificationItem } from "../types"
+import { formatNotificationDisplayText } from "./formatNotificationDisplayText"
 
 const DESC_MAX = 1200
 
@@ -25,8 +26,8 @@ export function showNotificationDetailToast(
   notification.open({
     key,
     type: "info",
-    message: item.header,
-    description: buildDescription(item.content || ""),
+    message: formatNotificationDisplayText(item.header),
+    description: buildDescription(formatNotificationDisplayText(item.content || "")),
     duration: 8,
     placement: "topRight",
     style: { maxWidth: 420 },
