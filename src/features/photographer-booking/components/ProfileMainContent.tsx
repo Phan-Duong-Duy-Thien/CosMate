@@ -13,7 +13,6 @@ import {
   Sparkles,
 } from "lucide-react"
 
-import type { PortfolioImage } from "../types"
 import { usePublicProviderServices } from "@/features/service/hooks/usePublicProviderServices"
 import type { ServiceItem } from "@/features/service/types"
 import { usePhotographerPublicReviews } from "../hooks/usePhotographerPublicReviews"
@@ -41,17 +40,17 @@ function formatReviewDate(iso: string): string {
 }
 
 interface ProfileMainContentProps {
-  portfolioItems: PortfolioImage[]
   providerId: number | undefined
+  /** Breadcrumb + service detail back-link context */
+  providerType?: "photographer" | "staff"
 }
 
 const tabs = ["Gói dịch vụ", "Đánh giá", "Điều khoản"] as const
 
 export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
-  portfolioItems,
   providerId,
+  providerType = "photographer",
 }) => {
-  const showPortfolioStrip = portfolioItems.length > 0
   const navigate = useNavigate()
   const { services: apiServices, loading: servicesLoading, error: servicesError } =
     usePublicProviderServices(providerId)
@@ -92,7 +91,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
 
   const handleViewDetail = (serviceId: number) => {
     navigate(`/service/${serviceId}`, {
-      state: { providerType: "photographer", providerId },
+      state: { providerType, providerId },
     })
   }
 
@@ -232,30 +231,6 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                 })}
               </div>
             )}
-            {showPortfolioStrip ? (
-              <div className="mt-10 rounded-[1.15rem] border-[3px] border-indigo-950/35 bg-[#fffbeb]/90 p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.18)] md:p-5">
-                <p className="mb-3 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
-                  Tham khảo phong cách (ảnh mẫu)
-                </p>
-                <div className="-mx-1 flex gap-3 overflow-x-auto pb-1 pt-1 [scrollbar-width:thin]">
-                  {portfolioItems.map((p) => (
-                    <figure
-                      key={p.id}
-                      className="w-[min(200px,70vw)] shrink-0 overflow-hidden rounded-xl border-[3px] border-indigo-950 bg-white shadow-[4px_4px_0_0_#1e1b4b]"
-                    >
-                      <img
-                        src={p.url}
-                        alt={p.title}
-                        className="aspect-[4/3] h-32 w-full object-cover sm:h-36"
-                      />
-                      <figcaption className="truncate border-t-[2px] border-indigo-950/15 bg-[#fffbeb] px-2 py-1.5 text-[10px] font-extrabold text-indigo-950">
-                        {p.title}
-                      </figcaption>
-                    </figure>
-                  ))}
-                </div>
-              </div>
-            ) : null}
           </div>
         )}
 

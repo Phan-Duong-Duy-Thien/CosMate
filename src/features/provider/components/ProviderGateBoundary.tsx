@@ -45,7 +45,7 @@ export function ProviderGateBoundary({
 
   const settingsPath = isProviderProfileSettingsPath(location.pathname);
 
-  if (profileLoading) {
+  if (profileLoading && verified === null && profileComplete === null) {
     return (
       <div className="flex min-h-0 flex-1 flex-col items-center justify-center py-20">
         <Spin size="large" />

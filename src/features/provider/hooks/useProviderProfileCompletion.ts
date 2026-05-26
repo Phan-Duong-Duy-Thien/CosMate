@@ -17,6 +17,14 @@ import {
 } from '../services/provider.service';
 import type { UserAddress } from '@/features/profile/api/userAddress.api';
 import type { ProviderProfile, UpdateProviderProfilePayload } from '../types';
+import {
+  applyOptimisticProviderPatch,
+} from './useProviderVerification';
+import {
+  buildCompleteProfilePatch,
+} from '../utils/pendingProviderProfile';
+import { notifyProviderProfileChanged } from '@/shared/sync/dataSync';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import type { Province, District } from '@/features/profile/types';
 
 export interface UseProviderProfileCompletionResult {
@@ -257,6 +265,13 @@ export function useProviderProfileCompletion(
           bankName: formData.bankName.trim(),
         };
         await saveProviderProfile(providerId, payload);
+        const patch = buildCompleteProfilePatch(payload);
+        applyOptimisticProviderPatch(
+          mergedProfile ? { ...patch, id: mergedProfile.id } : patch,
+        );
+        scheduleBackgroundRefetch(() => {
+          notifyProviderProfileChanged({ providerId });
+        });
         message.success('Hồ sơ đã được cập nhật thành công!');
         return true;
       } catch (err) {
@@ -267,7 +282,7 @@ export function useProviderProfileCompletion(
         setSaving(false);
       }
     },
-    [providerId, formData, profileLoadError],
+    [providerId, formData, profileLoadError, mergedProfile],
   );
 
   const uploadAvatar = useCallback(
