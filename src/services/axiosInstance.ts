@@ -57,6 +57,7 @@ axiosInstance.interceptors.response.use(
     // Handle error responses
     if (error.response) {
       const { status } = error.response;
+      const data = error.response.data as any;
 
       switch (status) {
         case 401:
@@ -67,25 +68,40 @@ axiosInstance.interceptors.response.use(
           if (!window.location.pathname.includes('/login')) {
             window.location.href = '/login';
           }
+          if (data && data.message) {
+            error.message = data.message;
+          }
           break;
 
         case 403:
           // Forbidden - user doesn't have permission
           // Don't log to console to avoid spamming - just reject silently
+          if (data && data.message) {
+            error.message = data.message;
+          }
           break;
 
         case 404:
           // Not found
           console.error('Resource not found:', error.response.data);
+          if (data && data.message) {
+            error.message = data.message;
+          }
           break;
 
         case 500:
           // Server error
           console.error('Server error:', error.response.data);
+          if (data && data.message) {
+            error.message = data.message;
+          }
           break;
 
         default:
           console.error('API Error:', error.response.data);
+          if (data && data.message) {
+            error.message = data.message;
+          }
       }
     } else if (error.request) {
       // Request made but no response received (network error)
