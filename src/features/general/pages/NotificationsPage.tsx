@@ -24,6 +24,7 @@ import {
   showNotificationActionToast,
   showNotificationDetailToast,
 } from "@/features/notification/utils/showNotificationToast"
+import { formatNotificationDisplayText } from "@/features/notification/utils/formatNotificationDisplayText"
 
 const quickLinkCard =
   "flex flex-col gap-1 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-3 text-left shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] outline-none transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.22)] focus-visible:ring-4 focus-visible:ring-pink-400 sm:p-3.5"
@@ -226,7 +227,7 @@ function NotificationContentPreview({
 }: {
   content: string
 }) {
-  const parsed = parseNotificationContent(content)
+  const parsed = parseNotificationContent(formatNotificationDisplayText(content))
 
   const imgClass =
     "max-h-36 w-full max-w-xs rounded-lg border-[3px] border-indigo-950 object-cover shadow-[4px_4px_0_0_#1e1b4b]"
