@@ -285,74 +285,45 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Form.Item
           label="Nhân vật Anime / Game"
+          name="characterIds"
           extra={isCharacterSelectionFull ? 'Tối đa 3 nhân vật' : undefined}
-          style={{ marginBottom: 0 }}
         >
-          <Form.Item name="characterIds" noStyle>
-            <Select
-              mode="multiple"
-              showSearch
-              allowClear
-              placeholder="Chọn nhân vật"
-              loading={isCharactersLoading}
-              optionFilterProp="title"
-              onDeselect={() => undefined}
-              maxTagCount="responsive"
-              notFoundContent={
-                <div style={{ padding: 12, textAlign: 'center', color: '#999' }}>
-                  Không tìm thấy nhân vật phù hợp.
-                </div>
+          <Select
+            mode="multiple"
+            showSearch
+            allowClear
+            placeholder="Chọn nhân vật"
+            loading={isCharactersLoading}
+            optionFilterProp="title"
+            onDeselect={() => undefined}
+            maxTagCount="responsive"
+            notFoundContent={
+              <Space direction="vertical" size={8} style={{ padding: 12, width: '100%' }}>
+                <div>Không tìm thấy nhân vật phù hợp.</div>
+                <Button
+                  type="dashed"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsCharacterRequestModalOpen(true)}
+                  style={{ width: '100%', borderRadius: 10, fontWeight: 700 }}
+                >
+                  Nhân vật bạn tìm không có? Yêu cầu thêm mới
+                </Button>
+              </Space>
+            }
+            filterOption={(input, option) => {
+              const keyword = input.toLowerCase().trim()
+              if (!keyword) return true
+              return String(option?.title ?? '').toLowerCase().includes(keyword)
+            }}
+            options={characterOptions}
+            onChange={(nextValue) => {
+              if ((nextValue?.length ?? 0) > 3) {
+                message.warning('Tối đa 3 nhân vật')
+                form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
               }
-              filterOption={(input, option) => {
-                const keyword = input.toLowerCase().trim()
-                if (!keyword) return true
-                return String(option?.title ?? '').toLowerCase().includes(keyword)
-              }}
-              options={characterOptions}
-              onChange={(nextValue) => {
-                if ((nextValue?.length ?? 0) > 3) {
-                  message.warning('Tối đa 3 nhân vật')
-                  form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
-                }
-              }}
-            />
-          </Form.Item>
-          <div style={{ marginTop: 8, marginBottom: 24 }}>
-            <Button
-              type="dashed"
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => setIsCharacterRequestModalOpen(true)}
-              style={{ borderRadius: 6 }}
-            >
-              Nhân vật bạn tìm không có? Yêu cầu thêm mới
-            </Button>
-          </div>
-        </Form.Item>
-
-        <Form.Item label="Hình ảnh" name="imageFiles" valuePropName="imageFiles">
-          <Dragger multiple beforeUpload={() => false} accept="image/*" listType="picture">
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải ảnh lên</p>
-            <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
-          </Dragger>
-        </Form.Item>
-
-        <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
-          <Upload.Dragger {...videoUploadProps}>
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
-            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
-          </Upload.Dragger>
-          {videoPreviewUrl && (
-            <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>
-              <video src={videoPreviewUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
-            </div>
-          )}
+            }}
+          />
         </Form.Item>
 
         <Card
@@ -444,6 +415,30 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
         </Form.Item>
 
+        <Form.Item label="Hình ảnh" name="imageFiles" valuePropName="imageFiles">
+          <Dragger multiple beforeUpload={() => false} accept="image/*" listType="picture">
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải ảnh lên</p>
+            <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
+          </Dragger>
+        </Form.Item>
+
+        <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
+          <Upload.Dragger {...videoUploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
+            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
+          </Upload.Dragger>
+          {videoPreviewUrl && (
+            <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>
+              <video src={videoPreviewUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
+            </div>
+          )}
+        </Form.Item>
 
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
