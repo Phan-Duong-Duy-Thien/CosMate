@@ -86,13 +86,12 @@ export function AdminSidebarMenu({
     try {
       const promises = reorderedGroups.map((group, index) => {
         if (group.id) {
-          return menuApi.updateMenu(group.id, {
-            displayOrder: index + 1,
-          });
+          return menuApi.updateMenuOrder(group.id, index + 1);
         }
         return Promise.resolve();
       });
       await Promise.all(promises);
+      window.dispatchEvent(new Event('menuUpdated'));
       message.success('Đã cập nhật thứ tự nhóm menu!');
     } catch (err) {
       console.error('Failed to sync group order:', err);
@@ -154,13 +153,12 @@ export function AdminSidebarMenu({
     try {
       const promises = childrenToSync.map((child, index) => {
         if (child.id) {
-          return menuApi.updateMenuItem(child.id, {
-            displayOrder: index + 1,
-          });
+          return menuApi.updateMenuItemOrder(child.id, index + 1);
         }
         return Promise.resolve();
       });
       await Promise.all(promises);
+      window.dispatchEvent(new Event('menuUpdated'));
       message.success('Đã cập nhật thứ tự nút bấm!');
     } catch (err) {
       console.error('Failed to sync item order:', err);
