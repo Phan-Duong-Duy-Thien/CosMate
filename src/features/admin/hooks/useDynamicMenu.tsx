@@ -9,6 +9,7 @@ import {
   Menu as MenuIcon,
   CreditCard,
   Coins,
+  Settings,
 } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
@@ -54,6 +55,7 @@ const getIconComponent = (iconName?: string): LucideIcon => {
 const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
   { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} /> },
   { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} /> },
+  { key: '/admin/system-configs', label: 'Cấu hình hệ thống', path: '/admin/system-configs', icon: <Settings size={16} /> },
 ];
 
 const ADMIN_ROLE_ALLOWLIST = ['SUPERADMIN', 'ADMIN', '2'];

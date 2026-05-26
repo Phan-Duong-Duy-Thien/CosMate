@@ -52,6 +52,7 @@ import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
 import CharacterRequestManagementPage from "@/features/admin/pages/CharacterRequestManagement"
 import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
 import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
+import AdminSystemConfigsPage from "@/features/admin/pages/AdminSystemConfigsPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -141,6 +142,7 @@ export default function AppRoutes() {
           <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
           <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
+          <Route path="/admin/system-configs" element={<AdminSystemConfigsPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
           <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
