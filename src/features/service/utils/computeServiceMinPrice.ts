@@ -18,3 +18,27 @@ export function computeServiceMinPrice(
     toPriceNumber(depositAmount)
   );
 }
+
+export interface ServiceBookingPriceParts {
+  serviceFee: number;
+  deposit: number;
+  equipment: number;
+  total: number;
+}
+
+/** Tổng khách trả = giá báo (rentSlotAmount) + cọc + khấu hao từ gói dịch vụ. */
+export function computeServiceBookingTotal(
+  rentSlotAmount: unknown,
+  equipmentDepreciationCost: unknown,
+  depositAmount: unknown,
+): ServiceBookingPriceParts {
+  const serviceFee = toPriceNumber(rentSlotAmount);
+  const deposit = toPriceNumber(depositAmount);
+  const equipment = toPriceNumber(equipmentDepreciationCost);
+  return {
+    serviceFee,
+    deposit,
+    equipment,
+    total: serviceFee + deposit + equipment,
+  };
+}

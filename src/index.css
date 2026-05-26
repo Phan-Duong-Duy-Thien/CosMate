@@ -275,6 +275,13 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    height: 100%;
+  }
 }
 
 /* Custom Scrollbar Styles */
@@ -356,30 +363,38 @@
   }
 
   /*
-   * Fixed Sider is out of flow — Ant's inner .ant-layout collapses to content height (~358px).
-   * Force main column to full viewport so Content/card fills the screen (no white gap below).
+   * Dashboard shell: full viewport column. Sider stays in flex row (not position:fixed)
+   * so the main column can stretch to 100vh — avoids ~content-height clip + white gap below.
    */
   .cosmate-dashboard-root.ant-layout.ant-layout-has-sider {
-    flex-direction: row;
+    flex-direction: row !important;
+    align-items: stretch !important;
     min-height: 100vh;
     height: 100vh;
   }
 
   .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-main.ant-layout {
-    flex: 1 1 auto;
+    flex: 1 1 auto !important;
     width: 0;
     min-width: 0;
-    min-height: 100vh;
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
+    min-height: 100vh !important;
+    height: 100vh !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   .cosmate-dashboard-main > .ant-layout-content {
-    flex: 1 1 auto;
-    min-height: 0;
-    display: flex;
-    flex-direction: column;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-sider.ant-layout-sider {
+    align-self: stretch !important;
+    height: 100% !important;
+    min-height: 100vh !important;
+    flex-shrink: 0;
   }
 
   /* Floating FABs / chat popup — portaled to body, must not affect page flow */

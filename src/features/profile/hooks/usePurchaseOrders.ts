@@ -5,13 +5,19 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getOrdersByUserId, getAllOrdersByUserId } from '@/features/order/api/order.api';
-import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
+import {
+  confirmDeliveryOrder,
+  returnCosplayerOrder,
+  cancelOrder as cancelOrderApi,
+} from '@/features/order/services/order.service';
 import { getCostumeById } from '@/features/costume-rental/api/costume.api';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import { useRefetchOnWindowFocus } from '@/shared/hooks/useRefetchOnWindowFocus';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import { DATA_SYNC_EVENTS, notifyOrdersChanged } from '@/shared/sync/dataSync';
-import { mergeOrderFromMutation } from '@/shared/sync/patchOrderList';
+import { mergeOrderFromMutation, patchOrderStatus } from '@/shared/sync/patchOrderList';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
 import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPagination';
 
@@ -65,6 +71,8 @@ export interface UsePurchaseOrdersResult {
     autoCreateGhn?: boolean
   ) => Promise<boolean>;
   returningOrderId: number | null;
+  cancelOrder: (orderId: number) => Promise<boolean>;
+  cancellingOrderId: number | null;
   costumeImageMap: Record<number, string>;
   page: number;
   setPage: (page: number) => void;
@@ -80,6 +88,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   const [error, setError] = useState<string | null>(null);
   const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
   const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
   const [costumeImageMap, setCostumeImageMap] = useState<Record<number, string>>({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -87,6 +96,39 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   const PAGE_SIZE = 10;
 
   const userId = getUserId();
+
+  const { mergeFetched, setPendingField } = usePendingListMutation<OrderItem, OrderStatus>({
+    getItemId: (o) => o.id,
+    getFieldValue: (o) => o.status,
+    setFieldValue: (o, status) => ({ ...o, status }),
+  });
+
+  const loadCostumeImages = useCallback(async (orders: OrderItem[]) => {
+    const uniqueIds = [...new Set(orders.map((o) => o.costumeId).filter(Boolean))];
+    await Promise.all(
+      uniqueIds.map(async (cid) => {
+        try {
+          const costume = await getCostumeById(cid);
+          const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
+          if (url) {
+            setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
+          }
+        } catch {
+          // Silently ignore
+        }
+      }),
+    );
+  }, []);
+
+  const applyOrdersFromFetch = useCallback(
+    (fetchedOrders: OrderItem[]) => {
+      const costumeOnly = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
+      setAllOrders(mergeFetched(costumeOnly));
+      setTotal(costumeOnly.length);
+      return costumeOnly;
+    },
+    [mergeFetched],
+  );
 
   // Fetch all orders once (or per page if BE supports server-side pagination)
   useEffect(() => {
@@ -109,35 +151,21 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         fetchedPaginated = result.isPaginated;
 
         if (result.isPaginated) {
-          // BE supports true server-side pagination
           fetchedOrders = result.orders.filter((o) => o.orderType === 'RENT_COSTUME');
           fetchedTotal = result.total;
         } else {
-          // BE returns flat array → fetch all, apply client-side filter + slice
           fetchedOrders = await getAllOrdersByUserId(userId);
           fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
           fetchedTotal = fetchedOrders.length;
         }
 
-        setAllOrders(fetchedOrders);
-        setTotal(fetchedTotal);
+        applyOrdersFromFetch(fetchedOrders);
         setIsPaginated(fetchedPaginated);
+        if (!fetchedPaginated) {
+          setTotal(fetchedTotal);
+        }
 
-        // Batch-fetch costume images
-        const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
-        await Promise.all(
-          uniqueIds.map(async (cid) => {
-            try {
-              const costume = await getCostumeById(cid);
-              const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
-              if (url) {
-                setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
-              }
-            } catch {
-              // Silently ignore
-            }
-          })
-        );
+        await loadCostumeImages(fetchedOrders);
       } catch (err) {
         console.error('Failed to fetch orders:', err);
         setError('Failed to load orders');
@@ -146,7 +174,9 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       }
     };
 
-    fetchOrders();
+    void fetchOrders();
+    // mergeFetched is stable (usePendingListMutation uses refs for getters)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch once per userId
   }, [userId]);
 
   const tabFilteredOrders = useMemo(() => {
@@ -158,7 +188,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
 
   const listTotal = tabFilteredOrders.length;
 
-  // Filter + paginate from full list
   const filteredOrders = useMemo(() => {
     if (isPaginated) return tabFilteredOrders;
 
@@ -170,7 +199,6 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     return tabFilteredOrders.slice(start, start + PAGE_SIZE);
   }, [tabFilteredOrders, listTotal, page, isPaginated]);
 
-  // Counts computed from full list (not filtered/paginated slice)
   const counts = useMemo(() => {
     const countByStatuses = (statuses: OrderStatus[]) =>
       allOrders.filter((order) => statuses.includes(order.status)).length;
@@ -202,23 +230,8 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
 
     try {
       let fetchedOrders = await getAllOrdersByUserId(userId);
-      fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
-      setAllOrders(fetchedOrders);
-      setTotal(fetchedOrders.length);
-      const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
-      await Promise.all(
-        uniqueIds.map(async (cid) => {
-          try {
-            const costume = await getCostumeById(cid);
-            const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
-            if (url) {
-              setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
-            }
-          } catch {
-            // silently ignore
-          }
-        })
-      );
+      const costumeOrders = applyOrdersFromFetch(fetchedOrders);
+      await loadCostumeImages(costumeOrders);
     } catch (err) {
       console.error('Failed to refetch orders:', err);
     } finally {
@@ -228,7 +241,11 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setLoading(false);
       }
     }
-  }, [userId]);
+  }, [userId, applyOrdersFromFetch, loadCostumeImages]);
+
+  const scheduleSyncRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(() => refetch({ silent: true }));
+  }, [refetch]);
 
   useDataSyncRefetch(
     () => refetch({ silent: true }),
@@ -241,14 +258,27 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     Boolean(userId),
   );
 
+  const applyOrderMutation = useCallback(
+    (orderId: number, nextStatus: OrderStatus, partial?: Partial<OrderItem>) => {
+      setPendingField(orderId, nextStatus);
+      setAllOrders((prev) =>
+        partial
+          ? mergeOrderFromMutation(prev, orderId, { ...partial, status: nextStatus })
+          : patchOrderStatus(prev, orderId, nextStatus),
+      );
+      notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
+      scheduleSyncRefetch();
+    },
+    [setPendingField, scheduleSyncRefetch],
+  );
+
   const confirmDelivery = useCallback(
     async (orderId: number, images: File[], notes: string[]) => {
       setConfirmingDeliveryId(orderId);
       try {
         const updated = await confirmDeliveryOrder(orderId, images, notes);
-        setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
-        notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
-        void refetch({ silent: true });
+        const nextStatus = (updated?.status ?? 'IN_USE') as OrderStatus;
+        applyOrderMutation(orderId, nextStatus, updated ?? undefined);
         return true;
       } catch {
         return false;
@@ -256,7 +286,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setConfirmingDeliveryId(null);
       }
     },
-    [refetch]
+    [applyOrderMutation],
   );
 
   const returnOrder = useCallback(
@@ -266,7 +296,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       shippingCarrierName: string,
       images: File[],
       notes: string[],
-      autoCreateGhn = false
+      autoCreateGhn = false,
     ) => {
       setReturningOrderId(orderId);
       try {
@@ -276,13 +306,13 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
           shippingCarrierName,
           notes,
           images,
-          { autoCreateGhn }
+          { autoCreateGhn },
         );
         if (updated && typeof updated === 'object' && 'status' in updated) {
-          setAllOrders((prev) => mergeOrderFromMutation(prev, orderId, updated));
+          applyOrderMutation(orderId, updated.status as OrderStatus, updated);
+        } else {
+          applyOrderMutation(orderId, 'SHIPPING_BACK');
         }
-        notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
-        void refetch({ silent: true });
         return true;
       } catch {
         return false;
@@ -290,7 +320,23 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setReturningOrderId(null);
       }
     },
-    [refetch]
+    [applyOrderMutation],
+  );
+
+  const cancelOrder = useCallback(
+    async (orderId: number) => {
+      setCancellingOrderId(orderId);
+      try {
+        await cancelOrderApi(orderId);
+        applyOrderMutation(orderId, 'CANCELLED');
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setCancellingOrderId(null);
+      }
+    },
+    [applyOrderMutation],
   );
 
   return {
@@ -304,6 +350,8 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     confirmingDeliveryId,
     returnOrder,
     returningOrderId,
+    cancelOrder,
+    cancellingOrderId,
     costumeImageMap,
     page,
     setPage,

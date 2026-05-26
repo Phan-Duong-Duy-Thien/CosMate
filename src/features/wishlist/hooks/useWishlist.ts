@@ -97,8 +97,6 @@ export function useWishlist() {
       try {
         await addToWishlist(userId, costumeId)
         message.success({ content: VI.common.toast.wishlist.addSuccess, duration: SUCCESS_DURATION })
-        // Sync with server response
-        await fetchWishlist()
       } catch {
         // Rollback
         setWishlistMap((prev) => {
