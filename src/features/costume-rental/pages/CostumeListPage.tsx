@@ -161,13 +161,13 @@ export default function CostumeListPage() {
   }, [aiResults])
 
   const exactMatches = React.useMemo(() => {
-    return aiGridItems.filter((item) => (item.aiSimilarityScore ?? 0) > 65)
+    return aiGridItems.filter((item) => (item.aiSimilarityScore ?? 0) > 70)
   }, [aiGridItems])
 
   const suggestedMatches = React.useMemo(() => {
     return aiGridItems.filter((item) => {
       const score = item.aiSimilarityScore ?? 0
-      return score <= 65 && score > 50
+      return score <= 70 && score > 50
     })
   }, [aiGridItems])
 
