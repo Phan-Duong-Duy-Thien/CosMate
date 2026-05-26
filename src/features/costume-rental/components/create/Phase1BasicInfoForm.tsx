@@ -6,7 +6,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Upload, message } from 'antd'
 import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
@@ -56,9 +56,10 @@ interface Props {
   loading: boolean
   error: string | null
   disabled: boolean
+  providerId?: number
 }
 
-export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
+export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled, providerId }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [characters, setCharacters] = useState<CharacterOption[]>([])
@@ -198,11 +199,15 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const handleCharacterRequestSubmit = async () => {
     try {
       const values = await characterRequestForm.validateFields()
-      const providerId = Number((form.getFieldValue('providerId') ?? 1) || 1)
+      const pid = providerId ?? 0
+      if (!pid) {
+        message.error('Không xác định được Provider ID. Vui lòng thử lại.')
+        return
+      }
       await createCharacterRequest({
         characterName: values.characterName.trim(),
         animeName: values.animeName.trim(),
-        providerId,
+        providerId: pid,
       })
       message.success('Đã gửi yêu cầu thêm nhân vật mới.')
       setIsCharacterRequestModalOpen(false)
@@ -438,6 +443,15 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Form.Item label="Giá thuê / ngày (VNĐ)" name="pricePerDay" rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}>
           <InputNumber min={1} style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
+        </Form.Item>
+
+        <Form.Item
+          label="Giảm giá thuê (%)"
+          name="rentDiscount"
+          tooltip="Phần trăm giảm giá áp dụng cho các ngày thuê tiếp theo (từ ngày thứ 2 trở đi). Ví dụ: 20% nghĩa là từ ngày 2, khách chỉ trả 80% giá gốc/ngày."
+          extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
+        >
+          <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
         </Form.Item>
 
         <Form.Item label="Tiền đặt cọc (VNĐ)" name="depositAmount">

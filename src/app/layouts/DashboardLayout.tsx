@@ -18,6 +18,7 @@ import { cn } from '@/lib/utils';
 import { ProviderGateBoundary } from '@/features/provider/components/ProviderGateBoundary';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
+import { AdminSidebarMenu } from '@/features/admin/components/AdminSidebarMenu';
 import { ProviderSubscriptionBadge } from '@/features/provider/components/ProviderSubscriptionBadge';
 
 const { Header, Sider, Content } = Layout;
@@ -85,6 +86,11 @@ export type DashboardSidebarItem = {
   icon?: LucideIcon | ReactNode;
   path?: string;
   children?: DashboardSidebarItem[];
+  id?: string;
+  type?: 'core' | 'group' | 'item';
+  displayOrder?: number;
+  menuId?: string;
+  iconName?: string;
 };
 
 type DashboardLayoutProps = {
@@ -97,6 +103,9 @@ type DashboardLayoutProps = {
   showChatButton?: boolean;
   /** scroll = form/list (default); fill = full-height panel e.g. messages */
   contentMode?: DashboardContentMode;
+  /** Enable drag-to-resize sidebar width. Only used by Admin layout. */
+  enableSidebarResize?: boolean;
+  onSidebarItemsChange?: (items: DashboardSidebarItem[]) => void;
 };
 
 export function DashboardLayout({
@@ -107,7 +116,24 @@ export function DashboardLayout({
   children,
   showChatButton = true,
   contentMode: contentModeProp,
+  enableSidebarResize = false,
+  onSidebarItemsChange,
 }: DashboardLayoutProps) {
+  const SIDEBAR_STORAGE_KEY = 'cosmate-admin-sidebar-width';
+  const DEFAULT_SIDEBAR_WIDTH = 240;
+  const MIN_SIDEBAR_WIDTH = 200;
+  const MAX_SIDEBAR_WIDTH = 400;
+
+  const [sidebarWidth, setSidebarWidth] = useState(() => {
+    if (!enableSidebarResize) return DEFAULT_SIDEBAR_WIDTH;
+    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
+    if (stored) {
+      const parsed = Number(stored);
+      if (Number.isFinite(parsed) && parsed >= MIN_SIDEBAR_WIDTH && parsed <= MAX_SIDEBAR_WIDTH) return parsed;
+    }
+    return DEFAULT_SIDEBAR_WIDTH;
+  });
+  const [isResizing, setIsResizing] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -585,6 +611,40 @@ export function DashboardLayout({
   const contentMode = resolveDashboardContentMode(location.pathname, contentModeProp);
   const isFillContent = contentMode === 'fill';
 
+  // Sidebar resize handlers (admin only)
+  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    setIsResizing(true);
+
+    const startX = e.clientX;
+    const startWidth = sidebarWidth;
+
+    const handleMouseMove = (ev: MouseEvent) => {
+      const newWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, startWidth + (ev.clientX - startX)));
+      setSidebarWidth(newWidth);
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      // Persist after release
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth));
+    };
+
+    document.addEventListener('mousemove', handleMouseMove);
+    document.addEventListener('mouseup', handleMouseUp);
+  }, [sidebarWidth]);
+
+  // Persist sidebar width on change
+  useEffect(() => {
+    if (enableSidebarResize && !isResizing) {
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth));
+    }
+  }, [sidebarWidth, enableSidebarResize, isResizing]);
+
+  const effectiveWidth = collapsed ? 80 : sidebarWidth;
+
   return (
     <ConfigProvider
       theme={{
@@ -605,7 +665,7 @@ export function DashboardLayout({
         onCollapse={setCollapsed}
         trigger={null}
         theme="light"
-        width={240}
+        width={sidebarWidth}
         collapsedWidth={80}
         style={{
           overflow: 'auto',
@@ -615,6 +675,7 @@ export function DashboardLayout({
           top: 0,
           bottom: 0,
           borderRight: "1px solid var(--border)",
+          userSelect: isResizing ? 'none' : undefined,
         }}
       >
         <div
@@ -640,21 +701,53 @@ export function DashboardLayout({
           </button>
         </div>
 
-        <Menu
-          mode="inline"
-          inlineCollapsed={collapsed}
-          selectedKeys={[activeKey]}
-          defaultOpenKeys={defaultOpenKeys}
-          items={menuItems}
-          style={{ borderRight: 0, marginTop: 16 }}
-        />
+        {enableSidebarResize ? (
+          <AdminSidebarMenu
+            sidebarItems={sidebarItems}
+            onSidebarItemsChange={onSidebarItemsChange}
+            collapsed={collapsed}
+            activeKey={activeKey}
+            navigate={navigate}
+          />
+        ) : (
+          <Menu
+            mode="inline"
+            inlineCollapsed={collapsed}
+            selectedKeys={[activeKey]}
+            defaultOpenKeys={defaultOpenKeys}
+            items={menuItems}
+            style={{ borderRight: 0, marginTop: 16 }}
+          />
+        )}
+
+        {/* Drag handle for sidebar resize — admin only */}
+        {enableSidebarResize && !collapsed && (
+          <div
+            onMouseDown={handleResizeMouseDown}
+            style={{
+              position: 'absolute',
+              top: 0,
+              right: -3,
+              bottom: 0,
+              width: 6,
+              cursor: 'col-resize',
+              zIndex: 100,
+              background: isResizing ? 'var(--cosmate-pink)' : 'transparent',
+              opacity: isResizing ? 0.3 : 1,
+              transition: 'background 0.15s',
+            }}
+            title="Kéo để thay đổi kích thước sidebar"
+            onMouseEnter={(e) => { (e.currentTarget.style.background) = 'color-mix(in oklch, var(--cosmate-pink) 25%, transparent)'; }}
+            onMouseLeave={(e) => { if (!isResizing) e.currentTarget.style.background = 'transparent'; }}
+          />
+        )}
       </Sider>
 
       <Layout
         className="cosmate-dashboard-main"
         style={{
-          marginLeft: collapsed ? 80 : 240,
-          transition: 'margin-left 0.2s',
+          marginLeft: effectiveWidth,
+          transition: isResizing ? 'none' : 'margin-left 0.2s',
           flex: 1,
           minHeight: '100vh',
           height: '100vh',

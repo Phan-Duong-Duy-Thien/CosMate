@@ -83,6 +83,7 @@ export default function ProviderCreateCostumePage() {
                   loading={wizard.isPhase1Loading}
                   error={wizard.phase1Error}
                   disabled={wizard.isPhase1Loading || providerLoading || !provider?.id}
+                  providerId={provider?.id}
                 />
               )}
 
