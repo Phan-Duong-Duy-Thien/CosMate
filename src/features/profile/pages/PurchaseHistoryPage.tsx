@@ -14,9 +14,7 @@ import { ExtendRentalModal } from "@/features/order/components/ExtendRentalModal
 import { useCreateReview } from "@/features/costume-rental/hooks/useCreateReview"
 import { getReviewByOrderId, type ReviewItem } from "@/features/costume-rental/api/review.api"
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
-import { useCancelOrder } from "@/features/order/hooks/useCancelOrder"
 import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
-import { notifyOrdersChanged } from "@/shared/sync/dataSync"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
 import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
 import {
@@ -151,6 +149,8 @@ export default function PurchaseHistoryPage() {
     setPage: setCostumePage,
     pageSize: costumePageSize,
     total: costumeTotal,
+    cancelOrder,
+    cancellingOrderId,
   } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
   const {
@@ -233,7 +233,6 @@ export default function PurchaseHistoryPage() {
     }
   }, [reviewCheckOrderIdsKey, reviewCheckOrderIds])
   const { createDispute, disputingOrderId } = useCreateDispute()
-  const { cancelOrder, cancellingOrderId } = useCancelOrder()
   const { extendOrder, isExtending, getDetailIdFromOrder } = useExtendOrder()
 
   // ── Extend modal state ───────────────────────────────────────────────────────
@@ -299,20 +298,21 @@ export default function PurchaseHistoryPage() {
     if (!paymentOrderId) return
 
     try {
-      let paymentUrl: string | null = null
-      if (paymentModalAction === 'confirm-pay') {
-        paymentUrl = await confirmAndPay(paymentOrderId, paymentMethod)
-      } else {
-        paymentUrl = await payOnly(paymentOrderId, paymentMethod)
-      }
+      const outcome =
+        paymentModalAction === 'confirm-pay'
+          ? await confirmAndPay(paymentOrderId, paymentMethod)
+          : await payOnly(paymentOrderId, paymentMethod)
+
       setPaymentModalOpen(false)
-      if (paymentUrl) {
+
+      if (outcome.kind === 'redirect') {
         message.info(VI.profile.serviceOrders.toastPaySuccess)
-        window.location.href = paymentUrl
-      } else {
-        message.success(VI.profile.serviceOrders.toastConfirmPaySuccess)
-        await serviceRefetch({ silent: true, includeCounts: true })
+        window.location.href = outcome.paymentUrl
+        return
       }
+
+      message.success(VI.profile.serviceOrders.toastWalletPaySuccess)
+      await serviceRefetch({ silent: true })
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : VI.profile.serviceOrders.toastPayFailed
       message.error(msg)
@@ -323,7 +323,7 @@ export default function PurchaseHistoryPage() {
 
   const handleRefreshList = () => {
     if (parentTab === 'service') {
-      void serviceRefetch({ silent: true, includeCounts: true })
+      void serviceRefetch({ silent: true })
     } else {
       void costumeRefetch({ silent: true })
     }
@@ -399,8 +399,6 @@ export default function PurchaseHistoryPage() {
       message.success(VI.profile.orders.toastCancelSuccess)
       setCancelModalOpen(false)
       setCancelOrderId(null)
-      notifyOrdersChanged({ orderId: cancelOrderId, orderType: 'RENT_COSTUME' })
-      costumeRefetch()
     } else {
       message.error(VI.profile.orders.toastCancelFailed)
     }

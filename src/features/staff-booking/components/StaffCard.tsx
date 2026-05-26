@@ -44,7 +44,7 @@ export function StaffCard({
       )}
     >
       <Link
-        to={`/staff/${id}`}
+        to={`/staffs/${id}`}
         className="block text-left outline-none focus-visible:ring-4 focus-visible:ring-pink-400 rounded-[calc(1.05rem-2px)]"
       >
         <div className="relative border-b-[4px] border-indigo-950">

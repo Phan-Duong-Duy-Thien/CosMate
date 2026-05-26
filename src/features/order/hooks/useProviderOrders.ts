@@ -1,7 +1,7 @@
 /**
  * Hook for fetching provider orders with filtering
  */
-import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   fetchProviderOrders,
   prepareProviderOrder,
@@ -13,12 +13,12 @@ import { getAuth } from '@/features/auth/services/tokenStorage';
 import { notifyOrdersChanged } from '@/shared/sync/dataSync';
 import {
   mergeOrderFromMutation,
-  mergeOrdersWithPendingStatus,
   patchOrderStatus,
-  type PendingOrderStatus,
 } from '@/shared/sync/patchOrderList';
 import { enrichOrderCosplayerNames } from '@/shared/utils/enrichOrderCosplayerNames';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 import type { OrderItem, OrderStatus } from '../types';
 
@@ -44,9 +44,6 @@ const STATUS_AFTER_ACTION: Record<string, OrderStatus> = {
   ship: 'SHIPPING_OUT',
 };
 
-/** Background sync after mutation — avoid overwriting optimistic UI with stale list. */
-const REFETCH_AFTER_MUTATION_MS = 4000;
-
 export function useProviderOrders() {
   const [orders, setOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +54,12 @@ export function useProviderOrders() {
   const [deliveringOutOrderId, setDeliveringOutOrderId] = useState<number | null>(null);
   const [shippingOrderId, setShippingOrderId] = useState<number | null>(null);
   const [completingOrderId, setCompletingOrderId] = useState<number | null>(null);
-  const pendingStatusRef = useRef<Map<number, PendingOrderStatus>>(new Map());
+
+  const { mergeFetched, setPendingField } = usePendingListMutation<OrderItem, OrderStatus>({
+    getItemId: (o) => o.id,
+    getFieldValue: (o) => o.status,
+    setFieldValue: (o, status) => ({ ...o, status }),
+  });
 
   const providerId = useMemo(() => {
     const auth = getAuth();
@@ -110,9 +112,7 @@ export function useProviderOrders() {
           );
         }
 
-        const merged = mergeOrdersWithPendingStatus(costumeOrders, pendingStatusRef.current);
-        pendingStatusRef.current = merged.pending;
-        setOrders(merged.orders);
+        setOrders(mergeFetched(costumeOrders));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to fetch orders';
         setError(message);
@@ -122,8 +122,12 @@ export function useProviderOrders() {
         }
       }
     },
-    [providerId],
+    [providerId, mergeFetched],
   );
+
+  const scheduleRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(() => refetch({ silent: true }));
+  }, [refetch]);
 
   useEffect(() => {
     void refetch();
@@ -133,7 +137,7 @@ export function useProviderOrders() {
 
   const applyOrderMutation = useCallback(
     (orderId: number, nextStatus: OrderStatus, partial?: Partial<OrderItem>) => {
-      pendingStatusRef.current.set(orderId, { status: nextStatus, updatedAt: Date.now() });
+      setPendingField(orderId, nextStatus);
       setOrders((prev) =>
         partial
           ? mergeOrderFromMutation(prev, orderId, { ...partial, status: nextStatus })
@@ -141,14 +145,8 @@ export function useProviderOrders() {
       );
       notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
     },
-    [],
+    [setPendingField],
   );
-
-  const scheduleBackgroundRefetch = useCallback(() => {
-    window.setTimeout(() => {
-      void refetch({ silent: true });
-    }, REFETCH_AFTER_MUTATION_MS);
-  }, [refetch]);
 
   const runMutation = useCallback(
     async (
@@ -166,13 +164,13 @@ export function useProviderOrders() {
               })()
             : undefined;
         applyOrderMutation(orderId, nextStatus, partial);
-        scheduleBackgroundRefetch();
+        scheduleRefetch();
         return true;
       } catch {
         return false;
       }
     },
-    [applyOrderMutation, scheduleBackgroundRefetch],
+    [applyOrderMutation, scheduleRefetch],
   );
 
   const filteredOrders = useMemo(() => {

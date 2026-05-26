@@ -18,6 +18,12 @@ export const DATA_SYNC_EVENTS = {
   COSTUMES_CHANGED: 'cosmate:costumes-changed',
   /** In-app notifications list + header badge */
   NOTIFICATIONS_CHANGED: 'cosmate:notifications-changed',
+  /** Admin user list (lock/ban/unlock) */
+  USERS_CHANGED: 'cosmate:users-changed',
+  /** Admin provider list (verify, etc.) */
+  PROVIDERS_CHANGED: 'cosmate:providers-changed',
+  /** Admin subscription plans catalog */
+  SUBSCRIPTION_PLANS_CHANGED: 'cosmate:subscription-plans-changed',
   /** User profile / avatar (legacy — also profile:refresh on window) */
   PROFILE_CHANGED: 'profile:refresh',
 } as const;
@@ -62,6 +68,18 @@ export function notifyCostumesChanged(detail?: CostumesChangedDetail): void {
 
 export function notifyNotificationsChanged(): void {
   dispatch(DATA_SYNC_EVENTS.NOTIFICATIONS_CHANGED);
+}
+
+export function notifyUsersChanged(detail?: { userId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.USERS_CHANGED, detail);
+}
+
+export function notifyProvidersChanged(detail?: { providerId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.PROVIDERS_CHANGED, detail);
+}
+
+export function notifySubscriptionPlansChanged(detail?: { planId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.SUBSCRIPTION_PLANS_CHANGED, detail);
 }
 
 export function subscribeDataSync<T = unknown>(
