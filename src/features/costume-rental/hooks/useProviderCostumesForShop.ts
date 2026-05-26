@@ -3,7 +3,7 @@ import { getAllCostumes } from '../api/costumeRental.api'
 import type { Costume } from '../types'
 import { formatFirstCharacterListLine } from './usePublicCostumes'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''

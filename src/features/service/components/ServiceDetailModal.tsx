@@ -7,6 +7,7 @@
 import { Modal, Image, Typography, Spin, Descriptions, Tag, Row, Col } from 'antd';
 import { VI } from '@/shared/i18n/vi';
 import type { ServiceItem } from '../types';
+import { getServiceTypeDisplayLabel } from '../utils/serviceTypeDisplay';
 
 const { Text, Paragraph } = Typography;
 
@@ -110,7 +111,7 @@ export function ServiceDetailModal({
           {/* Info */}
           <Descriptions column={1} bordered size="small" style={{ marginBottom: 20 }}>
             <Descriptions.Item label={VI.service.list.detail.serviceType}>
-              <Tag color="purple">{service.serviceType}</Tag>
+              <Tag color="purple">{getServiceTypeDisplayLabel(service.serviceType)}</Tag>
             </Descriptions.Item>
 
             <Descriptions.Item label={VI.service.list.detail.status}>

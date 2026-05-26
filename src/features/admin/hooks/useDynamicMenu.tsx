@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
-import { LayoutDashboard, Users, ShoppingBag, Shirt, BarChart3, Folder, Menu as MenuIcon } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Users,
+  ShoppingBag,
+  Shirt,
+  BarChart3,
+  Folder,
+  Menu as MenuIcon,
+  CreditCard,
+  Coins,
+} from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
 import { getRoles } from '@/features/auth/services/tokenStorage';
@@ -31,6 +41,12 @@ const getIconComponent = (iconName?: string): LucideIcon => {
     case 'costumes': return Shirt;
     case 'reports': return BarChart3;
     case 'menu': return MenuIcon;
+    case 'subscription':
+    case 'credit-card':
+    case 'creditcard': return CreditCard;
+    case 'coins':
+    case 'token':
+    case 'ai-token': return Coins;
     default: return Folder;
   }
 };

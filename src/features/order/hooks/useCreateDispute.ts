@@ -4,11 +4,8 @@
  */
 import { useState, useCallback } from 'react';
 import { createDisputeService } from '../services/order.service';
-
-interface CreateDisputePayload {
-  reason: string;
-  files: string[];
-}
+import type { CreateDisputePayload } from '../api/dispute.api';
+import { notifyOrdersChanged } from '@/shared/sync/dataSync';
 
 interface UseCreateDisputeResult {
   createDispute: (orderId: number, payload: CreateDisputePayload) => Promise<boolean>;
@@ -23,6 +20,7 @@ export function useCreateDispute(): UseCreateDisputeResult {
       setDisputingOrderId(orderId);
       try {
         await createDisputeService(orderId, payload);
+        notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
         return true;
       } catch {
         return false;

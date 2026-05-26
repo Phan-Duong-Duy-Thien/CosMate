@@ -9,7 +9,7 @@ export const Badge = React.forwardRef<HTMLSpanElement, BadgeProps>(
     <span
       ref={ref}
       className={cn(
-        "inline-flex items-center rounded-full bg-pink-100 px-3 py-1 text-xs font-semibold text-pink-700",
+        "inline-flex items-center rounded-full px-3 py-1 text-xs font-semibold",
         className
       )}
       {...props}

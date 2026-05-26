@@ -1,14 +1,10 @@
-import { useCallback, useMemo, useState } from "react"
-import {
-  CameraOutlined,
-  DeleteOutlined,
-  SearchOutlined,
-  ThunderboltOutlined,
-} from "@ant-design/icons"
-import { Button, Input, Upload, notification } from "antd"
+import { useCallback, useEffect, useMemo, useState } from "react"
+import { Upload, notification } from "antd"
 import type { UploadFile, UploadProps } from "antd"
+import { Camera, Loader2, Search, Sparkles, X } from "lucide-react"
 
-import AILoadingMascot from "@/shared/components/AILoadingMascot"
+import { Button } from "@/components/ui/button"
+import { cn } from "@/lib/utils"
 import { useAISearch, type AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
 interface AISearchBarProps {
@@ -20,7 +16,7 @@ const promptSuggestions = [
   "Luffy",
   "Goku",
   "Kimono hồng pastel",
-  "Áo choàng đỏ"
+  "Áo choàng đỏ",
 ]
 
 export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
@@ -37,18 +33,32 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
     return file ? URL.createObjectURL(file) : null
   }, [uploadList])
 
+  useEffect(() => {
+    return () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl)
+    }
+  }, [previewUrl])
+
   const resetState = () => {
     setKeyword("")
     setSelectedFile(null)
     setUploadList([])
   }
 
-  const handleUploadChange: UploadProps["onChange"] = useCallback((info: Parameters<NonNullable<UploadProps["onChange"]>>[0]) => {
-    const normalized = info.fileList.slice(-1)
-    setUploadList(normalized)
-    const latestFile = normalized[0]?.originFileObj
-    setSelectedFile(latestFile ?? null)
-  }, [])
+  const clearImage = () => {
+    setSelectedFile(null)
+    setUploadList([])
+  }
+
+  const handleUploadChange: UploadProps["onChange"] = useCallback(
+    (info: Parameters<NonNullable<UploadProps["onChange"]>>[0]) => {
+      const normalized = info.fileList.slice(-1)
+      setUploadList(normalized)
+      const latestFile = normalized[0]?.originFileObj
+      setSelectedFile(latestFile ?? null)
+    },
+    []
+  )
 
   const handleSubmit = async () => {
     if (!hasEnoughInput) {
@@ -66,40 +76,56 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
     if (result) {
       onSearchCompleted?.(result)
       notification.success({
-        message: fallbackUsed ? "Đã hiển thị kết quả tìm kiếm thông thường." : `Đã tìm thấy ${result.length} trang phục phù hợp!`,
+        message: fallbackUsed
+          ? "Đã hiển thị kết quả tìm kiếm thông thường."
+          : `Đã tìm thấy ${result.length} trang phục phù hợp!`,
       })
     }
   }
 
   return (
-    <>
-    <div className="relative overflow-hidden rounded-3xl border border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 p-4 shadow-[0_12px_32px_rgba(236,72,153,0.15)] md:p-5">
-      <div className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-pink-200/30 blur-2xl" />
-      <div className="pointer-events-none absolute -bottom-10 -left-10 h-36 w-36 rounded-full bg-rose-200/40 blur-2xl" />
+    <div className="relative overflow-hidden rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[10px_10px_0_0_rgba(30,27,75,0.22)] md:p-6">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -right-16 -top-20 h-48 w-48 rounded-full bg-cosmate-soft-pink/35 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute -bottom-24 -left-16 h-52 w-52 rounded-full bg-cosmate-lavender-surface/50 blur-3xl"
+      />
 
-      <div className="relative grid gap-4 lg:grid-cols-[minmax(0,1.25fr)_minmax(0,0.75fr)] lg:items-stretch">
-        <div className="space-y-4">
-          <div className="inline-flex items-center gap-2 rounded-full border border-pink-200 bg-white/80 px-3 py-1 text-xs font-semibold text-pink-700">
-            <ThunderboltOutlined />
-            Tính năng nổi bật: AI Costume Finder
+      <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,260px)] lg:items-start lg:gap-8">
+        <div className="flex min-w-0 flex-col gap-4">
+          <div className="inline-flex w-fit max-w-full items-center gap-2 rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cosmate-soft-pink/90 to-cosmate-lavender-surface px-3 py-1.5 shadow-[3px_3px_0_0_rgba(30,27,75,0.2)]">
+            <Sparkles className="h-4 w-4 shrink-0 text-cosmate-pink" aria-hidden />
+            <span className="text-[11px] font-extrabold uppercase leading-tight tracking-wide text-indigo-950 md:text-xs">
+              Tính năng nổi bật: AI Costume Finder
+            </span>
           </div>
 
           <div>
-            <h3 className="text-xl font-extrabold tracking-tight text-pink-700 md:text-2xl">
+            <h3 className="text-xl font-extrabold tracking-tight text-cosmate-pink md:text-2xl">
               Tìm trang phục cosplay bằng ảnh + text đồng thời
             </h3>
-            <p className="mt-1 text-sm text-pink-900/75">
+            <p className="mt-1.5 text-sm font-semibold leading-relaxed text-indigo-950/80">
               Bạn có thể upload ảnh, nhập mô tả, hoặc dùng cả hai để AI tìm chính xác hơn.
             </p>
           </div>
 
-          <Input
-            value={keyword}
-            onChange={(event) => setKeyword(event.target.value)}
-            placeholder="Tên nhân vật, đặc điểm bộ đồ, phụ kiện, tóc, ..."
-            className="!h-11 !rounded-2xl border-pink-200 bg-white/90"
-            prefix={<SearchOutlined className="text-pink-400" />}
-          />
+          <div className="relative">
+            <Search
+              className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-cosmate-mauve"
+              aria-hidden
+            />
+            <input
+              type="search"
+              value={keyword}
+              onChange={(e) => setKeyword(e.target.value)}
+              placeholder="Tên nhân vật, đặc điểm bộ đồ, phụ kiện, tóc, ..."
+              className="h-12 w-full rounded-xl border-[3px] border-indigo-950 bg-white pl-11 pr-3 text-sm font-semibold text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.12)] placeholder:text-indigo-900/40 focus:border-cosmate-pink/80 focus:outline-none focus:ring-2 focus:ring-cosmate-pink/25"
+              autoComplete="off"
+            />
+          </div>
 
           <div className="flex flex-wrap gap-2">
             {promptSuggestions.map((prompt) => (
@@ -107,86 +133,105 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
                 key={prompt}
                 type="button"
                 onClick={() => setKeyword(prompt)}
-                className="rounded-full border border-pink-200 bg-white/80 px-3 py-1 text-xs font-medium text-pink-700 transition hover:-translate-y-0.5 hover:border-pink-300 hover:bg-pink-50"
+                className="rounded-full border-[2px] border-indigo-950/25 bg-white px-3 py-1.5 text-xs font-bold text-indigo-950 shadow-[2px_2px_0_0_rgba(30,27,75,0.12)] transition hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-cosmate-soft-pink/35"
               >
                 {prompt}
               </button>
             ))}
           </div>
 
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-3 pt-1">
             <Button
-              type="primary"
-              size="large"
-              icon={<CameraOutlined />}
-              loading={isLoading}
-              disabled={!hasEnoughInput}
+              type="button"
+              size="lg"
+              disabled={!hasEnoughInput || isLoading}
               onClick={handleSubmit}
-              className="!h-11 !rounded-2xl !border-none !bg-gradient-to-r !from-pink-500 !to-fuchsia-500 !px-6 !font-semibold !shadow-[0_8px_20px_rgba(236,72,153,0.3)]"
+              className="h-12 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-6 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110 disabled:opacity-50"
             >
+              {isLoading ? (
+                <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />
+              ) : (
+                <Camera className="h-5 w-5 shrink-0" aria-hidden />
+              )}
               Tìm trang phục bằng AI
             </Button>
 
             <Button
-              size="large"
-              disabled={!uploadList.length && !keyword}
+              type="button"
+              variant="cosmateOutline"
+              size="lg"
+              disabled={(!uploadList.length && !keyword) || isLoading}
               onClick={resetState}
-              className="!h-11 !rounded-2xl border-pink-200 !text-pink-700"
+              className="h-12 rounded-xl border-[3px] border-indigo-950/30 bg-white font-extrabold text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.12)] hover:bg-cosmate-soft-pink/25"
             >
               Reset
             </Button>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-pink-200/80 bg-white/80 p-3 backdrop-blur">
-          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-pink-600">
+        <div className="flex min-w-0 flex-col gap-3 lg:pt-1">
+          <p className="text-[11px] font-extrabold uppercase tracking-[0.2em] text-indigo-900/55">
             Ảnh tham chiếu
           </p>
 
           <Upload
             accept="image/*"
-            listType="picture-card"
             maxCount={1}
             fileList={uploadList}
             beforeUpload={() => false}
             onChange={handleUploadChange}
-            className="ai-search-uploader"
+            showUploadList={false}
+            disabled={isLoading}
+            className="block w-full [&_.ant-upload]:block [&_.ant-upload]:w-full"
           >
-            {uploadList.length >= 1 ? null : (
-              <div className="flex flex-col items-center gap-1 text-pink-500">
-                <CameraOutlined className="text-lg" />
-                <span className="text-xs font-medium">Tải ảnh cosplay</span>
-              </div>
-            )}
+            <div
+              role="button"
+              tabIndex={0}
+              className={cn(
+                "group relative flex aspect-square w-full max-w-[260px] cursor-pointer flex-col items-center justify-center gap-2 overflow-hidden rounded-2xl border-[3px] border-dashed border-indigo-950/35 bg-white shadow-[4px_4px_0_0_rgba(30,27,75,0.15)] transition",
+                "hover:border-cosmate-pink/60 hover:bg-cosmate-soft-pink/20",
+                isLoading && "cursor-not-allowed opacity-60"
+              )}
+            >
+              {previewUrl ? (
+                <>
+                  <img src={previewUrl} alt="Ảnh tham chiếu đã chọn" className="absolute inset-0 h-full w-full object-cover" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-indigo-950/50 to-transparent opacity-0 transition group-hover:opacity-100" />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      e.preventDefault()
+                      clearImage()
+                    }}
+                    className="absolute right-2 top-2 z-10 flex h-9 w-9 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white/95 text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.25)] transition hover:bg-rose-50"
+                    aria-label="Xóa ảnh đã chọn"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-10 w-10 text-cosmate-pink" aria-hidden />
+                  <span className="px-2 text-center text-xs font-extrabold text-indigo-950">Tải ảnh cosplay</span>
+                </>
+              )}
+            </div>
           </Upload>
 
-          {previewUrl && (
-            <div className="mt-2 overflow-hidden rounded-xl border border-pink-100 bg-pink-50">
-              <img src={previewUrl} alt="Preview upload" className="h-40 w-full object-cover" />
-            </div>
-          )}
-
-          <div className="mt-3 flex items-center justify-between rounded-xl border border-pink-100 bg-pink-50/70 px-3 py-2 text-xs text-pink-700">
-            <span className="line-clamp-1">{uploadList[0]?.name || "Chưa có ảnh nào được chọn"}</span>
-            {!!uploadList.length && (
-              <button
-                type="button"
-                onClick={() => {
-                  setUploadList([])
-                  setSelectedFile(null)
-                }}
-                className="rounded-md p-1 transition hover:bg-pink-100"
-                aria-label="Xóa ảnh đã chọn"
-              >
-                <DeleteOutlined />
-              </button>
-            )}
+          <div className="flex min-h-[2.75rem] items-center justify-between gap-2 rounded-xl border-[3px] border-indigo-950/15 bg-cosmate-soft-pink/30 px-3 py-2 text-xs font-semibold text-indigo-950/85">
+            <span className="line-clamp-2 break-all">
+              {uploadList[0]?.name ?? "Chưa có ảnh nào được chọn"}
+            </span>
           </div>
         </div>
       </div>
 
-      {isLoading && <AILoadingMascot type="search" />}
+      {isLoading && (
+        <p className="relative mt-4 border-t-2 border-indigo-950/10 pt-3 text-center text-sm font-bold text-cosmate-pink">
+          Bé Mèo AI đang tìm trang phục phù hợp…
+        </p>
+      )}
     </div>
-    </>
   )
 }

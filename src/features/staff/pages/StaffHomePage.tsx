@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import { Card } from '@/shared/components/Card';
 import { VI } from '@/shared/i18n/vi';
 import { LayoutDashboard, CalendarCheck, TrendingUp, Users } from 'lucide-react';
@@ -59,9 +60,9 @@ export default function StaffHomePage() {
       <Card className="p-6">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-slate-900">{VI.staff.home.recentBookings}</h3>
-          <a href="/staff/bookings" className="text-sm font-medium text-pink-500 hover:text-pink-600">
+          <Link to="/staff/orders" className="text-sm font-medium text-pink-500 hover:text-pink-600">
             {VI.common.actions.viewMore}
-          </a>
+          </Link>
         </div>
 
         <div className="overflow-x-auto">

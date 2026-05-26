@@ -1,5 +1,5 @@
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@shared/components/Button"
+import { Button } from "@/shared/components/Button"
 
 interface LogoutConfirmDialogProps {
   open: boolean
@@ -20,10 +20,10 @@ export function LogoutConfirmDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-sm" onClose={() => onOpenChange(false)}>
-        <h3 className="text-lg font-semibold text-slate-900">
+        <h3 className="text-lg font-semibold text-foreground">
           Xác nhận đăng xuất
         </h3>
-        <p className="mt-2 text-sm text-slate-600">
+        <p className="mt-2 text-sm text-muted-foreground">
           Bạn có chắc muốn đăng xuất không?
         </p>
         <div className="mt-6 flex justify-end gap-3">

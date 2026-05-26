@@ -4,7 +4,6 @@ import { useUserProfile } from "../hooks/useUserProfile"
 import { useUserAddresses } from "../hooks/useUserAddresses"
 import { usePurchaseOrders } from "../hooks/usePurchaseOrders"
 import { useWallet } from "../hooks/useWallet"
-import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
@@ -14,19 +13,21 @@ import { AddressModal } from "../components/AddressModal"
 import { ProfileCover } from "../components/ProfileCover"
 import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
-import { CheckCheck, PackageCheck, Star, Truck } from "lucide-react"
+import { ProfileMetricBody, ProfileNeoCard } from "../components/ProfileNeoCard"
+import { PROFILE_CARD_UI } from "../constants/profileUi"
+import { CheckCheck, Coins, MapPin, PackageCheck, Star, Truck, User, Wallet } from "lucide-react"
 import { message } from "antd"
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
-  active: "bg-emerald-100 text-emerald-700",
-  inactive: "bg-slate-100 text-slate-700",
-  banned: "bg-rose-100 text-rose-700",
-  default: "bg-purple-100 text-purple-700",
+  active: "bg-cosmate-success/15 text-cosmate-success",
+  inactive: "bg-muted text-muted-foreground",
+  banned: "bg-destructive/10 text-destructive",
+  default: "bg-cosmate-soft-pink text-cosmate-pink",
 }
 
 export default function CosplayerProfilePage() {
   const navigate = useNavigate()
-  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile, userId } =
+  const { profile, displayName, handle, initials, statusTone, loading, error, setProfile, userId, refetch } =
     useUserProfile()
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isAvatarPreviewOpen, setIsAvatarPreviewOpen] = useState(false)
@@ -100,11 +101,11 @@ export default function CosplayerProfilePage() {
 
   return (
     <div
-      className={`min-h-[calc(100vh-64px)] bg-transparent px-4 py-10 transition-all duration-500 ${
+      className={`home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 transition-all duration-500 md:px-4 md:py-10 ${
         isPageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
       }`}
     >
-      <div className="mx-auto w-full max-w-6xl space-y-4">
+      <div className="mx-auto w-full max-w-[min(1460px,100%)] space-y-4">
         <input
           ref={coverInputRef}
           type="file"
@@ -115,20 +116,26 @@ export default function CosplayerProfilePage() {
 
         {loading ? (
           <div className="space-y-4">
-            <Card className="space-y-4 p-6">
-              <div className="h-40 animate-pulse rounded-2xl bg-slate-100" />
-              <div className="h-8 w-52 animate-pulse rounded-xl bg-slate-100" />
+            <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+              <div className="space-y-4 p-6">
+                <div className="h-40 animate-pulse rounded-2xl bg-muted" />
+                <div className="h-8 w-52 animate-pulse rounded-xl bg-muted" />
+              </div>
             </Card>
-            <Card className="space-y-3 p-6">
-              <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
-              <div className="h-20 animate-pulse rounded-2xl bg-slate-100" />
+            <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+              <div className="space-y-3 p-6">
+                <div className="h-20 animate-pulse rounded-2xl bg-muted" />
+                <div className="h-20 animate-pulse rounded-2xl bg-muted" />
+              </div>
             </Card>
           </div>
         ) : error ? (
-          <Card className="p-6">
-            <p className="rounded-2xl border border-rose-100 bg-rose-50 px-4 py-3 text-center text-sm text-rose-700">
-              {error}
-            </p>
+          <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+            <div className="p-6">
+              <p className="rounded-2xl border border-destructive/25 bg-destructive/5 px-4 py-3 text-center text-sm text-destructive">
+                {error}
+              </p>
+            </div>
           </Card>
         ) : profile ? (
           <>
@@ -148,168 +155,176 @@ export default function CosplayerProfilePage() {
               <div className="space-y-4 lg:col-span-5">
                 <ProfileBioCard />
 
-                <Card className="border-violet-300/85 bg-gradient-to-br from-violet-200/70 to-white p-5 shadow-[0_10px_30px_rgba(129,140,248,0.1)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(129,140,248,0.16)]">
-                  <div className="flex items-center justify-between gap-2">
-                    <div>
-                      <h2 className="text-base font-semibold text-slate-900">
-                        {VI.wallet.title}
-                      </h2>
-                      <p className="mt-1 text-sm text-slate-600">{VI.wallet.balance}</p>
-                      <p className="mt-2 text-2xl font-bold text-purple-700">
-                        {walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫
-                      </p>
-                    </div>
+                <ProfileNeoCard
+                  title={VI.wallet.title}
+                  icon={Wallet}
+                  footer={
                     <Button
                       type="button"
                       variant="outline"
                       size="sm"
+                      className={PROFILE_CARD_UI.action}
                       onClick={() => navigate("/profile/wallet")}
                     >
                       {VI.wallet.manage}
                     </Button>
-                  </div>
-                </Card>
+                  }
+                >
+                  <ProfileMetricBody
+                    label={VI.wallet.balance}
+                    value={`${walletInfo?.balance?.toLocaleString("vi-VN") ?? 0} ₫`}
+                  />
+                </ProfileNeoCard>
 
-                <Card className="border-pink-300/85 bg-gradient-to-br from-pink-200/60 to-white p-5 shadow-[0_10px_30px_rgba(236,72,153,0.1)]">
-                  <p className="text-base font-semibold text-slate-900">{VI.profile.title}</p>
-                  <div className="mt-3 space-y-2">
-                    <div className="rounded-xl bg-white/90 px-4 py-3">
-                      <p className="text-xs font-medium text-slate-500">
-                        {VI.admin.users.columns.email}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-slate-800">{profile.email}</p>
-                    </div>
-                    <div className="rounded-xl bg-violet-200/65 px-4 py-3">
-                      <p className="text-xs font-medium text-slate-500">
-                        {VI.admin.users.columns.phone}
-                      </p>
-                      <p className="mt-1 text-sm font-medium text-slate-800">{profile.phone}</p>
-                    </div>
-                    <div className="rounded-xl bg-pink-200/65 px-4 py-3">
-                      <p className="text-xs font-medium text-slate-500">
-                        {VI.admin.users.columns.status}
-                      </p>
-                      <div className="mt-1">
-                        <Badge className={STATUS_BADGE_CLASS[statusTone]}>{profile.status}</Badge>
+                <ProfileNeoCard
+                  title={VI.profile.token.title}
+                  icon={Coins}
+                  footer={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      className={PROFILE_CARD_UI.action}
+                      onClick={() => navigate("/profile/token")}
+                    >
+                      {VI.profile.token.manage}
+                    </Button>
+                  }
+                >
+                  <ProfileMetricBody
+                    label={VI.profile.token.balance}
+                    value={(profile.numberOfToken ?? 0).toLocaleString("vi-VN")}
+                  />
+                </ProfileNeoCard>
+
+                <ProfileNeoCard title={VI.profile.title} icon={User} hoverable={false}>
+                    <div className="mt-2 space-y-2">
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.email}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">{profile.email}</p>
+                      </div>
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.phone}</p>
+                        <p className="mt-1 text-sm font-semibold text-slate-700">{profile.phone}</p>
+                      </div>
+                      <div className="rounded-xl border-[2px] border-indigo-950/15 bg-white px-4 py-3">
+                        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">{VI.admin.users.columns.status}</p>
+                        <div className="mt-1">
+                          <span
+                            className={`inline-flex rounded-full border border-white/80 px-2.5 py-0.5 text-xs font-bold shadow-sm ${STATUS_BADGE_CLASS[statusTone]}`}
+                          >
+                            {profile.status}
+                          </span>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </Card>
+                </ProfileNeoCard>
               </div>
 
               <div className="space-y-4 lg:col-span-7">
-                <Card className="border-fuchsia-300/85 bg-gradient-to-br from-white to-pink-200/55 p-5 shadow-[0_10px_30px_rgba(236,72,153,0.1)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(236,72,153,0.16)]">
-                  <div className="flex items-center justify-between gap-2">
-                    <h2 className="text-base font-semibold text-slate-900">
-                      {VI.profile.orders.title}
-                    </h2>
+                <ProfileNeoCard
+                  title={VI.profile.orders.title}
+                  icon={PackageCheck}
+                  footer={
                     <button
                       type="button"
-                      className="text-sm font-medium text-purple-600 decoration-1 underline-offset-2 transition-colors hover:text-purple-700 hover:underline"
+                      className={PROFILE_CARD_UI.linkAction}
                       onClick={() => navigate("/profile/purchase-history")}
                     >
                       {VI.profile.orders.history}
                     </button>
-                  </div>
-                  <div className="mt-4 grid grid-cols-2 gap-3 sm:grid-cols-4">
-                    {orderShortcuts.map((item, index) => {
+                  }
+                >
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {orderShortcuts.map((item) => {
                       const Icon = item.icon
                       const tabKey = shortcutToTabMap[item.key]
                       const count = tabKey ? counts[tabKey as keyof typeof counts] || 0 : 0
-                      const tileToneClass =
-                        index % 2 === 0
-                          ? "border-fuchsia-300 bg-white/92 hover:bg-pink-100/80"
-                          : "border-violet-300 bg-violet-200/70 hover:bg-violet-300/65"
                       return (
                         <button
                           key={item.key}
                           type="button"
-                          className={`rounded-2xl border px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 active:scale-[0.98] ${tileToneClass}`}
-                          onClick={() =>
-                            navigate(`/profile/purchase-history?tab=${tabKey}`)
-                          }
+                          className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-pink-50 active:scale-[0.98]"
+                          onClick={() => navigate(`/profile/purchase-history?tab=${tabKey}`)}
                         >
                           <div className="flex items-center justify-between">
-                            <Icon className="h-4 w-4 text-purple-600" />
-                            <span className="text-xs font-semibold text-slate-600">{count}</span>
+                            <Icon className="h-4 w-4 text-[#d61f91]" />
+                            <span className="text-xs font-bold text-slate-500">{count}</span>
                           </div>
-                          <p className="mt-2 text-xs font-medium text-slate-700">{item.label}</p>
+                          <p className="mt-2 text-xs font-semibold text-slate-700">{item.label}</p>
                         </button>
                       )
                     })}
                   </div>
-                </Card>
+                </ProfileNeoCard>
 
-                <Card className="border-violet-300/85 bg-gradient-to-br from-violet-200/65 to-white p-5 shadow-[0_10px_30px_rgba(139,92,246,0.12)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_14px_34px_rgba(139,92,246,0.18)]">
-                  <div className="mb-3 flex items-center justify-between">
-                    <p className="text-base font-semibold text-slate-900">
-                      {VI.profile.addresses.title}
-                    </p>
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="outline"
-                      onClick={() => setIsAddressModalOpen(true)}
-                    >
-                      + {VI.profile.address.button.add}
-                    </Button>
-                  </div>
-
+                <ProfileNeoCard
+                  title={VI.profile.addresses.title}
+                  icon={MapPin}
+                  footer={
+                    <>
+                      {addresses.length > 1 && !addressesLoading && !addressesError && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className={PROFILE_CARD_UI.action}
+                          onClick={() => setShowAllAddresses((prev) => !prev)}
+                        >
+                          {showAllAddresses
+                            ? VI.profile.addresses.collapse
+                            : VI.profile.addresses.showMore}
+                        </Button>
+                      )}
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        className={PROFILE_CARD_UI.action}
+                        onClick={() => setIsAddressModalOpen(true)}
+                      >
+                        + {VI.profile.address.button.add}
+                      </Button>
+                    </>
+                  }
+                >
                   {addressesLoading ? (
-                    <p className="mt-3 text-sm text-slate-600">
-                      {VI.profile.addresses.loading}
-                    </p>
+                    <p className="text-sm text-muted-foreground">{VI.profile.addresses.loading}</p>
                   ) : addressesError ? (
-                    <p className="mt-3 text-sm text-rose-600">{addressesError}</p>
+                    <p className="text-sm text-destructive">{addressesError}</p>
                   ) : addresses.length === 0 ? (
-                    <p className="mt-3 text-sm text-slate-600">{VI.profile.addresses.empty}</p>
+                    <p className="text-sm text-muted-foreground">{VI.profile.addresses.empty}</p>
                   ) : (
-                    <div className="mt-3 space-y-2">
-                      {displayedAddresses.map((item, index) => {
+                    <div className="space-y-2">
+                      {displayedAddresses.map((item) => {
                         const fullAddress = [item.address, item.district, item.city]
                           .filter((part) => part && part.trim().length > 0)
                           .join(", ")
-                        const addressToneClass =
-                          index % 2 === 0
-                            ? "border-fuchsia-300 bg-white/92"
-                            : "border-pink-300 bg-pink-200/70"
 
                         return (
                           <div
                             key={item.id}
-                            className={`rounded-2xl border px-4 py-3 ${addressToneClass}`}
+                            className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-4 py-3"
                           >
-                            <p className="text-sm font-semibold text-slate-800">{item.name}</p>
-                            <p className="mt-0.5 text-sm text-slate-700">{item.phone}</p>
-                            <p className="mt-0.5 text-sm text-slate-600">{fullAddress}</p>
+                            <p className="text-sm font-bold text-indigo-950">{item.name}</p>
+                            <p className="mt-0.5 text-sm font-medium text-slate-600">{item.phone}</p>
+                            <p className="mt-0.5 text-sm font-medium text-slate-600">{fullAddress}</p>
                           </div>
                         )
                       })}
                     </div>
                   )}
-
-                  {addresses.length > 1 && !addressesLoading && !addressesError && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="mt-3 rounded-full border border-violet-300 bg-violet-200/75 px-4 text-violet-900 transition-all duration-200 hover:-translate-y-0.5 hover:bg-violet-300/70 hover:text-violet-950 active:scale-[0.98]"
-                      onClick={() => setShowAllAddresses((prev) => !prev)}
-                    >
-                      {showAllAddresses
-                        ? VI.profile.addresses.collapse
-                        : VI.profile.addresses.showMore}
-                    </Button>
-                  )}
-                </Card>
+                </ProfileNeoCard>
               </div>
             </div>
           </>
         ) : (
-          <Card className="p-6">
-            <p className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center text-sm text-slate-600">
-              {VI.common.status.noData}
-            </p>
+          <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+            <div className="p-6">
+              <p className="rounded-2xl border border-border bg-muted/50 px-4 py-3 text-center text-sm text-muted-foreground">
+                {VI.common.status.noData}
+              </p>
+            </div>
           </Card>
         )}
       </div>
@@ -335,7 +350,7 @@ export default function CosplayerProfilePage() {
                 className="h-auto max-h-[90vh] w-auto max-w-[94vw] rounded-lg object-contain"
               />
             ) : (
-              <div className="flex h-52 w-52 items-center justify-center rounded-full bg-pink-100 text-5xl font-bold text-pink-700">
+              <div className="flex h-52 w-52 items-center justify-center rounded-full bg-cosmate-soft-pink text-5xl font-bold text-cosmate-pink">
                 {initials}
               </div>
             )}

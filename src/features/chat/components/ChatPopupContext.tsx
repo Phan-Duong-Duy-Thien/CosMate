@@ -10,6 +10,7 @@ interface ChatPopupState {
 interface ChatPopupContextValue extends ChatPopupState {
   openChat: (roomId: number, partnerId: number, partnerName?: string) => void
   closeChat: () => void
+  toggleChat: () => void
   triggerUnreadRefetch: () => void
   onUnreadRefetch: (fn: () => void) => void
 }
@@ -34,6 +35,14 @@ export function ChatPopupProvider({ children }: { children: ReactNode }) {
     setState((prev) => ({ ...prev, isOpen: false }))
   }, [])
 
+  const toggleChat = useCallback(() => {
+    setState((prev) =>
+      prev.isOpen
+        ? { ...prev, isOpen: false }
+        : { isOpen: true, roomId: null, partnerId: null, partnerName: null }
+    )
+  }, [])
+
   const triggerUnreadRefetch = useCallback(() => {
     unreadRefetchFnRef.current?.()
   }, [])
@@ -43,7 +52,9 @@ export function ChatPopupProvider({ children }: { children: ReactNode }) {
   }, [])
 
   return (
-    <ChatPopupContext.Provider value={{ ...state, openChat, closeChat, triggerUnreadRefetch, onUnreadRefetch }}>
+    <ChatPopupContext.Provider
+      value={{ ...state, openChat, closeChat, toggleChat, triggerUnreadRefetch, onUnreadRefetch }}
+    >
       {children}
     </ChatPopupContext.Provider>
   )

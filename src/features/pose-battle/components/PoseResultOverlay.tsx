@@ -83,20 +83,20 @@ export default function PoseResultOverlay({ result, onClose }: PoseResultOverlay
   const showScoreOnBoard = result.score !== 100
 
   return (
-    <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-black/60 p-3 md:p-4">
-      <div className="relative flex h-[90vh] w-full max-w-2xl flex-col rounded-3xl bg-white p-3 shadow-2xl md:p-4">
+    <div className="fixed inset-0 z-[20000] flex items-center justify-center bg-indigo-950/60 p-3 md:p-4">
+      <div className="relative flex h-[90vh] w-full max-w-2xl flex-col rounded-[2rem] border-[4px] border-indigo-950 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-3 shadow-[10px_10px_0px_#fbcfe8] md:p-4">
         <button
           type="button"
           aria-label="Đóng kết quả"
           onClick={onClose}
-          className="absolute right-3 top-3 rounded-full border border-slate-200 bg-white p-2 text-slate-500 transition hover:border-pink-300 hover:text-pink-600"
+          className="absolute right-3 top-3 rounded-full border-[3px] border-indigo-950 bg-fuchsia-200 p-2 text-indigo-950 transition hover:bg-fuchsia-300"
         >
           <CloseOutlined />
         </button>
 
-        <h3 className="text-center text-2xl font-semibold text-slate-800">Kết quả Pose Battle</h3>
+        <h3 className="text-center text-2xl font-extrabold text-indigo-950">Kết quả Pose Battle</h3>
 
-        <div className="relative mx-auto -mt-5 w-full max-w-[440px] overflow-hidden">
+        <div className="relative mx-auto -mt-5 w-full max-w-[440px] overflow-hidden rounded-[1.5rem] border-[3px] border-indigo-950 bg-white shadow-[6px_6px_0px_#c4b5fd]">
           <img src={visual.image} alt="Pose result mascot" className="mx-auto -mt-5 h-[250px] w-auto object-contain md:h-[300px]" />
 
           {showScoreOnBoard && (
@@ -112,8 +112,8 @@ export default function PoseResultOverlay({ result, onClose }: PoseResultOverlay
           )}
         </div>
 
-        <div className="-mt-3 flex min-h-0 flex-1 flex-col rounded-2xl border border-pink-100 bg-slate-50 p-3 md:p-3.5">
-          <p className="mb-2 text-sm font-semibold text-pink-700">Nhận xét từ AI</p>
+        <div className="-mt-3 flex min-h-0 flex-1 flex-col rounded-[1.5rem] border-[3px] border-indigo-950 bg-white p-3 shadow-[6px_6px_0px_#fde68a] md:p-3.5">
+          <p className="mb-2 text-sm font-extrabold text-indigo-950">Nhận xét từ AI</p>
 
           <div
             className="min-h-0 flex-1 overflow-y-auto pr-1 text-sm leading-6 text-slate-700 overscroll-contain whitespace-pre-wrap break-words"
@@ -125,7 +125,7 @@ export default function PoseResultOverlay({ result, onClose }: PoseResultOverlay
 
         <Button
           type="primary"
-          className="mt-3 !h-10 !rounded-xl !border-pink-600 !bg-pink-600 hover:!border-pink-500 hover:!bg-pink-500"
+          className="mt-3 !h-10 !rounded-2xl !border-[3px] !border-indigo-950 !bg-fuchsia-200 !font-extrabold !text-indigo-950 shadow-[4px_4px_0px_#312e81] hover:!bg-fuchsia-300"
           onClick={onClose}
         >
           Đóng

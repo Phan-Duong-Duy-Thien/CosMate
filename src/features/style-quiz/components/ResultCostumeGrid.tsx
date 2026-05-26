@@ -24,7 +24,7 @@ export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridPr
               onView(item.costumeId)
             }
           }}
-          className="group cursor-pointer rounded-2xl border border-pink-100 bg-pink-50/40 p-3 transition hover:-translate-y-0.5 hover:border-pink-400 hover:shadow-md"
+          className="group min-w-0 cursor-pointer rounded-2xl border border-pink-100 bg-pink-50/40 p-3 transition hover:-translate-y-0.5 hover:border-pink-400 hover:shadow-md"
         >
           <div className="overflow-hidden rounded-xl">
             <img
@@ -39,7 +39,20 @@ export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridPr
             />
           </div>
           <div className="mt-3 space-y-1">
-            <p className="line-clamp-1 text-base font-semibold text-slate-800">{item.costumeName}</p>
+            <h3
+              className="overflow-hidden text-base font-semibold leading-snug text-slate-800"
+              title={item.costumeName}
+            >
+              <span className="block truncate group-hover:hidden">{item.costumeName}</span>
+              <span className="hidden w-full overflow-hidden group-hover:flex">
+                <span className="flex shrink-0 whitespace-nowrap group-hover:animate-[home-title-marquee_10s_linear_infinite]">
+                  <span className="pr-8">{item.costumeName}</span>
+                  <span className="pr-8" aria-hidden="true">
+                    {item.costumeName}
+                  </span>
+                </span>
+              </span>
+            </h3>
             <p className="text-sm text-pink-600">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
             <p className="text-sm text-slate-500">Giá tham khảo: {Number(item.price).toLocaleString("vi-VN")}đ</p>
           </div>

@@ -60,8 +60,8 @@ async function apiGet<T>(path: string): Promise<T> {
  * Fetch all provinces (Tỉnh / Thành phố) from Province Open API V2.
  */
 export async function fetchProvinces(): Promise<Province[]> {
-  const data = await apiGet<ProvinceApiItem[]>('/p/');
-  return data.map((p) => ({ code: p.code, name: p.name }));
+  const data = await apiGet<ProvinceApiItem[] | null>('/p/');
+  return (Array.isArray(data) ? data : []).map((p) => ({ code: p.code, name: p.name }));
 }
 
 /**

@@ -72,7 +72,7 @@ export function UserDetailModal({
           loading={actionLoading}
           disabled={!canManage}
           title={!canManage ? manageDisabledReason : undefined}
-          style={{ borderColor: '#faad14', color: '#faad14' }}
+          style={{ borderColor: "var(--cosmate-warning)", color: "var(--cosmate-warning)" }}
         >
           {VI.admin.users.actions.lock}
         </Button>

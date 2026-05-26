@@ -1,29 +1,25 @@
-import { Card, Row, Col, Statistic, Button, Space, Typography, Spin } from 'antd';
-import { Package, ShoppingBag, Calendar, Star } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Card, Row, Col, Statistic, Button, Space, Typography, Spin, Select, Alert } from 'antd';
+import { Package, ShoppingBag, CheckCircle2, Banknote, Shirt } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems } from '../constants/sidebar';
 import { VI } from '@/shared/i18n/vi';
-import { useProviderGate } from '../hooks/useProviderGate';
-import { ProviderActivationGate } from '../components/ProviderActivationGate';
-import { ProviderProfileCompletionGate } from '../components/ProviderProfileCompletionGate';
+import { useProviderStatistics } from '../hooks/useProviderStatistics';
+import { ProviderRevenueChart } from '../components/ProviderRevenueChart';
 
-const { Text }= Typography;
+const { Text } = Typography;
+
+const MONTHS_OPTIONS = [3, 6, 12] as const;
 
 export default function ProviderHomePage() {
   const navigate = useNavigate();
+  const [chartMonths, setChartMonths] = useState<number>(6);
 
-  // Verification gating
-  const {
-    verified, profileComplete, profileLoading,
-    plans, plansLoading, plansError,
-    selectedPlanId, setSelectedPlanId,
-    selectedMethod, setSelectedMethod,
-    handleSubscribe, subscribing, subscribeError,
-  } = useProviderGate();
+  const { statistics, loading: statsLoading, error: statsError, refetch } =
+    useProviderStatistics(chartMonths);
 
-  // Convert provider sidebar items to DashboardLayout format
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
     const Icon = item.icon;
     return {
@@ -34,187 +30,204 @@ export default function ProviderHomePage() {
     };
   });
 
-  // TODO: Fetch real stats from API when implemented
-  const stats = [
-    {
-      title: VI.provider.dashboard.stats.activeListings,
-      value: 24,
-      icon: <Package size={24} />,
-      color: '#7C3AED',
-    },
-    {
-      title: VI.provider.dashboard.stats.pendingBookings,
-      value: 8,
-      icon: <ShoppingBag size={24} />,
-      color: '#EC4899',
-    },
-    {
-      title: VI.provider.dashboard.stats.upcomingSchedule,
-      value: 15,
-      icon: <Calendar size={24}/>,
-      color: '#10B981',
-    },
-    {
-      title: VI.provider.dashboard.stats.averageRating,
-      value: 4.8,
-      icon: <Star size={24} />,
-      color: '#F59E0B',
-      precision: 1,
-    },
-  ];
+  const stats = useMemo(() => {
+    const s = statistics;
+    return [
+      {
+        title: VI.provider.dashboard.stats.totalCostumes,
+        value: s?.totalCostumes ?? 0,
+        icon: <Shirt size={24} />,
+        color: 'var(--primary)',
+      },
+      {
+        title: VI.provider.dashboard.stats.totalOrders,
+        value: s?.totalOrders ?? 0,
+        icon: <ShoppingBag size={24} />,
+        color: 'var(--cosmate-pink)',
+      },
+      {
+        title: VI.provider.dashboard.stats.completedOrders,
+        value: s?.completedOrders ?? 0,
+        icon: <CheckCircle2 size={24} />,
+        color: 'var(--cosmate-success)',
+      },
+      {
+        title: VI.provider.dashboard.stats.totalRevenue,
+        value: s?.totalRevenue ?? 0,
+        icon: <Banknote size={24} />,
+        color: 'var(--cosmate-warning)',
+        suffix: 'đ',
+      },
+    ];
+  }, [statistics]);
 
   return (
     <DashboardLayout title={VI.provider.dashboard.title} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
-      {/* Profile loading state */}
-      {profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {/* Activation gate — shown when verified === false */}
-      {!profileLoading && verified === false && (
-        <ProviderActivationGate
-          plans={plans}
-          plansLoading={plansLoading}
-          plansError={plansError}
-          selectedPlanId={selectedPlanId}
-          onSelectPlan={setSelectedPlanId}
-          selectedMethod={selectedMethod}
-          onSelectMethod={setSelectedMethod}
-          onSubscribe={handleSubscribe}
-          subscribing={subscribing}
-          subscribeError={subscribeError}
-        />
-      )}
-
-      {/* Profile completion gate — shown when verified but profile incomplete */}
-      {!profileLoading && verified === true && profileComplete === false && (
-        <ProviderProfileCompletionGate
-          onComplete={() => navigate('/provider/settings/completion')}
-        />
-      )}
-
-      {/* Dashboard content — shown only when verified and profile complete */}
-      {!profileLoading && verified === true && profileComplete === true && (
         <>
-      <div style={{ marginBottom: 16 }}>
-        <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>{VI.provider.dashboard.welcome}</h2>
-        <p style={{ color: '#6B7280', fontSize: 13 }}>
-          {VI.provider.dashboard.overview}
-        </p>
-      </div>
-
-      {/* Stats Cards */}
-      <Row gutter={[12, 12]}>
-        {stats.map((stat, index) => (
-          <Col xs={24}sm={12} lg={6}key={index}>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: 10,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Statistic
-                  title={stat.title}
-                  value={stat.value}
-                  precision={stat.precision}
-                  valueStyle={{ color: stat.color, fontSize: 22, fontWeight: 700 }}
-                />
-                <div
-                  style={{
-                    width: 40,
-                    height: 40,
-                    borderRadius: 10,
-                    backgroundColor: `${stat.color}15`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: stat.color,
-                  }}
-                >
-                  {stat.icon}
-                </div>
-              </div>
-            </Card>
-          </Col>
-        ))}
-      </Row>
-
-      {/* Costume Management Section */}
-      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
-        <Col span={24}>
-          <Card
-            title={VI.provider.costumeManagement.sectionTitle}
-            bordered={false}
-            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
-          >
-            <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
-              {VI.provider.costumeManagement.sectionDesc}
-            </Text>
+          <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>{VI.provider.dashboard.welcome}</h2>
+              <p className="text-muted-foreground text-[13px]">{VI.provider.dashboard.overview}</p>
+            </div>
             <Space>
-              <Button
-                type="primary"
-                icon={<Package size={16} />}
-                onClick={() => navigate('/provider-rental/costumes/create')}
-              >
-                {VI.provider.costumeManagement.createBtn}
-              </Button>
-              <Button onClick={() => navigate('/provider-rental/costumes')}>
-                {VI.provider.costumeManagement.listBtn}
+              <span className="text-sm text-muted-foreground">{VI.provider.dashboard.charts.monthsFilter}</span>
+              <Select
+                value={chartMonths}
+                onChange={setChartMonths}
+                style={{ width: 160 }}
+                options={MONTHS_OPTIONS.map((m) => ({
+                  value: m,
+                  label: VI.provider.dashboard.charts.monthsOption.replace('{count}', String(m)),
+                }))}
+              />
+              <Button onClick={() => void refetch()} loading={statsLoading}>
+                {VI.common.actions.refresh}
               </Button>
             </Space>
-          </Card>
-        </Col>
-      </Row>
+          </div>
 
-      {/* Quick Actions */}
-      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
-        <Col xs={24}lg={12}>
-          <Card
-            title={VI.provider.dashboard.sections.recentBookings}
-            bordered={false}
-            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
-          >
-            <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px 0' }}>
-              {VI.provider.dashboard.sections.recentBookingsPlaceholder}
-            </p>
-          </Card>
-        </Col>
-        <Col xs={24}lg={12}>
-          <Card
-            title={VI.provider.dashboard.sections.performanceOverview}
-            bordered={false}
-            style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
-          >
-            <p style={{ color: '#6B7280', textAlign: 'center', padding: '32px 0' }}>
-              {VI.provider.dashboard.sections.performancePlaceholder}
-            </p>
-          </Card>
-        </Col>
-      </Row>
+          {statsError && (
+            <Alert
+              type="error"
+              message={statsError}
+              className="mb-4"
+              showIcon
+            />
+          )}
 
-      {/* Additional Information */}
-      <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
-        <Col span={24}>
-          <Card
-            title={VI.provider.dashboard.sections.quickTips}
-            bordered={false}
-            style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
-          >
-            <ul style={{ color: '#6B7280', marginBottom: 0 }}>
-              {VI.provider.dashboard.tips.map((tip, index) => (
-                <li key={index}>{tip}</li>
-              ))}
-            </ul>
-          </Card>
-        </Col>
-      </Row>
-      </>
-      )}
+          {statsLoading && !statistics ? (
+            <div className="py-12 text-center">
+              <Spin size="large" />
+            </div>
+          ) : (
+            <>
+              <Row gutter={[12, 12]}>
+                {stats.map((stat, index) => (
+                  <Col xs={24} sm={12} lg={6} key={index}>
+                    <Card
+                      bordered={false}
+                      style={{
+                        borderRadius: 10,
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Statistic
+                          title={stat.title}
+                          value={stat.value}
+                          suffix={stat.suffix}
+                          valueStyle={{ color: stat.color, fontSize: 22, fontWeight: 700 }}
+                        />
+                        <div
+                          style={{
+                            width: 40,
+                            height: 40,
+                            borderRadius: 10,
+                            backgroundColor: `color-mix(in oklch, ${stat.color} 14%, transparent)`,
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: stat.color,
+                          }}
+                        >
+                          {stat.icon}
+                        </div>
+                      </div>
+                    </Card>
+                  </Col>
+                ))}
+              </Row>
+
+              {statistics && statistics.totalOrderItems > 0 && (
+                <Row gutter={[12, 12]} style={{ marginTop: 12 }}>
+                  <Col span={24}>
+                    <Card bordered={false} style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
+                      <Statistic
+                        title={VI.provider.dashboard.stats.totalOrderItems}
+                        value={statistics.totalOrderItems}
+                        valueStyle={{ fontSize: 18, fontWeight: 600 }}
+                      />
+                    </Card>
+                  </Col>
+                </Row>
+              )}
+
+              <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
+                <Col span={24}>
+                  <Card
+                    title={VI.provider.costumeManagement.sectionTitle}
+                    bordered={false}
+                    style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                  >
+                    <Text type="secondary" style={{ display: 'block', marginBottom: 12 }}>
+                      {VI.provider.costumeManagement.sectionDesc}
+                    </Text>
+                    <Space>
+                      <Button
+                        type="primary"
+                        icon={<Package size={16} />}
+                        onClick={() => navigate('/provider-rental/costumes/create')}
+                      >
+                        {VI.provider.costumeManagement.createBtn}
+                      </Button>
+                      <Button onClick={() => navigate('/provider-rental/costumes')}>
+                        {VI.provider.costumeManagement.listBtn}
+                      </Button>
+                      <Button onClick={() => navigate('/provider-rental/orders')}>
+                        {VI.provider.orders.title}
+                      </Button>
+                    </Space>
+                  </Card>
+                </Col>
+              </Row>
+
+              <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
+                <Col xs={24} lg={12}>
+                  <Card
+                    title={VI.provider.dashboard.charts.revenueByMonth}
+                    bordered={false}
+                    style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                  >
+                    <ProviderRevenueChart
+                      title=""
+                      data={statistics?.revenueByMonth ?? []}
+                      emptyText={VI.provider.dashboard.charts.noData}
+                    />
+                  </Card>
+                </Col>
+                <Col xs={24} lg={12}>
+                  <Card
+                    title={VI.provider.dashboard.charts.revenueByQuarter}
+                    bordered={false}
+                    style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}
+                  >
+                    <ProviderRevenueChart
+                      title=""
+                      data={statistics?.revenueByQuarter ?? []}
+                      emptyText={VI.provider.dashboard.charts.noData}
+                    />
+                  </Card>
+                </Col>
+              </Row>
+
+              <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
+                <Col span={24}>
+                  <Card
+                    title={VI.provider.dashboard.sections.quickTips}
+                    bordered={false}
+                    style={{ borderRadius: 12, boxShadow: '0 1px 3px rgba(0,0,0,0.1)' }}
+                  >
+                    <ul className="mb-0 text-muted-foreground">
+                      {VI.provider.dashboard.tips.map((tip, index) => (
+                        <li key={index}>{tip}</li>
+                      ))}
+                    </ul>
+                  </Card>
+                </Col>
+              </Row>
+            </>
+          )}
+        </>
     </DashboardLayout>
   );
 }

@@ -1,65 +1,49 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Button, Card, Descriptions, Drawer, Input, Result, Space, Table, Tag, Tooltip, message } from 'antd';
+import { useState } from 'react';
+import { Table, Descriptions, Select, Tag, Empty, Modal, Tooltip, Input } from 'antd';
 import type { TableProps } from 'antd';
-import { ReloadOutlined, EyeOutlined, CheckCircleOutlined, StopOutlined, SearchOutlined } from '@ant-design/icons';
-import { getProviders, verifyProvider } from '../api/adminProviders.api';
-
-interface ProviderRow {
-  id: number;
-  userId?: number;
-  shopName?: string;
-  avatarUrl?: string;
-  coverImageUrl?: string;
-  bio?: string;
-  verified?: boolean;
-  completedOrders?: number;
-  totalRating?: number;
-  totalReviews?: number;
-}
+import { ReloadOutlined, SearchOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
+import { cn } from '@/lib/utils';
+import { Button as UiButton } from '@/components/ui/button';
+import { useAdminProviders } from '../hooks/useAdminProviders';
+import type { AdminProviderRow } from '../services/adminProviders.service';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 
 export default function AdminProvidersPage() {
-  const [search, setSearch] = useState('');
-  const [verifiedFilter, setVerifiedFilter] = useState<boolean | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [rows, setRows] = useState<ProviderRow[]>([]);
-  const [total, setTotal] = useState(0);
+  const {
+    search,
+    setSearch,
+    verifiedFilter,
+    setVerifiedFilter,
+    loading,
+    rows,
+    total,
+    page,
+    setPage,
+    pageSize,
+    setPageSize,
+    actionLoadingId,
+    refetch,
+    runVerify,
+  } = useAdminProviders();
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const [selected, setSelected] = useState<ProviderRow | null>(null);
+  const [selected, setSelected] = useState<AdminProviderRow | null>(null);
   const [open, setOpen] = useState(false);
-  const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
-  const fetchProviders = useCallback(async () => {
-    try {
-      setLoading(true);
-      const { content, totalElements } = await getProviders(page, pageSize, {
-        search,
-        verified: verifiedFilter,
-      });
-      setRows(content);
-      setTotal(totalElements);
-    } catch {
-      message.error('Không thể tải danh sách provider');
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, verifiedFilter]);
-
-  useEffect(() => {
-    fetchProviders();
-  }, [fetchProviders]);
-
-  const allVerifiedStatuses = useMemo(() => {
-    const statuses = new Set<boolean>();
-    rows.forEach((r) => {
-      if (typeof r.verified === 'boolean') statuses.add(r.verified);
+  const handleVerifyClick = (record: AdminProviderRow) => {
+    const nextVerified = !record.verified;
+    Modal.confirm({
+      title: nextVerified ? 'Duyệt provider?' : 'Bỏ duyệt provider?',
+      content: nextVerified
+        ? 'Shop này sẽ hiển thị là đã xác minh.'
+        : 'Shop sẽ chuyển về trạng thái chưa duyệt.',
+      okText: 'Xác nhận',
+      cancelText: 'Hủy',
+      okButtonProps: nextVerified ? {} : { danger: true },
+      onOk: () => runVerify(record.id, nextVerified),
     });
-    return Array.from(statuses);
-  }, [rows]);
+  };
 
-  const columns: TableProps<ProviderRow>['columns'] = [
+  const columns: TableProps<AdminProviderRow>['columns'] = [
     {
       title: 'ID',
       dataIndex: 'id',
@@ -72,7 +56,7 @@ export default function AdminProvidersPage() {
       dataIndex: 'shopName',
       key: 'shopName',
       render: (v: string | undefined) => (
-        <span style={{ fontWeight: 600, color: '#1f2937' }}>{v ?? '—'}</span>
+        <span className="font-semibold text-foreground">{v ?? '—'}</span>
       ),
     },
     {
@@ -82,7 +66,7 @@ export default function AdminProvidersPage() {
       width: 100,
       align: 'center',
       render: (v: number | undefined) => (
-        <span style={{ color: v ? '#4b5563' : '#9ca3af', fontStyle: v ? 'normal' : 'italic' }}>{v ?? '—'}</span>
+        <span className={v ? 'text-foreground' : 'text-muted-foreground italic'}>{v ?? '—'}</span>
       ),
     },
     {
@@ -97,20 +81,22 @@ export default function AdminProvidersPage() {
             {value ? 'Đã duyệt' : 'Chưa duyệt'}
           </Tag>
         ) : (
-          <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>
+          <span className="text-muted-foreground italic">—</span>
         ),
     },
     {
       title: 'Hành động',
       key: 'actions',
-      width: 160,
+      width: 140,
       align: 'center',
       render: (_, record) => (
-        <Space size={8} onClick={(e) => e.stopPropagation()}>
+        <div
+          className="cosmate-admin-table-actions flex items-center justify-center gap-3"
+          role="presentation"
+          onClick={(e) => e.stopPropagation()}
+        >
           <Tooltip title="Chi tiết">
-            <Button
-              type="text"
-              icon={<EyeOutlined />}
+            <AdminDetailEyeIcon
               onClick={() => {
                 setSelected(record);
                 setOpen(true);
@@ -118,26 +104,22 @@ export default function AdminProvidersPage() {
             />
           </Tooltip>
           <Tooltip title={record.verified ? 'Bỏ duyệt' : 'Duyệt provider'}>
-            <Button
-              type="text"
-              icon={record.verified ? <StopOutlined /> : <CheckCircleOutlined />}
-              loading={actionLoadingId === record.id}
-              onClick={async () => {
-                try {
-                  setActionLoadingId(record.id);
-                  await verifyProvider(record.id, !record.verified);
-                  message.success('Cập nhật trạng thái provider thành công');
-                  fetchProviders();
-                } catch {
-                  message.error('Không thể cập nhật provider');
-                } finally {
-                  setActionLoadingId(null);
-                }
-              }}
-              style={{ color: record.verified ? '#faad14' : '#52c41a' }}
-            />
+            <span
+              role="presentation"
+              className={cn(
+                'inline-flex',
+                actionLoadingId === record.id ? 'cursor-not-allowed opacity-50' : 'cursor-pointer'
+              )}
+              onClick={() => actionLoadingId !== record.id && handleVerifyClick(record)}
+            >
+              {record.verified ? (
+                <StopOutlined style={{ color: 'var(--cosmate-warning)', fontSize: 16 }} />
+              ) : (
+                <CheckCircleOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+              )}
+            </span>
           </Tooltip>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -145,34 +127,45 @@ export default function AdminProvidersPage() {
   return (
     <>
       <style>{`
-        .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
-        }
+        .admin-user-row:hover { background-color: var(--muted) !important; }
       `}</style>
 
-      <div className="space-y-4">
-        <Card bordered={false} style={{ borderRadius: 16 }}>
-          <div className="flex gap-2 flex-wrap justify-between items-center">
-            <Input
-              placeholder="Tìm provider"
-              prefix={<SearchOutlined />}
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-              style={{ width: 320, maxWidth: '100%' }}
+      <div className="flex h-full w-full flex-col">
+        <div className="mb-4 flex flex-col gap-4">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="w-full max-w-sm">
+              <Input
+                placeholder="Tìm provider"
+                prefix={<SearchOutlined />}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                allowClear
+              />
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <UiButton variant="cosmateOutline" disabled={loading} onClick={() => void refetch()}>
+                <ReloadOutlined className={loading ? 'animate-spin' : ''} />
+                Làm mới
+              </UiButton>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap gap-4">
+            <Select
+              placeholder="Lọc theo xác minh"
+              value={verifiedFilter === null ? undefined : verifiedFilter}
+              onChange={(v) => setVerifiedFilter(v === undefined ? null : v)}
+              className="min-w-[200px]"
+              options={[
+                { label: 'Đã duyệt', value: true },
+                { label: 'Chưa duyệt', value: false },
+              ]}
               allowClear
             />
-            <Space>
-              <Button icon={<ReloadOutlined />} loading={loading} onClick={fetchProviders}>
-                Làm mới
-              </Button>
-            </Space>
           </div>
-        </Card>
+        </div>
 
-        <Table<ProviderRow>
+        <Table<AdminProviderRow>
           columns={columns}
           dataSource={rows}
           rowKey="id"
@@ -198,33 +191,40 @@ export default function AdminProvidersPage() {
           })}
           rowClassName={() => 'admin-user-row'}
         />
-        {!loading && total === 0 && (
-          <Result
-            status="404"
-            title="Không có provider"
-            subTitle="Danh sách provider đang trống hoặc chưa tải được dữ liệu."
-          />
-        )}
 
-        <Drawer open={open} onClose={() => setOpen(false)} title="Chi tiết provider" width={620}>
-          {selected && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
-              <Descriptions.Item label="User ID">{selected.userId ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Shop">{selected.shopName ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Xác minh">
-                <Tag color={selected.verified ? 'green' : 'gold'} style={{ margin: 0 }}>
-                  {selected.verified ? 'Đã duyệt' : 'Chưa duyệt'}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Completed orders">{selected.completedOrders ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Rating">{selected.totalRating ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Reviews">{selected.totalReviews ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Bio">{selected.bio ?? '—'}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Drawer>
+        {!loading && total === 0 && (
+          <div className="mt-6">
+            <Empty description="Không có provider" />
+          </div>
+        )}
       </div>
+
+      <Modal
+        title="Chi tiết provider"
+        open={open}
+        onCancel={() => setOpen(false)}
+        footer={null}
+        centered
+        width={620}
+        destroyOnClose
+      >
+        {selected && (
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
+            <Descriptions.Item label="User ID">{selected.userId ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Shop">{selected.shopName ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Xác minh">
+              <Tag color={selected.verified ? 'green' : 'gold'} style={{ margin: 0 }}>
+                {selected.verified ? 'Đã duyệt' : 'Chưa duyệt'}
+              </Tag>
+            </Descriptions.Item>
+            <Descriptions.Item label="Completed orders">{selected.completedOrders ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Rating">{selected.totalRating ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Reviews">{selected.totalReviews ?? '—'}</Descriptions.Item>
+            <Descriptions.Item label="Bio">{selected.bio ?? '—'}</Descriptions.Item>
+          </Descriptions>
+        )}
+      </Modal>
     </>
   );
 }

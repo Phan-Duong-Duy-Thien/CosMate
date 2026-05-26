@@ -8,6 +8,7 @@ import { VI } from '@/shared/i18n/vi';
 import * as vnLocationApi from '../api/vnLocation.api';
 import * as userAddressService from '../services/userAddress.service';
 import type { Province, District } from '../types';
+import { getPhoneValidationError } from '../utils/addressValidation';
 
 interface UseCreateAddressResult {
   // Form state
@@ -108,8 +109,9 @@ export function useCreateAddress(): UseCreateAddressResult {
         message.error(VI.profile.address.validation.required);
         return false;
       }
-      if (!phone.trim()) {
-        message.error(VI.profile.address.validation.required);
+      const phoneError = getPhoneValidationError(phone);
+      if (phoneError) {
+        message.error(phoneError);
         return false;
       }
       if (!provinceCode) {
@@ -122,13 +124,6 @@ export function useCreateAddress(): UseCreateAddressResult {
       }
       if (!streetAddress.trim()) {
         message.error(VI.profile.address.validation.required);
-        return false;
-      }
-
-      // Validate phone format (simple validation)
-      const phoneRegex = /^(\+84|0)\d{9}$/;
-      if (!phoneRegex.test(phone.replace(/\s/g, ''))) {
-        message.error(VI.profile.address.validation.invalidPhone);
         return false;
       }
 

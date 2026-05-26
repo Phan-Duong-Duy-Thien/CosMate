@@ -1,39 +1,37 @@
 import { Heart, Image as ImageIcon } from "lucide-react"
-import { Tag } from "antd"
+
 
 import type { CostumeItem } from "../types"
 import { Badge } from "@/shared/components/Badge"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import { cn } from "@/lib/utils"
-import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
+import { VI } from "@/shared/i18n/vi"
 
 interface CostumeCardProps {
   costume: CostumeItem
   onViewDetail: (costumeId: string) => void
+  isWishlisted: boolean
+  wishlistLoading?: boolean
+  onToggleWishlist: (costumeId: number) => void
+  /** Thu gọn cho lưới homepage (6 cột) */
+  variant?: "default" | "compact"
 }
 
 export const CostumeCard = ({
   costume,
   onViewDetail,
+  isWishlisted,
+  wishlistLoading,
+  onToggleWishlist,
+  variant = "default",
 }: CostumeCardProps) => {
-  const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()
+  const compact = variant === "compact"
   const costumeId = Number(costume.id)
-  const liked = isInWishlist(costumeId)
+  const liked = isWishlisted
   const displayName = costume.name?.trim() || "-"
-  const displayShopName = costume.shopName?.trim() || "-"
+  const shopDisplay = costume.shopName?.trim() || ""
   const hasPrice = Number.isFinite(costume.priceMin) && Number.isFinite(costume.priceMax)
-
-  const handleToggleWishlist = () => {
-    if (liked) {
-      const item = wishlistItems.find((w) => w.costumeId === costumeId)
-      if (item) {
-        removeFromWishlist(item.id)
-      }
-    } else {
-      addToWishlist(costumeId)
-    }
-  }
 
   return (
     <Card
@@ -46,99 +44,173 @@ export const CostumeCard = ({
           onViewDetail(costume.id)
         }
       }}
-      className="group flex h-full flex-col overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+      className={cn(
+        "group flex h-full cursor-pointer flex-col overflow-hidden border-indigo-950 bg-[#fffbe8] transition-all duration-300 hover:-translate-y-1",
+        compact
+          ? "rounded-xl border-[3px] shadow-[4px_4px_0_0_rgba(30,27,75,0.4)] hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.32)]"
+          : "rounded-[1.05rem] border-[4px] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]"
+      )}
     >
-      <div className="relative">
+      <div className="costume-card-media relative">
         <img
           src={costume.images[0] || "https://placehold.co/400x500/e2e8f0/94a3b8?text=No+Image"}
           alt={costume.name}
           loading="lazy"
-          className="h-52 w-full object-cover object-top transition-transform duration-500 group-hover:scale-105"
+          className={cn(
+            "w-full border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-105",
+            compact ? "h-52 border-b-[3px]" : "h-56 border-b-[4px]"
+          )}
         />
-        <div className="absolute left-3 top-3 flex flex-wrap gap-2">
-          <Badge
+        <div
+          className={cn(
+            "absolute z-[2] flex flex-wrap",
+            compact ? "left-2 top-2 gap-1" : "left-3 top-3 gap-2"
+          )}
+        >
+          <span
+            role="status"
             className={cn(
-              "rounded-full px-3 py-1 text-xs font-semibold text-white",
-              costume.isAvailable ? "bg-emerald-600" : "bg-slate-700"
+              "cosmate-costume-card-status inline-flex items-center rounded-full border-2 border-indigo-950 font-bold shadow-sm",
+              compact ? "px-2 py-0.5 text-[10px] leading-tight" : "px-3 py-1 text-xs",
+              !costume.isAvailable && "cosmate-costume-card-status--rented"
             )}
           >
-            {costume.isAvailable ? "Có sẵn" : "Đã thuê"}
-          </Badge>
+            {costume.isAvailable
+              ? VI.costumeRental.costumeStatus.available
+              : VI.costumeRental.costumeStatus.rented}
+          </span>
           {costume.isAdult18 && (
-            <Badge className="bg-pink-500 text-white">18+</Badge>
+            <Badge
+              className={cn(
+                "rounded-full border-2 border-indigo-950 bg-cosmate-pink font-bold text-primary-foreground",
+                compact ? "px-1.5 py-0.5 text-[10px]" : "px-3 py-1 text-xs"
+              )}
+            >
+              18+
+            </Badge>
           )}
         </div>
         {typeof costume.aiSimilarityScore === "number" && (
-          <div className="absolute right-3 top-3">
-            <Tag color="#7c3aed" className="m-0 rounded-full border-0 px-3 py-1 font-semibold text-white shadow-sm">
-              ✨ Khớp {costume.aiSimilarityScore.toFixed(1)}%
-            </Tag>
+          <div
+            className={cn(
+              "absolute z-10 flex items-center gap-1 rounded-full bg-indigo-950/90 font-bold shadow-md backdrop-blur-sm",
+              compact
+                ? "right-2 top-2 px-2 py-0.5 text-[10px]"
+                : "right-2 top-2 px-2.5 py-1 text-xs"
+            )}
+          >
+            <span className="bg-gradient-to-r from-fuchsia-400 to-pink-500 bg-clip-text text-transparent">
+              ✨ {costume.aiSimilarityScore.toFixed(0)}%
+            </span>
           </div>
         )}
         <button
           type="button"
           aria-label={liked ? "Xóa khỏi yêu thích" : "Thêm vào yêu thích"}
           className={cn(
-            "absolute right-3 rounded-full bg-white/90 p-2 text-slate-500 shadow-sm transition",
-            typeof costume.aiSimilarityScore === "number" ? "top-12" : "top-3",
-            liked && "text-pink-500"
+            "absolute rounded-lg border-[3px] border-indigo-950 bg-[#fffbe8] text-slate-600 shadow-sm transition hover:scale-105",
+            compact ? "right-2 top-2 p-1" : "right-3 rounded-xl p-1.5",
+            typeof costume.aiSimilarityScore === "number"
+              ? compact
+                ? "top-9"
+                : "top-12"
+              : compact
+                ? "top-2"
+                : "top-3",
+            liked && "text-pink-500",
+            wishlistLoading && "pointer-events-none opacity-70"
           )}
           onClick={(event) => {
             event.stopPropagation()
-            handleToggleWishlist()
+            onToggleWishlist(costumeId)
           }}
         >
-          <Heart className={cn("h-4 w-4", liked && "fill-pink-500")} />
+          <Heart className={cn(compact ? "h-3.5 w-3.5" : "h-4 w-4", liked && "fill-pink-500")} />
         </button>
-        <div className="absolute bottom-3 right-3 flex items-center gap-2 rounded-full bg-white/80 px-2 py-1 text-xs text-slate-600">
-          <ImageIcon className="h-3 w-3" />
+        <div
+          className={cn(
+            "absolute flex items-center gap-0.5 rounded-md border-2 border-indigo-950 bg-[#fffbe8]/95 font-semibold text-indigo-900",
+            compact
+              ? "bottom-1.5 right-1.5 px-1.5 py-0.5 text-[9px]"
+              : "bottom-2 right-2 gap-1 px-2 py-0.5 text-[11px]"
+          )}
+        >
+          <ImageIcon className={cn(compact ? "h-2.5 w-2.5" : "h-3 w-3")} />
           {costume.images.length} ảnh
         </div>
       </div>
-      <div className="flex min-h-[196px] flex-1 flex-col gap-2 p-3">
-        <p className="line-clamp-1 text-xs text-slate-600">
-          {displayShopName}
-        </p>
+
+      <div
+        className={cn(
+          "flex flex-1 flex-col",
+          compact ? "min-h-[96px] gap-1 p-2" : "min-h-[124px] gap-1.5 p-3"
+        )}
+      >
         <h3
-          className="overflow-hidden text-sm font-semibold text-slate-800"
+          className={cn(
+            "overflow-hidden font-extrabold leading-snug text-indigo-950",
+            compact ? "text-xs" : "text-sm"
+          )}
           title={displayName}
         >
           <span className="block truncate group-hover:hidden">{displayName}</span>
-          <span className="hidden group-hover:block">
-            <span className="inline-flex min-w-max items-center gap-8 whitespace-nowrap group-hover:animate-[home-title-marquee_8s_linear_infinite]">
-              <span>{displayName}</span>
-              <span aria-hidden="true">{displayName}</span>
+          <span className="hidden w-full overflow-hidden group-hover:flex">
+            <span className="flex shrink-0 whitespace-nowrap group-hover:animate-[home-title-marquee_10s_linear_infinite]">
+              <span className="pr-8">{displayName}</span>
+              <span className="pr-8" aria-hidden="true">{displayName}</span>
             </span>
           </span>
         </h3>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          Shop: {displayShopName}
-        </p>
-        <p className="line-clamp-1 min-h-4 text-xs text-slate-500">
-          Nhân vật: {costume.characterName?.trim() || "-"}
-        </p>
-        <div className="min-h-7 text-sm font-semibold leading-tight text-pink-600">
+        {shopDisplay ? (
+          <p
+            className={cn(
+              "truncate font-semibold text-indigo-900/65",
+              compact ? "text-[10px] leading-tight" : "text-xs"
+            )}
+            title={`${VI.costumeRental.listShopLabel}: ${shopDisplay}`}
+          >
+            {shopDisplay}
+          </p>
+        ) : null}
+        <div
+          className={cn(
+            "flex items-baseline gap-0.5 font-extrabold leading-tight",
+            compact ? "min-h-5 text-xs" : "min-h-7 gap-1 text-base"
+          )}
+        >
           {hasPrice ? (
             <>
-              <span className="whitespace-nowrap">
-                {costume.priceMin.toLocaleString("vi-VN")} VND
+              <span className="bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-transparent">
+                {costume.priceMin.toLocaleString("vi-VN")} VNĐ
               </span>
-              <span className="ml-1 text-[11px] font-normal text-slate-400">/ngày</span>
+              <span
+                className={cn(
+                  "font-semibold text-indigo-900/60",
+                  compact ? "text-[10px]" : "text-xs"
+                )}
+              >
+                /ngày
+              </span>
             </>
           ) : (
-            "-"
+            <span className="text-slate-400">-</span>
           )}
         </div>
         <Button
           variant="soft"
           size="sm"
-          className="mt-auto w-full rounded-md bg-pink-50 text-slate-700 hover:bg-pink-100"
+          className={cn(
+            "mt-auto w-full rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 font-extrabold text-indigo-950 hover:brightness-105",
+            compact
+              ? "h-7 text-xs shadow-[2px_2px_0_0_#1e1b4b]"
+              : "h-9 text-[18px] shadow-[3px_3px_0_0_#1e1b4b]"
+          )}
           onClick={(event) => {
             event.stopPropagation()
             onViewDetail(costume.id)
           }}
         >
-          Xem chi tiết
+          {VI.costumeRental.viewDetail}
         </Button>
       </div>
     </Card>

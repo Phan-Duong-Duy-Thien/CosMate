@@ -19,29 +19,30 @@ import {
   FileText,
   UserRound,
   Youtube,
+  Trash2,
 } from "lucide-react"
 import { Button as AntButton, Dropdown, Avatar, Popover, Spin, Tooltip, Modal } from "antd"
-import { DeleteOutlined } from "@ant-design/icons"
 
 import { Breadcrumbs } from "@shared/components/Breadcrumbs"
 import { useBreadcrumb } from "@/app/providers/BreadcrumbProvider"
+import { buildCheckoutFlowBreadcrumbs, isFromCheckoutFlow } from "@/features/order/utils/checkoutNavigation"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { getRedirectPath } from "@/features/auth/utils/roleRedirect"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
+import {
+  showNotificationActionToast,
+  showNotificationDetailToast,
+} from "@/features/notification/utils/showNotificationToast"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { useUnreadCount } from "@/features/chat/hooks/useUnreadCount"
 import { VI } from "@/shared/i18n/vi"
 import { SearchBar } from "@/features/search/components/SearchBar"
 import { cn } from "@/lib/utils"
+import { NOTIFICATION_POPOVER_UI, SITE_HEADER_UI } from "@/app/constants/homeAnimeUi"
 import { isAuthenticated, clearAuth } from "@/features/auth/utils/authStorage"
 import { ChangePasswordModal } from "@/features/profile/components/ChangePasswordModal"
-import bgImage from "@/assets/background.jpg"
-import sideBannerImage1 from "@/assets/anh1.jpg"
-import sideBannerImage2 from "@/assets/quiz1.jpg"
-import sideBannerImage3 from "@/assets/quiz2.jpg"
-import sideBannerImage4 from "@/assets/quiz3.jpg"
 import ghnLogo from "@/assets/ghn.jpg"
 import siteLogo from "@/assets/cosmate.png"
 import type { MenuProps } from 'antd'
@@ -58,24 +59,15 @@ export default function CosplayerSiteLayout() {
   const navigate = useNavigate()
   const location = useLocation()
   const [isScrolled, setIsScrolled] = React.useState(false)
-  const [bannerIndex, setBannerIndex] = React.useState(0)
-
-  const bannerImages = [sideBannerImage1, sideBannerImage2, sideBannerImage3, sideBannerImage4]
-
-  React.useEffect(() => {
-    const interval = setInterval(() => {
-      setBannerIndex((prev) => (prev + 1) % bannerImages.length)
-    }, 2000)
-    return () => clearInterval(interval)
-  }, [bannerImages.length])
-
   const { items, setItems } = useBreadcrumb()
   const { userProfile, setUserProfile } = useUserProfile()
   const { openChat } = useChatPopup()
 
   const isHomePage = location.pathname === "/" || location.pathname === "/home"
-  const isWideContentPage =
-    location.pathname === "/costumes" || location.pathname === "/guidelines-rules"
+
+  /** Một cột nội dung chung (giống /costumes): max-width + lề hai bên — trừ homepage. */
+  const siteContentShellClass =
+    "mx-auto w-full min-w-0 max-w-screen-2xl px-4 md:px-6 xl:px-8"
 
   const loggedIn = isAuthenticated()
   const { notifications, loading: notifLoading, unreadCount, markNotificationRead, markAllRead, deleteNotification } = useNotifications()
@@ -97,7 +89,6 @@ export default function CosplayerSiteLayout() {
       "/photographers",
       "/staffs",
       "/service",
-      "/staff/",
       "/photographer/",
     ]
     const isPublicBrowsePath = publicBrowsePaths.some((p) => location.pathname.startsWith(p))
@@ -114,8 +105,8 @@ export default function CosplayerSiteLayout() {
       const userId = getUserId()
       if (!userId) return
 
-      // Skip if already loaded
-      if (userProfile.avatarUrl || userProfile.fullName) return
+      // Skip only when we already have a user photo (fullName alone is not enough)
+      if (userProfile.avatarUrl) return
 
       try {
         const profile = await getUserProfile(userId)
@@ -131,10 +122,11 @@ export default function CosplayerSiteLayout() {
     }
 
     fetchProfile()
-  }, [loggedIn, userProfile.avatarUrl, userProfile.fullName, setUserProfile])
+  }, [loggedIn, userProfile.avatarUrl, setUserProfile])
 
   React.useEffect(() => {
     const path = location.pathname
+    const fromCheckout = isFromCheckoutFlow(location.search)
 
     if (path === "/") {
       setItems([])
@@ -150,11 +142,9 @@ export default function CosplayerSiteLayout() {
         { label: "Đang tải..." },
       ])
     } else if (path === "/rent/checkout") {
-      setItems([
-        { label: VI.common.breadcrumb.home, to: "/" },
-        { label: VI.common.breadcrumb.costumes, to: "/costumes" },
-        { label: VI.common.breadcrumb.checkout },
-      ])
+      setItems(buildCheckoutFlowBreadcrumbs())
+    } else if (path === "/profile/addresses/new" && fromCheckout) {
+      setItems(buildCheckoutFlowBreadcrumbs([{ label: VI.common.breadcrumb.addAddress }]))
     } else if (path.startsWith("/profile/addresses")) {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -165,6 +155,8 @@ export default function CosplayerSiteLayout() {
             : VI.common.breadcrumb.addresses,
         },
       ])
+    } else if (path === "/profile/wallet/topup" && fromCheckout) {
+      setItems(buildCheckoutFlowBreadcrumbs([{ label: VI.wallet.topUpTitle }]))
     } else if (path === "/photographers") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
@@ -181,7 +173,7 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs },
       ])
-    } else if (path.startsWith("/staff/")) {
+    } else if (path.startsWith("/staffs/") && path !== "/staffs") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.staffs, to: "/staffs" },
@@ -193,7 +185,7 @@ export default function CosplayerSiteLayout() {
         setItems([
           { label: VI.common.breadcrumb.home, to: "/" },
           { label: VI.common.breadcrumb.staffs, to: "/staffs" },
-          { label: VI.common.breadcrumb.staffProfile, to: `/staff/${state.providerId}` },
+          { label: VI.common.breadcrumb.staffProfile, to: `/staffs/${state.providerId}` },
           { label: VI.common.breadcrumb.serviceDetailFromProfile },
         ])
       } else if (state?.providerType === 'photographer' && state?.providerId) {
@@ -236,12 +228,11 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.profile, to: "/profile" },
         { label: VI.profile.orders.title },
       ])
-    } else if (path === "/profile/addresses/new") {
+    } else if (path === "/profile/token") {
       setItems([
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: VI.common.breadcrumb.profile, to: "/profile" },
-        { label: "Địa chỉ", to: "/profile" },
-        { label: "Thêm địa chỉ" },
+        { label: VI.profile.token.hubTitle },
       ])
     } else if (path === "/profile/wallet") {
       setItems([
@@ -261,8 +252,10 @@ export default function CosplayerSiteLayout() {
         { label: VI.common.breadcrumb.home, to: "/" },
         { label: "Wishlist" },
       ])
+    } else if (path === "/login" || path.startsWith("/register")) {
+      setItems([])
     }
-  }, [location.pathname, setItems])
+  }, [location.pathname, location.search, setItems])
 
   React.useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 10)
@@ -289,49 +282,91 @@ export default function CosplayerSiteLayout() {
   const [notifOpen, setNotifOpen] = React.useState(false)
 
   const notifPopoverContent = (
-    <div style={{ width: 320, background: "#fff", borderRadius: 12, boxShadow: "0 4px 24px rgba(0,0,0,0.12)" }}>
-      <div style={{ borderBottom: "1px solid #f1f5f9", padding: "10px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <p style={{ fontSize: 14, fontWeight: 600, color: "#1e293b", margin: 0 }}>{VI.notification.title}</p>
-        {unreadCount > 0 && (
-          <button
-            onClick={() => markAllRead()}
-            style={{ fontSize: 12, color: "#ec4899", background: "none", border: "none", cursor: "pointer", padding: 0, fontWeight: 500 }}
-          >
-            Đánh dấu đã đọc
-          </button>
-        )}
+    <div className={NOTIFICATION_POPOVER_UI.shell}>
+      <div className={NOTIFICATION_POPOVER_UI.header}>
+        <p className={NOTIFICATION_POPOVER_UI.title}>{VI.notification.title}</p>
+        <button
+          type="button"
+          disabled={unreadCount === 0 || notifLoading}
+          onClick={() =>
+            void (async () => {
+              const ok = await markAllRead()
+              showNotificationActionToast("readAll", ok)
+            })()
+          }
+          className={cn(
+            NOTIFICATION_POPOVER_UI.markAllBtn,
+            (unreadCount === 0 || notifLoading) && "cursor-not-allowed opacity-45 no-underline",
+          )}
+        >
+          {VI.notification.markAllRead}
+        </button>
       </div>
-      <div style={{ maxHeight: 360, overflowY: "auto" }}>
+      <div className={NOTIFICATION_POPOVER_UI.list}>
         {notifLoading ? (
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 32 }}>
+          <div className="flex items-center justify-center p-8">
             <Spin size="small" />
           </div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: 32, textAlign: "center", color: "#64748b", fontSize: 14 }}>{VI.notification.empty}</div>
+          <div className={NOTIFICATION_POPOVER_UI.empty}>{VI.notification.empty}</div>
         ) : (
           <>
-            {notifications.slice(0, 10).map((n) => (
+            {notifications.slice(0, 10).map((n) => {
+              const openDetailToast = () => {
+                const followLink =
+                  n.link?.trim()
+                    ? () => {
+                        const link = n.link!.trim()
+                        if (link.startsWith("http")) {
+                          window.open(link, "_blank", "noopener,noreferrer")
+                        } else {
+                          navigate(link.startsWith("/") ? link : `/${link}`)
+                        }
+                      }
+                    : undefined
+                showNotificationDetailToast(n, { onViewLink: followLink })
+              }
+
+              const handleActivate = async () => {
+                if (!n.isRead) {
+                  await markNotificationRead(n.id)
+                }
+                openDetailToast()
+              }
+
+              return (
               <div
                 key={n.id}
-                onClick={async () => {
-                  if (!n.isRead) {
-                    await markNotificationRead(n.id)
+                role="button"
+                tabIndex={0}
+                onKeyDown={(ev) => {
+                  if (ev.key === "Enter" || ev.key === " ") {
+                    ev.preventDefault()
+                    void handleActivate()
                   }
-                  if (n.link) navigate(n.link)
-                  setNotifOpen(false)
                 }}
-                style={{ padding: "10px 16px", borderBottom: "1px solid #f8fafc", cursor: "pointer", background: "transparent" }}
-                onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
-                onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+                onClick={() => void handleActivate()}
+                className={cn(
+                  NOTIFICATION_POPOVER_UI.item,
+                  !n.isRead && NOTIFICATION_POPOVER_UI.itemUnread,
+                )}
               >
-                <div style={{ display: "flex", alignItems: "flex-start", gap: 8 }}>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: n.isRead ? 400 : 600, color: n.isRead ? "#475569" : "#0f172a", margin: 0 }}>
-                  {n.header}
-                </p>
-                <p style={{ fontSize: 12, color: "#64748b", margin: "4px 0 0", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical" }}>
-                  {n.content}
-                </p>
+                <div className="flex items-start gap-2.5">
+                  <span
+                    className={n.isRead ? NOTIFICATION_POPOVER_UI.readDot : NOTIFICATION_POPOVER_UI.unreadDot}
+                    aria-hidden
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={
+                        n.isRead
+                          ? NOTIFICATION_POPOVER_UI.itemHeaderRead
+                          : NOTIFICATION_POPOVER_UI.itemHeaderUnread
+                      }
+                    >
+                      {n.header}
+                    </p>
+                    <p className={NOTIFICATION_POPOVER_UI.itemContent}>{n.content}</p>
                   </div>
                   <button
                     type="button"
@@ -343,80 +378,90 @@ export default function CosplayerSiteLayout() {
                         okText: VI.common.actions.delete,
                         cancelText: VI.common.actions.cancel,
                         okButtonProps: { danger: true },
-                        onOk: () => void deleteNotification(n.id),
+                        onOk: async () => {
+                          const ok = await deleteNotification(n.id)
+                          showNotificationActionToast("delete", ok)
+                        },
                       })
                     }}
-                    style={{
-                      border: "none",
-                      background: "transparent",
-                      color: "#94a3b8",
-                      cursor: "pointer",
-                      padding: 2,
-                      lineHeight: 1,
-                    }}
+                    className={NOTIFICATION_POPOVER_UI.deleteBtn}
                   >
-                    <DeleteOutlined />
+                    <Trash2 className="h-4 w-4" aria-hidden />
                   </button>
                 </div>
               </div>
-            ))}
+              )
+            })}
           </>
         )}
       </div>
       {notifications.length > 0 && (
         <div
-          style={{ padding: "10px 16px", textAlign: "center", fontSize: 13, fontWeight: 500, color: "#ec4899", cursor: "pointer", borderTop: "1px solid #f1f5f9" }}
+          role="button"
+          tabIndex={0}
+          className={NOTIFICATION_POPOVER_UI.footer}
           onClick={() => {
             navigate("/notifications")
             setNotifOpen(false)
           }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault()
+              navigate("/notifications")
+              setNotifOpen(false)
+            }
+          }}
         >
-          {VI.notification.viewAll}
+          {VI.notification.viewAll} →
         </div>
       )}
     </div>
   )
 
   return (
-    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-[#111827]">
+    <div className="relative flex min-h-screen flex-col overflow-x-hidden text-foreground">
+      {/* Site-wide soft gradient + dot-grid background (replaces curtain image) */}
       <div
         aria-hidden="true"
-        className="pointer-events-none fixed inset-0 -z-10"
+        className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(120%_80%_at_50%_0%,#fff7fb_0%,#fdf2f8_36%,#eef2ff_72%,#f8fafc_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none fixed inset-0 -z-10 opacity-[0.55]"
         style={{
-          backgroundImage: `url(${bgImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
+          backgroundImage:
+            "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+          backgroundSize: "14px 14px",
         }}
       />
 
       <header
         className={cn(
-          "fixed left-0 top-0 z-[9999] w-full border-b border-pink-200 bg-pink-100/90 backdrop-blur-md transition-shadow",
-          isScrolled && "border-pink-300/80 shadow-md"
+          SITE_HEADER_UI.shell,
+          isScrolled && SITE_HEADER_UI.shellScrolled
         )}
       >
-        <div className="flex h-16 w-full items-center gap-3 pl-0 pr-4">
+        <div className={SITE_HEADER_UI.inner}>
           <Link
             to="/"
             aria-label="Về trang chủ"
-            className="ml-4 inline-flex shrink-0 items-center rounded-lg p-0 transition hover:bg-pink-50"
+            className={SITE_HEADER_UI.logoLink}
           >
-            <img src={siteLogo} alt="CosMate" className="h-15 w-auto object-contain" />
+            <img src={siteLogo} alt="CosMate" className={SITE_HEADER_UI.logoImg} />
           </Link>
 
-          <nav className="hidden flex-1 items-center justify-center gap-2 whitespace-nowrap md:flex lg:gap-3">
+          <nav className={SITE_HEADER_UI.nav}>
             <Tooltip title="Trang chủ">
               <button
                 type="button"
                 aria-label="Trang chủ"
                 className={cn(
-                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
-                  isHomePage ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  isHomePage ? SITE_HEADER_UI.navBtnActive : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/")}
               >
-                <Home className="h-6 w-6" />
+                <Home className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -425,12 +470,14 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê đồ Cosplay"
                 className={cn(
-                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname.startsWith("/costumes") ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname.startsWith("/costumes")
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/costumes")}
               >
-                <Shirt className="h-6 w-6" />
+                <Shirt className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -439,12 +486,14 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Quiz"
                 className={cn(
-                  "rounded-full p-3 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname === "/style-quiz" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname === "/style-quiz"
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/style-quiz")}
               >
-                <FileText className="h-6 w-6" />
+                <FileText className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -453,12 +502,14 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Pose Battle"
                 className={cn(
-                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname === "/pose-battle" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname === "/pose-battle"
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/pose-battle")}
               >
-                <Sparkles className="h-6 w-6" />
+                <Sparkles className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -467,12 +518,14 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Hướng dẫn và Quy định"
                 className={cn(
-                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname === "/guidelines-rules" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname === "/guidelines-rules"
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/guidelines-rules")}
               >
-                <BookOpen className="h-6 w-6" />
+                <BookOpen className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -481,12 +534,14 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê Photographer"
                 className={cn(
-                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname === "/photographers" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname === "/photographers"
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/photographers")}
               >
-                <Camera className="h-6 w-6" />
+                <Camera className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
 
@@ -495,75 +550,102 @@ export default function CosplayerSiteLayout() {
                 type="button"
                 aria-label="Thuê Staff"
                 className={cn(
-                  "rounded-full p-2.5 transition hover:bg-pink-50 hover:text-pink-600",
-                  location.pathname === "/staffs" ? "bg-pink-50 text-pink-600" : "text-slate-700"
+                  SITE_HEADER_UI.navBtn,
+                  location.pathname === "/staffs"
+                    ? SITE_HEADER_UI.navBtnActive
+                    : SITE_HEADER_UI.navBtnIdle
                 )}
                 onClick={() => navigate("/staffs")}
               >
-                <UserRound className="h-6 w-6" />
+                <UserRound className={SITE_HEADER_UI.navIcon} />
               </button>
             </Tooltip>
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-2">
-            <SearchBar className="hidden md:flex" />
+          <div className={SITE_HEADER_UI.actions}>
+            <SearchBar className={SITE_HEADER_UI.searchWrap} />
 
-            <button
-              type="button"
-              aria-label="Tin nhắn"
-              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => openChat(0, 0)}
-            >
-              <MessageCircle className="h-6 w-6" />
-              {chatUnreadCount > 0 && (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[9px] font-bold text-white">
-                  {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
-                </span>
-              )}
-            </button>
+            {loggedIn && (
+              <>
+                <button
+                  type="button"
+                  aria-label="Tin nhắn"
+                  className={SITE_HEADER_UI.iconBtn}
+                  onClick={() => openChat(0, 0)}
+                >
+                  <MessageCircle className={SITE_HEADER_UI.actionIcon} />
+                  {chatUnreadCount > 0 && (
+                    <span className={SITE_HEADER_UI.unreadBadge}>
+                      {chatUnreadCount > 9 ? "9+" : chatUnreadCount}
+                    </span>
+                  )}
+                </button>
 
-            <button
-              type="button"
-              aria-label="Giỏ hàng"
-              className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              onClick={() => navigate('/profile/purchase-history')}
-            >
-              <ShoppingCart className="h-6 w-6" />
-              <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-pink-400" />
-            </button>
+                <button
+                  type="button"
+                  aria-label="Giỏ hàng"
+                  className={SITE_HEADER_UI.iconBtn}
+                  onClick={() => navigate('/profile/purchase-history')}
+                >
+                  <ShoppingCart className={SITE_HEADER_UI.actionIcon} />
+                  <span className={SITE_HEADER_UI.cartDot} />
+                </button>
 
-            <Tooltip title="Wishlist">
-              <button
-                type="button"
-                aria-label="Wishlist"
-                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-                onClick={() => navigate('/wishlist')}
-              >
-                <Heart className="h-6 w-6" />
-              </button>
-            </Tooltip>
+                <Tooltip title="Wishlist">
+                  <button
+                    type="button"
+                    aria-label="Wishlist"
+                    className={SITE_HEADER_UI.iconBtn}
+                    onClick={() => navigate('/wishlist')}
+                  >
+                    <Heart className={SITE_HEADER_UI.actionIcon} />
+                  </button>
+                </Tooltip>
 
-            <Popover
-              content={notifPopoverContent}
-              trigger="click"
-              open={notifOpen}
-              onOpenChange={setNotifOpen}
-              placement="bottomRight"
-              arrow={false}
-            >
-              <button
-                type="button"
-                aria-label="Thông báo"
-                className="relative rounded-full p-2 text-slate-600 hover:bg-pink-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
-              >
-                <Bell className="h-6 w-6" />
-                {unreadCount > 0 && (
-                  <span className="absolute -right-0.5 -top-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-pink-500 text-[9px] font-bold text-white">
-                    {unreadCount > 9 ? "9+" : unreadCount}
-                  </span>
-                )}
-              </button>
-            </Popover>
+                <Popover
+                  content={notifPopoverContent}
+                  trigger="click"
+                  open={notifOpen}
+                  onOpenChange={setNotifOpen}
+                  placement="bottomRight"
+                  arrow={false}
+                  align={{ offset: [0, 12] }}
+                  classNames={{ root: "cosmate-notif-popover" }}
+                  styles={{
+                    root: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                    },
+                    container: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                      border: "none",
+                      borderRadius: 0,
+                    },
+                    body: {
+                      padding: 0,
+                      background: "transparent",
+                      boxShadow: "none",
+                    },
+                  }}
+                >
+                  <button
+                    type="button"
+                    aria-label="Thông báo"
+                    className={SITE_HEADER_UI.iconBtn}
+                  >
+                    <Bell className={SITE_HEADER_UI.actionIcon} />
+                    {unreadCount > 0 && (
+                      <span className={SITE_HEADER_UI.unreadBadge}>
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </button>
+                </Popover>
+              </>
+            )}
 
             {loggedIn ? (
               <Dropdown 
@@ -572,11 +654,18 @@ export default function CosplayerSiteLayout() {
                 trigger={["click"]} 
                 styles={{ root: { zIndex: 9999 } }}
               >
-                <div className="cursor-pointer" style={{ display: "inline-flex" }}>
+                <div className={SITE_HEADER_UI.avatarWrap}>
                   {userProfile.avatarUrl ? (
-                    <Avatar size={36} src={userProfile.avatarUrl} />
+                    <Avatar
+                      size={40}
+                      src={userProfile.avatarUrl}
+                      className={SITE_HEADER_UI.avatar}
+                    />
                   ) : (
-                    <Avatar size={36} style={{ backgroundColor: "#ec4899" }}>
+                    <Avatar
+                      size={40}
+                      className={cn(SITE_HEADER_UI.avatar, "!bg-cosmate-pink !text-white")}
+                    >
                       {computeInitials(userProfile.fullName)}
                     </Avatar>
                   )}
@@ -584,8 +673,10 @@ export default function CosplayerSiteLayout() {
               </Dropdown>
             ) : (
               <>
-                <AntButton onClick={() => navigate("/login")}>Đăng nhập</AntButton>
-                <AntButton type="primary" onClick={() => navigate("/register")}>
+                <AntButton className={SITE_HEADER_UI.authLogin} onClick={() => navigate("/login")}>
+                  Đăng nhập
+                </AntButton>
+                <AntButton className={SITE_HEADER_UI.authRegister} onClick={() => navigate("/register")}>
                   Đăng ký
                 </AntButton>
               </>
@@ -595,84 +686,38 @@ export default function CosplayerSiteLayout() {
         </div>
       </header>
 
-      <main className="flex-1 pt-[56px]">
+      <main className={cn("min-w-0 flex-1", SITE_HEADER_UI.mainOffset)}>
         {!isHomePage && items.length > 0 && (
-          <div className="mx-auto w-full max-w-7xl px-4 pt-6 pb-2">
+          <div className={cn(siteContentShellClass, "pt-6 pb-2")}>
             <Breadcrumbs items={items} />
           </div>
         )}
         {isHomePage ? (
-          <div className="relative">
+          <div className="relative isolate">
+            {/* Dot grid + tint across full main width (not limited by max-w column) */}
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 z-[1] bg-[#fff7fb]"
+              style={{
+                backgroundImage:
+                  "radial-gradient(circle at center, rgba(76, 29, 149, 0.085) 1px, transparent 1px)",
+                backgroundSize: "14px 14px",
+              }}
+            />
             <div
               aria-hidden="true"
-              className="pointer-events-none absolute inset-0 z-0 bg-white/12 backdrop-blur-[1px]"
+              className="pointer-events-none absolute inset-0 z-[2] bg-white/12 backdrop-blur-[1px]"
             />
 
-            <div className="relative z-10 mx-auto w-full max-w-[1800px] px-2 py-2 lg:px-3 xl:px-4">
-              <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-[160px_minmax(0,1fr)_160px] xl:gap-5 xl:grid-cols-[200px_minmax(0,1fr)_200px] 2xl:grid-cols-[220px_minmax(0,1fr)_220px]">
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben trai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Bạn là nhân vật nào?
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/style-quiz")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Làm quiz ngay
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
-
-                <div className="min-w-0">
-                  <Outlet />
-                </div>
-
-                <aside className="hidden pt-8 lg:block">
-                  <div className="sticky top-[72px]">
-                    <div className="group relative overflow-hidden rounded-2xl shadow-lg transition-all duration-300 hover:-translate-y-1 hover:shadow-xl">
-                      <img
-                        src={bannerImages[bannerIndex]}
-                        alt="Trang tri ben phai"
-                        className="h-[320px] w-full rounded-2xl object-cover transition-opacity duration-500 ease-in-out xl:h-[340px] 2xl:h-[360px]"
-                      />
-                      <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-3">
-                        <p className="inline-flex rounded-full bg-white/20 px-3 py-1 text-xs font-semibold text-white drop-shadow backdrop-blur-sm">
-                          Tìm trang phục qua ảnh
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => navigate("/costumes")}
-                          className="pointer-events-auto mt-2 rounded-full bg-pink-500 px-4 py-1.5 text-xs font-semibold text-white shadow hover:bg-pink-600"
-                        >
-                          Tìm bằng hình ảnh
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </aside>
+            {/* Wide column on large screens so side margins feel less empty (no side-banner grid) */}
+            <div className="relative z-10 mx-auto w-full min-w-0 max-w-[min(1800px,100%)] px-3 pb-3 pt-2 sm:px-4 md:px-6 lg:px-8 xl:px-10">
+              <div className="min-w-0">
+                <Outlet />
               </div>
             </div>
           </div>
         ) : (
-          <div
-            className={cn(
-              "mx-auto w-full",
-              isWideContentPage
-                ? "max-w-screen-2xl px-4 md:px-6 xl:px-8"
-                : "max-w-7xl px-4 lg:px-6"
-            )}
-          >
+          <div className={siteContentShellClass}>
             <div className="min-w-0">
               <Outlet />
             </div>
@@ -853,3 +898,4 @@ export default function CosplayerSiteLayout() {
     </div>
   )
 }
+

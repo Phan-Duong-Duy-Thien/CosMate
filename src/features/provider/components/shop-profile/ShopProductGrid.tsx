@@ -11,14 +11,14 @@ interface ShopProductGridProps {
 export function ShopProductGrid({ products, onProductClick, onWishlist }: ShopProductGridProps) {
   if (products.length === 0) {
     return (
-      <div className="rounded-2xl border border-pink-100 bg-white p-8 text-center text-slate-500">
+      <div className="rounded-3xl border-[3px] border-dashed border-indigo-950/30 bg-[#fffbeb]/80 p-8 text-center text-sm font-semibold text-indigo-900/70 shadow-[5px_5px_0_0_rgba(30,27,75,0.15)]">
         {VI.provider.shop.products.noProducts}
       </div>
     )
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+    <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
       {products.map(product => (
         <ShopProductCard
           key={product.id}

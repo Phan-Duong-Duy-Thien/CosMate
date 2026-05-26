@@ -6,11 +6,12 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
-import { InboxOutlined, RobotOutlined } from '@ant-design/icons'
-import type { UploadFile } from 'antd'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
+import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
+import { createCharacterRequest } from '../../api/characterRequests.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import AILoadingMascot from '@/shared/components/AILoadingMascot'
@@ -35,6 +36,7 @@ interface FormValues {
   rentDiscount: number
   depositAmount: number
   imageFiles: { fileList: UploadFile[] }
+  videoFiles?: { fileList: UploadFile[] }
 }
 
 interface CharacterOption {
@@ -42,6 +44,11 @@ interface CharacterOption {
   name: string
   anime: string
   imageUrl?: string
+}
+
+interface CharacterRequestFormValues {
+  characterName: string
+  animeName: string
 }
 
 interface Props {
@@ -57,6 +64,11 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [characters, setCharacters] = useState<CharacterOption[]>([])
   const [isCharactersLoading, setIsCharactersLoading] = useState(false)
   const [moderationError, setModerationError] = useState<string | null>(null)
+  const [personaId, setPersonaId] = useState<number>(1)
+  const [isCharacterRequestModalOpen, setIsCharacterRequestModalOpen] = useState(false)
+  const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
+  const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
+  const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -67,11 +79,17 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     return hasName && hasImages
   }, [watchedImages, watchedName])
 
-  const characterOptions = useMemo(
-    () =>
-      characters.map((character) => ({
+  const selectedCharacterIds = Form.useWatch('characterIds', form) ?? []
+  const isCharacterSelectionFull = selectedCharacterIds.length >= 3
+
+  const characterOptions = useMemo(() => {
+    const grouped = characters.reduce<Record<string, SelectProps['options']>>((acc, character) => {
+      const anime = character.anime?.trim() || 'Khác'
+      if (!acc[anime]) acc[anime] = []
+      acc[anime].push({
         value: character.id,
         title: `${character.name} ${character.anime}`.trim(),
+        disabled: isCharacterSelectionFull && !selectedCharacterIds.includes(character.id),
         label: (
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <Avatar shape="square" size={36} src={character.imageUrl} alt={character.name} style={{ objectFit: 'cover', flexShrink: 0 }}>
@@ -83,9 +101,14 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </div>
           </div>
         ),
-      })),
-    [characters],
-  )
+      })
+      return acc
+    }, {})
+
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, options]) => ({ label, options }))
+  }, [characters, isCharacterSelectionFull, selectedCharacterIds])
 
   useEffect(() => {
     const fetchCharacters = async () => {
@@ -109,10 +132,39 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     return raw.map((f: UploadFile) => f.originFileObj).filter((f): f is File => f !== undefined)
   }
 
+  const videoUploadProps: UploadProps = {
+    accept: '.mp4,.mov,video/mp4,video/quicktime',
+    beforeUpload: (file) => {
+      const isVideo = file.type.startsWith('video/') || /\.(mp4|mov)$/i.test(file.name)
+      if (!isVideo) {
+        message.error('Chỉ hỗ trợ video định dạng .mp4 hoặc .mov')
+        return Upload.LIST_IGNORE
+      }
+      const maxSizeMb = 100
+      if (file.size / 1024 / 1024 > maxSizeMb) {
+        message.error(`Video không được vượt quá ${maxSizeMb}MB`)
+        return Upload.LIST_IGNORE
+      }
+      const preview = URL.createObjectURL(file)
+      setVideoPreviewUrl(preview)
+      setVideoFileList([{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }])
+      form.setFieldValue('videoFiles', { fileList: [{ uid: file.uid, name: file.name, status: 'done', originFileObj: file }] })
+      return false
+    },
+    onRemove: () => {
+      if (videoPreviewUrl) URL.revokeObjectURL(videoPreviewUrl)
+      setVideoPreviewUrl(null)
+      setVideoFileList([])
+      form.setFieldValue('videoFiles', { fileList: [] })
+    },
+    fileList: videoFileList,
+    maxCount: 1,
+    listType: 'picture',
+  }
+
   const handleGenerateDescription = async () => {
     const values = form.getFieldsValue()
     const name = String(values?.name || '').trim()
-    const promptText = String(form.getFieldValue('customPrompt') || '').trim()
     const files = extractFilesFromForm(values)
 
     if (!name) {
@@ -126,7 +178,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
     setIsAiGenerating(true)
     try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files, promptText)
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
@@ -140,6 +192,26 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       }
     } finally {
       setIsAiGenerating(false)
+    }
+  }
+
+  const handleCharacterRequestSubmit = async () => {
+    try {
+      const values = await characterRequestForm.validateFields()
+      const providerId = Number((form.getFieldValue('providerId') ?? 1) || 1)
+      await createCharacterRequest({
+        characterName: values.characterName.trim(),
+        animeName: values.animeName.trim(),
+        providerId,
+      })
+      message.success('Đã gửi yêu cầu thêm nhân vật mới.')
+      setIsCharacterRequestModalOpen(false)
+      characterRequestForm.resetFields()
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ValidationError') return
+      if (err instanceof Error) {
+        message.error(err.message)
+      }
     }
   }
 
@@ -173,6 +245,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         depositAmount: values.depositAmount,
         imageFiles: rawFiles,
         rentalOptions: null,
+        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
       }
       await onSubmit(submitPayload)
     } catch (err: unknown) {
@@ -198,7 +271,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         initialValues={{ characterIds: [] }}
         onFinish={handleFinish}
         disabled={disabled || loading}
-        style={{ maxWidth: 640 }}
+        style={{ maxWidth: 640, margin: '0 auto' }}
       >
         {error && (
           <Form.Item>
@@ -210,7 +283,11 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <Input placeholder="Nhập tên trang phục" maxLength={120} />
         </Form.Item>
 
-        <Form.Item label="Nhân vật Anime / Game" name="characterIds">
+        <Form.Item
+          label="Nhân vật Anime / Game"
+          name="characterIds"
+          extra={isCharacterSelectionFull ? 'Tối đa 3 nhân vật' : undefined}
+        >
           <Select
             mode="multiple"
             showSearch
@@ -218,16 +295,46 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             placeholder="Chọn nhân vật"
             loading={isCharactersLoading}
             optionFilterProp="title"
+            onDeselect={() => undefined}
+            maxTagCount="responsive"
+            notFoundContent={
+              <Space direction="vertical" size={8} style={{ padding: 12, width: '100%' }}>
+                <div>Không tìm thấy nhân vật phù hợp.</div>
+                <Button
+                  type="dashed"
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={() => setIsCharacterRequestModalOpen(true)}
+                  style={{ width: '100%', borderRadius: 10, fontWeight: 700 }}
+                >
+                  Nhân vật bạn tìm không có? Yêu cầu thêm mới
+                </Button>
+              </Space>
+            }
             filterOption={(input, option) => {
               const keyword = input.toLowerCase().trim()
               if (!keyword) return true
               return String(option?.title ?? '').toLowerCase().includes(keyword)
             }}
             options={characterOptions}
+            onChange={(nextValue) => {
+              if ((nextValue?.length ?? 0) > 3) {
+                message.warning('Tối đa 3 nhân vật')
+                form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
+              }
+            }}
           />
         </Form.Item>
 
-        <Card size="small" title="✨ AI Hỗ trợ viết mô tả" style={{ marginBottom: 16, background: '#fafcff', borderColor: '#d9e8ff' }}>
+        <Card
+          size="small"
+          title="✨ AI Hỗ trợ viết mô tả"
+          style={{
+            marginBottom: 16,
+            background: "color-mix(in oklch, var(--cosmate-info) 6%, var(--background))",
+            borderColor: "color-mix(in oklch, var(--cosmate-info) 35%, var(--border))",
+          }}
+        >
           {isAiGenerating && (
             <div style={{ marginBottom: 16 }}>
               <AILoadingMascot type="content" variant="inline" />
@@ -238,14 +345,22 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" disabled={isAiGenerating} />
           </Form.Item>
 
-          <Row gutter={12} align="middle">
-            <Col flex="auto">
-              <Form.Item label="Prompt tuỳ chỉnh cho AI" name="customPrompt" style={{ marginBottom: 0 }}>
-                <Input.TextArea rows={3} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="Ví dụ: viết theo phong cách ngắn gọn, sang trọng, nhấn mạnh chất liệu và vibe anime..." />
-              </Form.Item>
-            </Col>
+          <Form.Item label="Chọn phong cách mô tả" style={{ marginBottom: 16 }}>
+            <Radio.Group
+              value={personaId}
+              onChange={(event) => setPersonaId(event.target.value)}
+              optionType="button"
+              buttonStyle="solid"
+            >
+              <Radio.Button value={1}>Sale chuyên nghiệp</Radio.Button>
+              <Radio.Button value={2}>Cute Gen Z</Radio.Button>
+              <Radio.Button value={3}>Deep Cổ trang</Radio.Button>
+            </Radio.Group>
+          </Form.Item>
+
+          <Row justify="end">
             <Col>
-              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI} style={{ marginTop: 30 }}>
+              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI}>
                 AI tự viết mô tả
               </Button>
             </Col>
@@ -310,12 +425,46 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </Dragger>
         </Form.Item>
 
+        <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
+          <Upload.Dragger {...videoUploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
+            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
+          </Upload.Dragger>
+          {videoPreviewUrl && (
+            <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>
+              <video src={videoPreviewUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
+            </div>
+          )}
+        </Form.Item>
+
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
             Tiếp theo →
           </Button>
         </Form.Item>
       </Form>
+
+      <Modal
+        title="Yêu cầu thêm nhân vật mới"
+        open={isCharacterRequestModalOpen}
+        onCancel={() => setIsCharacterRequestModalOpen(false)}
+        onOk={handleCharacterRequestSubmit}
+        okText="Gửi Yêu Cầu"
+        cancelText="Hủy"
+        centered
+      >
+        <Form form={characterRequestForm} layout="vertical">
+          <Form.Item name="characterName" label="Tên nhân vật" rules={[{ required: true, message: 'Vui lòng nhập tên nhân vật' }]}>
+            <Input placeholder="Ví dụ: Itachi Uchiha" />
+          </Form.Item>
+          <Form.Item name="animeName" label="Tên Anime/Game" rules={[{ required: true, message: 'Vui lòng nhập tên Anime/Game' }]}>
+            <Input placeholder="Ví dụ: Naruto" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </>
   )
 }

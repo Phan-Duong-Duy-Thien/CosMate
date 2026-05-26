@@ -1,6 +1,6 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
-import { clearAuth } from '@/features/auth/services/tokenStorage';
+import { clearAuth, getAccessTokenForRequest } from '@/features/auth/services/tokenStorage';
 
 /**
  * Configured Axios instance for CosMate API
@@ -10,7 +10,7 @@ import { clearAuth } from '@/features/auth/services/tokenStorage';
  * - baseURL has no /api prefix - endpoints must specify their own prefix
  */
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site',
   timeout: 120000, // tạm tăng lên 120s để loại trừ timeout
 });
 
@@ -20,17 +20,9 @@ const axiosInstance = axios.create({
  */
 axiosInstance.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    // Prefer sessionStorage (current tab session), fallback to localStorage (remember me)
-    let token = sessionStorage.getItem('cosmate_access_token');
-    let tokenType = sessionStorage.getItem('cosmate_token_type');
-
-    if (!token) {
-      token = localStorage.getItem('cosmate_access_token');
-      tokenType = localStorage.getItem('cosmate_token_type');
-    }
-
-    if (token && config.headers) {
-      config.headers.Authorization = `${tokenType || 'Bearer'} ${token}`;
+    const auth = getAccessTokenForRequest();
+    if (auth?.token && config.headers) {
+      config.headers.Authorization = `${auth.tokenType} ${auth.token}`;
     }
 
     // Handle Content-Type for FormData vs JSON

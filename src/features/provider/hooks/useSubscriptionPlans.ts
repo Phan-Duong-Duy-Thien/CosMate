@@ -12,12 +12,14 @@ interface UseSubscriptionPlansResult {
   error: string | null;
 }
 
-export function useSubscriptionPlans(): UseSubscriptionPlansResult {
+export function useSubscriptionPlans(enabled = true): UseSubscriptionPlansResult {
   const [plans, setPlans] = useState<SubscriptionPlan[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(enabled);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!enabled) return;
+
     let cancelled = false;
 
     async function fetchPlans() {
@@ -44,7 +46,7 @@ export function useSubscriptionPlans(): UseSubscriptionPlansResult {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [enabled]);
 
   return { plans, loading, error };
 }

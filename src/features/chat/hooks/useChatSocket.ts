@@ -20,7 +20,7 @@ export function useChatSocket(
   const [isConnected, setIsConnected] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
 
-  const { messages, mergeServerMessage } = useChatMessageStore()
+  const { messages, mergeServerMessage } = useChatMessageStore(roomId)
 
   // ── Connect socket on mount, disconnect on unmount ───────────────────────
   useEffect(() => {

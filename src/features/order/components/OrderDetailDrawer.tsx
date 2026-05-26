@@ -1,14 +1,25 @@
 /**
- * OrderDetailDrawer Component
+ * Order detail overlay (centered Modal + tabs).
  *
- * UI-only component to display order details in a drawer.
- * Data fetching is handled internally via useOrderDetail hook.
- * No API calls - receives orderId and callbacks via props.
+ * UI-only — data fetching via hooks inside component.
  */
 
-import { useState } from 'react';
-import { Drawer, Descriptions, Spin, Empty, Tag, Divider, List, Avatar, Typography, Button, Table, Modal } from 'antd';
-import { UserOutlined, ShopOutlined, EnvironmentOutlined, PhoneOutlined, AppstoreOutlined, PlusCircleOutlined, HistoryOutlined } from '@ant-design/icons';
+import { useState, type ReactNode } from 'react';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
+import { Modal, Tabs, Descriptions, Spin, Empty, Tag, List, Typography, Button, Table } from 'antd';
+import {
+  UserOutlined,
+  ShopOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  AppstoreOutlined,
+  PlusCircleOutlined,
+  HistoryOutlined,
+  GiftOutlined,
+  DollarOutlined,
+  FlagOutlined,
+} from '@ant-design/icons';
 import { useOrderDetail } from '../hooks/useOrderDetail';
 import { useCostumeBasicInfo } from '../hooks/useCostumeBasicInfo';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
@@ -16,8 +27,9 @@ import { ExtendRentalModal } from './ExtendRentalModal';
 import { useExtendOrder } from '../hooks/useExtendOrder';
 import { useOrderExtends } from '../hooks/useOrderExtends';
 import { useExtendDetail } from '../hooks/useExtendDetail';
+import { cn } from '@/lib/utils';
 import { VI } from '@/shared/i18n/vi';
-import type { OrderDetail, OrderStatus } from '../types';
+import type { OrderStatus } from '../types';
 import type { PaymentMethod } from '../utils/paymentReturnUrls';
 import type { ExtendPaymentStatus } from '../api/order.api';
 
@@ -29,6 +41,20 @@ interface OrderDetailDrawerProps {
   orderType?: string; // 'RENT_COSTUME' — used to guard against cross-type contamination
   onClose: () => void;
   onExtendSuccess?: () => void;
+  /** Hide rental-option package UI (staff/admin read-only surfaces). */
+  hideRentalOptions?: boolean;
+  /** Hide extend-rental actions and history (staff/admin). */
+  hideExtendActions?: boolean;
+  /** Provider portal: show extend CTA disabled (cosplayer-only action). */
+  disableExtendButton?: boolean;
+  /** Cosplayer site: pink gradient extend button. */
+  extendButtonVariant?: 'default' | 'cosplayer';
+  /** Cosplayer: Xác nhận nhận hàng + Khiếu nại khi đơn DELIVERING_OUT. */
+  enableDeliveringOutActions?: boolean;
+  onConfirmDelivery?: () => void;
+  onCreateDispute?: () => void;
+  confirmDeliveryLoading?: boolean;
+  disputeLoading?: boolean;
 }
 
 // Format currency
@@ -38,6 +64,53 @@ const formatCurrency = (amount: number) => {
     currency: 'VND',
   }).format(amount);
 };
+
+function SubsectionTitle({ icon, children }: { icon: ReactNode; children: ReactNode }) {
+  return (
+    <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+      {icon}
+      {children}
+    </h3>
+  );
+}
+
+function NamedLineItems({
+  items,
+  emptyDescription,
+  nameFallback,
+}: {
+  items: { key: string | number; name: string; description?: string | null; badge?: string }[];
+  emptyDescription: string;
+  nameFallback: string;
+}) {
+  if (items.length === 0) {
+    return <Empty description={emptyDescription} image={Empty.PRESENTED_IMAGE_SIMPLE} />;
+  }
+
+  return (
+    <List
+      size="small"
+      bordered
+      dataSource={items}
+      renderItem={(item) => {
+        const displayName = item.name?.trim() || nameFallback;
+        return (
+          <List.Item>
+            <List.Item.Meta
+              title={
+                <span className="flex flex-wrap items-center gap-2">
+                  <Text strong>{displayName}</Text>
+                  {item.badge ? <Tag>{item.badge}</Tag> : null}
+                </span>
+              }
+              description={item.description?.trim() || undefined}
+            />
+          </List.Item>
+        );
+      }}
+    />
+  );
+}
 
 // Format date
 const formatDate = (dateString: string | null | undefined): string => {
@@ -72,6 +145,14 @@ const getStatusLabel = (status: OrderStatus): string => {
   return statusMap[status] || status;
 };
 
+function formatTrackingDescription(trackingStatus: string, stage: string): string {
+  const statusMap = VI.order.detail.trackingStatusLabels as Record<string, string>;
+  const stageMap = VI.order.detail.trackingStageLabels as Record<string, string>;
+  const statusLabel = statusMap[trackingStatus] ?? trackingStatus;
+  const stageLabel = stageMap[stage] ?? stage;
+  return `${statusLabel} · ${stageLabel}`;
+}
+
 const getStatusColor = (status: OrderStatus): string => {
   const colorMap: Record<OrderStatus, string> = {
     UNPAID: 'orange',
@@ -90,8 +171,29 @@ const getStatusColor = (status: OrderStatus): string => {
   return colorMap[status] || 'default';
 };
 
-export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendSuccess }: OrderDetailDrawerProps) {
+export function OrderDetailDrawer({
+  open,
+  orderId,
+  orderType,
+  onClose,
+  onExtendSuccess,
+  hideRentalOptions = true,
+  hideExtendActions = false,
+  disableExtendButton = false,
+  extendButtonVariant = 'default',
+  enableDeliveringOutActions = false,
+  onConfirmDelivery,
+  onCreateDispute,
+  confirmDeliveryLoading = false,
+  disputeLoading = false,
+}: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
+
+  useDataSyncRefetch(
+    () => (orderId ? refetch() : undefined),
+    DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(orderId),
+  );
   const { extendOrder, isExtending } = useExtendOrder();
 
   // Extend modal state
@@ -152,12 +254,6 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
       '). This may indicate cross-contamination between order types.'
     );
   }
-
-  console.log('[ORDER DEBUG]', {
-    id: orderDetail?.id,
-    type: orderDetail?.orderType,
-    status: orderDetail?.status,
-  });
 
   const renderCostumeInfo = () => {
     if (costumeLoading) {
@@ -247,39 +343,43 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     return (
       <Descriptions column={2} size="small" bordered>
         <Descriptions.Item label={VI.order.detail.size} span={1}>
-          {detail.size || '-'}
+          <Text strong>{detail.size || '—'}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.numberOfItems} span={1}>
-          {detail.numberOfItems || '-'}
+          <Text strong>{detail.numberOfItems ?? '—'}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentDay} span={1}>
-          {detail.rentDay || '-'}
+          <Text strong>
+            {detail.rentDay ?? '—'} {VI.order.extend.daysSuffix}
+          </Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.depositAmount} span={1}>
-          {formatCurrency(detail.depositAmount || 0)}
+          <Text strong type="danger">
+            {formatCurrency(detail.depositAmount || 0)}
+          </Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentStart} span={1}>
-          {formatDate(detail.rentStart)}
+          <Text strong>{formatDate(detail.rentStart)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentEnd} span={1}>
-          {formatDate(detail.rentEnd)}
+          <Text strong>{formatDate(detail.rentEnd)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentAmount} span={2}>
-          {formatCurrency(detail.rentAmount || 0)}
+          <Text strong type="success">{formatCurrency(detail.rentAmount || 0)}</Text>
         </Descriptions.Item>
         {detail.surchargeAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.surchargeAmount} span={2}>
-            {formatCurrency(detail.surchargeAmount)}
+            <Text strong type="success">{formatCurrency(detail.surchargeAmount)}</Text>
           </Descriptions.Item>
         )}
         {detail.accessoriesAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.accessoriesAmount} span={2}>
-            {formatCurrency(detail.accessoriesAmount)}
+            <Text strong type="success">{formatCurrency(detail.accessoriesAmount)}</Text>
           </Descriptions.Item>
         )}
-        {detail.rentOptionAmount > 0 && (
+        {!hideRentalOptions && detail.rentOptionAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.rentOptionAmount} span={2}>
-            {formatCurrency(detail.rentOptionAmount)}
+            <Text strong type="success">{formatCurrency(detail.rentOptionAmount)}</Text>
           </Descriptions.Item>
         )}
       </Descriptions>
@@ -292,18 +392,14 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.rentalOptions}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.optionName}
-              description={item.description}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedRentalOption}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.rentalOptions.map((item) => ({
+          key: item.id,
+          name: item.optionName,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -314,18 +410,13 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.accessories}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              avatar={<Avatar shape="square" size="small" src={item.imageUrl} icon={<ShopOutlined />} />}
-              title={item.name}
-            />
-            <Text>{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedAccessory}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.accessories.map((item) => ({
+          key: item.id,
+          name: item.name,
+        }))}
       />
     );
   };
@@ -336,18 +427,14 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     }
 
     return (
-      <List
-        size="small"
-        dataSource={orderDetail.surcharges}
-        renderItem={(item) => (
-          <List.Item>
-            <List.Item.Meta
-              title={item.name}
-              description={item.description}
-            />
-            <Text type="danger">{formatCurrency(item.price)}</Text>
-          </List.Item>
-        )}
+      <NamedLineItems
+        nameFallback={VI.order.detail.unnamedSurcharge}
+        emptyDescription={VI.order.detail.empty}
+        items={orderDetail.surcharges.map((item) => ({
+          key: item.id,
+          name: item.name,
+          description: item.description,
+        }))}
       />
     );
   };
@@ -369,9 +456,13 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
               {VI.order.detail.cosplayerAddress}
             </div>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label={VI.order.detail.orderId}>{cosplayerAddress.name}</Descriptions.Item>
+              <Descriptions.Item label={VI.order.detail.cosplayerName}>
+                {cosplayerAddress.name}
+              </Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{cosplayerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{cosplayerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {cosplayerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{cosplayerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {cosplayerAddress.phone}
@@ -386,9 +477,13 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
               {VI.order.detail.providerAddress}
             </div>
             <Descriptions column={1} size="small">
-              <Descriptions.Item label={VI.order.detail.orderId}>{providerAddress.name}</Descriptions.Item>
+              <Descriptions.Item label={VI.order.detail.providerName}>
+                {providerAddress.name}
+              </Descriptions.Item>
               <Descriptions.Item label="Địa chỉ">{providerAddress.address}</Descriptions.Item>
-              <Descriptions.Item label="Quận/Huyện">{providerAddress.district}</Descriptions.Item>
+              <Descriptions.Item label={VI.profile.address.form.district}>
+                {providerAddress.district}
+              </Descriptions.Item>
               <Descriptions.Item label="Thành phố">{providerAddress.city}</Descriptions.Item>
               <Descriptions.Item label="SĐT">
                 <PhoneOutlined /> {providerAddress.phone}
@@ -413,7 +508,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <List.Item>
             <List.Item.Meta
               title={item.trackingCode}
-              description={`${item.trackingStatus} - ${item.stage}`}
+              description={formatTrackingDescription(item.trackingStatus, item.stage)}
             />
             <Text type="secondary">{formatDate(item.createdAt)}</Text>
           </List.Item>
@@ -433,7 +528,7 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
           <div key={img.id} className="relative overflow-hidden rounded border">
             <img src={img.imageUrl} alt="" className="h-20 w-full object-cover" />
             <div className="absolute bottom-0 left-0 right-0 bg-black/50 px-1 py-0.5 text-xs text-white">
-              {img.stage}
+              {(VI.order.detail.trackingStageLabels as Record<string, string>)[img.stage] ?? img.stage}
             </div>
           </div>
         ))}
@@ -441,187 +536,218 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
     );
   };
 
-  return (
-    <>
-      <Drawer
-        title={VI.order.detail.title}
-        placement="right"
-        width={640}
-        open={open}
-        onClose={onClose}
-      >
-      {loading ? (
-        <div className="flex h-64 items-center justify-center">
-          <Spin size="large" />
+  const overviewTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+            <AppstoreOutlined className="text-purple-600" />
+            {VI.order.detail.costumeInfo ?? 'Trang phục'}
+          </h3>
+          {renderCostumeInfo()}
         </div>
-      ) : error ? (
-        <div className="text-center text-red-500">{error}</div>
-      ) : orderDetail ? (
-        <div className="space-y-4">
-          {/* Costume Info */}
-          <div>
-            <h3 className="mb-2 flex items-center gap-1 font-semibold">
-              <AppstoreOutlined className="text-purple-600" />
-              {VI.order.detail.costumeInfo ?? 'Trang phục'}
-            </h3>
-            {renderCostumeInfo()}
+
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.basicInfo}</h3>
+          {renderBasicInfo()}
+        </div>
+
+        {enableDeliveringOutActions && orderDetail.status === 'DELIVERING_OUT' && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              type="primary"
+              loading={confirmDeliveryLoading}
+              onClick={onConfirmDelivery}
+              className="!h-auto !border-2 !border-green-900 !bg-green-600 !px-4 !py-1.5 !text-sm !font-bold hover:!bg-green-700"
+            >
+              {VI.profile.orders.actionConfirmDelivery}
+            </Button>
+            <Button
+              icon={<FlagOutlined />}
+              loading={disputeLoading}
+              onClick={onCreateDispute}
+              className="!h-auto !border-2 !border-red-400 !bg-white !px-4 !py-1.5 !text-sm !font-bold !text-red-600 hover:!bg-red-50"
+            >
+              {VI.dispute.button}
+            </Button>
           </div>
+        )}
 
-          <Divider />
-
-          {/* Basic Info */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.basicInfo}</h3>
-            {renderBasicInfo()}
-          </div>
-
-          {/* Extend Rental — only for IN_USE orders */}
-          {orderDetail?.status === 'IN_USE' && (
-            <div>
-              <Button
-                type="primary"
-                icon={<PlusCircleOutlined />}
-                onClick={() => setExtendModalOpen(true)}
-              >
-                {VI.provider.orders.tabs.extending}
-              </Button>
-            </div>
-          )}
-
-          <Divider />
-
-          {/* Extend History — only for IN_USE orders */}
-          {orderDetail?.status === 'IN_USE' && (
-            <div>
-              <h3 className="mb-3 flex items-center gap-1 font-semibold">
-                <HistoryOutlined className="text-purple-600" />
-                {VI.order.extend.extendHistory}
-              </h3>
-
-              {extendsLoading ? (
-                <div className="flex justify-center py-4">
-                  <Spin size="small" />
-                </div>
-              ) : extendsList.length === 0 ? (
-                <p className="py-2 text-sm text-slate-400">{VI.order.extend.empty}</p>
-              ) : (
-                <Table
-                  dataSource={extendsList}
-                  rowKey="id"
-                  size="small"
-                  pagination={false}
-                  scroll={{ x: 400 }}
-                  columns={[
-                    {
-                      title: VI.order.extend.createdAt,
-                      dataIndex: 'createdAt',
-                      key: 'createdAt',
-                      render: (val) => formatDate(val),
-                    },
-                    {
-                      title: VI.order.extend.extendDays,
-                      dataIndex: 'extendDays',
-                      key: 'extendDays',
-                      render: (val) => `${val} ${VI.order.extend.daysSuffix}`,
-                    },
-                    {
-                      title: VI.order.extend.extendPrice,
-                      dataIndex: 'extendPrice',
-                      key: 'extendPrice',
-                      render: (val) => formatCurrency(val),
-                    },
-                    {
-                      title: VI.order.extend.paymentStatus,
-                      dataIndex: 'paymentStatus',
-                      key: 'paymentStatus',
-                      render: (status: ExtendPaymentStatus) => (
-                        <Tag color={getExtendPaymentColor(status)}>
-                          {VI.order.extend.paymentStatusLabels[status]}
-                        </Tag>
-                      ),
-                    },
-                    {
-                      title: '',
-                      key: 'action',
-                      render: (_, record) => (
-                        <Button
-                          type="link"
-                          size="small"
-                          onClick={() => handleViewExtend(record.id)}
-                        >
-                          {VI.order.extend.viewDetail}
-                        </Button>
-                      ),
-                    },
-                  ]}
-                />
+        {!hideExtendActions && orderDetail.status === 'IN_USE' && (
+          <div className="flex flex-wrap items-center justify-end gap-3">
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              disabled={disableExtendButton}
+              onClick={() => setExtendModalOpen(true)}
+              className={cn(
+                extendButtonVariant === 'cosplayer' &&
+                  '!h-auto !border-2 !border-indigo-950 !bg-gradient-to-r !from-pink-500 !to-fuchsia-600 !px-4 !py-1.5 !text-sm !font-bold !text-white !shadow-none hover:!brightness-110 disabled:!opacity-50',
               )}
-            </div>
-          )}
-
-          <Divider />
-
-          {/* Rental Info */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.rentalInfo}</h3>
-            {renderRentalInfo()}
+            >
+              {VI.provider.orders.tabs.extending}
+            </Button>
           </div>
+        )}
 
-          <Divider />
-
-          {/* Rental Options */}
+        {!hideExtendActions && orderDetail.status === 'IN_USE' && (
           <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.rentalOptions}</h3>
+            <h3 className="mb-3 flex items-center gap-1 text-sm font-semibold text-foreground">
+              <HistoryOutlined className="text-purple-600" />
+              {VI.order.extend.extendHistory}
+            </h3>
+            {extendsLoading ? (
+              <div className="flex justify-center py-4">
+                <Spin size="small" />
+              </div>
+            ) : (extendsList?.length ?? 0) === 0 ? (
+              <p className="py-2 text-sm text-muted-foreground">{VI.order.extend.empty}</p>
+            ) : (
+              <Table
+                dataSource={extendsList}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                scroll={{ x: 400 }}
+                columns={[
+                  {
+                    title: VI.order.extend.createdAt,
+                    dataIndex: 'createdAt',
+                    key: 'createdAt',
+                    render: (val) => formatDate(val),
+                  },
+                  {
+                    title: VI.order.extend.extendDays,
+                    dataIndex: 'extendDays',
+                    key: 'extendDays',
+                    render: (val) => `${val} ${VI.order.extend.daysSuffix}`,
+                  },
+                  {
+                    title: VI.order.extend.extendPrice,
+                    dataIndex: 'extendPrice',
+                    key: 'extendPrice',
+                    render: (val) => formatCurrency(val),
+                  },
+                  {
+                    title: VI.order.extend.paymentStatus,
+                    dataIndex: 'paymentStatus',
+                    key: 'paymentStatus',
+                    render: (status: ExtendPaymentStatus) => (
+                      <Tag color={getExtendPaymentColor(status)}>{VI.order.extend.paymentStatusLabels[status]}</Tag>
+                    ),
+                  },
+                  {
+                    title: '',
+                    key: 'action',
+                    render: (_, record) => (
+                      <Button type="link" size="small" onClick={() => handleViewExtend(record.id)}>
+                        {VI.order.extend.viewDetail}
+                      </Button>
+                    ),
+                  },
+                ]}
+              />
+            )}
+          </div>
+        )}
+      </div>
+    ) : null;
+
+  const rentalTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <SubsectionTitle icon={<DollarOutlined className="text-purple-600" />}>
+            {VI.order.detail.rentalInfo}
+          </SubsectionTitle>
+          {renderRentalInfo()}
+          {(orderDetail.accessories?.length > 0 || orderDetail.surcharges?.length > 0) && (
+            <Text type="secondary" className="mt-2 block text-xs">
+              {VI.order.detail.lineItemsHint}
+            </Text>
+          )}
+        </div>
+        {!hideRentalOptions && orderDetail.rentalOptions?.length > 0 && (
+          <div>
+            <SubsectionTitle icon={<AppstoreOutlined className="text-purple-600" />}>
+              {VI.order.detail.rentalOptions}
+            </SubsectionTitle>
             {renderRentalOptions()}
           </div>
-
-          <Divider />
-
-          {/* Accessories */}
+        )}
+        {orderDetail.accessories?.length > 0 && (
           <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.accessories}</h3>
+            <SubsectionTitle icon={<GiftOutlined className="text-purple-600" />}>
+              {VI.order.detail.accessories}
+            </SubsectionTitle>
             {renderAccessories()}
           </div>
-
-          <Divider />
-
-          {/* Surcharges */}
+        )}
+        {orderDetail.surcharges?.length > 0 && (
           <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.surcharges}</h3>
+            <SubsectionTitle icon={<PlusCircleOutlined className="text-purple-600" />}>
+              {VI.order.detail.surcharges}
+            </SubsectionTitle>
             {renderSurcharges()}
           </div>
+        )}
+      </div>
+    ) : null;
 
-          <Divider />
-
-          {/* Addresses */}
-          <div>
-            <h3 className="mb-2 font-semibold">
-              <EnvironmentOutlined className="mr-1" />
-              {VI.order.detail.addresses}
-            </h3>
-            {renderAddresses()}
-          </div>
-
-          <Divider />
-
-          {/* Trackings */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.trackings}</h3>
-            {renderTrackings()}
-          </div>
-
-          <Divider />
-
-          {/* Images */}
-          <div>
-            <h3 className="mb-2 font-semibold">{VI.order.detail.images}</h3>
-            {renderImages()}
-          </div>
+  const logisticsTab =
+    orderDetail ? (
+      <div className="space-y-4 pt-1">
+        <div>
+          <h3 className="mb-2 flex items-center gap-1 text-sm font-semibold text-foreground">
+            <EnvironmentOutlined className="mr-1" />
+            {VI.order.detail.addresses}
+          </h3>
+          {renderAddresses()}
         </div>
-      ) : (
-        <Empty description={VI.order.detail.empty} />
-      )}
-      </Drawer>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.trackings}</h3>
+          {renderTrackings()}
+        </div>
+        <div>
+          <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.images}</h3>
+          {renderImages()}
+        </div>
+      </div>
+    ) : null;
+
+  return (
+    <>
+      <Modal
+        title={VI.order.detail.title}
+        centered
+        open={open}
+        onCancel={onClose}
+        footer={null}
+        width={960}
+        destroyOnClose
+        styles={{
+          body: { maxHeight: 'min(75vh, 800px)', overflowY: 'auto', paddingTop: 8 },
+        }}
+      >
+        {loading ? (
+          <div className="flex h-52 items-center justify-center">
+            <Spin size="large" />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500">{error}</div>
+        ) : orderDetail ? (
+          <Tabs
+            defaultActiveKey="overview"
+            items={[
+              { key: 'overview', label: 'Tổng quan', children: overviewTab },
+              { key: 'rental', label: 'Thuê & dịch vụ', children: rentalTab },
+              { key: 'logistics', label: 'Giao nhận & chứng từ', children: logisticsTab },
+            ]}
+          />
+        ) : (
+          <Empty description={VI.order.detail.empty} />
+        )}
+      </Modal>
     <ExtendRentalModal
       open={extendModalOpen}
       onClose={() => setExtendModalOpen(false)}
@@ -643,7 +769,10 @@ export function OrderDetailDrawer({ open, orderId, orderType, onClose, onExtendS
       open={extendDetailModalOpen}
       onCancel={handleCloseExtendDetail}
       footer={null}
+      centered
       width={500}
+      zIndex={1101}
+      styles={{ body: { paddingTop: 8 } }}
     >
       {extendDetailLoading ? (
         <div className="flex justify-center py-6">

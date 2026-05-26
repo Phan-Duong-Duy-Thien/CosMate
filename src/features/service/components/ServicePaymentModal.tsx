@@ -3,11 +3,6 @@
  *
  * Reusable payment method selection modal.
  * Used for service order confirm+pay and retry-payment flows.
- *
- * NOTE: totalAmount is passed directly from the parent page (PurchaseHistoryPage)
- * which already scopes by serviceFilteredOrders — no cross-type contamination risk here.
- * If totalAmount lookup is needed by order ID, use composite key:
- *   serviceFilteredOrders.find(o => o.orderType === 'RENT_SERVICE' && o.id === orderId)
  */
 import { useState, useEffect } from 'react'
 import { Dialog, DialogContent } from '@/shared/components/Dialog'
@@ -15,12 +10,17 @@ import { Button } from '@/shared/components/Button'
 import type { PaymentMethod } from '@/features/order/utils/paymentReturnUrls'
 import { VI } from '@/shared/i18n/vi'
 import { cn } from '@/lib/utils'
+import { getUserId } from '@/features/auth/services/tokenStorage'
+import { fetchWalletInfo } from '@/features/profile/services/wallet.service'
+
+export type ServicePaymentLoadingPhase = 'confirm' | 'pay' | null
 
 export interface ServicePaymentModalProps {
   open: boolean
   onClose: () => void
   onConfirm: (paymentMethod: PaymentMethod) => void
   loading?: boolean
+  loadingPhase?: ServicePaymentLoadingPhase
   totalAmount?: number
 }
 
@@ -71,19 +71,64 @@ export function ServicePaymentModal({
   onClose,
   onConfirm,
   loading = false,
+  loadingPhase = null,
   totalAmount,
 }: ServicePaymentModalProps) {
   const [selected, setSelected] = useState<PaymentMethod | null>(null)
+  const [walletBalance, setWalletBalance] = useState<number | null>(null)
+  const [isLoadingWallet, setIsLoadingWallet] = useState(false)
 
-  // Reset selection when modal closes
   useEffect(() => {
     if (!open) setSelected(null)
   }, [open])
+
+  useEffect(() => {
+    if (!open || selected !== 'WALLET') {
+      setWalletBalance(null)
+      setIsLoadingWallet(false)
+      return
+    }
+
+    const userId = getUserId()
+    if (!userId) return
+
+    let cancelled = false
+    setIsLoadingWallet(true)
+    fetchWalletInfo(userId)
+      .then((info) => {
+        if (!cancelled) setWalletBalance(info.balance)
+      })
+      .catch(() => {
+        if (!cancelled) setWalletBalance(null)
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoadingWallet(false)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [open, selected])
 
   const handleConfirm = () => {
     if (!selected || loading) return
     onConfirm(selected)
   }
+
+  const isWalletInsufficient =
+    selected === 'WALLET' &&
+    totalAmount != null &&
+    walletBalance !== null &&
+    walletBalance < totalAmount
+
+  const loadingLabel =
+    loadingPhase === 'confirm'
+      ? VI.profile.servicePayment.btnConfirming
+      : loadingPhase === 'pay' && selected === 'WALLET'
+        ? VI.profile.servicePayment.btnPayingWallet
+        : loadingPhase === 'pay'
+          ? VI.profile.servicePayment.btnPaying
+          : VI.profile.servicePayment.btnProcessing
 
   const formatCurrency = (amount: number): string =>
     new Intl.NumberFormat('vi-VN', {
@@ -91,13 +136,17 @@ export function ServicePaymentModal({
       currency: 'VND',
     }).format(amount)
 
+  const missingAmount =
+    selected === 'WALLET' && totalAmount != null && walletBalance !== null
+      ? totalAmount - walletBalance
+      : 0
+
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
         className="max-w-md"
         onClose={onClose}
       >
-        {/* Title */}
         <div className="pr-6">
           <h2 className="text-lg font-bold text-slate-900">
             {VI.profile.servicePayment.modalTitle}
@@ -112,7 +161,6 @@ export function ServicePaymentModal({
           )}
         </div>
 
-        {/* Payment options */}
         <div className="mt-4 space-y-2">
           {PAYMENT_OPTIONS.map((option) => {
             const isSelected = selected === option.value
@@ -128,7 +176,6 @@ export function ServicePaymentModal({
                     : `border-slate-100 bg-white hover:${option.bgColor} hover:border-slate-200`
                 )}
               >
-                {/* Icon */}
                 <div
                   className={cn(
                     'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
@@ -138,7 +185,6 @@ export function ServicePaymentModal({
                   <span className="text-2xl">{option.icon}</span>
                 </div>
 
-                {/* Text */}
                 <div className="min-w-0 flex-1">
                   <p className={cn('font-semibold', isSelected ? option.color : 'text-slate-800')}>
                     {option.label}
@@ -146,7 +192,6 @@ export function ServicePaymentModal({
                   <p className="mt-0.5 text-xs text-slate-500">{option.desc}</p>
                 </div>
 
-                {/* Radio indicator */}
                 <div
                   className={cn(
                     'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
@@ -164,7 +209,46 @@ export function ServicePaymentModal({
           })}
         </div>
 
-        {/* Footer actions */}
+        {selected === 'WALLET' && (
+          <div className="mt-3">
+            {isLoadingWallet && (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center">
+                <div className="mx-auto h-4 w-4 animate-spin rounded-full border-2 border-pink-300 border-t-pink-500" />
+              </div>
+            )}
+            {!isLoadingWallet && isWalletInsufficient && (
+              <div className="rounded-xl border-[3px] border-amber-300 bg-linear-to-r from-amber-50 to-orange-50 p-4">
+                <p className="font-semibold text-amber-800">
+                  {VI.wallet.checkoutValidation.insufficientTitle}
+                </p>
+                <p className="mt-1 text-sm text-amber-700">
+                  {VI.wallet.checkoutValidation.balanceLabel}:{' '}
+                  <span className="font-semibold">{formatCurrency(walletBalance ?? 0)}</span>
+                </p>
+                <p className="text-sm text-amber-700">
+                  {VI.wallet.checkoutValidation.missingLabel}:{' '}
+                  <span className="font-semibold text-orange-600">
+                    {formatCurrency(missingAmount)}
+                  </span>
+                </p>
+              </div>
+            )}
+            {!isLoadingWallet && !isWalletInsufficient && walletBalance !== null && (
+              <div className="rounded-xl border-[3px] border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4">
+                <p className="text-sm text-green-700">
+                  {VI.wallet.checkoutValidation.payWithWalletNote}
+                </p>
+                <p className="mt-1 text-lg font-bold text-green-700">
+                  {formatCurrency(walletBalance)}
+                </p>
+              </div>
+            )}
+            {!isLoadingWallet && walletBalance === null && (
+              <p className="text-sm text-red-600">{VI.wallet.walletError}</p>
+            )}
+          </div>
+        )}
+
         <div className="mt-5 flex items-center justify-end gap-3">
           <Button
             type="button"
@@ -178,11 +262,16 @@ export function ServicePaymentModal({
           <Button
             type="button"
             size="sm"
-            disabled={!selected || loading}
+            disabled={
+              !selected ||
+              loading ||
+              (selected === 'WALLET' &&
+                (isLoadingWallet || walletBalance === null || isWalletInsufficient))
+            }
             loading={loading}
             onClick={handleConfirm}
           >
-            {loading ? VI.profile.servicePayment.btnProcessing : VI.profile.servicePayment.btnConfirm}
+            {loading ? loadingLabel : VI.profile.servicePayment.btnConfirm}
           </Button>
         </div>
       </DialogContent>

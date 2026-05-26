@@ -5,15 +5,21 @@
  * Form is pre-filled with current data. Saves via PUT /api/providers/{id}.
  */
 import { useLocation } from 'react-router-dom';
-import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm } from 'antd';
+import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
+import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
 import { useProviderProfileEdit } from '../hooks/useProviderProfileEdit';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import type { UpsertUserAddressPayload, UserAddress } from '@/features/profile/types';
+import { useVnLocation } from '@/features/profile/hooks/useVnLocation';
+import { ProvinceSelect, DistrictSelect } from '@/features/profile/components/AddressLocationSelects';
+import { matchAdminUnitByName } from '@/shared/utils/vnLocationNormalize';
+import { VI } from '@/shared/i18n/vi';
+import { buildLegacyAddressPayload } from '@/features/profile/services/addressPayload.service';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -21,7 +27,20 @@ const { TextArea } = Input;
 export default function ProviderProfileEditPage() {
   const [isAddressModalOpen, setIsAddressModalOpen] = useState(false);
   const [editingAddress, setEditingAddress] = useState<UserAddress | null>(null);
+  const [editingAddressCity, setEditingAddressCity] = useState<string | null>(null);
+  const [editingAddressDistrict, setEditingAddressDistrict] = useState<string | null>(null);
   const [addressForm] = Form.useForm<UpsertUserAddressPayload>();
+  const {
+    provinceCode,
+    setProvinceCode,
+    districtCode,
+    setDistrictCode,
+    provinces,
+    districts,
+    loadingProvinces,
+    loadingDistricts,
+  } = useVnLocation();
+  const { items: breadcrumbItems } = useBreadcrumb();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -63,6 +82,9 @@ export default function ProviderProfileEditPage() {
 
   const settingsPath = location.pathname.replace('/edit', '');
 
+  const isRentalProviderEdit = location.pathname === '/provider/settings/edit';
+  const showBackButton = !isRentalProviderEdit && breadcrumbItems.length < 2;
+
   const handleSave = async () => {
     const ok = await save();
     if (ok) {
@@ -72,6 +94,10 @@ export default function ProviderProfileEditPage() {
 
   const handleOpenEditAddress = (address: UserAddress) => {
     setEditingAddress(address);
+    setEditingAddressCity(address.city);
+    setEditingAddressDistrict(address.district);
+    setProvinceCode(null);
+    setDistrictCode(null);
     addressForm.setFieldsValue({
       name: address.name,
       phone: address.phone,
@@ -83,20 +109,62 @@ export default function ProviderProfileEditPage() {
     setIsAddressModalOpen(true);
   };
 
+  useEffect(() => {
+    if (!isAddressModalOpen || !editingAddressCity || provinceCode != null || provinces.length === 0) {
+      return;
+    }
+    const matched = matchAdminUnitByName(provinces, editingAddressCity);
+    if (matched) setProvinceCode(matched.code);
+  }, [isAddressModalOpen, editingAddressCity, provinceCode, provinces, setProvinceCode]);
+
+  useEffect(() => {
+    if (
+      !isAddressModalOpen ||
+      !editingAddressDistrict ||
+      provinceCode == null ||
+      districtCode != null ||
+      districts.length === 0
+    ) {
+      return;
+    }
+    const matched = matchAdminUnitByName(districts, editingAddressDistrict);
+    if (matched) setDistrictCode(matched.code);
+  }, [
+    isAddressModalOpen,
+    editingAddressDistrict,
+    provinceCode,
+    districtCode,
+    districts,
+    setDistrictCode,
+  ]);
+
   const handleSubmitAddress = async () => {
     if (!editingAddress) return;
     const values = await addressForm.validateFields();
-    const ok = await updateAddress(editingAddress.id, {
-      name: values.name.trim(),
-      phone: values.phone.trim(),
-      city: values.city.trim(),
-      district: values.district.trim(),
-      address: values.address.trim(),
-      addressName: values.addressName?.trim() ?? '',
-    });
+    const province = provinces.find((p) => p.code === provinceCode);
+    const district = districts.find((d) => d.code === districtCode);
+    if (!province || !district) {
+      message.error(VI.profile.address.validation.required);
+      return;
+    }
+    const ok = await updateAddress(
+      editingAddress.id,
+      buildLegacyAddressPayload({
+        name: values.name.trim(),
+        phone: values.phone.trim(),
+        addressName: values.addressName?.trim() ?? '',
+        provinceName: province.name,
+        wardName: district.name,
+        detailAddress: values.address.trim(),
+      })
+    );
     if (!ok) return;
     setIsAddressModalOpen(false);
     setEditingAddress(null);
+    setEditingAddressCity(null);
+    setEditingAddressDistrict(null);
+    setProvinceCode(null);
+    setDistrictCode(null);
     addressForm.resetFields();
   };
 
@@ -115,14 +183,12 @@ export default function ProviderProfileEditPage() {
       showChatButton={false}
       brandName={brandName}
     >
-      <Button
-        type="text"
-        icon={<ArrowLeft size={16} />}
-        onClick={() => navigate(settingsPath)}
-        style={{ marginBottom: 16, paddingLeft: 4 }}
-      >
-        Quay lại
-      </Button>
+      <div className="mx-auto w-full max-w-2xl space-y-4">
+      {showBackButton && (
+        <Button type="link" icon={<ArrowLeft size={16} />} onClick={() => navigate(settingsPath)} className="px-0 text-foreground hover:text-muted-foreground">
+          Quay lại
+        </Button>
+      )}
 
       {loading ? (
         <div style={{ textAlign: 'center', padding: 60 }}>
@@ -146,7 +212,7 @@ export default function ProviderProfileEditPage() {
             Cập nhật thông tin cửa hàng và thông tin thanh toán của bạn.
           </Paragraph>
 
-          <Form layout="vertical" style={{ maxWidth: 600 }}>
+          <Form layout="vertical" className="w-full">
             {/* Shop Name */}
             <Form.Item label="Tên cửa hàng" required>
               <Input
@@ -183,10 +249,10 @@ export default function ProviderProfileEditPage() {
                             borderRadius: 8,
                             border:
                               formData.shopAddressId === addr.id
-                                ? '2px solid #7C3AED'
-                                : '1px solid #E5E7EB',
+                                ? "2px solid var(--primary)"
+                                : "1px solid var(--border)",
                             background:
-                              formData.shopAddressId === addr.id ? '#F5F3FF' : '#fff',
+                              formData.shopAddressId === addr.id ? "var(--cosmate-lavender-surface)" : "var(--card)",
                           }}
                           onClick={() => updateField('shopAddressId', addr.id)}
                         >
@@ -286,13 +352,20 @@ export default function ProviderProfileEditPage() {
                 <Col xs={24} md={12}>
                   <Card
                     style={{
-                      border: '1px solid #f1f5f9',
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
-                      background: '#f8fafc',
+                      background: "var(--cosmate-page)",
                     }}
                     bodyStyle={{ padding: 16 }}
                   >
-                    <div style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                      }}
+                    >
                       {profile.avatarUrl ? (
                         <img
                           src={profile.avatarUrl}
@@ -302,8 +375,9 @@ export default function ProviderProfileEditPage() {
                             height: 72,
                             borderRadius: '50%',
                             objectFit: 'cover',
-                            border: '3px solid #e2e8f0',
+                            border: "3px solid var(--border)",
                             marginBottom: 12,
+                            display: 'block',
                           }}
                         />
                       ) : (
@@ -312,14 +386,14 @@ export default function ProviderProfileEditPage() {
                             width: 72,
                             height: 72,
                             borderRadius: '50%',
-                            background: '#ddd6fe',
+                            background: "color-mix(in oklch, var(--primary) 30%, var(--background))",
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 24,
                             fontWeight: 700,
-                            color: '#7c3aed',
-                            margin: '0 auto 12px',
+                            color: "var(--primary)",
+                            marginBottom: 12,
                           }}
                         >
                           {profile.shopName?.charAt(0)?.toUpperCase() ?? 'P'}
@@ -342,8 +416,8 @@ export default function ProviderProfileEditPage() {
                         style={{
                           display: 'inline-block',
                           borderRadius: 9999,
-                          background: '#fce7f3',
-                          color: '#be185d',
+                          background: "color-mix(in oklch, var(--cosmate-pink) 14%, var(--background))",
+                          color: "var(--cosmate-rose-tag-text)",
                           padding: '6px 14px',
                           fontSize: 12,
                           fontWeight: 500,
@@ -366,9 +440,9 @@ export default function ProviderProfileEditPage() {
                 <Col xs={24} md={12}>
                   <Card
                     style={{
-                      border: '1px solid #f1f5f9',
+                      border: "1px solid var(--border)",
                       borderRadius: 8,
-                      background: '#f8fafc',
+                      background: "var(--cosmate-page)",
                     }}
                     bodyStyle={{ padding: 16 }}
                   >
@@ -382,7 +456,7 @@ export default function ProviderProfileEditPage() {
                             height: 72,
                             objectFit: 'cover',
                             borderRadius: 6,
-                            border: '2px solid #e2e8f0',
+                            border: "2px solid var(--border)",
                             marginBottom: 12,
                           }}
                         />
@@ -392,12 +466,12 @@ export default function ProviderProfileEditPage() {
                             width: '100%',
                             height: 72,
                             borderRadius: 6,
-                            background: '#ede9fe',
+                            background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
                             fontSize: 12,
-                            color: '#7c3aed',
+                            color: "var(--primary)",
                             marginBottom: 12,
                           }}
                         >
@@ -421,8 +495,8 @@ export default function ProviderProfileEditPage() {
                         style={{
                           display: 'inline-block',
                           borderRadius: 9999,
-                          background: '#ede9fe',
-                          color: '#7c3aed',
+                          background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
+                          color: "var(--primary)",
                           padding: '6px 14px',
                           fontSize: 12,
                           fontWeight: 500,
@@ -459,6 +533,8 @@ export default function ProviderProfileEditPage() {
         </Card>
       )}
 
+      </div>
+
       <Modal
         open={isAddressModalOpen}
         title="Cập nhật địa chỉ"
@@ -467,6 +543,10 @@ export default function ProviderProfileEditPage() {
         onCancel={() => {
           setIsAddressModalOpen(false);
           setEditingAddress(null);
+          setEditingAddressCity(null);
+          setEditingAddressDistrict(null);
+          setProvinceCode(null);
+          setDistrictCode(null);
           addressForm.resetFields();
         }}
         confirmLoading={addressSaving}
@@ -486,11 +566,35 @@ export default function ProviderProfileEditPage() {
           >
             <Input placeholder="Số điện thoại" />
           </Form.Item>
-          <Form.Item name="city" label="Tỉnh/Thành phố" rules={[{ required: true, message: 'Vui lòng nhập tỉnh/thành phố' }]}>
-            <Input placeholder="VD: TP.HCM" />
+          <Form.Item label={VI.profile.address.form.city} required>
+            <ProvinceSelect
+              variant="modal"
+              provinceCode={provinceCode}
+              provinces={provinces}
+              loading={loadingProvinces}
+              hasError={isAddressModalOpen && provinceCode == null}
+              onProvinceChange={(code, province) => {
+                setProvinceCode(code);
+                setDistrictCode(null);
+                setEditingAddressDistrict(null);
+                addressForm.setFieldValue('city', province?.name ?? '');
+                addressForm.setFieldValue('district', '');
+              }}
+            />
           </Form.Item>
-          <Form.Item name="district" label="Quận/Huyện" rules={[{ required: true, message: 'Vui lòng nhập quận/huyện' }]}>
-            <Input placeholder="VD: Quận 1" />
+          <Form.Item label={VI.profile.address.form.district} required>
+            <DistrictSelect
+              variant="modal"
+              provinceCode={provinceCode}
+              districtCode={districtCode}
+              districts={districts}
+              loading={loadingDistricts}
+              hasError={isAddressModalOpen && districtCode == null}
+              onDistrictChange={(code, district) => {
+                setDistrictCode(code);
+                addressForm.setFieldValue('district', district?.name ?? '');
+              }}
+            />
           </Form.Item>
           <Form.Item name="address" label="Địa chỉ chi tiết" rules={[{ required: true, message: 'Vui lòng nhập địa chỉ chi tiết' }]}>
             <Input placeholder="Số nhà, đường..." />

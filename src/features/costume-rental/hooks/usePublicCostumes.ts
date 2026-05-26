@@ -9,12 +9,14 @@
  */
 
 import { useState, useEffect, useCallback } from 'react'
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch'
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync'
 import { getCostumes } from '../api/costume.api'
 import { getProviderById } from '../api/provider.api'
 import type { CostumeItem, Costume } from '../types'
 import { VI } from '@/shared/i18n/vi'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''
@@ -29,13 +31,8 @@ function roundToNearest10k(value: number): number {
 function computePriceRange(costume: Costume): { priceMin: number; priceMax: number }{
   const baseDaily = costume.pricePerDay ?? 0
   const deposit = costume.depositAmount ?? 0
-  const options = costume.rentalOptions ?? []
-  const optionAvg =
-    options.length > 0
-      ? options.reduce((sum, o) => sum + (o.price ?? 0), 0) / options.length
-      : 0
-  const minTotal = 1 * baseDaily + deposit + optionAvg
-  const maxTotal = 3 * baseDaily + deposit + optionAvg
+  const minTotal = 1 * baseDaily + deposit
+  const maxTotal = 3 * baseDaily + deposit
   const minVnd = roundToNearest10k(minTotal)
   const maxVnd = roundToNearest10k(maxTotal)
   return { priceMin: minVnd, priceMax: maxVnd }
@@ -57,7 +54,7 @@ export function mapCostumeToItem(
   shopName: string
 ): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
-  const accessoryCount = Math.max((costume.numberOfItems ?? 1) - 1, 0)
+  const accessoryListLength = costume.accessories?.length ?? 0
   const { priceMin, priceMax } = computePriceRange(costume)
 
   return {
@@ -71,7 +68,7 @@ export function mapCostumeToItem(
     shopName,
     tags: [],
     isAdult18: false,
-    bestSeller: costume.status !== 'RENTED',
+    bestSeller: costume.bestSeller === true,
     isAvailable: costume.status === 'AVAILABLE',
     rating: 0,
     reviewCount: 0,
@@ -82,8 +79,8 @@ export function mapCostumeToItem(
     brandType: 'non_brand',
     region: 'hcm',
     images: images.length > 0 ? images : [],
-    hasAccessories: accessoryCount > 0,
-    accessoryCount: accessoryCount > 0 ? accessoryCount : undefined,
+    hasAccessories: accessoryListLength > 0,
+    accessoryCount: accessoryListLength > 0 ? accessoryListLength : undefined,
     accessoryOptions: (costume.accessories ?? []).map((a) => ({
       id: String(a.id),
       name: a.name,
@@ -129,12 +126,8 @@ export function usePublicCostumes() {
           .map((p) => [p.id, p.shopName ?? '—'])
       )
 
-      // Mock rentalsCount for testing (API chua tra ve truong nay)
       const mapped = visibleCostumes.map((c) =>
-        mapCostumeToItem(
-          { ...c, rentalsCount: 120 + Math.floor(Math.random() * 100) },
-          providerMap[c.providerId] ?? '—'
-        )
+        mapCostumeToItem(c, providerMap[c.providerId] ?? '—')
       )
       setItems(mapped)
     } catch (err) {
@@ -147,6 +140,8 @@ export function usePublicCostumes() {
   useEffect(() => {
     fetchCostumes()
   }, [fetchCostumes])
+
+  useDataSyncRefetch(fetchCostumes, DATA_SYNC_EVENTS.COSTUMES_CHANGED)
 
   return { items, isLoading, error, refetch: fetchCostumes }
 }

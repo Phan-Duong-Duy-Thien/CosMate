@@ -1,15 +1,14 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Heart, Image as ImageIcon, Loader2, Trash2 } from 'lucide-react'
 
 import { useWishlist } from '../hooks/useWishlist'
 import { Card } from '@/shared/components/Card'
-import { Badge } from '@/shared/components/Badge'
 import { Button } from '@/shared/components/Button'
 import { VI } from '@/shared/i18n/vi'
 import { cn } from '@/lib/utils'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''
@@ -41,21 +40,27 @@ function WishlistItemCard({
 }) {
   const costume = item.costume
   const firstImage = resolveImageUrl(costume?.imageUrls?.[0] || '')
-  const displayPrice = costume?.pricePerDay ? Number(costume.pricePerDay) : 0
+  const rawPrice =
+    costume?.pricePerDay != null ? Number(costume.pricePerDay) : NaN
+  const hasPrice = Number.isFinite(rawPrice)
   const costumeName = costume?.name || `Trang phục #${item.costumeId}`
+
+  const removeBtnClass =
+    'absolute right-3 top-3 z-10 rounded-xl border-[3px] border-indigo-950 bg-[#fffbe8] p-1.5 text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] transition hover:scale-105 hover:bg-pink-100 disabled:opacity-50'
 
   // Backend can return wishlist item with deleted/missing costume.
   if (!costume) {
     return (
-      <Card className="group relative overflow-hidden border-slate-100 bg-white shadow-sm">
+      <Card
+        className={cn(
+          'group relative flex h-full flex-col overflow-hidden rounded-[1.05rem] border-[4px] border-indigo-950 bg-[#fffbe8] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]',
+        )}
+      >
         <button
           type="button"
           aria-label="Xóa khỏi danh sách yêu thích"
           disabled={isRemoving}
-          className={cn(
-            'absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-slate-400 shadow-sm transition-all duration-200 hover:bg-white hover:text-pink-500 hover:shadow-md',
-            isRemoving && 'opacity-50'
-          )}
+          className={cn(removeBtnClass, isRemoving && 'opacity-50')}
           onClick={(e) => {
             e.stopPropagation()
             onRemove(item.id)
@@ -67,28 +72,26 @@ function WishlistItemCard({
             <Trash2 className="h-4 w-4" />
           )}
         </button>
-        <div className="flex h-56 w-full items-center justify-center bg-slate-100">
-          <ImageIcon className="h-12 w-12 text-slate-300" />
+        <div className="flex h-48 w-full items-center justify-center border-b-[4px] border-indigo-950 bg-gradient-to-b from-slate-100 to-slate-200/80">
+          <ImageIcon className="h-12 w-12 text-slate-400" />
         </div>
-        <div className="space-y-2.5 p-4">
-          <h3 className="line-clamp-2 text-sm font-semibold text-slate-700">{costumeName}</h3>
-          <p className="text-xs text-slate-400">Trang phục không còn khả dụng.</p>
+        <div className="flex flex-1 flex-col gap-2 p-3">
+          <h3 className="line-clamp-2 text-sm font-extrabold text-indigo-950">{costumeName}</h3>
+          <p className="rounded-lg border-2 border-dashed border-indigo-950/30 bg-white/80 px-2 py-1.5 text-xs font-semibold text-slate-600">
+            Trang phục không còn khả dụng.
+          </p>
         </div>
       </Card>
     )
   }
 
   return (
-    <Card className="group relative overflow-hidden border-slate-100 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg">
-      {/* Remove button */}
+    <Card className="group relative flex h-full flex-col overflow-hidden rounded-[1.05rem] border-[4px] border-indigo-950 bg-[#fffbe8] shadow-[6px_6px_0_0_rgba(30,27,75,0.45)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[9px_9px_0_0_rgba(30,27,75,0.35)]">
       <button
         type="button"
         aria-label="Xóa khỏi danh sách yêu thích"
         disabled={isRemoving}
-        className={cn(
-          'absolute right-3 top-3 z-10 rounded-full bg-white/90 p-2 text-slate-400 shadow-sm transition-all duration-200 hover:bg-white hover:text-pink-500 hover:shadow-md',
-          isRemoving && 'opacity-50'
-        )}
+        className={cn(removeBtnClass, isRemoving && 'opacity-50')}
         onClick={(e) => {
           e.stopPropagation()
           onRemove(item.id)
@@ -101,50 +104,53 @@ function WishlistItemCard({
         )}
       </button>
 
-      {/* Image */}
-      <div className="relative">
+      <div className="relative border-b-[4px] border-indigo-950">
         {firstImage ? (
           <img
             src={firstImage}
             alt={costumeName}
-            className="h-56 w-full cursor-pointer object-cover transition-transform duration-500 group-hover:scale-105"
+            className="h-48 w-full cursor-pointer object-cover object-top transition-transform duration-500 group-hover:scale-105"
             onClick={() => onViewDetail(costume.id)}
           />
         ) : (
           <div
-            className="flex h-56 w-full cursor-pointer items-center justify-center bg-slate-100"
+            className="flex h-48 w-full cursor-pointer items-center justify-center bg-slate-100"
             onClick={() => onViewDetail(costume.id)}
           >
             <ImageIcon className="h-12 w-12 text-slate-300" />
           </div>
         )}
-        <div className="absolute bottom-3 right-3 flex items-center gap-1.5 rounded-full bg-white/80 px-2.5 py-1 text-xs text-slate-600">
+        <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-lg border-2 border-indigo-950 bg-[#fffbe8]/95 px-2 py-0.5 text-[11px] font-semibold text-indigo-900">
           <ImageIcon className="h-3 w-3" />
-          {costume.imageUrls?.length || 0}
+          {costume.imageUrls?.length || 0} ảnh
         </div>
       </div>
 
-      {/* Content */}
-      <div className="space-y-2.5 p-4">
+      <div className="flex min-h-[120px] flex-1 flex-col gap-2 p-3">
         <h3
-          className="line-clamp-2 cursor-pointer text-sm font-semibold text-slate-800 transition-colors hover:text-pink-600"
+          className="line-clamp-2 cursor-pointer overflow-hidden text-sm font-semibold text-slate-800 transition-colors hover:text-pink-600"
           onClick={() => onViewDetail(costume.id)}
         >
           {costumeName}
         </h3>
-        <div className="flex items-baseline gap-1.5">
-          <span className="text-lg font-bold text-pink-600">
-            {displayPrice.toLocaleString('vi-VN')}đ
-          </span>
-          <span className="text-xs text-slate-400">/ngày</span>
+        <div className="min-h-7 text-base font-semibold leading-tight text-[#d61f91]">
+          {hasPrice ? (
+            <>
+              <span className="whitespace-nowrap">{rawPrice.toLocaleString('vi-VN')} VNĐ</span>
+              <span className="ml-1 text-xs font-normal text-slate-400">/ngày</span>
+            </>
+          ) : (
+            '-'
+          )}
         </div>
-        <div className="flex items-center justify-between pt-1">
-          <span className="text-xs text-slate-400">
+        <div className="mt-auto flex flex-wrap items-center justify-between gap-2 pt-1">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">
             {new Date(item.createdAt).toLocaleDateString('vi-VN')}
           </span>
           <Button
             variant="soft"
             size="sm"
+            className="rounded-full border-[3px] border-indigo-950 bg-gradient-to-r from-cyan-300 to-teal-400 text-sm font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] hover:brightness-105"
             onClick={() => onViewDetail(costume.id)}
           >
             {VI.common.toast.wishlist.viewDetails}
@@ -157,6 +163,7 @@ function WishlistItemCard({
 
 export default function WishlistPage() {
   const navigate = useNavigate()
+  const [heroVisible, setHeroVisible] = useState(false)
   const {
     wishlistItems,
     loading,
@@ -167,6 +174,13 @@ export default function WishlistPage() {
   useEffect(() => {
     fetchWishlist()
   }, [fetchWishlist])
+
+  useEffect(() => {
+    const frame = window.requestAnimationFrame(() => {
+      setHeroVisible(true)
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [])
 
   const handleViewDetail = (costumeId: number) => {
     navigate(`/costumes/${costumeId}`)
@@ -183,49 +197,57 @@ export default function WishlistPage() {
 
   if (loading && wishlistItems.length === 0) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-pink-500" />
-          <p className="text-sm text-slate-500">{VI.common.status.loading}</p>
+      <div className="home-anime flex min-h-[calc(100vh-64px)] items-center justify-center bg-transparent px-3 pb-16 md:px-4">
+        <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] px-10 py-12 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)]">
+          <Loader2 className="mx-auto h-10 w-10 animate-spin text-pink-600" aria-hidden />
+          <p className="mt-4 text-center text-sm font-extrabold text-indigo-950">
+            {VI.common.status.loading}
+          </p>
         </div>
       </div>
     )
   }
 
   return (
-    <section className="min-h-screen pb-20">
-      <div className="mx-auto w-full max-w-screen-2xl px-4 pt-6">
-        {/* Header */}
-        <div className="mb-6 flex items-center gap-3">
-          <Heart className="h-7 w-7 fill-pink-500 text-pink-500" />
-          <h1 className="text-2xl font-bold text-pink-700">
-            {VI.common.toast.wishlist.wishlist}
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent pb-16 pt-2">
+      <div className="mx-auto w-full max-w-[min(1680px,100%)] min-w-0 px-4 pt-6 md:px-6">
+        <div
+          className={
+            "mb-8 rounded-[1.4rem] border-[4px] border-indigo-950 bg-gradient-to-r from-pink-200 via-rose-100 to-violet-200 px-5 py-5 text-center shadow-[12px_12px_0_0_rgba(30,27,75,0.33)] backdrop-blur transition-all duration-300 ease-out " +
+            (heroVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0")
+          }
+        >
+          <h1 className="mt-1 flex flex-wrap items-center justify-center gap-2 text-3xl font-extrabold tracking-tight text-indigo-950 md:mt-2 md:text-5xl">
+            <span className="text-[20px] tracking-[0.5px] text-indigo-900 motion-reduce:animate-none md:text-[40px]">
+              {VI.common.toast.wishlist.pageHeroDecor}
+            </span>
           </h1>
-          <Badge className="bg-pink-100 text-pink-600">
+          <p className="mt-3 text-sm font-semibold text-indigo-900/85 md:text-base">
             {wishlistItems.length} {itemCountLabel}
-          </Badge>
+          </p>
         </div>
 
-        {/* Grid */}
         {wishlistItems.length === 0 ? (
-          <div className="rounded-2xl border border-pink-100 bg-white/80 p-16 text-center shadow-sm">
-            <Heart className="mx-auto h-14 w-14 text-pink-200" />
-            <h2 className="mt-5 text-xl font-semibold text-slate-700">
+          <div className="rounded-[1.25rem] border-[4px] border-indigo-950 bg-gradient-to-b from-[#fffbeb] via-white to-pink-50/40 p-10 text-center shadow-[10px_10px_0_0_rgba(30,27,75,0.3)] md:p-16">
+            <span className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 shadow-[5px_5px_0_0_#1e1b4b]">
+              <Heart className="h-8 w-8 text-pink-500" aria-hidden />
+            </span>
+            <h2 className="mt-6 text-xl font-extrabold text-indigo-950">
               {VI.common.toast.wishlist.emptyTitle}
             </h2>
-            <p className="mt-2 text-sm text-slate-500">
+            <p className="mx-auto mt-2 max-w-md text-sm font-semibold text-slate-600">
               {VI.common.toast.wishlist.emptyDescription}
             </p>
             <Button
               variant="soft"
-              className="mt-8 rounded-full px-6"
+              className="mt-8 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-8 font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] hover:brightness-110"
               onClick={() => navigate('/costumes')}
             >
               {VI.common.toast.wishlist.browseButton}
             </Button>
           </div>
         ) : (
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid min-w-0 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {wishlistItems.map((item) => (
               <WishlistItemCard
                 key={item.id}

@@ -10,6 +10,9 @@ export interface PoseScoringResult {
   comment: string
   characterName?: string
   imageUrl?: string
+  pose_score?: number
+  expression_score?: number
+  costume_score?: number
   breakdown?: PoseScoringBreakdown
 }
 

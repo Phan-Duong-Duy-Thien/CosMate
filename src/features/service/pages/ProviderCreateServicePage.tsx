@@ -6,14 +6,11 @@
  */
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Spin } from 'antd';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
 import { CreateServiceForm } from '../components/CreateServiceForm';
-import { useProviderGate } from '@/features/provider/hooks/useProviderGate';
 import { useProviderVerification } from '@/features/provider/hooks/useProviderVerification';
-import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate';
 import { VI } from '@/shared/i18n/vi';
 import { getRoles } from '@/features/auth/services/tokenStorage';
 import { ROLE } from '@/types/auth';
@@ -60,21 +57,6 @@ export default function ProviderCreateServicePage() {
   );
   const [brandName] = useState<string>(() => deriveBrandName(serviceType));
 
-  const {
-    verified,
-    profileLoading,
-    plans,
-    plansLoading,
-    plansError,
-    selectedPlanId,
-    setSelectedPlanId,
-    selectedMethod,
-    setSelectedMethod,
-    handleSubscribe,
-    subscribing,
-    subscribeError,
-  } = useProviderGate();
-
   const { profile } = useProviderVerification();
   const [shopAddress, setShopAddress] = useState<UserAddress | null>(null);
 
@@ -105,39 +87,15 @@ export default function ProviderCreateServicePage() {
       showChatButton={false}
       brandName={brandName}
     >
-      {profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {!profileLoading && verified === false && (
-        <ProviderActivationGate
-          plans={plans}
-          plansLoading={plansLoading}
-          plansError={plansError}
-          selectedPlanId={selectedPlanId}
-          onSelectPlan={setSelectedPlanId}
-          selectedMethod={selectedMethod}
-          onSelectMethod={setSelectedMethod}
-          onSubscribe={handleSubscribe}
-          subscribing={subscribing}
-          subscribeError={subscribeError}
+      <div className="mx-auto max-w-3xl pb-6">
+        <CreateServiceForm
+          mode="create"
+          serviceType={serviceType}
+          providerId={profile?.id ?? 0}
+          shopAddress={shopAddress}
+          onSuccess={handleSuccess}
         />
-      )}
-
-      {!profileLoading && verified === true && (
-        <div className="mx-auto max-w-3xl">
-          <CreateServiceForm
-            mode="create"
-            serviceType={serviceType}
-            providerId={profile?.id ?? 0}
-            shopAddress={shopAddress}
-            onSuccess={handleSuccess}
-          />
-        </div>
-      )}
+      </div>
     </DashboardLayout>
   );
 }

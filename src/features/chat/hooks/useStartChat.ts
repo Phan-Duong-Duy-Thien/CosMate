@@ -9,6 +9,7 @@ import { message } from "antd"
 import { getOrCreateChatRoomService } from "../services/chat.service"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useChatPopup } from "../components/ChatPopupContext"
+import { refreshChatRoomsList } from "./useChatRooms"
 
 interface UseStartChatResult {
   startChat: (userId: number, providerName?: string) => Promise<void>
@@ -36,6 +37,7 @@ export function useStartChat(): UseStartChatResult {
       try {
         const room = await getOrCreateChatRoomService(currentUserId, userId)
         console.log("[useStartChat] Creating room with userId (receiver):", userId)
+        refreshChatRoomsList()
         openChat(room.id, userId, providerName)
       } catch (err) {
         const msg = err instanceof Error ? err.message : "Failed to open chat"

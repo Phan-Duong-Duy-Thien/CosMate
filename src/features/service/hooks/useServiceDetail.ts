@@ -2,7 +2,7 @@
  * useServiceDetail Hook
  *
  * Fetches a single service by its ID for the public detail page.
- * userId is returned directly from the service API response for chat functionality.
+ * userId is normalized from the service API and enriched via provider profile when missing.
  */
 import { useState, useEffect, useCallback } from 'react';
 import { fetchServiceById } from '../services/service.service';
@@ -31,7 +31,6 @@ export function useServiceDetail(
     setError(null);
     try {
       const data = await fetchServiceById(serviceId);
-      // userId is already in the service response — use it directly for chat
       setService(data);
     } catch (err) {
       console.error('[useServiceDetail] fetch error:', err);

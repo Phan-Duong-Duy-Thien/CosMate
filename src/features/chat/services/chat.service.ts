@@ -1,4 +1,13 @@
-import { getOrCreateChatRoom, getChatPartner, getChatMessages, getUserChatRooms, getUnreadCount, markRoomAsRead, uploadImage } from "../api/chat.api"
+import {
+  getOrCreateChatRoom,
+  getChatPartner,
+  getChatMessages,
+  getAllChatMessages,
+  getUserChatRooms,
+  getUnreadCount,
+  markRoomAsRead,
+  uploadImage,
+} from "../api/chat.api"
 import type { ChatRoom, ChatPartner, ChatMessage, ChatRoomListItem } from "../types"
 
 export async function getOrCreateChatRoomService(user1Id: number, user2Id: number): Promise<ChatRoom> {
@@ -14,10 +23,15 @@ export async function getChatPartnerService(roomId: number, currentUserId: numbe
 export async function getChatMessagesService(
   roomId: number,
   page = 0,
-  size = 20
+  size = 50,
 ): Promise<{ content: ChatMessage[]; number: number; totalPages: number; last: boolean }> {
   console.log("[chat.service] getChatMessages:", roomId, page, size)
   return getChatMessages(roomId, page, size)
+}
+
+export async function getAllChatMessagesService(roomId: number): Promise<ChatMessage[]> {
+  console.log("[chat.service] getAllChatMessages:", roomId)
+  return getAllChatMessages(roomId)
 }
 
 export async function getUserChatRoomsService(userId: number): Promise<ChatRoomListItem[]> {

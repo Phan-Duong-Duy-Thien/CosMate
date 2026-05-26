@@ -4,13 +4,20 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#7C3AED]/40 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/30 focus-visible:ring-offset-0 disabled:pointer-events-none disabled:opacity-50",
   {
     variants: {
       variant: {
-        default: "bg-[#7C3AED] text-white hover:bg-[#6D28D9]",
-        outline: "border border-[#E5E7EB] bg-white text-[#111827] hover:bg-[#F3F4F6]",
-        ghost: "text-[#111827] hover:bg-[#F3F4F6]",
+        default:
+          "border-0 bg-primary text-primary-foreground shadow-sm ring-0 hover:bg-primary/90",
+        /** CosMate brand — use on dashboard toolbars & primary CTAs */
+        cosmate:
+          "border-0 bg-cosmate-soft-pink text-foreground shadow-none ring-0 hover:bg-cosmate-pink/35 focus-visible:ring-cosmate-pink/40",
+        cosmateOutline:
+          "border-0 bg-background text-foreground shadow-none ring-1 ring-inset ring-cosmate-pink/22 hover:bg-cosmate-soft-pink/40 hover:ring-cosmate-pink/32 focus-visible:ring-cosmate-pink/35",
+        outline:
+          "border-0 bg-background text-foreground shadow-none ring-1 ring-inset ring-border/55 hover:bg-accent hover:ring-border/80 focus-visible:ring-ring/35",
+        ghost: "border-0 text-foreground ring-0 hover:bg-accent hover:text-accent-foreground",
       },
       size: {
         default: "h-11 px-4 py-2",
@@ -34,7 +41,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, ...props }, ref) => (
     <button
       ref={ref}
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size }), className)}
       {...props}
     />
   )

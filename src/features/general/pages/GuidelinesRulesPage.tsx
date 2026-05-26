@@ -1,13 +1,16 @@
 import * as React from "react"
+import { Sparkles } from "lucide-react"
 import { useSearchParams } from "react-router-dom"
+
+import { Card } from "@/shared/components/Card"
+import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 
 import {
   GUIDELINES_RULES_SECTIONS,
   type GuidelinesRuleItem,
   type GuidelinesSection,
 } from "../constants/guidelinesRulesContent"
-import { VI } from "@/shared/i18n/vi"
-import { cn } from "@/lib/utils"
 
 type ContentView = "guide" | "rules"
 
@@ -28,9 +31,19 @@ const SECTION_ID_FROM_TYPE: Record<string, string> = {
   dispute: "complaints-disputes",
 }
 
+const stickerTabActive =
+  "border-[3px] border-indigo-950 rounded-full bg-gradient-to-r from-pink-500 to-fuchsia-600 px-5 py-2.5 text-sm font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[7px_7px_0_0_#1e1b4b] active:translate-y-0 active:shadow-[3px_3px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-0.5"
+
+const stickerTabInactive =
+  "border-[3px] border-indigo-950 rounded-full bg-[#fffbeb] px-5 py-2.5 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition-all duration-200 hover:bg-pink-100 hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_#1e1b4b] active:translate-y-0 active:shadow-[3px_3px_0_0_#1e1b4b] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-0.5"
+
+const sectionCardBase =
+  "group relative rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-4 text-left shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 motion-safe:hover:-translate-y-1 motion-safe:hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.45)] active:scale-[0.99] xl:min-h-32"
+
+const sectionCardSelected =
+  "bg-gradient-to-br from-pink-100 via-[#fffbeb] to-fuchsia-50 shadow-[10px_10px_0_0_rgba(168,85,247,0.35)] motion-safe:hover:shadow-[12px_12px_0_0_rgba(236,72,153,0.45)]"
+
 export default function GuidelinesRulesPage() {
-  // useSearchParams re-renders automatically when URL query params change,
-  // even when navigating to the same route with different query params.
   const [searchParams] = useSearchParams()
   const typeParam = searchParams.get("type")
   const viewParam = searchParams.get("view")
@@ -42,19 +55,18 @@ export default function GuidelinesRulesPage() {
     viewParam === "rules" || viewParam === "guide" ? viewParam : "guide"
   )
 
-  // Sync activeSectionId when typeParam changes (handles same-route navigation)
   React.useEffect(() => {
     if (typeParam && SECTION_ID_FROM_TYPE[typeParam]) {
       setActiveSectionId(SECTION_ID_FROM_TYPE[typeParam])
     }
   }, [typeParam])
 
-  // Sync activeView when viewParam changes
   React.useEffect(() => {
     if (viewParam === "rules" || viewParam === "guide") {
       setActiveView(viewParam)
     }
   }, [viewParam])
+
   const [pageVisible, setPageVisible] = React.useState(false)
   const [contentVisible, setContentVisible] = React.useState(true)
 
@@ -83,109 +95,89 @@ export default function GuidelinesRulesPage() {
   ]
 
   return (
-    <section className="min-h-screen bg-transparent py-8 [font-family:'Be_Vietnam_Pro','Nunito','Inter',ui-sans-serif,system-ui] md:py-10">
-      <style>{`
-        @keyframes sparkleBlink {
-          0% { opacity: 0.6; transform: scale(1); }
-          50% { opacity: 1; transform: scale(1.05); }
-          100% { opacity: 0.6; transform: scale(1); }
-        }
-        @keyframes softSparkle {
-          0% { opacity: 0.6; transform: translateY(0px); }
-          50% { opacity: 1; transform: translateY(-1px); }
-          100% { opacity: 0.6; transform: translateY(0px); }
-        }
-      `}</style>
-      <div className="mx-auto w-full">
-        <div
+    <section className="min-h-screen bg-transparent py-8 font-sans md:py-10">
+      <div className="mx-auto w-full max-w-none">
+        <Card
           className={cn(
-            "rounded-3xl border border-white/70 bg-white/68 p-6 shadow-[0_16px_40px_rgba(236,72,153,0.08)] backdrop-blur-sm transition-all duration-300 ease-out md:p-8",
+            "rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 ease-out",
             pageVisible ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0"
           )}
         >
-          <div className="mb-10 text-center md:mb-12">
-            <h1 className="mb-4 text-[28px] font-bold leading-[1.2] tracking-[-0.5px] text-slate-900 md:text-[34px] xl:text-[40px]">
-              {VI.general.guidelinesRules.pageTitle}
-            </h1>
-            <p className="mx-auto max-w-[700px] text-base font-medium leading-[1.7] text-slate-700/80 md:text-[18px]">
-              {VI.general.guidelinesRules.pageSubtitle}
-            </p>
-          </div>
+          <div className="space-y-8 p-6 md:p-8">
+            <header className="flex flex-col items-center gap-5 text-center">
+              <h1 className="max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                  {VI.general.guidelinesRules.pageTitle}
+                </span>
+              </h1>
+              <p className="max-w-2xl text-pretty rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] px-4 py-3 text-sm font-semibold leading-relaxed text-indigo-950 shadow-[6px_6px_0_0_rgba(30,27,75,0.75)] md:text-base">
+                {VI.general.guidelinesRules.pageSubtitle}
+              </p>
+            </header>
 
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-            {GUIDELINES_RULES_SECTIONS.map((section) => {
-              const selected = section.id === activeSection.id
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+              {GUIDELINES_RULES_SECTIONS.map((section) => {
+                const selected = section.id === activeSection.id
 
-              return (
-                <button
-                  key={section.id}
-                  type="button"
-                  className={cn(
-                    "group relative rounded-2xl border p-4 text-left transition-all duration-300 active:scale-[0.98] hover:-translate-y-0.5 xl:min-h-32",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
-                    selected
-                      ? "border-pink-300 bg-gradient-to-br from-pink-200 via-rose-100 to-purple-200 shadow-[0_14px_30px_rgba(236,72,153,0.2)]"
-                      : "border-pink-200 bg-gradient-to-br from-white via-pink-50 to-rose-100 hover:border-pink-300 hover:from-pink-100 hover:to-purple-100 hover:shadow-[0_12px_24px_rgba(236,72,153,0.14)]"
-                  )}
-                  onClick={() => {
-                    setActiveSectionId(section.id)
-                    setActiveView("guide")
-                  }}
-                >
-                  <span
-                    aria-hidden="true"
-                    className={cn(
-                      "pointer-events-none absolute right-3 top-3 inline-flex h-5 w-5 items-center justify-center text-[18px] text-pink-500/80 transition-all duration-300 [animation:sparkleBlink_2.8s_ease-in-out_infinite] motion-reduce:animate-none",
-                      "group-hover:scale-110 group-hover:text-pink-600 group-hover:brightness-110"
-                    )}
+                return (
+                  <button
+                    key={section.id}
+                    type="button"
+                    className={cn(sectionCardBase, selected && sectionCardSelected)}
+                    onClick={() => {
+                      setActiveSectionId(section.id)
+                      setActiveView("guide")
+                    }}
                   >
-                    ✦
-                  </span>
-                  <p className="mb-2 text-[12px] font-medium tracking-[0.3px] text-slate-700/70">
-                    {VI.general.guidelinesRules.cardSmallTitle}
-                  </p>
-                  <h2 className="text-[20px] font-bold leading-[1.3] tracking-[0.5px] text-slate-900 md:text-[24px]">
-                    {getI18nValue(section.cardMainKey)}
-                  </h2>
-                </button>
-              )
-            })}
-          </div>
+                    <Sparkles
+                      aria-hidden
+                      className={cn(
+                        "pointer-events-none absolute right-3 top-3 h-4 w-4 text-indigo-950/70 transition-transform duration-200 motion-safe:group-hover:scale-110",
+                        selected && "text-fuchsia-600"
+                      )}
+                    />
+                    <p className="mb-2 text-xs font-extrabold uppercase tracking-wide text-indigo-950/70">
+                      {VI.general.guidelinesRules.cardSmallTitle}
+                    </p>
+                    <h2 className="text-lg font-extrabold leading-snug tracking-tight text-indigo-950 md:text-xl">
+                      {getI18nValue(section.cardMainKey)}
+                    </h2>
+                  </button>
+                )
+              })}
+            </div>
 
-          <div className="mt-6 rounded-2xl border border-pink-100 bg-white p-4 shadow-sm md:p-6">
-            <div className="flex flex-wrap items-center gap-2">
-              {tabButtons.map((tab) => (
-                <button
-                  key={tab.key}
-                  type="button"
+            <Card className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)]">
+              <div className="space-y-4 p-4 md:p-6">
+                <div className="flex flex-wrap gap-2">
+                  {tabButtons.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      className={cn(activeView === tab.key ? stickerTabActive : stickerTabInactive)}
+                      onClick={() => setActiveView(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div
                   className={cn(
-                    "rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 active:scale-[0.98]",
-                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
-                    activeView === tab.key
-                      ? "bg-[#FDCCD7] text-pink-900 border-2 border-[#FDCCD7]"
-                      : "bg-pink-50 text-pink-700 hover:bg-pink-100"
+                    "transition-all duration-200 ease-out",
+                    contentVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
                   )}
-                  onClick={() => setActiveView(tab.key)}
                 >
-                  {tab.label}
-                </button>
-              ))}
-            </div>
-
-            <div
-              className={cn(
-                "transition-all duration-250 ease-out",
-                contentVisible ? "translate-y-0 opacity-100" : "translate-y-1 opacity-0"
-              )}
-            >
-              {activeView === "guide" ? (
-                <GuideList section={activeSection} />
-              ) : (
-                <RulesList section={activeSection} />
-              )}
-            </div>
+                  {activeView === "guide" ? (
+                    <GuideList section={activeSection} />
+                  ) : (
+                    <RulesList section={activeSection} />
+                  )}
+                </div>
+              </div>
+            </Card>
           </div>
-        </div>
+        </Card>
       </div>
     </section>
   )
@@ -203,31 +195,35 @@ function GuideList({ section }: { section: GuidelinesSection }) {
             ? VI.general.guidelinesRules.ordersReturnsGuideTitle
             : section.id === "complaints-disputes"
               ? VI.general.guidelinesRules.complaintsGuideTitle
-      : `${VI.general.guidelinesRules.tabs.guide} ${getI18nValue(section.titleKey)}`
+              : `${VI.general.guidelinesRules.tabs.guide} ${getI18nValue(section.titleKey)}`
 
   return (
-    <div className="mt-3 rounded-2xl border border-pink-100 bg-gradient-to-r from-pink-50 via-rose-50 to-pink-100 p-4 md:p-4">
-      <h3 className="text-[18px] font-semibold leading-[1.3] tracking-[0.3px] text-pink-700 md:text-[22px]">
-        {title}
-      </h3>
-      <ul className="mt-2.5 space-y-2">
-        {section.guides.map((stepKey, index) => (
-          <li
-            key={stepKey}
-            className="flex items-start gap-2.5 text-base leading-7 text-slate-700 md:text-[17px]"
-          >
-            <span className="mt-1 text-xs text-pink-500">✿</span>
-            <p>
-              <span className="font-semibold text-pink-600">
-                {VI.general.guidelinesRules.stepLabel} {index + 1}
-              </span>
-              {": "}
-              {getI18nValue(stepKey)}
-            </p>
-          </li>
-        ))}
-      </ul>
-    </div>
+    <Card className="mt-1 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.55)]">
+      <div className="space-y-4 p-4 md:p-5">
+        <h3 className="text-lg font-extrabold leading-snug text-indigo-950 md:text-xl">
+          <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+            {title}
+          </span>
+        </h3>
+        <ul className="space-y-3">
+          {section.guides.map((stepKey, index) => (
+            <li key={stepKey} className="flex items-start gap-3 text-base leading-relaxed">
+              <span
+                className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 rounded border-2 border-indigo-950 bg-pink-400 shadow-[2px_2px_0_0_#1e1b4b]"
+                aria-hidden
+              />
+              <p className="text-indigo-950">
+                <span className="font-extrabold text-fuchsia-700">
+                  {VI.general.guidelinesRules.stepLabel} {index + 1}
+                </span>
+                {": "}
+                <span className="font-medium text-indigo-950/85">{getI18nValue(stepKey)}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </Card>
   )
 }
 
@@ -237,20 +233,22 @@ function RulesList({ section }: { section: GuidelinesSection }) {
   }
 
   return (
-    <div className="mt-3 space-y-2">
+    <div className="mt-1 space-y-3">
       {section.rules.map((rule) => (
-        <article
+        <Card
           key={`${section.id}-${rule.code}`}
-          className="rounded-2xl border border-pink-100 bg-pink-50/40 p-3.5 md:p-4"
+          className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[6px_6px_0_0_rgba(30,27,75,0.55)]"
         >
-          <p className="text-xs font-semibold uppercase tracking-wide text-pink-600">
-            {VI.general.guidelinesRules.rulePrefix} {rule.code}
-          </p>
-          <h3 className="mt-1 text-lg font-semibold text-slate-900">
-            {getI18nValue(rule.titleKey)}
-          </h3>
-          <p className="mt-1 text-base leading-7 text-slate-700 md:text-[17px]">{getI18nValue(rule.descKey)}</p>
-        </article>
+          <div className="p-4 md:p-5">
+            <p className="text-xs font-extrabold uppercase tracking-wide text-fuchsia-700">
+              {VI.general.guidelinesRules.rulePrefix} {rule.code}
+            </p>
+            <h3 className="mt-1 text-lg font-extrabold text-indigo-950">{getI18nValue(rule.titleKey)}</h3>
+            <p className="mt-2 text-base font-medium leading-relaxed text-indigo-950/85">
+              {getI18nValue(rule.descKey)}
+            </p>
+          </div>
+        </Card>
       ))}
     </div>
   )
@@ -268,7 +266,7 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
           ? VI.general.guidelinesRules.ordersReturnsRulesTitle
           : section.id === "complaints-disputes"
             ? VI.general.guidelinesRules.complaintsRulesTitle
-      : VI.general.guidelinesRules.cosplayRules.mainTitle
+            : VI.general.guidelinesRules.cosplayRules.mainTitle
   const mainDescription =
     section.id === "staff"
       ? VI.general.guidelinesRules.staffRules.mainDescription
@@ -278,7 +276,7 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
           ? VI.general.guidelinesRules.ordersReturnsRules.mainDescription
           : section.id === "complaints-disputes"
             ? VI.general.guidelinesRules.complaintsRules.mainDescription
-      : VI.general.guidelinesRules.cosplayRules.mainDescription
+            : VI.general.guidelinesRules.cosplayRules.mainDescription
   const heroTitleText =
     section.id === "cosplay-rental"
       ? mainTitle.replace(/^.*?(Nội Quy Thuê Đồ Cosplay).*$/u, "$1")
@@ -295,93 +293,100 @@ function CosplayRulesLayout({ section }: { section: GuidelinesSection }) {
     setActiveGroupId(ruleGroups[0]?.id ?? "")
   }, [ruleGroups])
 
-  return (
-    <div className="mt-3 grid gap-4 lg:grid-cols-[300px_minmax(0,1fr)] lg:items-start">
-      <aside className="rounded-2xl border border-pink-100 bg-pink-50/60 p-5 lg:sticky lg:top-32 lg:self-start md:p-6">
-        <p className="text-base font-semibold uppercase tracking-wide text-pink-700 md:text-lg">
-          {VI.general.guidelinesRules.cosplayRules.tocTitle}
-        </p>
-        <div className="mt-3 space-y-2">
-          {ruleGroups.map((group) => (
-            <button
-              key={group.id}
-              type="button"
-              className={cn(
-                "block w-full rounded-lg border-l-2 px-3 py-2 text-left text-sm leading-relaxed transition-colors md:text-base",
-                activeGroupId === group.id
-                  ? "border-pink-500 bg-pink-100/70 text-pink-700 shadow-sm"
-                  : "border-transparent bg-transparent font-medium text-pink-300 hover:border-pink-200 hover:bg-pink-50/70 hover:text-pink-500"
-              )}
-              aria-current={activeGroupId === group.id ? "true" : undefined}
-              onClick={() => {
-                setActiveGroupId(group.id)
-                const element = document.getElementById(`rules-${group.id}`)
-                element?.scrollIntoView({ behavior: "smooth", block: "start" })
-              }}
-            >
-              {getI18nValue(group.titleKey)}
-            </button>
-          ))}
-        </div>
-      </aside>
+  const tocButtonActive =
+    "w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-100 to-fuchsia-50 px-3 py-2.5 text-left text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition-all duration-200 hover:bg-pink-100 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 md:text-base"
 
-      <div className="space-y-3 md:space-y-4">
-        <div className="group rounded-2xl border border-pink-200 bg-gradient-to-r from-pink-100 via-rose-50 to-purple-100 p-3.5 md:p-4">
-          <h3 className="flex flex-wrap items-center gap-2 text-xl font-semibold tracking-wide text-pink-700 md:text-2xl">
-            <span>{heroTitleText}</span>
-            {section.id === "cosplay-rental" ? (
-              <span
-                aria-hidden="true"
-                className="text-[14px] tracking-[0.4px] text-pink-500/85 transition duration-300 [animation:softSparkle_3s_ease-in-out_infinite] motion-reduce:animate-none md:text-[16px] xl:text-[18px] group-hover:brightness-110"
-              >
-                ⋆. 𐙚˚࿔   𝜗𝜚˚⋆
-              </span>
-            ) : null}
-          </h3>
-          <p className="mt-1.5 text-base leading-7 text-slate-700 md:text-[17px]">
-            {mainDescription}
+  const tocButtonInactive =
+    "w-full rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-2.5 text-left text-sm font-semibold text-indigo-950/80 shadow-[3px_3px_0_0_rgba(30,27,75,0.35)] transition-all duration-200 hover:bg-pink-50 hover:text-indigo-950 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 md:text-base"
+
+  return (
+    <div className="mt-1 grid gap-4 lg:grid-cols-[minmax(0,280px)_minmax(0,1fr)] lg:items-start">
+      <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] lg:sticky lg:top-28 lg:self-start">
+        <div className="space-y-3 p-4 md:p-5">
+          <p className="text-sm font-extrabold uppercase tracking-wide text-fuchsia-700 md:text-base">
+            {VI.general.guidelinesRules.cosplayRules.tocTitle}
           </p>
-          {section.ruleIntroKeys?.length ? (
-            <div className="mt-2.5 space-y-1.5 text-base leading-7 text-slate-700 md:text-[17px]">
-              {section.ruleIntroKeys.map((introKey) => (
-                <p key={introKey}>{getI18nValue(introKey)}</p>
-              ))}
-            </div>
-          ) : null}
+          <div className="space-y-2">
+            {ruleGroups.map((group) => (
+              <button
+                key={group.id}
+                type="button"
+                className={cn(activeGroupId === group.id ? tocButtonActive : tocButtonInactive)}
+                aria-current={activeGroupId === group.id ? "true" : undefined}
+                onClick={() => {
+                  setActiveGroupId(group.id)
+                  const element = document.getElementById(`rules-${group.id}`)
+                  element?.scrollIntoView({ behavior: "smooth", block: "start" })
+                }}
+              >
+                {getI18nValue(group.titleKey)}
+              </button>
+            ))}
+          </div>
         </div>
+      </Card>
+
+      <div className="space-y-4">
+        <Card className="rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-100 via-[#fffbeb] to-blue-100 shadow-[8px_8px_0_0_rgba(30,27,75,0.55)]">
+          <div className="space-y-3 p-4 md:p-5">
+            <h3 className="flex flex-wrap items-center gap-2 text-xl font-extrabold tracking-tight text-indigo-950 md:text-2xl">
+              <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                {heroTitleText}
+              </span>
+              {section.id === "cosplay-rental" ? (
+                <Sparkles
+                  aria-hidden
+                  className="h-5 w-5 shrink-0 text-indigo-950 motion-safe:animate-pulse md:h-6 md:w-6"
+                />
+              ) : null}
+            </h3>
+            <p className="rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-2 text-base font-medium leading-relaxed text-indigo-950/90 shadow-[4px_4px_0_0_#1e1b4b]">
+              {mainDescription}
+            </p>
+            {section.ruleIntroKeys?.length ? (
+              <div className="space-y-2 text-base font-medium leading-relaxed text-indigo-950/85">
+                {section.ruleIntroKeys.map((introKey) => (
+                  <p key={introKey}>{getI18nValue(introKey)}</p>
+                ))}
+              </div>
+            ) : null}
+          </div>
+        </Card>
 
         {ruleGroups.map((group) => (
-          <section
+          <Card
             key={group.id}
             id={`rules-${group.id}`}
-            className="scroll-mt-24 rounded-2xl border border-pink-100 bg-white p-3.5 md:p-4"
+            className="scroll-mt-24 rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.55)] transition-all duration-300 motion-safe:hover:-translate-y-0.5 motion-safe:hover:shadow-[10px_10px_0_0_rgba(236,72,153,0.35)]"
           >
-            <h4 className="text-xl font-extrabold text-pink-600 md:text-2xl">
-              {getI18nValue(group.titleKey)}
-            </h4>
-            <ul className="mt-2 space-y-1.5">
-              {group.ruleCodes.map((code) => {
-                const rule = ruleByCode[code]
-                if (!rule) return null
+            <div className="space-y-3 p-4 md:p-5">
+              <h4 className="text-xl font-extrabold text-indigo-950 md:text-2xl">
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                  {getI18nValue(group.titleKey)}
+                </span>
+              </h4>
+              <ul className="space-y-2.5">
+                {group.ruleCodes.map((code) => {
+                  const rule = ruleByCode[code]
+                  if (!rule) return null
 
-                return (
-                  <li
-                    key={`${group.id}-${code}`}
-                    className="flex items-start gap-2.5 text-base leading-7 text-slate-700 md:text-[17px]"
-                  >
-                    <span className="mt-1 text-xs text-slate-500">✿</span>
-                    <p>
-                      <span className="font-semibold text-slate-900">
-                        {getI18nValue(rule.titleKey)}
-                      </span>
-                      {": "}
-                      {getI18nValue(rule.descKey)}
-                    </p>
-                  </li>
-                )
-              })}
-            </ul>
-          </section>
+                  return (
+                    <li key={`${group.id}-${code}`} className="flex items-start gap-3 text-base leading-relaxed">
+                      <span
+                        className="mt-1.5 inline-block h-2.5 w-2.5 shrink-0 rounded border-2 border-indigo-950 bg-pink-300 shadow-[2px_2px_0_0_#1e1b4b]"
+                        aria-hidden
+                      />
+                      <p className="text-indigo-950/90">
+                        <span className="font-extrabold text-indigo-950">{getI18nValue(rule.titleKey)}</span>
+                        {": "}
+                        <span className="font-medium">{getI18nValue(rule.descKey)}</span>
+                      </p>
+                    </li>
+                  )
+                })}
+              </ul>
+            </div>
+          </Card>
         ))}
       </div>
     </div>

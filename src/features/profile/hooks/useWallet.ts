@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import type { WalletInfo, WalletTransaction } from "../types"
 import * as walletService from "../services/wallet.service"
+import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
+import { DATA_SYNC_EVENTS } from "@/shared/sync/dataSync"
 
 interface UseWalletResult {
   // Data
@@ -74,6 +76,8 @@ export function useWallet(): UseWalletResult {
   useEffect(() => {
     void fetchWalletInfo()
   }, [fetchWalletInfo])
+
+  useDataSyncRefetch(fetchWalletInfo, DATA_SYNC_EVENTS.WALLET_CHANGED, Boolean(userId))
 
   const toggleTransactions = useCallback(() => {
     setIsTransactionsOpen((prev) => !prev)

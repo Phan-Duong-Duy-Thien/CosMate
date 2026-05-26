@@ -48,7 +48,7 @@ function ImageCard({
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(0,0,0,0.4)',
+              background: 'color-mix(in oklch, var(--foreground) 42%, transparent)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -66,7 +66,9 @@ function ImageCard({
           style={{
             objectFit: 'cover',
             borderRadius: 4,
-            border: isMain ? '2px solid #1677ff' : '1px solid #d9d9d9',
+            border: isMain
+              ? "2px solid var(--cosmate-info)"
+              : "1px solid var(--border)",
           }}
           preview={{ mask: false }}
         />

@@ -100,7 +100,6 @@ export interface FilterState {
   minRating: number | null
   priceMin: number | null
   priceMax: number | null
-  tagKeys: TagKey[]
   hasAccessories: boolean
   onlyAvailable: boolean
   onlyBestSeller: boolean
@@ -148,7 +147,7 @@ export interface RentalOptionInput {
 // â”€â”€â”€ Backend API Types (Provider / Costume) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 /** Status values returned by the backend for a Costume */
-export type CostumeStatus = 'AVAILABLE' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
+export type CostumeStatus = 'AVAILABLE' | 'RENTED' | 'DISABLED' | 'MAINTENANCE' | 'DELETED'
 
 export interface CostumeSurcharge {
   id: number
@@ -201,6 +200,8 @@ export interface Costume {
   accessories: CostumeAccessory[]
   rentalOptions: CostumeRentalOption[]
   rentalsCount?: number
+  /** Khi backend gửi true — hiển thị tag "Bán chạy"; không suy từ trạng thái cho thuê */
+  bestSeller?: boolean
   /** Optional; when present, list UI shows first entry; detail shows full list */
   characters?: CostumeCharacter[]
 }

@@ -8,6 +8,7 @@
 
 import { useCallback, useRef, useState } from 'react'
 import { searchCostumes } from '../api/costume.api'
+import { getProviderById } from '../api/provider.api'
 import { mapCostumeToItem } from './usePublicCostumes'
 import type { CostumeItem } from '../types'
 
@@ -40,7 +41,19 @@ export function useSearchCostumes() {
         setError(null)
         try {
           const response = await searchCostumes(trimmed)
-          const mapped = (response.result ?? []).map(mapCostumeToItem)
+          const costumes = response.result ?? []
+          const uniqueProviderIds = [...new Set(costumes.map((c) => c.providerId))]
+          const providerResults = await Promise.all(
+            uniqueProviderIds.map((id) => getProviderById(id).catch(() => null)),
+          )
+          const providerMap = Object.fromEntries(
+            providerResults
+              .filter((p): p is NonNullable<typeof p> => p !== null)
+              .map((p) => [p.id, p.shopName ?? '—']),
+          )
+          const mapped = costumes.map((c) =>
+            mapCostumeToItem(c, providerMap[c.providerId] ?? '—'),
+          )
           setResults(mapped)
         } catch (err) {
           setError(err instanceof Error ? err.message : 'Search failed.')

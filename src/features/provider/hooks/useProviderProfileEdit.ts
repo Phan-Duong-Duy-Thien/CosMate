@@ -141,7 +141,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
     if (!profile) return;
     try {
-      await uploadProviderCoverImage(profile.userId, file);
+      await uploadProviderCoverImage(profile.id, file);
       message.success('Ảnh bìa đã được cập nhật');
       await loadData();
     } catch (err) {

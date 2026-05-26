@@ -15,7 +15,7 @@ export function TagChips({ tags, renderTag }: TagChipsProps) {
         ) : (
           <span
             key={tag}
-            className="rounded-full bg-purple-50 px-3 py-1 text-xs font-medium text-purple-700"
+            className="rounded-full bg-cosmate-soft-pink/70 px-3 py-1 text-xs font-medium text-cosmate-pink"
           >
             #{tag}
           </span>
