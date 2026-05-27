@@ -220,6 +220,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: VI.common.breadcrumb.users || 'Quản lý người dùng' },
       ]);
+    } else if (path === '/admin/ai-token-plans') {
+      setItems([
+        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
+        { label: VI.admin.aiTokenPlans.title },
+      ]);
     } else if (path === '/admin/ai-token-purchases') {
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
