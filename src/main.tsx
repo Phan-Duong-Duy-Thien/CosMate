@@ -90,6 +90,7 @@ function DocumentTitleSync() {
     else if (pathname === "/staffs") pageTitle = "Thuê Staff"
     else if (pathname.startsWith("/staffs/") && pathname !== "/staffs") pageTitle = "Hồ sơ Staff"
     else if (pathname === "/staff/ai-token-plans") pageTitle = "Quản lý gói AI Token"
+    else if (pathname === "/admin/ai-token-plans") pageTitle = "Quản lý gói AI Token"
     else if (pathname.startsWith("/staff")) pageTitle = "Bảng điều khiển Staff"
     else if (pathname === "/login") pageTitle = "Đăng nhập"
     else if (pathname.startsWith("/register")) pageTitle = "Đăng ký"

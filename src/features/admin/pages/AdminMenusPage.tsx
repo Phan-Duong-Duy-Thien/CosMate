@@ -17,6 +17,7 @@ const routeOptions = [
       { label: '/admin/character-requests (Yêu cầu thêm nhân vật)', value: '/admin/character-requests' },
       { label: '/admin/audit-logs (Nhật ký hệ thống)', value: '/admin/audit-logs' },
       { label: '/admin/subscription-plans (Gói đăng ký)', value: '/admin/subscription-plans' },
+      { label: '/admin/ai-token-plans (Gói AI Token)', value: '/admin/ai-token-plans' },
       { label: '/admin/ai-token-purchases (Lịch sử mua AI Token)', value: '/admin/ai-token-purchases' },
       { label: '/admin/system-configs (Cấu hình hệ thống)', value: '/admin/system-configs' },
       { label: '/admin/menus (Quản lý menu)', value: '/admin/menus' },
