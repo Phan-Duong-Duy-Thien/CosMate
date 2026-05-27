@@ -363,22 +363,30 @@
   }
 
   /*
-   * Dashboard shell: full viewport column. Sider stays in flex row (not position:fixed)
-   * so the main column can stretch to 100vh — avoids ~content-height clip + white gap below.
+   * Dashboard shell: lock page scroll; scroll only inside [data-cosmate-dashboard-scroll].
+   * Sider stays in flex row (not position:fixed) so main column fills remaining height.
    */
+  html.cosmate-dashboard-active,
+  html.cosmate-dashboard-active body {
+    overflow: hidden;
+    height: 100%;
+  }
+
   .cosmate-dashboard-root.ant-layout.ant-layout-has-sider {
     flex-direction: row !important;
     align-items: stretch !important;
-    min-height: 100vh;
-    height: 100vh;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
   }
 
   .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-main.ant-layout {
     flex: 1 1 auto !important;
     width: 0;
     min-width: 0;
-    min-height: 100vh !important;
-    height: 100vh !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 100% !important;
     display: flex !important;
     flex-direction: column !important;
   }
@@ -391,9 +399,11 @@
   }
 
   .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-sider.ant-layout-sider {
+    position: relative !important;
     align-self: stretch !important;
-    height: 100% !important;
-    min-height: 100vh !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
     flex-shrink: 0;
   }
 

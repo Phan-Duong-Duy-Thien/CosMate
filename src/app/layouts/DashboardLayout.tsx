@@ -643,7 +643,10 @@ export function DashboardLayout({
     }
   }, [sidebarWidth, enableSidebarResize, isResizing]);
 
-  const effectiveWidth = collapsed ? 80 : sidebarWidth;
+  useEffect(() => {
+    document.documentElement.classList.add('cosmate-dashboard-active');
+    return () => document.documentElement.classList.remove('cosmate-dashboard-active');
+  }, []);
 
   return (
     <ConfigProvider
@@ -654,10 +657,7 @@ export function DashboardLayout({
         },
       }}
     >
-    <Layout
-      className="cosmate-dashboard-root"
-      style={{ height: '100vh', minHeight: '100vh', overflow: 'hidden' }}
-    >
+    <Layout className="cosmate-dashboard-root h-full max-h-full overflow-hidden">
       <Sider
         className="cosmate-dashboard-sider"
         collapsible
@@ -669,11 +669,8 @@ export function DashboardLayout({
         collapsedWidth={80}
         style={{
           overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
+          flex: '0 0 auto',
+          alignSelf: 'stretch',
           borderRight: "1px solid var(--border)",
           userSelect: isResizing ? 'none' : undefined,
         }}
@@ -744,17 +741,9 @@ export function DashboardLayout({
       </Sider>
 
       <Layout
-        className="cosmate-dashboard-main"
+        className="cosmate-dashboard-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 pb-4"
         style={{
-          marginLeft: effectiveWidth,
-          transition: isResizing ? 'none' : 'margin-left 0.2s',
-          flex: 1,
-          minHeight: '100vh',
-          height: '100vh',
-          minWidth: 0,
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
+          transition: isResizing ? 'none' : 'width 0.2s',
           background: 'var(--background)',
         }}
       >
@@ -823,16 +812,11 @@ export function DashboardLayout({
         </Header>
 
         <Content
+          className="mt-4! flex min-h-0 flex-1 flex-col overflow-hidden"
           style={{
-            flex: 1,
-            margin: 16,
             padding: 20,
             background: 'var(--card)',
             borderRadius: 8,
-            display: 'flex',
-            flexDirection: 'column',
-            minHeight: 0,
-            overflow: 'hidden',
           }}
         >
           {breadcrumbItems.length > 0 && (

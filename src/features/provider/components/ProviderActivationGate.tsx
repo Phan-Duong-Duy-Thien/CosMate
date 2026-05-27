@@ -17,15 +17,7 @@ type ProviderActivationGateProps = Omit<
 
 export function ProviderActivationGate(props: ProviderActivationGateProps) {
   return (
-    <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 16px',
-      }}
-    >
+    <div className="flex min-h-0 flex-1 items-center justify-center px-4 py-6">
       <Card
         style={{ maxWidth: 640, width: '100%', borderRadius: 16, boxShadow: '0 4px 24px rgba(0,0,0,0.10)' }}
       >
