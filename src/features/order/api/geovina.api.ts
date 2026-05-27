@@ -2,19 +2,12 @@
  * GeoVina — chuẩn hóa địa chỉ hành chính cũ/mới (trước/sau sáp nhập).
  * https://www.geovina.io.vn/docs
  *
- * Dev: proxy /geovina-proxy → https://geovina.io.vn
+ * Dev: proxy /geovina-proxy → https://www.geovina.io.vn
  */
 
-const GEOVINA_BASE =
-  import.meta.env.VITE_GEOVINA_API_BASE?.replace(/\/$/, '') || '/geovina-proxy';
+import { getGeovinaApiBase, getGeovinaApiKey, isGeovinaConfigured } from '@/shared/config/env';
 
-function geovinaApiKey(): string {
-  return import.meta.env.VITE_GEOVINA_API_KEY ?? '';
-}
-
-export function isGeovinaConfigured(): boolean {
-  return Boolean(geovinaApiKey());
-}
+export { isGeovinaConfigured } from '@/shared/config/env';
 
 export interface GeoVinaAdminUnit {
   id: string;
@@ -50,33 +43,64 @@ interface GeoVinaParseEnvelope {
   message?: string;
 }
 
+function isHtmlBody(text: string): boolean {
+  const trimmed = text.trim();
+  return trimmed.startsWith('<') || /<!doctype/i.test(trimmed);
+}
+
 export async function parseGeoVinaAddress(address: string): Promise<GeoVinaParseData | null> {
-  const key = geovinaApiKey();
-  if (!key || !address.trim()) return null;
+  const key = getGeovinaApiKey();
+  if (!key || !address.trim() || !isGeovinaConfigured()) return null;
 
-  const res = await fetch(`${GEOVINA_BASE}/api/parse`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Api-Key': key,
-    },
-    body: JSON.stringify({ address: address.trim() }),
-  });
+  try {
+    const res = await fetch(`${getGeovinaApiBase()}/api/parse`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': key,
+      },
+      body: JSON.stringify({ address: address.trim() }),
+    });
 
-  if (!res.ok) {
+    const text = await res.text();
+    const trimmed = text.trim();
+
+    if (!res.ok) {
+      if (import.meta.env.DEV) {
+        console.warn('[GeoVina] parse failed', res.status, trimmed.slice(0, 200));
+      }
+      return null;
+    }
+
+    if (!trimmed || isHtmlBody(trimmed)) {
+      if (import.meta.env.DEV) {
+        console.warn('[GeoVina] parse returned HTML instead of JSON');
+      }
+      return null;
+    }
+
+    let json: GeoVinaParseEnvelope;
+    try {
+      json = JSON.parse(trimmed) as GeoVinaParseEnvelope;
+    } catch {
+      if (import.meta.env.DEV) {
+        console.warn('[GeoVina] parse returned invalid JSON');
+      }
+      return null;
+    }
+
+    if (!json.success || !json.data) {
+      if (import.meta.env.DEV) {
+        console.warn('[GeoVina] parse unsuccessful', json.message);
+      }
+      return null;
+    }
+
+    return json.data;
+  } catch (err) {
     if (import.meta.env.DEV) {
-      console.warn('[GeoVina] parse failed', res.status, await res.text().catch(() => ''));
+      console.warn('[GeoVina] parse request failed', err);
     }
     return null;
   }
-
-  const json = (await res.json()) as GeoVinaParseEnvelope;
-  if (!json.success || !json.data) {
-    if (import.meta.env.DEV) {
-      console.warn('[GeoVina] parse unsuccessful', json.message);
-    }
-    return null;
-  }
-
-  return json.data;
 }

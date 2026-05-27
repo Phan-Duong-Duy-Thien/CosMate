@@ -16,7 +16,7 @@ export default defineConfig({
         rewrite: (path) => path.replace(/^\/ghn-proxy/, ''),
       },
       '/geovina-proxy': {
-        target: 'https://geovina.io.vn',
+        target: 'https://www.geovina.io.vn',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/geovina-proxy/, ''),
       },

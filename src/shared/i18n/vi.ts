@@ -32,6 +32,27 @@ export const VI = {
     filterRead: "Đã đọc",
     filterOrders: "Đơn hàng",
     filterMessages: "Tin nhắn",
+    filterFinance: "Tài chính",
+    filterSystem: "Hệ thống",
+    providerPageTitle: "Thông báo",
+    providerFilterHintSidebar:
+      "Lọc theo đơn hàng, tin nhắn, ví hoặc thông báo hệ thống. Ưu tiên mục chưa đọc trước.",
+    providerQuickLinksTitle: "Đi tới nhanh",
+    providerRailOrdersBadge: "Đơn hàng",
+    providerRailOrdersTitle: "Quản lý đơn hàng",
+    providerRailOrdersCta: "Xem đơn",
+    providerRailMessagesBadge: "Tin nhắn",
+    providerRailMessagesTitle: "Hộp tin nhắn",
+    providerRailMessagesCta: "Mở tin nhắn",
+    providerRailWalletBadge: "Ví",
+    providerRailWalletTitle: "Ví & giao dịch",
+    providerRailWalletCta: "Mở ví",
+    providerRailSubscriptionBadge: "Gói",
+    providerRailSubscriptionTitle: "Gói đăng ký",
+    providerRailSubscriptionCta: "Quản lý gói",
+    providerRailTipsTitle: "Mẹo",
+    providerRailTipsBody:
+      "Dùng bộ lọc Tài chính cho nạp/rút ví; Hệ thống cho nhắc nhở và cập nhật từ CosMate.",
     filterHintSidebar:
       "Chọn mục bên trái để lọc danh sách. Đơn hàng = loại từ hệ thống đơn hàng; Tin nhắn gồm chat và thông báo có nội dung gửi tin nhắn.",
     filterEmptyHintMobile: "Thử chọn mục khác ở thanh bên hoặc kéo ngang trên điện thoại.",
@@ -848,6 +869,7 @@ export const VI = {
       reviews: "Đánh giá",
       settings: "Hồ sơ / Cài đặt",
       messages: "Tin nhắn",
+      notifications: "Thông báo",
       // Event Staff
       eventStaffDashboard: "Bảng điều khiển Staff",
       eventStaffSchedule: "Lịch làm việc",
@@ -1030,6 +1052,10 @@ export const VI = {
         ghnFeeLoading: "Đang tính phí...",
         ghnFeeError: "Không thể ước tính phí vận chuyển",
         ghnFeeUnavailable: "Không thể ước tính phí. Kiểm tra địa chỉ trên đơn hoặc cấu hình vận chuyển.",
+        ghnConfigMissing:
+          "Chưa cấu hình GHN (token/cửa hàng). Liên hệ quản trị hệ thống.",
+        ghnProxyMisconfigured:
+          "Proxy GHN chưa được cấu hình trên môi trường triển khai. Cần thiết lập VITE_GHN_API_BASE hoặc reverse proxy /ghn-proxy.",
         shippingFeeApproximateHint:
           "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
         shippingFeeResolveFailedHint:

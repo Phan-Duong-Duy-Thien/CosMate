@@ -9,7 +9,11 @@ import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
-import { isProviderDashboardPath } from '@/features/profile/utils/tokenRoutes';
+import {
+  getProviderNotificationsPath,
+  isProviderDashboardPath,
+} from '@/features/profile/utils/tokenRoutes';
+import { ProviderNotificationHeaderBell } from '@/features/provider/components/ProviderNotificationHeaderBell';
 import {
   resolveDashboardContentMode,
   type DashboardContentMode,
@@ -307,6 +311,11 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
         { label: VI.profile.token.hubTitle },
       ]);
+    } else if (path === '/provider-rental/notifications') {
+      setItems([
+        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
+        { label: VI.notification.title },
+      ]);
     } else if (path === '/provider-photograph') {
       setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
     } else if (path === '/provider-photograph/wallet') {
@@ -330,6 +339,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
         { label: VI.profile.token.hubTitle },
+      ]);
+    } else if (path === '/provider-photograph/notifications') {
+      setItems([
+        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
+        { label: VI.notification.title },
       ]);
     } else if (path === '/provider-photograph/services') {
       setItems([
@@ -406,6 +420,11 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
         { label: VI.profile.token.hubTitle },
+      ]);
+    } else if (path === '/provider-event-staff/notifications') {
+      setItems([
+        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
+        { label: VI.notification.title },
       ]);
     } else if (path === '/provider-event-staff/services') {
       setItems([
@@ -802,6 +821,11 @@ export function DashboardLayout({
                   </span>
                 )}
               </button>
+            )}
+            {showTokenBadge && (
+              <ProviderNotificationHeaderBell
+                viewAllPath={getProviderNotificationsPath(location.pathname)}
+              />
             )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div className="flex h-9 max-h-9 cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 text-foreground transition-colors hover:border-cosmate-pink/20 hover:bg-cosmate-soft-pink/40 sm:gap-3">

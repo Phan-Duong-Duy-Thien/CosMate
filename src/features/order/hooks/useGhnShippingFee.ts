@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react';
 import { estimateOrderGhnFee, type GhnShippingDirection } from '../services/ghn.service';
-import { isGhnConfigured } from '../api/ghn.api';
+import {
+  GhnResponseError,
+  getGhnConfigStatus,
+  isGhnConfigured,
+} from '../api/ghn.api';
 import { VI } from '@/shared/i18n/vi';
 
 interface UseGhnShippingFeeResult {
@@ -8,6 +12,75 @@ interface UseGhnShippingFeeResult {
   loading: boolean;
   error: string | null;
   approximate: boolean;
+}
+
+const shipModal = VI.provider.orders.shipModal;
+
+function isGhnResponseError(err: unknown): err is GhnResponseError {
+  return (
+    err instanceof GhnResponseError ||
+    (typeof err === 'object' &&
+      err !== null &&
+      (err as GhnResponseError).name === 'GhnResponseError' &&
+      typeof (err as GhnResponseError).code === 'string')
+  );
+}
+
+function isJsonParseLikeError(message: string): boolean {
+  const lower = message.toLowerCase();
+  return (
+    lower.includes('unexpected token') ||
+    lower.includes('<!doctype') ||
+    lower.includes('is not valid json') ||
+    lower.includes('json.parse')
+  );
+}
+
+function mapGhnFeeError(err: unknown): string {
+  if (isGhnResponseError(err)) {
+    switch (err.code) {
+      case 'GHN_HTML_RESPONSE':
+        return shipModal.ghnProxyMisconfigured;
+      case 'GHN_INVALID_JSON':
+        return shipModal.ghnFeeUnavailable;
+      case 'GHN_HTTP_ERROR':
+      case 'GHN_API_ERROR':
+        return isJsonParseLikeError(err.message)
+          ? shipModal.ghnFeeUnavailable
+          : err.message || shipModal.ghnFeeUnavailable;
+      default:
+        return shipModal.ghnFeeUnavailable;
+    }
+  }
+
+  if (err instanceof Error) {
+    const msg = err.message;
+    if (msg === 'GHN_NOT_CONFIGURED') {
+      return shipModal.ghnConfigMissing;
+    }
+    if (msg.includes('Không map được') || msg.includes('Thiếu phường/xã')) {
+      return shipModal.shippingFeeResolveFailedHint;
+    }
+    if (err.name === 'SyntaxError' || isJsonParseLikeError(msg)) {
+      return shipModal.ghnProxyMisconfigured;
+    }
+    if (msg) {
+      return msg;
+    }
+  }
+
+  return shipModal.ghnFeeUnavailable;
+}
+
+function configStatusMessage(status: ReturnType<typeof getGhnConfigStatus>): string {
+  switch (status) {
+    case 'missing_credentials':
+      return shipModal.ghnConfigMissing;
+    case 'proxy_misconfigured':
+      return shipModal.ghnProxyMisconfigured;
+    default:
+      return shipModal.ghnFeeUnavailable;
+  }
 }
 
 export function useGhnShippingFee(
@@ -30,7 +103,7 @@ export function useGhnShippingFee(
 
     if (!isGhnConfigured()) {
       setFee(null);
-      setError(VI.provider.orders.shipModal.ghnFeeUnavailable);
+      setError(configStatusMessage(getGhnConfigStatus()));
       setApproximate(false);
       setLoading(false);
       return;
@@ -52,14 +125,7 @@ export function useGhnShippingFee(
         if (!cancelled) {
           setFee(null);
           setApproximate(false);
-          const msg = err instanceof Error ? err.message : '';
-          const isResolveError =
-            msg.includes('Không map được') || msg.includes('Thiếu phường/xã');
-          setError(
-            isResolveError
-              ? VI.provider.orders.shipModal.shippingFeeResolveFailedHint
-              : msg || VI.provider.orders.shipModal.ghnFeeUnavailable
-          );
+          setError(mapGhnFeeError(err));
         }
       })
       .finally(() => {
