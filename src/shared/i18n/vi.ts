@@ -1349,6 +1349,8 @@ export const VI = {
         noImagesWarningCancel: "Quay lại chụp ảnh",
         tooManyImages: "Tối đa 5 ảnh xác nhận.",
         sessionFailed: "Không tạo được phiên QR. Vui lòng thử lại.",
+        sessionOwnerRequired:
+          "Không xác định được tài khoản. Vui lòng đăng nhập lại trên web rồi thử tạo mã QR.",
         sessionExpired:
           "Mã QR đã hết hạn. Bấm «Tạo mã QR mới» (sau khi hết chờ) hoặc đăng nhập lại app trên điện thoại rồi quét lại.",
         appLoginHint:

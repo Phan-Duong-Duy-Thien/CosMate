@@ -91,6 +91,11 @@ export default function CostumeListPage() {
   const sortedItems = React.useMemo(() => {
     const next = [...filteredItems]
     next.sort((a, b) => {
+      // Có sẵn luôn hiển thị trước; đã thuê / không khả dụng xuống cuối
+      if (a.isAvailable !== b.isAvailable) {
+        return a.isAvailable ? -1 : 1
+      }
+
       if (sortKey === "newest") return Date.parse(b.createdAt) - Date.parse(a.createdAt)
       if (sortKey === "bestSeller") {
         if (a.bestSeller !== b.bestSeller) return a.bestSeller ? -1 : 1

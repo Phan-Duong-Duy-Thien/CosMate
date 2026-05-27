@@ -29,3 +29,26 @@ export function qrPayloadMatchesCurrentApi(qrValue: string): boolean {
     return qrValue.includes(encodeURIComponent(expected))
   }
 }
+
+/** Read `userId` from confirm-delivery (or similar) QR deep links. */
+export function parseUserIdFromQrPayload(qrValue: string): number | null {
+  if (!qrValue) return null
+  try {
+    const url = new URL(qrValue)
+    const raw = url.searchParams.get("userId")
+    if (!raw) return null
+    const id = parseInt(raw, 10)
+    return Number.isFinite(id) && id > 0 ? id : null
+  } catch {
+    const match = qrValue.match(/[?&]userId=(\d+)/)
+    if (!match) return null
+    const id = parseInt(match[1], 10)
+    return Number.isFinite(id) && id > 0 ? id : null
+  }
+}
+
+/** QR must target this API and the web user who created the session. */
+export function qrPayloadMatchesCurrentUser(qrValue: string, userId: number): boolean {
+  if (!userId) return false
+  return parseUserIdFromQrPayload(qrValue) === userId
+}
