@@ -308,6 +308,21 @@
   margin-top: 12px !important;
 }
 
+.cosmate-provider-notif-popover.ant-popover {
+  margin-top: 8px !important;
+}
+
+.cosmate-provider-notif-popover.ant-popover .ant-popover-container,
+.cosmate-provider-notif-popover.ant-popover .ant-popover-inner,
+.cosmate-provider-notif-popover.ant-popover .ant-popover-content,
+.cosmate-provider-notif-popover > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
 /* Header notification popover: remove Ant Design default white card wrapper */
 .cosmate-notif-popover.ant-popover .ant-popover-container,
 .cosmate-notif-popover.ant-popover .ant-popover-inner,

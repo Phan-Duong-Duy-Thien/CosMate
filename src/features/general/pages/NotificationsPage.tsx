@@ -1,6 +1,5 @@
 import * as React from "react"
 import { useNavigate } from "react-router-dom"
-import { Modal } from "antd"
 import {
   Bell,
   Loader2,
@@ -14,17 +13,24 @@ import {
   BookOpen,
 } from "lucide-react"
 import { useNotifications } from "@/features/notification/hooks/useNotifications"
+import { useNotificationInteractions } from "@/features/notification/hooks/useNotificationInteractions"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 import { isAuthenticated } from "@/features/auth/utils/authStorage"
 import { cn } from "@/lib/utils"
 import type { NotificationItem } from "@/features/notification/types"
+import { NotificationContentPreview } from "@/features/notification/components/NotificationContentPreview"
 import {
-  showNotificationActionToast,
-  showNotificationDetailToast,
-} from "@/features/notification/utils/showNotificationToast"
-import { formatNotificationDisplayText } from "@/features/notification/utils/formatNotificationDisplayText"
+  type CosplayerNotificationTab,
+  cosplayerTabCounts,
+  cosplayerTypeBadgeClasses,
+  filterCosplayerNotificationsByTab,
+  formatSendAt,
+  getTypeLabel,
+  pickInitialCosplayerTab,
+  unreadCountLabel,
+} from "@/features/notification/utils/notificationList"
 
 const quickLinkCard =
   "flex flex-col gap-1 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] p-3 text-left shadow-[4px_4px_0_0_rgba(30,27,75,0.28)] outline-none transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(30,27,75,0.22)] focus-visible:ring-4 focus-visible:ring-pink-400 sm:p-3.5"
@@ -95,233 +101,6 @@ function NotificationsQuickLinks() {
   )
 }
 
-function formatSendAt(dateString: string): string {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-  const minutes = Math.floor(diff / 60000)
-  const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-
-  if (minutes < 1) return "Vừa xong"
-  if (minutes < 60) return `${minutes} phút trước`
-  if (hours < 24) return `${hours} giờ trước`
-  if (days < 7) return `${days} ngày trước`
-  return date.toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
-
-function getTypeLabel(type: string): string {
-  const map: Record<string, string> = {
-    WALLET_CREDIT: "Nạp tiền",
-    ORDER_STATUS: "Đơn hàng",
-    REMINDER: "Nhắc nhở",
-    SYSTEM: "Hệ thống",
-    CHAT: "Tin nhắn",
-    MESSAGE: "Tin nhắn",
-    NEW_MESSAGE: "Tin nhắn",
-  }
-  return map[type] ?? "Thông báo"
-}
-
-const MESSAGE_NOTIFICATION_TYPES = new Set(["CHAT", "MESSAGE", "NEW_MESSAGE"])
-
-function isMessageNotification(n: { type: string; header: string }): boolean {
-  if (MESSAGE_NOTIFICATION_TYPES.has(n.type)) return true
-  const h = n.header.toLowerCase()
-  return (
-    h.includes("tin nhắn") || h.includes("gửi tin") || h.includes("tin nhắn cho bạn")
-  )
-}
-
-function isOrderNotification(n: { type: string }): boolean {
-  return n.type === "ORDER_STATUS"
-}
-
-type NotificationListTab = "unread" | "read" | "orders" | "messages"
-
-function typeBadgeClasses(type: string): string {
-  const map: Record<string, string> = {
-    WALLET_CREDIT: "border-emerald-700 bg-emerald-100 text-emerald-950",
-    ORDER_STATUS: "border-violet-700 bg-violet-100 text-violet-950",
-    REMINDER: "border-amber-700 bg-amber-100 text-amber-950",
-    SYSTEM: "border-slate-600 bg-slate-100 text-slate-900",
-    CHAT: "border-sky-700 bg-sky-100 text-sky-950",
-    MESSAGE: "border-sky-700 bg-sky-100 text-sky-950",
-    NEW_MESSAGE: "border-sky-700 bg-sky-100 text-sky-950",
-  }
-  return map[type] ?? "border-pink-600 bg-pink-100 text-pink-950"
-}
-
-type ParsedContent =
-  | { mode: "text"; text: string }
-  | { mode: "image-only"; url: string }
-  | { mode: "text-with-image"; text: string; imageUrl: string }
-
-function isProbablyImageUrl(raw: string): boolean {
-  const path = raw.split("?")[0].toLowerCase()
-  if (/\.(jpe?g|png|gif|webp|avif|bmp)(\?|$)/.test(path)) return true
-  if (path.includes("storage.googleapis.com")) return true
-  if (path.includes("firebase") || path.includes("googleusercontent")) return true
-  return false
-}
-
-function parseNotificationContent(content: string): ParsedContent {
-  const trimmed = content.trim()
-  const tokens = trimmed.split(/\s+/).filter(Boolean)
-
-  if (tokens.length === 1 && /^https?:\/\//i.test(trimmed)) {
-    if (isProbablyImageUrl(trimmed)) {
-      return { mode: "image-only", url: trimmed }
-    }
-    try {
-      const u = new URL(trimmed)
-      const short =
-        `${u.hostname}${u.pathname.length > 36 ? `${u.pathname.slice(0, 34)}…` : u.pathname}` +
-        (u.search ? "…" : "")
-      return { mode: "text", text: short || trimmed }
-    } catch {
-      return { mode: "text", text: trimmed.slice(0, 120) + (trimmed.length > 120 ? "…" : "") }
-    }
-  }
-
-  const urlMatch = content.match(/https?:\/\/[^\s<>]+/)
-  if (urlMatch?.[0] && isProbablyImageUrl(urlMatch[0])) {
-    const imageUrl = urlMatch[0]
-    const rest = content.replace(imageUrl, "").trim()
-    return {
-      mode: "text-with-image",
-      text: rest,
-      imageUrl,
-    }
-  }
-
-  return { mode: "text", text: content }
-}
-
-function shortenGenericUrl(content: string): string {
-  const trimmed = content.trim()
-  if (tokensSingleUrl(trimmed)) {
-    try {
-      const u = new URL(trimmed)
-      const path = u.pathname.length > 40 ? `${u.pathname.slice(0, 38)}…` : u.pathname
-      return `${u.hostname}${path}` || trimmed
-    } catch {
-      return trimmed.slice(0, 100) + (trimmed.length > 100 ? "…" : "")
-    }
-  }
-  return content
-}
-
-function tokensSingleUrl(s: string): boolean {
-  return /^https?:\/\//i.test(s) && s.split(/\s+/).filter(Boolean).length === 1
-}
-
-function NotificationContentPreview({
-  content,
-}: {
-  content: string
-}) {
-  const parsed = parseNotificationContent(formatNotificationDisplayText(content))
-
-  const imgClass =
-    "max-h-36 w-full max-w-xs rounded-lg border-[3px] border-indigo-950 object-cover shadow-[4px_4px_0_0_#1e1b4b]"
-
-  if (parsed.mode === "image-only") {
-    return (
-      <div className="mt-3">
-        <p className="mb-2 inline-flex items-center rounded-md border-2 border-indigo-950/80 bg-white px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
-          Ảnh đính kèm
-        </p>
-        <div className="overflow-hidden rounded-xl">
-          <img
-            src={parsed.url}
-            alt=""
-            className={imgClass}
-            loading="lazy"
-            referrerPolicy="no-referrer"
-            onError={(e) => {
-              const el = e.currentTarget
-              el.style.display = "none"
-            }}
-          />
-        </div>
-      </div>
-    )
-  }
-
-  if (parsed.mode === "text-with-image") {
-    return (
-      <div className="mt-3 space-y-2">
-        {parsed.text ? (
-          <p className="text-xs font-semibold leading-relaxed text-indigo-950/90 line-clamp-3">
-            {parsed.text}
-          </p>
-        ) : (
-          <p className="text-xs font-semibold italic text-slate-500">Tin nhắn kèm ảnh</p>
-        )}
-        <img
-          src={parsed.imageUrl}
-          alt=""
-          className={imgClass}
-          loading="lazy"
-          referrerPolicy="no-referrer"
-          onError={(e) => {
-            e.currentTarget.style.display = "none"
-          }}
-        />
-      </div>
-    )
-  }
-
-  const body =
-    parsed.text && tokensSingleUrl(parsed.text.trim())
-      ? shortenGenericUrl(parsed.text)
-      : parsed.text
-
-  return (
-    <p className="mt-2 text-xs font-medium leading-relaxed text-slate-600 line-clamp-3">{body}</p>
-  )
-}
-
-function filterNotificationsByTab(
-  list: NotificationItem[],
-  tab: NotificationListTab
-): NotificationItem[] {
-  let out: NotificationItem[]
-  switch (tab) {
-    case "unread":
-      out = list.filter((n) => !n.isRead)
-      break
-    case "read":
-      out = list.filter((n) => n.isRead)
-      break
-    case "orders":
-      out = list.filter((n) => isOrderNotification(n))
-      break
-    case "messages":
-      out = list.filter((n) => isMessageNotification(n))
-      break
-  }
-  return [...out].sort(
-    (a, b) => new Date(b.sendAt).getTime() - new Date(a.sendAt).getTime()
-  )
-}
-
-function tabCounts(list: NotificationItem[]) {
-  return {
-    unread: list.filter((n) => !n.isRead).length,
-    read: list.filter((n) => n.isRead).length,
-    orders: list.filter((n) => isOrderNotification(n)).length,
-    messages: list.filter((n) => isMessageNotification(n)).length,
-  }
-}
-
 function NotificationRow({
   item: n,
   onOpen,
@@ -372,12 +151,12 @@ function NotificationRow({
                 </span>
               )}
             </div>
-            <NotificationContentPreview content={n.content} />
+            <NotificationContentPreview content={n.content} variant="cosplayer" />
             <div className="mt-3 flex flex-wrap items-center gap-2 border-t-2 border-indigo-950/10 pt-3">
               <span
                 className={cn(
                   "rounded-lg border-[2px] px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-wide",
-                  typeBadgeClasses(n.type)
+                  cosplayerTypeBadgeClasses(n.type)
                 )}
               >
                 {getTypeLabel(n.type)}
@@ -411,13 +190,19 @@ export default function NotificationsPage() {
   const navigate = useNavigate()
   const { notifications, loading, markNotificationRead, markAllRead, deleteNotification } =
     useNotifications()
+  const { handleOpenNotification, requestDelete, markAllWithToast } =
+    useNotificationInteractions({
+      markNotificationRead,
+      markAllRead,
+      deleteNotification,
+    })
   const loggedIn = isAuthenticated()
 
-  const [listTab, setListTab] = React.useState<NotificationListTab>("unread")
+  const [listTab, setListTab] = React.useState<CosplayerNotificationTab>("unread")
 
-  const counts = React.useMemo(() => tabCounts(notifications), [notifications])
+  const counts = React.useMemo(() => cosplayerTabCounts(notifications), [notifications])
   const filtered = React.useMemo(
-    () => filterNotificationsByTab(notifications, listTab),
+    () => filterCosplayerNotificationsByTab(notifications, listTab),
     [notifications, listTab]
   )
 
@@ -457,55 +242,8 @@ export default function NotificationsPage() {
     if (loading || notifications.length === 0) return
     if (tabInitRef.current) return
     tabInitRef.current = true
-    if (counts.unread > 0) setListTab("unread")
-    else if (counts.messages > 0) setListTab("messages")
-    else if (counts.orders > 0) setListTab("orders")
-    else setListTab("read")
-  }, [
-    counts.unread,
-    counts.messages,
-    counts.orders,
-    counts.read,
-    loading,
-    notifications.length,
-  ])
-
-  const handleOpenNotification = React.useCallback(
-    async (n: NotificationItem) => {
-      if (!n.isRead) {
-        await markNotificationRead(n.id)
-      }
-      const followLink =
-        n.link?.trim()
-          ? () => {
-              const link = n.link!.trim()
-              if (link.startsWith("http")) {
-                window.open(link, "_blank", "noopener,noreferrer")
-              } else {
-                navigate(link.startsWith("/") ? link : `/${link}`)
-              }
-            }
-          : undefined
-      showNotificationDetailToast(n, { onViewLink: followLink })
-    },
-    [markNotificationRead, navigate]
-  )
-
-  const requestDelete = React.useCallback(
-    (id: number) => {
-      Modal.confirm({
-        title: "Xóa thông báo này?",
-        okText: VI.common.actions.delete,
-        cancelText: VI.common.actions.cancel,
-        okButtonProps: { danger: true },
-        onOk: async () => {
-          const ok = await deleteNotification(id)
-          showNotificationActionToast("delete", ok)
-        },
-      })
-    },
-    [deleteNotification]
-  )
+    setListTab(pickInitialCosplayerTab(counts))
+  }, [counts, loading, notifications.length])
 
   if (!loggedIn) {
     return (
@@ -532,6 +270,8 @@ export default function NotificationsPage() {
     )
   }
 
+  const unread = unreadCountLabel(notifications)
+
   return (
     <section className="relative min-h-screen overflow-x-clip pb-24 home-anime bg-transparent">
       <div className="relative z-[1] mx-auto w-full max-w-5xl min-w-0 px-4 pt-2 md:px-5 md:pt-4">
@@ -544,18 +284,18 @@ export default function NotificationsPage() {
             </h1>
             <p className="mt-1 text-xs font-semibold uppercase tracking-wide text-indigo-800/70">
               {notifications.length} mục
-              {!loading && unreadCountBadge(notifications)}
+              {!loading && unread > 0 && (
+                <>
+                  {" "}
+                  · <span className="text-pink-600">{unread} chưa đọc</span>
+                </>
+              )}
             </p>
           </div>
           {notifications.some((n) => !n.isRead) && (
             <button
               type="button"
-              onClick={() =>
-                void (async () => {
-                  const ok = await markAllRead()
-                  showNotificationActionToast("readAll", ok)
-                })()
-              }
+              onClick={() => void markAllWithToast()}
               className="shrink-0 rounded-xl border-[3px] border-indigo-950 bg-white px-3 py-2 text-[11px] font-extrabold uppercase tracking-wide text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:bg-teal-200"
             >
               Đánh dấu đã đọc
@@ -671,16 +411,5 @@ export default function NotificationsPage() {
         </div>
       </div>
     </section>
-  )
-}
-
-function unreadCountBadge(list: { isRead: boolean }[]): React.ReactNode {
-  const unread = list.filter((n) => !n.isRead).length
-  if (unread === 0) return null
-  return (
-    <>
-      {" "}
-      · <span className="text-pink-600">{unread} chưa đọc</span>
-    </>
   )
 }

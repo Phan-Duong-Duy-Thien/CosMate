@@ -66,3 +66,85 @@ export function resolveAppPath(pathOrUrl: string): string {
   const path = input.startsWith('/') ? input : `/${input}`;
   return `${appBase}${path}`;
 }
+
+const DEFAULT_GHN_API_BASE = '/ghn-proxy';
+
+/** GHN Open API base — dev: Vite proxy `/ghn-proxy`; prod: set explicit URL or reverse-proxy path. */
+export function getGhnApiBase(): string {
+  const fromEnv = readEnvString('VITE_GHN_API_BASE');
+  return trimTrailingSlashes(fromEnv || DEFAULT_GHN_API_BASE);
+}
+
+/**
+ * Production builds must not call default `/ghn-proxy` without `VITE_GHN_API_BASE`
+ * (static host returns SPA HTML → JSON parse errors).
+ */
+export function isGhnApiBaseValidForBuild(): boolean {
+  if (!import.meta.env.PROD) {
+    return true;
+  }
+
+  const fromEnv = readEnvString('VITE_GHN_API_BASE');
+  const base = getGhnApiBase();
+  const isRelative = base.startsWith('/');
+
+  if (isRelative && !fromEnv) {
+    return false;
+  }
+
+  return true;
+}
+
+export function getGhnToken(): string {
+  return readEnvString('VITE_GHN_TOKEN');
+}
+
+export function getGhnShopId(): string {
+  return readEnvString('VITE_GHN_SHOP_ID');
+}
+
+export type GhnConfigStatus = 'ok' | 'missing_credentials' | 'proxy_misconfigured';
+
+export function getGhnConfigStatus(): GhnConfigStatus {
+  if (!getGhnToken() || !getGhnShopId()) {
+    return 'missing_credentials';
+  }
+  if (!isGhnApiBaseValidForBuild()) {
+    return 'proxy_misconfigured';
+  }
+  return 'ok';
+}
+
+const DEFAULT_GEOVINA_API_BASE = '/geovina-proxy';
+
+export function getGeovinaApiBase(): string {
+  const fromEnv = readEnvString('VITE_GEOVINA_API_BASE');
+  return trimTrailingSlashes(fromEnv || DEFAULT_GEOVINA_API_BASE);
+}
+
+export function isGeovinaApiBaseValidForBuild(): boolean {
+  if (!import.meta.env.PROD) {
+    return true;
+  }
+
+  const fromEnv = readEnvString('VITE_GEOVINA_API_BASE');
+  const base = getGeovinaApiBase();
+  const isRelative = base.startsWith('/');
+
+  if (isRelative && !fromEnv) {
+    return false;
+  }
+
+  return true;
+}
+
+export function getGeovinaApiKey(): string {
+  return readEnvString('VITE_GEOVINA_API_KEY');
+}
+
+export function isGeovinaConfigured(): boolean {
+  if (!getGeovinaApiKey()) {
+    return false;
+  }
+  return isGeovinaApiBaseValidForBuild();
+}
