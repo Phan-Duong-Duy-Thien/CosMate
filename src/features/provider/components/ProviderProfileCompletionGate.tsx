@@ -21,13 +21,7 @@ export function ProviderProfileCompletionGate({
 
   return (
     <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 16px',
-      }}
+      className="flex min-h-0 flex-1 items-center justify-center px-4 py-6"
     >
       <Card
         style={{
