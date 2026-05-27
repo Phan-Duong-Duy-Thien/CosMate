@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import {
   Table,
-  Descriptions,
   Select,
   Tag,
   Empty,
@@ -22,17 +21,12 @@ import { useAdminSubscriptionPlans } from '../hooks/useAdminSubscriptionPlans';
 import type { AdminSubscriptionPlan } from '../types';
 import { formatBillingCycleMonths } from '../utils/formatBillingCycleMonths';
 import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
+import { AdminSubscriptionPlanDetailModal } from '../components/AdminSubscriptionPlanDetailModal';
 
 const formatVnd = (value: number) =>
   new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND', maximumFractionDigits: 0 }).format(
     value
   );
-
-const formatDateTime = (iso: string) => {
-  if (!iso) return '—';
-  const d = new Date(iso);
-  return Number.isNaN(d.getTime()) ? iso : d.toLocaleString('vi-VN');
-};
 
 /** Giá trị form → payload API (billingCycle + cycleMonths) */
 const CREATE_CYCLE_PRESETS = [
@@ -293,40 +287,14 @@ export default function AdminSubscriptionPlansPage() {
           rowClassName={() => 'admin-subscription-row'}
         />
 
-        <Modal
-          title={selected ? `Chi tiết: ${selected.name}` : 'Chi tiết gói'}
+        <AdminSubscriptionPlanDetailModal
           open={open}
-          onCancel={() => {
+          plan={selected}
+          onClose={() => {
             setOpen(false);
             setSelected(null);
           }}
-          footer={null}
-          centered
-          width={480}
-          destroyOnClose
-        >
-          {selected && (
-            <Descriptions column={1} bordered size="small">
-              <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
-              <Descriptions.Item label="Tên">{selected.name}</Descriptions.Item>
-              <Descriptions.Item label="Giá">{formatVnd(selected.price)}</Descriptions.Item>
-              <Descriptions.Item label="Chu kỳ thanh toán">
-                {formatBillingCycleMonths(selected.cycleMonths, selected.billingCycle)}
-              </Descriptions.Item>
-              <Descriptions.Item label="Token mỗi tháng">{selected.monthlyToken}</Descriptions.Item>
-              <Descriptions.Item label="Đang bán">
-                <Tag color={selected.isActive ? 'green' : 'default'}>
-                  {selected.isActive ? 'Có' : 'Không'}
-                </Tag>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả">
-                <span className="whitespace-pre-wrap">{selected.description ?? '—'}</span>
-              </Descriptions.Item>
-              <Descriptions.Item label="Tạo lúc">{formatDateTime(selected.createdAt)}</Descriptions.Item>
-              <Descriptions.Item label="Cập nhật">{formatDateTime(selected.updatedAt)}</Descriptions.Item>
-            </Descriptions>
-          )}
-        </Modal>
+        />
 
         <Modal
           title={planBeingEdited ? 'Chỉnh sửa gói đăng ký' : 'Tạo gói đăng ký'}
