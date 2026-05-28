@@ -65,14 +65,10 @@ interface Props {
   loading: boolean
   error: string | null
   disabled: boolean
+  providerId?: number
 }
 
-export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled }: Props) {
-  const { pathname } = useLocation()
-  const tokenGate = useAiTokenGate({
-    feature: 'provider.generateDescription',
-    pathname,
-  })
+export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled, providerId }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [isAiGenerating, setIsAiGenerating] = useState(false)
   const [characters, setCharacters] = useState<CharacterOption[]>([])
@@ -203,24 +199,19 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       return
     }
 
-    if (!tokenGate.assertCanUse()) {
-      return
-    }
-
     setIsAiGenerating(true)
     try {
       const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
       if (aiDescription?.trim()) {
         form.setFieldValue('description', aiDescription)
         message.success('AI đã tạo mô tả thành công.')
-        notifyTokenChanged()
       } else {
         message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
       }
     } catch (err: unknown) {
-      if (tokenGate.handleApiError(err)) return
       if (!applyFormValidationErrors(form, err)) {
-        message.error(mapGenerateDescriptionError(err))
+        const errMsg = err instanceof Error ? err.message : 'Không thể tạo mô tả bằng AI.'
+        message.error(errMsg)
       }
     } finally {
       setIsAiGenerating(false)
@@ -230,11 +221,15 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const handleCharacterRequestSubmit = async () => {
     try {
       const values = await characterRequestForm.validateFields()
-      const providerId = Number((form.getFieldValue('providerId') ?? 1) || 1)
+      const pid = providerId ?? 0
+      if (!pid) {
+        message.error('Không xác định được Provider ID. Vui lòng thử lại.')
+        return
+      }
       await createCharacterRequest({
         characterName: values.characterName.trim(),
         animeName: values.animeName.trim(),
-        providerId,
+        providerId: pid,
       })
       message.success('Đã gửi yêu cầu thêm nhân vật mới.')
       setIsCharacterRequestModalOpen(false)
@@ -340,45 +335,74 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Form.Item
           label="Nhân vật Anime / Game"
-          name="characterIds"
           extra={isCharacterSelectionFull ? 'Tối đa 3 nhân vật' : undefined}
+          style={{ marginBottom: 0 }}
         >
-          <Select
-            mode="multiple"
-            showSearch
-            allowClear
-            placeholder="Chọn nhân vật"
-            loading={isCharactersLoading}
-            optionFilterProp="title"
-            onDeselect={() => undefined}
-            maxTagCount="responsive"
-            notFoundContent={
-              <Space direction="vertical" size={8} style={{ padding: 12, width: '100%' }}>
-                <div>Không tìm thấy nhân vật phù hợp.</div>
-                <Button
-                  type="dashed"
-                  size="small"
-                  icon={<PlusOutlined />}
-                  onClick={() => setIsCharacterRequestModalOpen(true)}
-                  style={{ width: '100%', borderRadius: 10, fontWeight: 700 }}
-                >
-                  Nhân vật bạn tìm không có? Yêu cầu thêm mới
-                </Button>
-              </Space>
-            }
-            filterOption={(input, option) => {
-              const keyword = input.toLowerCase().trim()
-              if (!keyword) return true
-              return String(option?.title ?? '').toLowerCase().includes(keyword)
-            }}
-            options={characterOptions}
-            onChange={(nextValue) => {
-              if ((nextValue?.length ?? 0) > 3) {
-                message.warning('Tối đa 3 nhân vật')
-                form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
+          <Form.Item name="characterIds" noStyle>
+            <Select
+              mode="multiple"
+              showSearch
+              allowClear
+              placeholder="Chọn nhân vật"
+              loading={isCharactersLoading}
+              optionFilterProp="title"
+              onDeselect={() => undefined}
+              maxTagCount="responsive"
+              notFoundContent={
+                <div style={{ padding: 12, textAlign: 'center', color: '#999' }}>
+                  Không tìm thấy nhân vật phù hợp.
+                </div>
               }
-            }}
-          />
+              filterOption={(input, option) => {
+                const keyword = input.toLowerCase().trim()
+                if (!keyword) return true
+                return String(option?.title ?? '').toLowerCase().includes(keyword)
+              }}
+              options={characterOptions}
+              onChange={(nextValue) => {
+                if ((nextValue?.length ?? 0) > 3) {
+                  message.warning('Tối đa 3 nhân vật')
+                  form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
+                }
+              }}
+            />
+          </Form.Item>
+          <div style={{ marginTop: 8, marginBottom: 24 }}>
+            <Button
+              type="dashed"
+              size="small"
+              icon={<PlusOutlined />}
+              onClick={() => setIsCharacterRequestModalOpen(true)}
+              style={{ borderRadius: 6 }}
+            >
+              Nhân vật bạn tìm không có? Yêu cầu thêm mới
+            </Button>
+          </div>
+        </Form.Item>
+
+        <Form.Item label="Hình ảnh" name="imageFiles" valuePropName="imageFiles">
+          <Dragger multiple beforeUpload={() => false} accept="image/*" listType="picture">
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải ảnh lên</p>
+            <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
+          </Dragger>
+        </Form.Item>
+
+        <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
+          <Upload.Dragger {...videoUploadProps}>
+            <p className="ant-upload-drag-icon">
+              <InboxOutlined />
+            </p>
+            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
+            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
+          </Upload.Dragger>
+          {videoPreviewUrl && (
+            <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>
+              <video src={videoPreviewUrl} controls style={{ width: '100%', display: 'block', background: '#000' }} />
+            </div>
+          )}
         </Form.Item>
 
         <Card
@@ -390,19 +414,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             borderColor: "color-mix(in oklch, var(--cosmate-info) 35%, var(--border))",
           }}
         >
-          {(tokenGate.blocked || (!tokenGate.loading && !tokenGate.canUse)) && (
-            <div style={{ marginBottom: 16 }}>
-              <AiTokenEmptyState
-                cost={tokenGate.cost}
-                balance={tokenGate.balance}
-                tokenHubPath={tokenGate.tokenHubPath}
-                featureLabel={tokenGate.featureLabel}
-                message={tokenGate.blockedMessage}
-                compact
-              />
-            </div>
-          )}
-
           {isAiGenerating && (
             <div style={{ marginBottom: 16 }}>
               <AILoadingMascot type="content" variant="inline" />
@@ -426,27 +437,9 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </Radio.Group>
           </Form.Item>
 
-          <Row justify="end" align="middle" gutter={8}>
+          <Row justify="end">
             <Col>
-              <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(0,0,0,0.55)' }}>
-                {VI.profile.token.costPerUse(tokenGate.featureLabel, tokenGate.cost)}
-              </span>
-            </Col>
-            <Col>
-              <Button
-                type="primary"
-                icon={<RobotOutlined />}
-                onClick={handleGenerateDescription}
-                loading={isAiGenerating}
-                disabled={
-                  disabled ||
-                  loading ||
-                  isAiGenerating ||
-                  !canGenerateAI ||
-                  tokenGate.loading ||
-                  !tokenGate.canUse
-                }
-              >
+              <Button type="primary" icon={<RobotOutlined />} onClick={handleGenerateDescription} loading={isAiGenerating} disabled={disabled || loading || isAiGenerating || !canGenerateAI}>
                 AI tự viết mô tả
               </Button>
             </Col>
@@ -495,6 +488,15 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Form.Item label="Giá thuê / ngày (VNĐ)" name="pricePerDay" rules={[{ required: true, message: 'Vui lòng nhập giá thuê' }]}>
           <InputNumber min={1} style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
+        </Form.Item>
+
+        <Form.Item
+          label="Giảm giá thuê (%)"
+          name="rentDiscount"
+          tooltip="Phần trăm giảm giá áp dụng cho các ngày thuê tiếp theo (từ ngày thứ 2 trở đi). Ví dụ: 20% nghĩa là từ ngày 2, khách chỉ trả 80% giá gốc/ngày."
+          extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
+        >
+          <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
         </Form.Item>
 
         <Form.Item label="Tiền đặt cọc (VNĐ)" name="depositAmount">
