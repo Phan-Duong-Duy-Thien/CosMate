@@ -144,11 +144,11 @@ export default function SharedPosePage() {
   }
 
   return (
-    <section className="relative mx-auto max-w-7xl px-4 py-4 md:px-6">
+    <section className="relative mx-auto max-w-7xl px-4 py-6 md:px-6 md:py-7">
       <div className="pointer-events-none absolute left-4 top-4 h-24 w-24 rounded-full bg-fuchsia-300/30 blur-3xl" />
       <div className="pointer-events-none absolute right-6 top-10 h-28 w-28 rounded-full bg-cyan-300/30 blur-3xl" />
 
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border-[3px] border-indigo-950 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-4 shadow-[10px_10px_0px_#312e81]">
           <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
             <div>
@@ -180,7 +180,7 @@ export default function SharedPosePage() {
           </div>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <Card className="rounded-[2rem] border-[3px] border-indigo-950 bg-surfaceWarm p-4 shadow-[10px_10px_0px_#1e1b4b]">
             <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-fuchsia-700">AI Comment</p>
             <div className="rounded-[1.25rem] border-[3px] border-indigo-950 bg-white p-4 text-sm leading-6 text-slate-700 shadow-[4px_4px_0px_#1e1b4b] whitespace-pre-wrap">

@@ -70,7 +70,7 @@ export default function StyleQuizPage() {
   }, [quiz.results, sortBy, nameFilter])
 
   return (
-    <section className="mx-auto max-w-6xl space-y-4 py-4">
+    <section className="mx-auto max-w-6xl space-y-5 py-6 md:py-7">
       <header className="text-center">
         <h1 className="mx-auto max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
           <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
