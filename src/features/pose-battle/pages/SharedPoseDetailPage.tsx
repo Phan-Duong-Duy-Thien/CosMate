@@ -94,8 +94,8 @@ export default function SharedPoseDetailPage() {
   }
 
   return (
-    <section className="mx-auto max-w-7xl p-4 md:p-6">
-      <div className="grid gap-4 lg:grid-cols-[1.1fr_0.9fr]">
+    <section className="mx-auto max-w-7xl p-4 py-6 md:p-6 md:py-7">
+      <div className="grid gap-5 lg:grid-cols-[1.1fr_0.9fr]">
         <Card className="rounded-[2rem] border-[3px] border-indigo-950 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-4 shadow-[8px_8px_0_0_#1e1b4b]">
           <div className="mb-3 flex items-center justify-between gap-3">
             <h1 className="text-2xl font-extrabold text-indigo-950">Chia sẻ kết quả Pose</h1>
@@ -109,7 +109,7 @@ export default function SharedPoseDetailPage() {
           </div>
         </Card>
 
-        <div className="space-y-4">
+        <div className="space-y-5">
           <Card className="rounded-[2rem] border-[3px] border-indigo-950 bg-surfaceWarm p-4 shadow-[8px_8px_0_0_#1e1b4b]">
             <p className="mb-2 text-sm font-bold uppercase tracking-[0.2em] text-fuchsia-700">AI Comment</p>
             <div className="rounded-[1.25rem] border-[3px] border-indigo-950 bg-white p-4 text-sm leading-6 text-slate-700 shadow-[4px_4px_0_0_#1e1b4b] whitespace-pre-wrap">

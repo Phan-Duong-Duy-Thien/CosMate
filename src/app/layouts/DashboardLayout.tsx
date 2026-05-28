@@ -746,7 +746,7 @@ export function DashboardLayout({
       </Sider>
 
       <Layout
-        className="cosmate-dashboard-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-4 pb-4"
+        className="cosmate-dashboard-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-5"
         style={{
           transition: isResizing ? 'none' : 'width 0.2s',
           background: 'var(--background)',
@@ -817,15 +817,15 @@ export function DashboardLayout({
         </Header>
 
         <Content
-          className="mt-4! flex min-h-0 flex-1 flex-col overflow-hidden"
+          className="mt-5! flex min-h-0 flex-1 flex-col overflow-hidden"
           style={{
-            padding: 20,
+            padding: 24,
             background: 'var(--card)',
             borderRadius: 8,
           }}
         >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 12, flexShrink: 0 }}>
+            <div style={{ marginBottom: 16, flexShrink: 0 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? (

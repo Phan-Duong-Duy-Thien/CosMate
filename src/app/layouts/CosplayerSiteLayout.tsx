@@ -691,7 +691,7 @@ export default function CosplayerSiteLayout() {
 
       <main className={cn("min-w-0 flex-1", SITE_HEADER_UI.mainOffset)}>
         {!isHomePage && items.length > 0 && (
-          <div className={cn(siteContentShellClass, "pt-6 pb-2")}>
+          <div className={cn(siteContentShellClass, "pt-7 pb-3")}>
             <Breadcrumbs items={items} />
           </div>
         )}
@@ -720,7 +720,7 @@ export default function CosplayerSiteLayout() {
             </div>
           </div>
         ) : (
-          <div className={siteContentShellClass}>
+          <div className={cn(siteContentShellClass, "pb-4")}>
             <div className="min-w-0">
               <Outlet />
             </div>

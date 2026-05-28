@@ -94,7 +94,7 @@ export default function PoseBattlePage() {
   }
 
   return (
-    <section className="relative mx-auto max-w-7xl space-y-4 py-4">
+    <section className="relative mx-auto max-w-7xl space-y-5 py-6 md:py-7">
       <header className="relative z-[1] text-center">
         <h1 className="mx-auto max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
           <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
@@ -106,7 +106,7 @@ export default function PoseBattlePage() {
       <div className="pointer-events-none absolute left-4 top-4 h-24 w-24 rounded-full bg-fuchsia-300/30 blur-3xl" />
       <div className="pointer-events-none absolute right-6 top-10 h-28 w-28 rounded-full bg-cyan-300/30 blur-3xl" />
 
-      <div className="sticky top-[72px] z-20 grid gap-4 rounded-[2rem] border-[3px] border-indigo-950/90 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-3 shadow-[10px_10px_0px_#312e81] backdrop-blur-sm lg:grid-cols-2">
+      <div className="sticky top-[72px] z-20 grid gap-5 rounded-[2rem] border-[3px] border-indigo-950/90 bg-[linear-gradient(180deg,#fffbeb_0%,#fff7ed_100%)] p-3.5 shadow-[10px_10px_0px_#312e81] backdrop-blur-sm lg:grid-cols-2">
         <Card className="rounded-[1.75rem] border-[3px] border-indigo-950 p-4 shadow-[8px_8px_0px_#f9a8d4]">
           <div className="mb-3 inline-flex rounded-full border-2 border-indigo-950 bg-fuchsia-200 px-3 py-1 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81]">
             Ảnh gốc (Reference)
