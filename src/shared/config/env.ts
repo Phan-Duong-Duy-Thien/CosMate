@@ -148,3 +148,8 @@ export function isGeovinaConfigured(): boolean {
   }
   return isGeovinaApiBaseValidForBuild();
 }
+
+/** Google Identity Services client ID */
+export function getGoogleClientId(): string {
+  return readEnvString('VITE_GOOGLE_CLIENT_ID');
+}

@@ -18,6 +18,12 @@ export type LoginRequest = {
   password: string
 }
 
+export type GoogleLoginRequest = {
+  idToken: string
+  code: string
+  redirectUri: string
+}
+
 export type LoginResult = {
   token: string
   tokenType: string
@@ -28,6 +34,8 @@ export type LoginResponse = {
   message: string
   result: LoginResult
 }
+
+export type GoogleLoginResponse = LoginResponse
 
 // ============ QR LOGIN TYPES ============
 
