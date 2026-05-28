@@ -49,7 +49,7 @@ export function ShopProductCard({ product, onClick, onWishlist }: ShopProductCar
       <img
         src={product.imageUrl}
         alt={product.name}
-        className="h-44 w-full border-b-[3px] border-indigo-950 object-cover transition-transform duration-500 group-hover:scale-[1.04]"
+        className="h-44 w-full border-b-[3px] border-indigo-950 object-cover object-top transition-transform duration-500 group-hover:scale-[1.04]"
       />
 
       {/* Content */}

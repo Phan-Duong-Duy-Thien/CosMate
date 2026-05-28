@@ -6,7 +6,6 @@ import { ShopProfileHero } from '../components/shop-profile/ShopProfileHero'
 import { ShopContactsSection } from '../components/shop-profile/ShopContactsSection'
 import { ShopPoliciesSection } from '../components/shop-profile/ShopPoliciesSection'
 import { ShopReviewsSection } from '../components/shop-profile/ShopReviewsSection'
-import { ShopProductToolbar } from '../components/shop-profile/ShopProductToolbar'
 import { ShopProductGrid } from '../components/shop-profile/ShopProductGrid'
 import { RecommendedProductsSection } from '../components/shop-profile/RecommendedProductsSection'
 import { useStartChat } from '@/features/chat/hooks/useStartChat'
@@ -21,12 +20,6 @@ export default function ShopProfilePage() {
   const {
     products,
     recommendedProducts,
-    filterState,
-    setSearch,
-    setSort,
-    setMinPrice,
-    setMaxPrice,
-    resetFilters,
   } = useShopProducts(providerIdNum)
   const { reviews, stats } = useShopReviews(providerIdNum)
   const { startChat, loading: chatLoading } = useStartChat()
@@ -75,14 +68,8 @@ export default function ShopProfilePage() {
         {/* Shop Hero */}
         <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
 
-        {/* Contact Section */}
-        <ShopContactsSection shop={shop} />
-
         {/* Policies Section */}
         <ShopPoliciesSection providerId={providerIdNum} />
-
-        {/* Reviews Section */}
-        <ShopReviewsSection reviews={reviews} stats={stats} />
 
         {/* Products Section */}
         <div className="space-y-4">
@@ -92,21 +79,18 @@ export default function ShopProfilePage() {
             </h3>
           </div>
 
-          <ShopProductToolbar
-            filterState={filterState}
-            onSearchChange={setSearch}
-            onSortChange={setSort}
-            onMinPriceChange={setMinPrice}
-            onMaxPriceChange={setMaxPrice}
-            onReset={resetFilters}
-          />
-
           <ShopProductGrid
             products={products}
             onProductClick={handleProductClick}
             onWishlist={handleWishlist}
           />
         </div>
+
+        {/* Contact Section */}
+        <ShopContactsSection shop={shop} />
+
+        {/* Reviews Section */}
+        <ShopReviewsSection reviews={reviews} stats={stats} />
 
         {/* Recommended Products */}
         <RecommendedProductsSection
