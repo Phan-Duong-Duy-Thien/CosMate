@@ -3,7 +3,7 @@ import { getAllCostumes } from '../api/costumeRental.api'
 import type { Costume } from '../types'
 import { formatFirstCharacterListLine } from './usePublicCostumes'
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'
 
 function resolveImageUrl(url: string): string {
   if (!url) return ''
@@ -29,7 +29,8 @@ interface UseProviderCostumesForShopResult {
 
 export function useProviderCostumesForShop(
   providerId: number,
-  currentCostumeId?: string
+  currentCostumeId?: string,
+  limit = 4,
 ): UseProviderCostumesForShopResult {
   const [items, setItems] = useState<MoreFromShopItem[]>([])
   const [loading, setLoading] = useState(true)
@@ -47,7 +48,7 @@ export function useProviderCostumesForShop(
 
         const mapped: MoreFromShopItem[] = costumes
           .filter((c) => c.providerId === providerId && String(c.id) !== currentCostumeId)
-          .slice(0, 4)
+          .slice(0, limit)
           .map((c) => ({
             id: String(c.id),
             name: c.name ?? '',
@@ -76,7 +77,7 @@ export function useProviderCostumesForShop(
     }
 
     return () => { cancelled = true }
-  }, [providerId, currentCostumeId])
+  }, [providerId, currentCostumeId, limit])
 
   return { items, loading, error }
 }

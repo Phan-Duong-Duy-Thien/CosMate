@@ -13,8 +13,12 @@
  */
 
 import { useState, useCallback, useRef } from 'react'
+import { useLocation } from 'react-router-dom'
 import { message } from 'antd'
-import { getCostumeById } from '../api/costumeRental.api'
+import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
+import { notifyTokenChanged } from '@/shared/sync/dataSync'
+import { mapGenerateDescriptionError } from '../utils/costumeAiErrors'
+import { generateCostumeDescriptionByAI, getCostumeById } from '../api/costumeRental.api'
 import {
   updateCostumeBasic,
   updateSurcharge,
@@ -35,13 +39,24 @@ import type {
   AccessoryInput,
   AccessoryUpdateInput,
 } from '../types'
+import { getAuth } from '@/features/auth/services/tokenStorage'
 import { VI } from '@/shared/i18n/vi'
 import { useCostumeImages } from './useCostumeImages'
 import { useCostumeImageActions } from './useCostumeImageActions'
 
+async function imageUrlToFile(url: string, filename: string): Promise<File | null> {
+  try {
+    const res = await fetch(url)
+    const blob = await res.blob()
+    return new File([blob], filename, { type: blob.type || 'image/jpeg' })
+  } catch {
+    return null
+  }
+}
+
 /** Read providerId from JWT payload – same pattern as useCreateCostumeWizard */
 function getProviderIdFromToken(): number | null {
-  const token = localStorage.getItem('cosmate_access_token')
+  const token = getAuth()?.token
   if (!token) return null
   try {
     const base64 = token.split('.')[1]
@@ -61,6 +76,12 @@ interface UseEditCostumeModalOptions {
 }
 
 export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = {}) {
+  const { pathname } = useLocation()
+  const tokenGate = useAiTokenGate({
+    feature: 'provider.generateDescription',
+    pathname,
+  })
+
   // ── Modal open/close ──────────────────────────────────────────────────────
   const [open, setOpen] = useState(false)
   const [editingId, setEditingId] = useState<number | null>(null)
@@ -80,6 +101,8 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
   const [createSurchargeModalOpen, setCreateSurchargeModalOpen] = useState(false)
   const [createRentalOptionModalOpen, setCreateRentalOptionModalOpen] = useState(false)
   const [createAccessoryModalOpen, setCreateAccessoryModalOpen] = useState(false)
+  const [descriptionPrompt, setDescriptionPrompt] = useState('')
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
 
   const providerId = getProviderIdFromToken()
 
@@ -119,6 +142,8 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setEditingId(null)
     setDetail(null)
     setDetailLoading(false)
+    setDescriptionPrompt('')
+    setIsGeneratingDescription(false)
   }, [])
 
   /**
@@ -324,6 +349,46 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     refetch: refetchImages,
   })
 
+  const onGenerateDescription = useCallback(async () => {
+    if (!detail?.name?.trim()) {
+      message.warning('Vui lòng nhập tên trang phục trước khi dùng AI.')
+      return
+    }
+    const refUrl = mainImages[0]?.url ?? detailImages[0]?.url
+    if (!refUrl) {
+      message.warning('Cần có ít nhất một ảnh (tab Ảnh) để AI tham chiếu.')
+      return
+    }
+    if (!tokenGate.assertCanUse()) {
+      return
+    }
+    setIsGeneratingDescription(true)
+    try {
+      const file = await imageUrlToFile(refUrl, 'costume-ai-ref.jpg')
+      if (!file) {
+        message.error('Không tải được ảnh. Thử kiểm tra đường dẫn ảnh.')
+        return
+      }
+      const ai = await generateCostumeDescriptionByAI(
+        detail.name,
+        [file],
+        Number(descriptionPrompt) || 1,
+      )
+      if (ai.trim()) {
+        setDetail((prev) => (prev ? { ...prev, description: ai.trim() } : null))
+        message.success('Đã tạo mô tả. Nhớ bấm cập nhật để lưu!')
+        notifyTokenChanged()
+      } else {
+        message.warning('AI chưa trả về mô tả. Vui lòng thử lại.')
+      }
+    } catch (err) {
+      if (tokenGate.handleApiError(err)) return
+      message.error(mapGenerateDescriptionError(err))
+    } finally {
+      setIsGeneratingDescription(false)
+    }
+  }, [detail, mainImages, detailImages, descriptionPrompt, tokenGate])
+
   return {
     // Modal state
     open,
@@ -360,6 +425,13 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setCreateAccessoryModalOpen,
     handleCreateAccessory,
     handleUpdateAccessory,
+
+    // AI description (EditCostumeModal)
+    descriptionPrompt,
+    setDescriptionPrompt,
+    isGeneratingDescription,
+    onGenerateDescription,
+    aiTokenGate: tokenGate,
 
     // Image hooks
     mainImages,

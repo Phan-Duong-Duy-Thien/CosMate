@@ -2,7 +2,9 @@ import * as React from "react"
 import Cropper, { type Area } from "react-easy-crop"
 import "react-easy-crop/react-easy-crop.css"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
-import { Button } from "@/shared/components/Button"
+import { Button } from "@/components/ui/button"
+import { PROFILE_MODAL_UI } from "../constants/profileUi"
+import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 
 interface CropResult {
@@ -126,9 +128,13 @@ export function ImageCropDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
-        <h3 className="text-lg font-semibold text-slate-900">{title}</h3>
-        <div className="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-slate-950">
+      <DialogContent
+        className={PROFILE_MODAL_UI.cropContent}
+        closeClassName={PROFILE_MODAL_UI.closeBtn}
+        onClose={() => onOpenChange(false)}
+      >
+        <h3 className={PROFILE_MODAL_UI.cropTitle}>{title}</h3>
+        <div className={cn("mt-4", PROFILE_MODAL_UI.cropPreview)}>
           <div className="relative h-[340px] w-full">
             {imageSrc ? (
               <Cropper
@@ -147,7 +153,7 @@ export function ImageCropDialog({
         </div>
 
         <div className="mt-4 space-y-2">
-          <label className="text-sm font-medium text-slate-700">{VI.profile.crop.zoom}</label>
+          <label className={PROFILE_MODAL_UI.label}>{VI.profile.crop.zoom}</label>
           <input
             type="range"
             min={1}
@@ -155,21 +161,27 @@ export function ImageCropDialog({
             step={0.05}
             value={zoom}
             onChange={(event) => setZoom(Number(event.target.value))}
-            className="w-full accent-pink-500"
+            className={PROFILE_MODAL_UI.rangeInput}
           />
         </div>
 
-        <div className="mt-5 flex justify-end gap-2">
+        <div className={cn("mt-5", PROFILE_MODAL_UI.footerActions)}>
           <Button
             type="button"
-            variant="outline"
-            size="sm"
+            variant="ghost"
+            className={PROFILE_MODAL_UI.btnCancel}
             onClick={() => onOpenChange(false)}
             disabled={submitting}
           >
             {VI.common.actions.cancel}
           </Button>
-          <Button type="button" size="sm" onClick={() => void handleApply()} disabled={submitting}>
+          <Button
+            type="button"
+            variant="ghost"
+            className={PROFILE_MODAL_UI.btnPrimary}
+            onClick={() => void handleApply()}
+            disabled={submitting}
+          >
             {submitting ? VI.common.status.loading : VI.profile.crop.apply}
           </Button>
         </div>

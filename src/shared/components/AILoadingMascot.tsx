@@ -38,7 +38,7 @@ const contentCopy: Record<MascotType, string> = {
 function MascotVisual({ type }: { type: MascotType }) {
   if (type === "moderation") {
     return (
-      <div className="overflow-hidden rounded-3xl border border-pink-200 bg-white shadow-lg shadow-pink-200/60 aspect-[820/700]">
+      <div className="w-full max-w-lg overflow-hidden rounded-3xl border border-pink-200 bg-white shadow-lg shadow-pink-200/60 aspect-[820/700]">
         <img
           src={moderationMascot}
           alt="Mascot moderation"
@@ -50,7 +50,7 @@ function MascotVisual({ type }: { type: MascotType }) {
 
   return (
     <div
-      className={`overflow-hidden rounded-3xl border border-pink-200 bg-white shadow-lg shadow-pink-200/60 ${mediaWrapperClassByType[type]}`}
+      className={`w-full max-w-lg overflow-hidden rounded-3xl border border-pink-200 bg-transparent shadow-lg shadow-pink-200/60 ${mediaWrapperClassByType[type]}`}
     >
       <video
         src={mediaByType[type]}
@@ -69,7 +69,7 @@ export default function AILoadingMascot({ type, onClose, variant = "overlay" }: 
 
   const containerClassName =
     variant === "overlay"
-      ? "fixed inset-0 z-[1000] flex items-center justify-center bg-black/50 px-4 backdrop-blur-md"
+      ? "fixed inset-0 z-[50000] flex items-center justify-center bg-black/50 px-4 backdrop-blur-md"
       : "flex w-full items-center justify-center px-0 py-2"
 
   return (
@@ -102,3 +102,4 @@ export default function AILoadingMascot({ type, onClose, variant = "overlay" }: 
     </div>
   )
 }
+

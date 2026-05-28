@@ -1,23 +1,24 @@
-import React from 'react';
-import { motion } from 'motion/react';
-import { Star, MessageCircle, Calendar, ShieldCheck, Instagram, Twitter, Globe } from 'lucide-react';
-import { ImageWithFallback } from '../mocks/ImageWithFallback';
+import { Star, MessageCircle, ShieldCheck, Instagram, Twitter, Globe, Loader2 } from "lucide-react"
+
+import { ImageWithFallback } from "../mocks/ImageWithFallback"
+import { cn } from "@/lib/utils"
 
 interface ProfileSidebarProps {
-  name: string;
-  title: string;
-  avatar: string;
-  rating: number;
-  reviewsCount: number;
-  jobs: number;
-  responseRate: string;
-  bio: string;
-  skills: string[];
-  location: string;
-  onChat?: () => void;
+  name: string
+  title: string
+  avatar: string
+  rating: number | null
+  reviewsCount: number
+  jobs: number
+  responseRate: string
+  bio: string
+  skills: string[]
+  verified?: boolean
+  chatLoading?: boolean
+  onChat?: () => void
 }
 
-export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
+export function ProfileSidebar({
   name,
   title,
   avatar,
@@ -27,101 +28,135 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
   responseRate,
   bio,
   skills,
+  verified,
+  chatLoading,
   onChat,
-}) => {
+}: ProfileSidebarProps) {
+  const bioText = bio?.trim() || ""
+  const hasBio = bioText.length > 0
+
   return (
-    <div className="w-full lg:w-[360px] flex-shrink-0">
-      <div className="sticky top-24 bg-white rounded-3xl border border-[#F0E6FF] p-8 shadow-sm">
-        {/* Avatar and Name */}
-        <div className="flex flex-col items-center text-center mb-8">
-          <div className="relative mb-6">
-            <div className="w-[120px] h-[120px] rounded-full overflow-hidden border-4 border-[#E0D7FF] shadow-inner">
-              <ImageWithFallback
-                src={avatar}
-                alt={name}
-                className="w-full h-full object-cover"
-              />
+    <div className="w-full shrink-0 lg:w-[min(100%,380px)] xl:w-[400px]">
+      <div className="sticky top-[88px] rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)] md:p-8">
+        <div className="mb-8 flex flex-col items-center text-center">
+          <div className="relative mb-5">
+            <div className="h-[128px] w-[128px] overflow-hidden rounded-full border-[4px] border-indigo-950 bg-white shadow-[6px_6px_0_0_#1e1b4b]">
+              <ImageWithFallback src={avatar} alt={name} className="h-full w-full object-cover" />
             </div>
-            <div className="absolute bottom-2 right-2 bg-blue-500 p-1 rounded-full border-4 border-white shadow-sm" title="Verified Photographer">
-              <ShieldCheck className="w-4 h-4 text-white" />
-            </div>
+            {verified ? (
+              <div
+                className="absolute bottom-1 right-1 flex h-9 w-9 items-center justify-center rounded-full border-[3px] border-indigo-950 bg-sky-500 text-white shadow-[3px_3px_0_0_#1e1b4b]"
+                title="Đã xác minh"
+              >
+                <ShieldCheck className="h-4 w-4" aria-hidden />
+              </div>
+            ) : null}
           </div>
-          <h1 className="text-2xl font-bold text-[#4A3B6B] mb-1">{name}</h1>
-          <p className="text-[#8E7AB5] font-medium text-sm px-4 py-1 bg-[#F5F1FF] rounded-full inline-block mb-4">
+
+          <p className="mb-2 inline-flex rounded-full border-[2px] border-indigo-950 bg-white px-3 py-1 text-[11px] font-extrabold uppercase tracking-wide text-indigo-900">
             {title}
           </p>
-          
-          <div className="flex items-center gap-1.5 text-sm font-bold text-[#4A3B6B]">
-            <Star className="w-4 h-4 fill-[#FFD700] text-[#FFD700]" />
-            <span>{rating.toFixed(1)}</span>
-            <span className="text-[#A090C5] font-medium">({reviewsCount} Reviews)</span>
-          </div>
-        </div>
+          <h1 className="mb-4 bg-gradient-to-r from-fuchsia-600 via-pink-600 to-violet-700 bg-clip-text text-2xl font-extrabold text-transparent md:text-[1.65rem]">
+            「 {name} 」
+          </h1>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-8">
-          <div className="bg-[#F8F7FF] rounded-2xl p-4 text-center border border-[#F0E6FF]">
-            <div className="text-xl font-bold text-[#4A3B6B]">{jobs}+</div>
-            <p className="text-[10px] uppercase tracking-wider text-[#A090C5] font-bold mt-1">Jobs Done</p>
-          </div>
-          <div className="bg-[#F8F7FF] rounded-2xl p-4 text-center border border-[#F0E6FF]">
-            <div className="text-xl font-bold text-[#4A3B6B]">{responseRate}</div>
-            <p className="text-[10px] uppercase tracking-wider text-[#A090C5] font-bold mt-1">Response Rate</p>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="space-y-3 mb-8">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full py-4 bg-gradient-to-r from-[#B59DFF] to-[#D7C7FF] text-white font-bold rounded-2xl shadow-lg shadow-[#D7C7FF]/40 flex items-center justify-center gap-2"
-          >
-            <Calendar className="w-5 h-5" />
-            Book Now
-          </motion.button>
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={onChat}
-            className="w-full py-4 bg-white border-2 border-[#F0E6FF] text-[#8E7AB5] font-bold rounded-2xl flex items-center justify-center gap-2"
-          >
-            <MessageCircle className="w-5 h-5" />
-            Chat
-          </motion.button>
-        </div>
-
-        {/* About Section */}
-        <div className="mb-8">
-          <h3 className="text-sm font-bold text-[#4A3B6B] uppercase tracking-widest mb-3">Bio</h3>
-          <p className="text-[#6B5A94] text-sm leading-relaxed mb-4 italic">
-            "{bio}"
-          </p>
-          <div className="flex flex-wrap gap-2">
-            {skills.map((skill, index) => (
-              <span 
-                key={index}
-                className="px-3 py-1 bg-[#FDF0F5] text-[#D88AA5] text-xs font-semibold rounded-lg"
-              >
-                #{skill}
+          {reviewsCount > 0 && rating != null ? (
+            <div className="flex items-center gap-1.5 text-sm font-extrabold text-indigo-950">
+              <Star className="h-4 w-4 fill-amber-400 text-amber-500" aria-hidden />
+              <span>{rating.toFixed(1)}</span>
+              <span className="font-semibold text-indigo-900/70">
+                ({reviewsCount} đánh giá)
               </span>
-            ))}
+            </div>
+          ) : (
+            <p className="text-xs font-bold uppercase tracking-wide text-indigo-900/55">
+              Chưa có đánh giá
+            </p>
+          )}
+        </div>
+
+        <div className="mb-8 grid grid-cols-2 gap-3">
+          <div className="rounded-xl border-[3px] border-indigo-950 bg-white p-3 text-center shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
+            <div className="text-xl font-extrabold text-indigo-950 tabular-nums">{jobs}+</div>
+            <p className="mt-1 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800/70">
+              Khách hàng
+            </p>
+          </div>
+          <div className="rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-violet-100 to-pink-100 p-3 text-center shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
+            <div className="text-xl font-extrabold text-indigo-950">{responseRate}</div>
+            <p className="mt-1 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800/75">
+              Phản hồi
+            </p>
           </div>
         </div>
 
-        {/* Social Links */}
-        <div className="flex items-center justify-center gap-4 border-t border-[#F0E6FF] pt-6">
-          <a href="#" className="w-10 h-10 rounded-xl bg-[#F5F1FF] flex items-center justify-center text-[#B59DFF] hover:bg-[#B59DFF] hover:text-white transition-all shadow-sm">
-            <Instagram className="w-5 h-5" />
-          </a>
-          <a href="#" className="w-10 h-10 rounded-xl bg-[#F5F1FF] flex items-center justify-center text-[#B59DFF] hover:bg-[#B59DFF] hover:text-white transition-all shadow-sm">
-            <Twitter className="w-5 h-5" />
-          </a>
-          <a href="#" className="w-10 h-10 rounded-xl bg-[#F5F1FF] flex items-center justify-center text-[#B59DFF] hover:bg-[#B59DFF] hover:text-white transition-all shadow-sm">
-            <Globe className="w-5 h-5" />
-          </a>
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={onChat}
+            disabled={chatLoading || !verified}
+            title={!verified ? "Nhà cung cấp chưa được xác minh" : undefined}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 py-3.5 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-400"
+          >
+            {chatLoading ? (
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />
+            ) : (
+              <MessageCircle className="h-5 w-5 shrink-0" aria-hidden />
+            )}
+            Nhắn tin
+          </button>
+        </div>
+
+        <div className="mb-6">
+          <h3 className="mb-2 inline-flex rounded-lg border-[2px] border-indigo-950/80 bg-amber-100 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-amber-950">
+            Giới thiệu
+          </h3>
+          <p
+            className={cn(
+              "mt-3 rounded-xl border-[2px] border-dashed border-indigo-950/25 bg-white/80 p-3 text-sm font-semibold leading-relaxed text-indigo-950/90 shadow-[3px_3px_0_0_rgba(30,27,75,0.08)]",
+              !hasBio && "italic text-indigo-900/50"
+            )}
+          >
+            {hasBio ? bioText : "Chưa có phần giới thiệu. Hãy nhắn tin để được tư vấn thêm nhé!"}
+          </p>
+          {skills.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {skills.map((skill, index) => (
+                <span
+                  key={index}
+                  className="rounded-lg border-[2px] border-indigo-950/40 bg-pink-50 px-2.5 py-1 text-xs font-extrabold text-pink-950"
+                >
+                  #{skill}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex items-center justify-center gap-3 border-t-[3px] border-dashed border-indigo-950/20 pt-6">
+          <span
+            className="flex h-11 w-11 cursor-not-allowed items-center justify-center rounded-xl border-[3px] border-indigo-950/30 bg-white/60 text-indigo-950/40 opacity-70"
+            aria-label="Instagram (sắp có)"
+            title="Sắp có"
+          >
+            <Instagram className="h-5 w-5" />
+          </span>
+          <span
+            className="flex h-11 w-11 cursor-not-allowed items-center justify-center rounded-xl border-[3px] border-indigo-950/30 bg-white/60 text-indigo-950/40 opacity-70"
+            aria-label="Twitter (sắp có)"
+            title="Sắp có"
+          >
+            <Twitter className="h-5 w-5" />
+          </span>
+          <span
+            className="flex h-11 w-11 cursor-not-allowed items-center justify-center rounded-xl border-[3px] border-indigo-950/30 bg-white/60 text-indigo-950/40 opacity-70"
+            aria-label="Website (sắp có)"
+            title="Sắp có"
+          >
+            <Globe className="h-5 w-5" />
+          </span>
         </div>
       </div>
     </div>
-  );
-};
+  )
+}

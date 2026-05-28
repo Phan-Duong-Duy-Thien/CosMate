@@ -260,7 +260,7 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
                 key={name}
                 size="small"
                 title={`${name} - ${RENTAL_OPTION_LABELS[name]}`}
-                style={{ borderColor: '#1890ff' }}
+                style={{ borderColor: "var(--cosmate-info)" }}
               >
                 <Form form={form} layout="vertical">
                   <Form.Item name="price" label={VI.costumeRental.rentalOptions.form.price} rules={[{ required: true }]}>
@@ -299,7 +299,11 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
                   </Button>
                 )
               }
-              style={{ borderColor: hasValue ? '#52c41a' : '#ffccc7' }}
+              style={{
+                borderColor: hasValue
+                  ? "var(--cosmate-success)"
+                  : "color-mix(in oklch, var(--destructive) 22%, var(--background))",
+              }}
             >
               {item ? (
                 <>

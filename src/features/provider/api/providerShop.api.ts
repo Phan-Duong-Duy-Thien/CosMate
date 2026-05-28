@@ -3,6 +3,7 @@
  * HTTP layer only — no business logic.
  */
 import axiosInstance from '@/services/axiosInstance'
+import { normalizeProviderProfile } from './provider.api'
 import type { ProviderProfile } from '../types'
 
 interface ApiResponse<T> {
@@ -27,8 +28,9 @@ export async function getProviderById(providerId: number): Promise<ProviderProfi
  * Returns providers filtered by role.
  */
 export async function getProvidersByRole(roleName: string): Promise<ProviderProfile[]> {
-  const response = await axiosInstance.get<ApiResponse<ProviderProfile[]>>(
+  const response = await axiosInstance.get<ApiResponse<Record<string, unknown>[]>>(
     `/api/providers/role/${roleName}`
   )
-  return response.data.result
+  const list = response.data.result ?? []
+  return list.map((item) => normalizeProviderProfile(item))
 }

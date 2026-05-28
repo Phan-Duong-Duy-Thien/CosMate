@@ -16,6 +16,9 @@ import { updateUserAddress, deleteUserAddress } from '@/features/profile/api/use
 import { updateProviderProfile } from '@/features/provider/api/provider.api';
 import { uploadAvatar as uploadUserAvatar } from '@/features/profile/services/userProfile.service';
 import type { ProviderProfile } from '@/features/provider/types';
+import { applyOptimisticProviderPatch } from '@/features/provider/hooks/useProviderVerification';
+import { notifyProviderProfileChanged } from '@/shared/sync/dataSync';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import type { UserAddress, UpsertUserAddressPayload } from '@/features/profile/types';
 
 interface EditFormData {
@@ -107,12 +110,24 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
 
     setSaving(true);
     try {
+      const shopAddressId = formData.shopAddressId ?? 0;
       await updateProviderProfile(profile.id, {
         shopName: formData.shopName,
-        shopAddressId: formData.shopAddressId ?? 0,
+        shopAddressId,
         bio: formData.bio,
         bankAccountNumber: formData.bankAccountNumber,
         bankName: formData.bankName,
+      });
+      applyOptimisticProviderPatch({
+        id: profile.id,
+        shopName: formData.shopName.trim(),
+        shopAddressId,
+        bio: formData.bio.trim(),
+        bankAccountNumber: formData.bankAccountNumber.trim(),
+        bankName: formData.bankName.trim(),
+      });
+      scheduleBackgroundRefetch(() => {
+        notifyProviderProfileChanged({ providerId: profile.id });
       });
       message.success('Hồ sơ đã được cập nhật');
       await loadData();
@@ -141,7 +156,7 @@ export function useProviderProfileEdit(): UseProviderProfileEditResult {
   const uploadCoverImage = useCallback(async (file: File): Promise<void> => {
     if (!profile) return;
     try {
-      await uploadProviderCoverImage(profile.userId, file);
+      await uploadProviderCoverImage(profile.id, file);
       message.success('Ảnh bìa đã được cập nhật');
       await loadData();
     } catch (err) {

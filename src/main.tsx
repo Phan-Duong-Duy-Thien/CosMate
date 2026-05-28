@@ -6,8 +6,8 @@ import { message, notification } from "antd"
 import App from "@/app/App"
 import ScrollToTop from "@/shared/components/ScrollToTop"
 import faviconImage from "@/assets/logo.png"
-import "./index.css"
 import "antd/dist/reset.css"
+import "./index.css"
 
 // Global default: all antd toasts auto-dismiss after 5 seconds
 message.config({ duration: 5 })
@@ -20,7 +20,7 @@ const requiredAsteriskStyle = `
   }
   .ant-form-item-required > .ant-form-item-label > label::after {
     content: " *" !important;
-    color: #ff4d4f !important;
+    color: var(--destructive) !important;
     margin-left: 4px !important;
     font-weight: 400 !important;
   }
@@ -81,13 +81,17 @@ function DocumentTitleSync() {
     else if (pathname === "/notifications") pageTitle = "Thông báo"
     else if (pathname === "/profile") pageTitle = "Trang cá nhân"
     else if (pathname === "/profile/purchase-history") pageTitle = "Lịch sử mua hàng"
+    else if (pathname === "/profile/token") pageTitle = "Quản lý Token"
     else if (pathname === "/profile/wallet") pageTitle = "Ví của tôi"
     else if (pathname === "/profile/wallet/topup") pageTitle = "Nạp ví"
     else if (pathname === "/profile/wallet/withdraw") pageTitle = "Rút tiền"
     else if (pathname === "/photographers") pageTitle = "Thuê Photographer"
     else if (pathname.startsWith("/photographer/")) pageTitle = "Hồ sơ Photographer"
     else if (pathname === "/staffs") pageTitle = "Thuê Staff"
-    else if (pathname.startsWith("/staff/")) pageTitle = "Hồ sơ Staff"
+    else if (pathname.startsWith("/staffs/") && pathname !== "/staffs") pageTitle = "Hồ sơ Staff"
+    else if (pathname === "/staff/ai-token-plans") pageTitle = "Quản lý gói AI Token"
+    else if (pathname === "/admin/ai-token-plans") pageTitle = "Quản lý gói AI Token"
+    else if (pathname.startsWith("/staff")) pageTitle = "Bảng điều khiển Staff"
     else if (pathname === "/login") pageTitle = "Đăng nhập"
     else if (pathname.startsWith("/register")) pageTitle = "Đăng ký"
     else if (pathname === "/forgot-password") pageTitle = "Quên mật khẩu"
@@ -96,7 +100,9 @@ function DocumentTitleSync() {
     else if (pathname.startsWith("/provider-photograph")) pageTitle = "Provider Photograph"
     else if (pathname.startsWith("/provider-event-staff")) pageTitle = "Provider Event Staff"
     else if (pathname.startsWith("/provider/messages")) pageTitle = "Tin nhắn"
+    else if (pathname === "/admin/profile") pageTitle = "Hồ sơ tài khoản"
     else if (pathname.startsWith("/admin")) pageTitle = "Admin"
+    else if (pathname === "/staff/settings") pageTitle = "Hồ sơ tài khoản"
     else if (pathname === "/no-permission") pageTitle = "Không có quyền truy cập"
     else if (pathname === "/payment/result") pageTitle = "Kết quả thanh toán"
 

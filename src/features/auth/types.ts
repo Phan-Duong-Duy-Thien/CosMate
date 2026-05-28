@@ -18,6 +18,12 @@ export type LoginRequest = {
   password: string
 }
 
+export type GoogleLoginRequest = {
+  idToken: string
+  code: string
+  redirectUri: string
+}
+
 export type LoginResult = {
   token: string
   tokenType: string
@@ -27,6 +33,23 @@ export type LoginResponse = {
   code: number
   message: string
   result: LoginResult
+}
+
+export type GoogleLoginResponse = LoginResponse
+
+// ============ QR LOGIN TYPES ============
+
+export type QrLoginSessionStatus = "PENDING" | "APPROVED" | "EXPIRED" | "CANCELLED"
+
+/** GET /api/auth/qr-generate */
+export type QrGenerateResult = {
+  sessionId: string
+}
+
+export type QrGenerateResponse = {
+  code: number
+  message: string
+  result: QrGenerateResult
 }
 
 // JWT Payload Type

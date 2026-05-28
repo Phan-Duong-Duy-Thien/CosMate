@@ -4,6 +4,7 @@
  * Orchestration layer — builds FormData and calls the API.
  * Called by hooks only; never by components or pages.
  */
+import { getProviderById } from '@/features/provider/api/providerShop.api';
 import {
   createService,
   getProviderServices,
@@ -65,9 +66,36 @@ export async function fetchPublicServices(): Promise<PublicServiceItem[]> {
 
 /**
  * Fetches a single service by its ID.
+ * Enriches userId from provider profile when the service API omits it (chat).
  */
 export async function fetchServiceById(serviceId: number): Promise<ServiceItem> {
-  return getServiceById(serviceId);
+  let data = await getServiceById(serviceId);
+
+  if (!data.userId && data.providerId) {
+    try {
+      const provider = await getProviderById(data.providerId);
+      if (provider.userId) {
+        data = { ...data, userId: provider.userId };
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        console.warn(
+          '[service.service] Could not resolve chat userId from provider',
+          data.providerId,
+          err,
+        );
+      }
+    }
+  }
+
+  if (!data.userId && import.meta.env.DEV) {
+    console.warn(
+      '[service.service] Service missing userId after normalize + provider fallback',
+      { serviceId, providerId: data.providerId },
+    );
+  }
+
+  return data;
 }
 
 /**

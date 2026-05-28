@@ -52,7 +52,10 @@ export async function createCostumeMultipart(payload: CreateCostumeBasicPayload)
   form.append('accessories', '[]')
   form.append('rentalOptions', '[]')
   payload.imageFiles.forEach((file) => form.append('imageFiles', file))
-  const response = await axiosInstance.post<ApiWrapper<CostumeCreatedResponse>>('/api/costumes', form, { headers: { 'Content-Type': 'multipart/form-data' }})
+  if ((payload as { videoFile?: File | null }).videoFile) {
+    form.append('videoFiles', (payload as { videoFile?: File }).videoFile as Blob)
+  }
+  const response = await axiosInstance.post<ApiWrapper<CostumeCreatedResponse>>('/api/costumes', form)
   const wrapped = response.data
   if (import.meta.env.DEV) { console.log('[createCostumeMultipart] raw response:', wrapped); console.log('[createCostumeMultipart] extracted costumeId:', wrapped?.result?.id) }
   if (!wrapped?.result?.id) { throw new Error('POST /api/costumes succeeded but response.result.id is missing. Got: ' + JSON.stringify(wrapped)) }
@@ -97,7 +100,7 @@ export async function deleteCostume(id: number): Promise<void> {
 }
 
 export async function updateCostumeBasic(id: number, formData: FormData): Promise<void> {
-  await axiosInstance.put('/api/costumes/' + id, formData, { headers: { 'Content-Type': 'multipart/form-data' }})
+  await axiosInstance.put('/api/costumes/' + id, formData)
 }
 
 export async function updateSurcharge(id: number, payload: SurchargeUpdateInput): Promise<void> {
@@ -120,21 +123,18 @@ export async function getAllCostumes(): Promise<CostumeApiResponse<Costume[]>> {
 export async function generateCostumeDescriptionByAI(
   name: string,
   imageFiles: File[],
-  customPrompt?: string,
+  personaId: number,
 ): Promise<string> {
   const form = new FormData()
   if (name?.trim()) {
     form.append('name', name.trim())
   }
-  if (customPrompt?.trim()) {
-    form.append('customPrompt', customPrompt.trim())
-  }
+  form.append('personaId', String(personaId))
   imageFiles.forEach((file) => form.append('files', file))
 
   const response = await axiosInstance.post<ApiWrapper<string>>(
     '/api/search/generate-description',
-    form,
-    { headers: { 'Content-Type': 'multipart/form-data' } },
+    form
   )
 
   const wrapped = response.data

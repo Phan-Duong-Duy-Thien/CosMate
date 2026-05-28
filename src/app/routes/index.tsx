@@ -1,4 +1,4 @@
-import { Route, Routes } from "react-router-dom"
+import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
@@ -6,6 +6,7 @@ import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
 import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
+import { VI } from "@/shared/i18n/vi"
 
 import LoginPage from "@/features/auth/pages/LoginPage"
 import CosplayerRegPage from "@/features/auth/pages/CosplayerRegPage"
@@ -24,6 +25,7 @@ import GuidelinesRulesPage from "@/features/general/pages/GuidelinesRulesPage"
 import StyleQuizPage from "@/features/style-quiz/pages/StyleQuizPage"
 import WishlistPage from "@/features/wishlist/pages/WishlistPage"
 import PoseBattlePage from "@/features/pose-battle/pages/PoseBattlePage"
+import SharedPosePage from "@/features/pose-battle/pages/SharedPosePage"
 import CostumeListPage from "@/features/costume-rental/pages/CostumeListPage"
 import CostumeDetailPage from "@/features/costume-rental/pages/CostumeDetailPage"
 import CosplayerProfilePage from "@/features/profile/pages/CosplayerProfilePage"
@@ -32,6 +34,7 @@ import PurchaseHistoryPage from "@/features/profile/pages/PurchaseHistoryPage"
 import WalletPage from "@/features/profile/pages/WalletPage"
 import WalletTopUpPage from "@/features/profile/pages/WalletTopUpPage"
 import WalletWithdrawPage from "@/features/profile/pages/WalletWithdrawPage"
+import TokenPage from "@/features/profile/pages/TokenPage"
 import PhotographerProfilePage from "@/features/photographer-booking/pages/PhotographerProfilePage"
 import PhotographersListingPage from "@/features/photographer-booking/pages/PhotographersListingPage"
 import StaffsListingPage from "@/features/staff-booking/pages/StaffsListingPage"
@@ -46,6 +49,11 @@ import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
 import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
+import CharacterRequestManagementPage from "@/features/admin/pages/CharacterRequestManagement"
+import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
+import AdminAiTokenPlansPage from "@/features/admin/pages/AdminAiTokenPlansPage"
+import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
+import AdminSystemConfigsPage from "@/features/admin/pages/AdminSystemConfigsPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -54,6 +62,7 @@ import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderC
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
 import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
+import ProviderNotificationsPage from "@/features/provider/pages/ProviderNotificationsPage"
 import ProviderServiceOrdersPage from "@/features/service/pages/ProviderServiceOrdersPage"
 import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
 import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
@@ -62,15 +71,25 @@ import ProviderServiceListPage from "@/features/service/pages/ProviderServiceLis
 import ServiceDetailPage from "@/features/service/pages/ServiceDetailPage"
 import ProviderProfileCompletionPage from "@/features/provider/pages/ProviderProfileCompletionPage"
 import ProviderProfileViewPage from "@/features/provider/pages/ProviderProfileViewPage"
+import ProviderPackageManagementPage from "@/features/provider/pages/ProviderPackageManagementPage"
 import ProviderProfileEditPage from "@/features/provider/pages/ProviderProfileEditPage"
 import { ProviderWalletLayout } from "@/features/provider/pages/ProviderWalletLayout"
 import ProviderWalletPage from "@/features/provider/pages/ProviderWalletPage"
 import ProviderMessagesPage from "@/features/chat/pages/ProviderMessagesPage"
 import { ProviderEventStaffWalletLayout } from "@/features/provider/pages/ProviderEventStaffWalletLayout"
 import { ProviderPhotographWalletLayout } from "@/features/provider/pages/ProviderPhotographWalletLayout"
+import { ProviderTokenLayout } from "@/features/provider/pages/ProviderTokenLayout"
+import { ProviderPhotographTokenLayout } from "@/features/provider/pages/ProviderPhotographTokenLayout"
+import { ProviderEventStaffTokenLayout } from "@/features/provider/pages/ProviderEventStaffTokenLayout"
+import ProviderTokenPage from "@/features/provider/pages/ProviderTokenPage"
 import StaffLayout from "@/features/staff/layout/StaffLayout"
 import StaffHomePage from "@/features/staff/pages/StaffHomePage"
 import StaffWithdrawPage from "@/features/staff/pages/StaffWithdrawPage"
+import StaffPlaceholderPage from "@/features/staff/pages/StaffPlaceholderPage"
+import StaffAiTokenPlansPage from "@/features/staff-token/pages/StaffAiTokenPlansPage"
+import StaffAiTokenPurchasesPage from "@/features/staff-token/pages/StaffAiTokenPurchasesPage"
+import StaffOrdersPage from "@/features/staff/pages/StaffOrdersPage"
+import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
 
 export default function AppRoutes() {
@@ -87,11 +106,13 @@ export default function AppRoutes() {
         <Route path="style-quiz" element={<StyleQuizPage />} />
         <Route path="wishlist" element={<WishlistPage />} />
         <Route path="pose-battle" element={<PoseBattlePage />} />
+        <Route path="pose-battle/:id" element={<SharedPosePage />} />
         <Route path="costumes/:costumeId" element={<CostumeDetailPage />} />
         <Route path="rent/checkout" element={<CheckoutReviewPage />} />
         <Route path="profile" element={<CosplayerProfilePage />} />
         <Route path="profile/addresses/new" element={<AddressCreatePage />} />
         <Route path="profile/purchase-history" element={<PurchaseHistoryPage />} />
+        <Route path="profile/token" element={<TokenPage />} />
         <Route path="profile/wallet" element={<WalletPage />} />
         <Route path="profile/wallet/topup" element={<WalletTopUpPage />} />
         <Route path="profile/wallet/withdraw" element={<WalletWithdrawPage />} />
@@ -99,7 +120,7 @@ export default function AppRoutes() {
         <Route path="photographer/:photographerId" element={<PhotographerProfilePage />} />
         <Route path="service/:serviceId" element={<ServiceDetailPage />} />
         <Route path="staffs" element={<StaffsListingPage />} />
-        <Route path="staff/:staffId" element={<StaffProfilePage />} />
+        <Route path="staffs/:staffId" element={<StaffProfilePage />} />
         <Route path="shop/:providerId" element={<ShopProfilePage />} />
         <Route path="login" element={<LoginPage />}/>
         <Route path="register" element={<RegisterRoleSelectPage />}/>
@@ -120,7 +141,13 @@ export default function AppRoutes() {
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
+          <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
+          <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
+          <Route path="/admin/ai-token-plans" element={<AdminAiTokenPlansPage />} />
+          <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
+          <Route path="/admin/system-configs" element={<AdminSystemConfigsPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
+          <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
       </Route>
 
@@ -132,9 +159,15 @@ export default function AppRoutes() {
           <Route path="/provider-rental/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-rental/wallet/withdraw" element={<WalletWithdrawPage />} />
         </Route>
+        <Route element={<ProviderTokenLayout />}>
+          <Route path="/provider-rental/token" element={<ProviderTokenPage />} />
+        </Route>
         <Route path="/provider-rental/costumes" element={<ProviderCostumeListPage />}/>
         <Route path="/provider-rental/costumes/create" element={<ProviderCreateCostumePage />} />
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
+        <Route path="/provider-rental/packages" element={<Navigate to="/provider-rental/subscription" replace />} />
+        <Route path="/provider-rental/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-rental/notifications" element={<ProviderNotificationsPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider/settings/edit" element={<ProviderProfileEditPage />} />
@@ -150,9 +183,16 @@ export default function AppRoutes() {
           <Route path="/provider-photograph/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-photograph/wallet/withdraw" element={<WalletWithdrawPage />} />
         </Route>
+        <Route element={<ProviderPhotographTokenLayout />}>
+          <Route path="/provider-photograph/token" element={<ProviderTokenPage />} />
+        </Route>
         <Route path="/provider-photograph/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-photograph/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-photograph/packages" element={<Navigate to="/provider-photograph/subscription" replace />} />
+        <Route path="/provider-photograph/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-photograph/notifications" element={<ProviderNotificationsPage />} />
+        <Route path="/provider-photograph/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-photograph/settings/completion" element={<ProviderProfileCompletionPage />} />
@@ -167,9 +207,16 @@ export default function AppRoutes() {
           <Route path="/provider-event-staff/wallet/topup" element={<WalletTopUpPage />} />
           <Route path="/provider-event-staff/wallet/withdraw" element={<WalletWithdrawPage />} />
         </Route>
+        <Route element={<ProviderEventStaffTokenLayout />}>
+          <Route path="/provider-event-staff/token" element={<ProviderTokenPage />} />
+        </Route>
         <Route path="/provider-event-staff/services" element={<ProviderServiceListPage />} />
         <Route path="/provider-event-staff/serviceCreate" element={<ProviderCreateServicePage />} />
         <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />
+        <Route path="/provider-event-staff/packages" element={<Navigate to="/provider-event-staff/subscription" replace />} />
+        <Route path="/provider-event-staff/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-event-staff/notifications" element={<ProviderNotificationsPage />} />
+        <Route path="/provider-event-staff/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />
         <Route path="/provider-event-staff/settings/completion" element={<ProviderProfileCompletionPage />} />
@@ -180,6 +227,14 @@ export default function AppRoutes() {
       <Route element={<ProtectedRoute allowedRoles={[ROLE.STAFF]} />}> 
         <Route element={<StaffLayout />}>
           <Route path="/staff" element={<StaffHomePage />} />
+          <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
+          <Route path="/staff/ai-token-purchases" element={<StaffAiTokenPurchasesPage />} />
+          <Route path="/staff/orders" element={<StaffOrdersPage />} />
+          <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
+          <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
+          <Route path="/staff/reports" element={<AdminReportsPage />} />
+          <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />
+          <Route path="/staff/settings" element={<DashboardProfilePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
           <Route path="/staff/disputes" element={<DisputeManagementPage />} />
         </Route>

@@ -1,6 +1,6 @@
 import { Search, ArrowUpDown } from 'lucide-react'
 import { Input } from '@/shared/components/Input'
-import { Button } from '@/components/ui/button'
+import { Button } from '@/shared/components/Button'
 import type { SortOption, ProductFilterState } from '../../hooks/useShopProducts'
 import { VI } from '@/shared/i18n/vi'
 
@@ -22,7 +22,7 @@ export function ShopProductToolbar({
   onReset,
 }: ShopProductToolbarProps) {
   return (
-    <div className="flex flex-col gap-4 rounded-2xl border border-pink-100 bg-white p-4">
+    <div className="flex flex-col gap-4 rounded-3xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.35)]">
       {/* Search */}
       <div className="relative">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />

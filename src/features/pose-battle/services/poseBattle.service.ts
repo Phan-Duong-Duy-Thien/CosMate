@@ -1,5 +1,6 @@
 import axios from "axios"
 
+import { mapAiFeatureError } from "@/features/profile/utils/aiTokenErrors"
 import axiosInstance from "@/services/axiosInstance"
 import type { PoseBattleApiResponse, PoseHistoryItem, PoseScoringResult } from "../types"
 
@@ -54,7 +55,23 @@ export async function deletePoseHistory(id: number): Promise<void> {
 }
 
 export function mapPoseError(error: unknown): string {
+  const tokenMsg = mapAiFeatureError(error, "")
+  if (tokenMsg) return tokenMsg
+
   if (axios.isAxiosError(error)) {
+    const errorText = [
+      error.response?.data?.message,
+      error.response?.data?.error,
+      error.message,
+    ]
+      .filter(Boolean)
+      .join(' ')
+      .toUpperCase()
+
+    if (errorText.includes('NOT_COSPLAY') || errorText.includes('AI_CONTENT_BLOCKED')) {
+      return 'Bé Mèo không nhận diện được người/trang phục cosplay trong ảnh. Vui lòng thử lại ảnh khác nhé!'
+    }
+
     if (error.response?.status === 401 || error.response?.status === 403) {
       return "Vui lòng đăng nhập để dùng Pose Battle và xem lịch sử chấm điểm."
     }

@@ -20,7 +20,10 @@ export function ProfileActions({
       <Button
         variant="default"
         size="sm"
-        className={buttonBase}
+        className={cn(
+          "rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b]",
+          buttonBase
+        )}
         onClick={onEditProfile}
       >
         Edit Profile
@@ -28,7 +31,10 @@ export function ProfileActions({
       <Button
         variant="ghost"
         size="sm"
-        className={cn("text-slate-600", buttonBase)}
+        className={cn(
+          "rounded-xl border-[3px] border-indigo-950/40 bg-[#fffbeb] font-extrabold text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.2)]",
+          buttonBase
+        )}
         onClick={onLogout}
       >
         Logout

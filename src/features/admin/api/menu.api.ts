@@ -12,6 +12,11 @@ export const updateMenu = async (id: string, data: any) => {
   const res = await axiosInstance.put(`/api/v1/menus/${id}`, data);
   return res.data;
 };
+export const updateMenuOrder = async (id: string, displayOrder: number) => {
+  return axiosInstance.patch(`/api/v1/menus/${id}/display-order`, null, {
+    params: { displayOrder }
+  });
+};
 export const deleteMenu = async (id: string) => {
   const res = await axiosInstance.delete(`/api/v1/menus/${id}`);
   return res.data;
@@ -32,6 +37,11 @@ export const createMenuItem = async (data: any) => {
 export const updateMenuItem = async (id: string, data: any) => {
   const res = await axiosInstance.put(`/api/v1/menu-items/${id}`, data);
   return res.data;
+};
+export const updateMenuItemOrder = async (id: string, displayOrder: number) => {
+  return axiosInstance.patch(`/api/v1/menu-items/${id}/display-order`, null, {
+    params: { displayOrder }
+  });
 };
 export const deleteMenuItem = async (id: string) => {
   const res = await axiosInstance.delete(`/api/v1/menu-items/${id}`);

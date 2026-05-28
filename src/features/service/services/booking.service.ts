@@ -5,6 +5,53 @@
  * Called by hooks only; never by components or pages.
  */
 import { createServiceBooking, type ServiceBookingPayload, type ServiceBookingResult, getServiceOrdersByCosplayer, getAllServiceOrdersByCosplayer, type ServiceOrder, confirmServiceOrder as apiConfirmServiceOrder, payServiceOrder as apiPayServiceOrder, type PaymentMethod, getProviderServiceOrders as apiGetProviderServiceOrders, setWaitingServiceDate as apiSetWaitingServiceDate } from '../api/booking.api'
+import { getServiceById } from '../api/service.api'
+import {
+  normalizeServiceOrder,
+  resolveServiceOrderPayableTotal,
+  type ServicePackageFees,
+} from '../utils/serviceOrderPricing'
+
+const servicePackageFeesCache = new Map<number, ServicePackageFees>()
+
+async function loadServicePackageFees(serviceId: number): Promise<ServicePackageFees> {
+  const cached = servicePackageFeesCache.get(serviceId)
+  if (cached) return cached
+
+  try {
+    const service = await getServiceById(serviceId)
+    const fees: ServicePackageFees = {
+      depositAmount: service.depositAmount ?? 0,
+      equipmentDepreciationCost: service.equipmentDepreciationCost ?? 0,
+    }
+    servicePackageFeesCache.set(serviceId, fees)
+    return fees
+  } catch {
+    const empty = { depositAmount: 0, equipmentDepreciationCost: 0 }
+    servicePackageFeesCache.set(serviceId, empty)
+    return empty
+  }
+}
+
+async function enrichServiceOrdersForDisplay(orders: ServiceOrder[]): Promise<ServiceOrder[]> {
+  const normalized = orders.map((o) =>
+    normalizeServiceOrder(o as unknown as Record<string, unknown>),
+  )
+
+  const serviceIds = new Set<number>()
+  for (const order of normalized) {
+    for (const booking of order.bookings) {
+      if (booking.serviceId > 0) serviceIds.add(booking.serviceId)
+    }
+  }
+
+  await Promise.all([...serviceIds].map((id) => loadServicePackageFees(id)))
+
+  return normalized.map((order) => ({
+    ...order,
+    payableTotalAmount: resolveServiceOrderPayableTotal(order, servicePackageFeesCache),
+  }))
+}
 
 export interface CreateServiceBookingParams {
   serviceId: number
@@ -38,7 +85,9 @@ export async function fetchServiceOrders(
   size: number = 10
 ): Promise<{ orders: ServiceOrder[]; total: number; isPaginated: boolean }> {
   console.log("[booking.service] fetchServiceOrders userId:", userId, "statuses:", statuses, "page:", page, "size:", size)
-  return getServiceOrdersByCosplayer(userId, statuses, page, size)
+  const res = await getServiceOrdersByCosplayer(userId, statuses, page, size)
+  const orders = await enrichServiceOrdersForDisplay(res.orders)
+  return { ...res, orders }
 }
 
 export async function fetchAllServiceOrders(
@@ -46,7 +95,8 @@ export async function fetchAllServiceOrders(
   statuses?: string
 ): Promise<ServiceOrder[]> {
   console.log("[booking.service] fetchAllServiceOrders userId:", userId, "statuses:", statuses)
-  return getAllServiceOrdersByCosplayer(userId, statuses)
+  const orders = await getAllServiceOrdersByCosplayer(userId, statuses)
+  return enrichServiceOrdersForDisplay(orders)
 }
 
 export async function confirmServiceOrder(orderId: number): Promise<void> {
@@ -58,10 +108,10 @@ export async function payServiceOrderFn(
   orderId: number,
   paymentMethod: PaymentMethod,
   returnUrl: string
-): Promise<string | null> {
+) {
   console.log('[booking.service] payServiceOrderFn → orderId:', orderId, '| method:', paymentMethod, '| returnUrl:', returnUrl);
   const result = await apiPayServiceOrder(orderId, paymentMethod, returnUrl);
-  console.log('[booking.service] payServiceOrderFn ← paymentUrl:', result);
+  console.log('[booking.service] payServiceOrderFn ←', result);
   return result;
 }
 
@@ -69,7 +119,8 @@ export async function fetchProviderServiceOrders(
   statuses?: string
 ): Promise<ServiceOrder[]> {
   console.log("[booking.service] fetchProviderServiceOrders statuses:", statuses)
-  return apiGetProviderServiceOrders(statuses)
+  const orders = await apiGetProviderServiceOrders(statuses)
+  return enrichServiceOrdersForDisplay(orders)
 }
 
 export async function setWaitingStatus(orderId: number): Promise<void> {

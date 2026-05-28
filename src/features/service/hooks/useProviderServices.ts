@@ -8,6 +8,7 @@ import { message } from 'antd';
 import { fetchProviderServices, deleteProviderService } from '../services/service.service';
 import type { ServiceItem } from '../types';
 import { VI } from '@/shared/i18n/vi';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 
 interface UseProviderServicesResult {
   services: ServiceItem[];
@@ -59,7 +60,8 @@ export function useProviderServices(
         setDeletingId(serviceId);
         await deleteProviderService(serviceId);
         message.success(VI.service.list.messages.deleteSuccess);
-        await refetch();
+        setServices((prev) => prev.filter((s) => s.id !== serviceId));
+        scheduleBackgroundRefetch(() => refetch());
         return true;
       } catch (err) {
         const msg =

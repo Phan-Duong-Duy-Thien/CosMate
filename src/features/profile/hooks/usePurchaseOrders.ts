@@ -5,10 +5,21 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getOrdersByUserId, getAllOrdersByUserId } from '@/features/order/api/order.api';
-import { confirmDeliveryOrder, returnCosplayerOrder } from '@/features/order/services/order.service';
+import {
+  confirmDeliveryOrder,
+  returnCosplayerOrder,
+  cancelOrder as cancelOrderApi,
+} from '@/features/order/services/order.service';
 import { getCostumeById } from '@/features/costume-rental/api/costume.api';
 import { resolveImageUrl } from '@/features/costume-rental/hooks/usePublicCostumeDetail';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { useRefetchOnWindowFocus } from '@/shared/hooks/useRefetchOnWindowFocus';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
+import { DATA_SYNC_EVENTS, notifyOrdersChanged } from '@/shared/sync/dataSync';
+import { mergeOrderFromMutation, patchOrderStatus } from '@/shared/sync/patchOrderList';
 import type { OrderItem, OrderStatus } from '@/features/order/types';
+import { ORDER_LIST_PAGINATION_THRESHOLD } from '../constants/orderListPagination';
 
 // Map UI tab to backend status
 const TAB_STATUS_MAP: Record<string, OrderStatus[]> = {
@@ -40,16 +51,28 @@ export interface OrderCounts {
   shipping_combined: number;
 }
 
+type FetchOptions = { silent?: boolean };
+
 export interface UsePurchaseOrdersResult {
   filteredOrders: OrderItem[];
   counts: OrderCounts;
   loading: boolean;
+  isRefreshing: boolean;
   error: string | null;
-  refetch: () => Promise<void>;
+  refetch: (options?: FetchOptions) => Promise<void>;
   confirmDelivery: (orderId: number, images: File[], notes: string[]) => Promise<boolean>;
   confirmingDeliveryId: number | null;
-  returnOrder: (orderId: number, trackingCode: string, images: File[], notes: string[]) => Promise<boolean>;
+  returnOrder: (
+    orderId: number,
+    trackingCode: string,
+    shippingCarrierName: string,
+    images: File[],
+    notes: string[],
+    autoCreateGhn?: boolean
+  ) => Promise<boolean>;
   returningOrderId: number | null;
+  cancelOrder: (orderId: number) => Promise<boolean>;
+  cancellingOrderId: number | null;
   costumeImageMap: Record<number, string>;
   page: number;
   setPage: (page: number) => void;
@@ -61,9 +84,11 @@ export interface UsePurchaseOrdersResult {
 export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResult {
   const [allOrders, setAllOrders] = useState<OrderItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [confirmingDeliveryId, setConfirmingDeliveryId] = useState<number | null>(null);
   const [returningOrderId, setReturningOrderId] = useState<number | null>(null);
+  const [cancellingOrderId, setCancellingOrderId] = useState<number | null>(null);
   const [costumeImageMap, setCostumeImageMap] = useState<Record<number, string>>({});
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -71,6 +96,39 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
   const PAGE_SIZE = 10;
 
   const userId = getUserId();
+
+  const { mergeFetched, setPendingField } = usePendingListMutation<OrderItem, OrderStatus>({
+    getItemId: (o) => o.id,
+    getFieldValue: (o) => o.status,
+    setFieldValue: (o, status) => ({ ...o, status }),
+  });
+
+  const loadCostumeImages = useCallback(async (orders: OrderItem[]) => {
+    const uniqueIds = [...new Set(orders.map((o) => o.costumeId).filter(Boolean))];
+    await Promise.all(
+      uniqueIds.map(async (cid) => {
+        try {
+          const costume = await getCostumeById(cid);
+          const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
+          if (url) {
+            setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
+          }
+        } catch {
+          // Silently ignore
+        }
+      }),
+    );
+  }, []);
+
+  const applyOrdersFromFetch = useCallback(
+    (fetchedOrders: OrderItem[]) => {
+      const costumeOnly = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
+      setAllOrders(mergeFetched(costumeOnly));
+      setTotal(costumeOnly.length);
+      return costumeOnly;
+    },
+    [mergeFetched],
+  );
 
   // Fetch all orders once (or per page if BE supports server-side pagination)
   useEffect(() => {
@@ -93,35 +151,21 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         fetchedPaginated = result.isPaginated;
 
         if (result.isPaginated) {
-          // BE supports true server-side pagination
           fetchedOrders = result.orders.filter((o) => o.orderType === 'RENT_COSTUME');
           fetchedTotal = result.total;
         } else {
-          // BE returns flat array → fetch all, apply client-side filter + slice
           fetchedOrders = await getAllOrdersByUserId(userId);
           fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
           fetchedTotal = fetchedOrders.length;
         }
 
-        setAllOrders(fetchedOrders);
-        setTotal(fetchedTotal);
+        applyOrdersFromFetch(fetchedOrders);
         setIsPaginated(fetchedPaginated);
+        if (!fetchedPaginated) {
+          setTotal(fetchedTotal);
+        }
 
-        // Batch-fetch costume images
-        const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
-        await Promise.all(
-          uniqueIds.map(async (cid) => {
-            try {
-              const costume = await getCostumeById(cid);
-              const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
-              if (url) {
-                setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
-              }
-            } catch {
-              // Silently ignore
-            }
-          })
-        );
+        await loadCostumeImages(fetchedOrders);
       } catch (err) {
         console.error('Failed to fetch orders:', err);
         setError('Failed to load orders');
@@ -130,30 +174,31 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
       }
     };
 
-    fetchOrders();
+    void fetchOrders();
+    // mergeFetched is stable (usePendingListMutation uses refs for getters)
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional: fetch once per userId
   }, [userId]);
 
-  // Filter + paginate from full list
+  const tabFilteredOrders = useMemo(() => {
+    if (tab === 'all') return allOrders;
+    const allowed = TAB_STATUS_MAP[tab];
+    if (!allowed) return allOrders;
+    return allOrders.filter((o) => allowed.includes(o.status));
+  }, [allOrders, tab]);
+
+  const listTotal = tabFilteredOrders.length;
+
   const filteredOrders = useMemo(() => {
-    let filtered = allOrders;
+    if (isPaginated) return tabFilteredOrders;
 
-    if (tab !== 'all') {
-      const allowed = TAB_STATUS_MAP[tab];
-      if (allowed) {
-        filtered = filtered.filter((o) => allowed.includes(o.status));
-      }
+    if (listTotal <= ORDER_LIST_PAGINATION_THRESHOLD) {
+      return tabFilteredOrders;
     }
 
-    // Apply client-side slice only when BE doesn't support server pagination
-    if (!isPaginated) {
-      const start = (page - 1) * PAGE_SIZE;
-      filtered = filtered.slice(start, start + PAGE_SIZE);
-    }
+    const start = (page - 1) * PAGE_SIZE;
+    return tabFilteredOrders.slice(start, start + PAGE_SIZE);
+  }, [tabFilteredOrders, listTotal, page, isPaginated]);
 
-    return filtered;
-  }, [allOrders, tab, page, isPaginated]);
-
-  // Counts computed from full list (not filtered/paginated slice)
   const counts = useMemo(() => {
     const countByStatuses = (statuses: OrderStatus[]) =>
       allOrders.filter((order) => statuses.includes(order.status)).length;
@@ -172,40 +217,68 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
     };
   }, [allOrders]);
 
-  // Refetch
-  const refetch = useCallback(async () => {
-    setPage(1);
+  const refetch = useCallback(async (options?: FetchOptions) => {
+    const silent = options?.silent ?? false;
     if (!userId) return;
+
+    if (silent) {
+      setIsRefreshing(true);
+    } else {
+      setPage(1);
+      setLoading(true);
+    }
+
     try {
       let fetchedOrders = await getAllOrdersByUserId(userId);
-      fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
-      setAllOrders(fetchedOrders);
-      setTotal(fetchedOrders.length);
-      const uniqueIds = [...new Set(fetchedOrders.map((o) => o.costumeId).filter(Boolean))];
-      await Promise.all(
-        uniqueIds.map(async (cid) => {
-          try {
-            const costume = await getCostumeById(cid);
-            const url = resolveImageUrl(costume.imageUrls?.[0] ?? '');
-            if (url) {
-              setCostumeImageMap((prev) => ({ ...prev, [cid]: url }));
-            }
-          } catch {
-            // silently ignore
-          }
-        })
-      );
+      const costumeOrders = applyOrdersFromFetch(fetchedOrders);
+      await loadCostumeImages(costumeOrders);
     } catch (err) {
       console.error('Failed to refetch orders:', err);
+    } finally {
+      if (silent) {
+        setIsRefreshing(false);
+      } else {
+        setLoading(false);
+      }
     }
-  }, [userId]);
+  }, [userId, applyOrdersFromFetch, loadCostumeImages]);
+
+  const scheduleSyncRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(() => refetch({ silent: true }));
+  }, [refetch]);
+
+  useDataSyncRefetch(
+    () => refetch({ silent: true }),
+    DATA_SYNC_EVENTS.ORDERS_CHANGED,
+    Boolean(userId),
+  );
+
+  useRefetchOnWindowFocus(
+    () => refetch({ silent: true }),
+    Boolean(userId),
+  );
+
+  const applyOrderMutation = useCallback(
+    (orderId: number, nextStatus: OrderStatus, partial?: Partial<OrderItem>) => {
+      setPendingField(orderId, nextStatus);
+      setAllOrders((prev) =>
+        partial
+          ? mergeOrderFromMutation(prev, orderId, { ...partial, status: nextStatus })
+          : patchOrderStatus(prev, orderId, nextStatus),
+      );
+      notifyOrdersChanged({ orderId, orderType: 'RENT_COSTUME' });
+      scheduleSyncRefetch();
+    },
+    [setPendingField, scheduleSyncRefetch],
+  );
 
   const confirmDelivery = useCallback(
     async (orderId: number, images: File[], notes: string[]) => {
       setConfirmingDeliveryId(orderId);
       try {
-        await confirmDeliveryOrder(orderId, images, notes);
-        await refetch();
+        const updated = await confirmDeliveryOrder(orderId, images, notes);
+        const nextStatus = (updated?.status ?? 'IN_USE') as OrderStatus;
+        applyOrderMutation(orderId, nextStatus, updated ?? undefined);
         return true;
       } catch {
         return false;
@@ -213,15 +286,33 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setConfirmingDeliveryId(null);
       }
     },
-    [refetch]
+    [applyOrderMutation],
   );
 
   const returnOrder = useCallback(
-    async (orderId: number, trackingCode: string, images: File[], notes: string[]) => {
+    async (
+      orderId: number,
+      trackingCode: string,
+      shippingCarrierName: string,
+      images: File[],
+      notes: string[],
+      autoCreateGhn = false,
+    ) => {
       setReturningOrderId(orderId);
       try {
-        await returnCosplayerOrder(orderId, trackingCode, notes, images);
-        await refetch();
+        const updated = await returnCosplayerOrder(
+          orderId,
+          trackingCode,
+          shippingCarrierName,
+          notes,
+          images,
+          { autoCreateGhn },
+        );
+        if (updated && typeof updated === 'object' && 'status' in updated) {
+          applyOrderMutation(orderId, updated.status as OrderStatus, updated);
+        } else {
+          applyOrderMutation(orderId, 'SHIPPING_BACK');
+        }
         return true;
       } catch {
         return false;
@@ -229,24 +320,43 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
         setReturningOrderId(null);
       }
     },
-    [refetch]
+    [applyOrderMutation],
+  );
+
+  const cancelOrder = useCallback(
+    async (orderId: number) => {
+      setCancellingOrderId(orderId);
+      try {
+        await cancelOrderApi(orderId);
+        applyOrderMutation(orderId, 'CANCELLED');
+        return true;
+      } catch {
+        return false;
+      } finally {
+        setCancellingOrderId(null);
+      }
+    },
+    [applyOrderMutation],
   );
 
   return {
     filteredOrders,
     counts,
     loading,
+    isRefreshing,
     error,
     refetch,
     confirmDelivery,
     confirmingDeliveryId,
     returnOrder,
     returningOrderId,
+    cancelOrder,
+    cancellingOrderId,
     costumeImageMap,
     page,
     setPage,
     pageSize: PAGE_SIZE,
-    total,
+    total: listTotal,
     isPaginated,
   };
 }

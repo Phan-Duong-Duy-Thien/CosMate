@@ -48,27 +48,44 @@ export interface UpdateUserProfilePayload {
 }
 
 // ============ USER ADDRESS TYPES ============
+/**
+ * Province Open API V2 semantics on forms:
+ * - city    → Tỉnh / Thành phố (province name)
+ * - district → Phường / Xã (ward name)
+ * - address → địa chỉ chi tiết
+ */
 
 export interface UserAddress {
   id: number
   userId: number
   name: string
+  phone: string
   city: string
   district: string
   address: string
-  phone: string
+  addressName?: string
 }
 
 export interface UpsertUserAddressPayload {
   name: string
+  phone: string
+  addressName: string
   city: string
   district: string
   address: string
-  phone: string
-  addressName: string
 }
 
 export type CreateUserAddressPayload = UpsertUserAddressPayload
+
+/** UI form state before province/ward codes are selected */
+export interface AddressFormState {
+  name: string
+  phone: string
+  addressName: string
+  city: string
+  district: string
+  address: string
+}
 
 // ============ VIETNAM LOCATION TYPES ============
 
@@ -102,4 +119,35 @@ export interface WalletTransaction {
   type: string
   status: string
   createdAt: string
+}
+
+// ============ AI TOKEN PLANS ============
+
+export interface AiTokenPlan {
+  id: number
+  name: string
+  description: string
+  price: number
+  numberOfToken: number
+  isActive: boolean
+}
+
+export type TokenPaymentMethod = "VNPAY" | "MOMO" | "WALLET"
+
+export interface InitiateAiTokenPurchaseParams {
+  planId: number
+  paymentMethod: TokenPaymentMethod
+  returnUrl?: string
+  isMobile?: boolean
+}
+
+export interface AiTokenPurchase {
+  id: number
+  userId: number
+  subscriptionId: number
+  transactionId: number
+  priceAtPurchase: number
+  tokensAdded: number
+  purchaseDate: string
+  status: string
 }

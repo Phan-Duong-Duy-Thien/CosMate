@@ -5,20 +5,21 @@ import {
   SearchOutlined,
   ReloadOutlined,
   MoreOutlined,
-  EyeOutlined,
   LockOutlined,
   UnlockOutlined,
   StopOutlined,
   CheckCircleOutlined,
-  UploadOutlined, 
+  UploadOutlined,
   DownloadOutlined,
   PlusOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import { cn } from '@/lib/utils';
 import { register } from '@/features/auth/api/auth.api';
 import type { RegisterRequest } from '@/features/auth/types';
 import { useAdminUsers } from '../hooks/useAdminUsers';
 import { UserDetailDrawer } from '../components/users/UserDetailDrawer';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 import type { AdminUser } from '../types';
 import { VI } from '@/shared/i18n/vi';
 import { getStatusTagProps, normalizeStatus } from '../utils/userStatus';
@@ -212,8 +213,8 @@ export default function AdminUsersPage() {
       width: 250,
       render: (_, record) => (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-          <span style={{ fontWeight: 600, color: '#1f2937', fontSize: 14 }}>{record.username}</span>
-          <span style={{ color: '#6b7280', fontSize: 13 }}>{record.email}</span>
+          <span style={{ fontWeight: 600, color: 'var(--foreground)', fontSize: 14 }}>{record.username}</span>
+          <span style={{ color: 'var(--muted-foreground)', fontSize: 13 }}>{record.email}</span>
         </div>
       )
     },
@@ -224,9 +225,9 @@ export default function AdminUsersPage() {
       width: 140,
       render: (phone: string | null) => {
         if (!phone || phone.trim() === '') {
-          return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+          return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         }
-        return <span style={{ color: '#4b5563' }}>{phone}</span>; 
+        return <span style={{ color: 'var(--foreground)' }}>{phone}</span>; 
       }
     },
     {
@@ -235,7 +236,7 @@ export default function AdminUsersPage() {
       width: 200,
       render: (_, record) => {
         const rolesArray = getUserRolesArray(record);
-        if (rolesArray.length === 0) return <span style={{ color: '#9ca3af', fontStyle: 'italic' }}>—</span>;
+        if (rolesArray.length === 0) return <span style={{ color: 'var(--muted-foreground)', fontStyle: 'italic' }}>—</span>;
         return (
           <Space size={4} wrap>
             {rolesArray.map((role) => {
@@ -275,39 +276,49 @@ export default function AdminUsersPage() {
         });
 
         return (
-          <div style={{ display: 'flex', gap: 12, justifyContent: 'center' }} onClick={(e) => e.stopPropagation()}>
+          <div
+            className="cosmate-admin-table-actions flex items-center justify-center gap-3"
+            onClick={(e) => e.stopPropagation()}
+          >
             <Tooltip title={VI.admin.users.actions.viewDetail}>
-              <EyeOutlined
-                onClick={() => handleViewDetail(user)}
-                style={{ cursor: 'pointer', fontSize: 16, color: '#1890ff' }}
-              />
+              <AdminDetailEyeIcon onClick={() => handleViewDetail(user)} />
             </Tooltip>
 
             <Tooltip title={!permission.allowed ? permission.reason : (userIsLocked ? VI.admin.users.actions.unlock : VI.admin.users.actions.lock)}>
               <span
+                role="presentation"
+                className={cn(
+                  'inline-flex',
+                  permission.allowed && actionLoadingId !== user.id
+                    ? 'cursor-pointer'
+                    : 'cursor-not-allowed opacity-50'
+                )}
                 onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleLockToggle(user)}
-                style={{
-                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
-                  fontSize: 16,
-                  color: userIsLocked ? '#52c41a' : '#faad14',
-                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
-                }}
               >
-                {userIsLocked ? <UnlockOutlined /> : <LockOutlined />}
+                {userIsLocked ? (
+                  <UnlockOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+                ) : (
+                  <LockOutlined style={{ color: 'var(--cosmate-warning)', fontSize: 16 }} />
+                )}
               </span>
             </Tooltip>
 
             <Tooltip title={!permission.allowed ? permission.reason : (userIsBanned ? VI.admin.users.actions.unban : VI.admin.users.actions.ban)}>
               <span
+                role="presentation"
+                className={cn(
+                  'inline-flex',
+                  permission.allowed && actionLoadingId !== user.id
+                    ? 'cursor-pointer'
+                    : 'cursor-not-allowed opacity-50'
+                )}
                 onClick={() => !(!permission.allowed || actionLoadingId === user.id) && handleBanToggle(user)}
-                style={{
-                  cursor: permission.allowed && actionLoadingId !== user.id ? 'pointer' : 'not-allowed',
-                  fontSize: 16,
-                  color: userIsBanned ? '#52c41a' : '#ff4d4f',
-                  opacity: !permission.allowed || actionLoadingId === user.id ? 0.5 : 1,
-                }}
               >
-                {userIsBanned ? <CheckCircleOutlined /> : <StopOutlined />}
+                {userIsBanned ? (
+                  <CheckCircleOutlined style={{ color: 'var(--cosmate-success)', fontSize: 16 }} />
+                ) : (
+                  <StopOutlined style={{ color: 'var(--destructive)', fontSize: 16 }} />
+                )}
               </span>
             </Tooltip>
           </div>
@@ -320,7 +331,7 @@ export default function AdminUsersPage() {
     <>
       <style>{`
         .admin-user-row:hover {
-          background-color: #f5f5f5 !important;
+          background-color: var(--muted) !important;
         }
       `}</style>
 

@@ -2,37 +2,33 @@
  * ShipOrderModal
  *
  * UI-only modal for shipping an order
- * Props: open, orderId, loading, onCancel, onSubmit
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Input, Upload, Button, Form, Space, Select, message } from 'antd';
-import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
+import { Modal, Input, Upload, Button, Form, Space, Select, message, Alert } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
 import type { UploadFile, UploadProps } from 'antd';
 import { VI } from '@/shared/i18n/vi';
+import { SHIPPING_CARRIER_OPTIONS, resolveCarrierName } from '../constants/shippingCarriers';
+import { useGhnShippingFee } from '../hooks/useGhnShippingFee';
+
+const { Dragger } = Upload;
+
+export interface ShipOrderSubmitData {
+  trackingCode: string;
+  shippingCarrierName: string;
+  notes: string[];
+  images: File[];
+  autoCreateGhn: boolean;
+}
 
 interface ShipOrderModalProps {
   open: boolean;
   orderId: number;
   loading: boolean;
   onCancel: () => void;
-  onSubmit: (data: { trackingCode: string; shippingCarrierName: string; notes: string[]; images: File[] }) => Promise<void>;
+  onSubmit: (data: ShipOrderSubmitData) => Promise<void>;
 }
-
-const { Dragger } = Upload;
-
-const CARRIER_OPTIONS = [
-  { label: 'GHN (Giao Hàng Nhanh)', value: 'GHN' },
-  { label: 'GHTK (Giao Hàng Tiết Kiệm)', value: 'GHTK' },
-  { label: 'Viettel Post', value: 'VIETTEL_POST' },
-  { label: 'VNPost', value: 'VNPOST' },
-  { label: 'J&T Express', value: 'J&T' },
-  { label: 'Shopee Express', value: 'SPX' },
-  { label: 'Ninja Van', value: 'NINJA_VAN' },
-  { label: 'Best Express', value: 'BEST' },
-  { label: VI.common.actions.other,
-    value: 'OTHER' },
-];
 
 export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: ShipOrderModalProps) {
   const [form] = Form.useForm();
@@ -41,18 +37,21 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
   const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
   const [customCarrier, setCustomCarrier] = useState<string>('');
 
-  // Reset form when modal opens/closes
+  const hasCarrier = Boolean(selectedCarrier);
+  const { fee, loading: feeLoading, error: feeError, approximate: feeApproximate } =
+    useGhnShippingFee(open && hasCarrier ? orderId : null, 'ship');
+
   useEffect(() => {
     if (!open) {
-      form.resetFields();
       setFileList([]);
       setNoteMap({});
       setSelectedCarrier(null);
       setCustomCarrier('');
+      return;
     }
+    form.resetFields();
   }, [open, form]);
 
-  // Handle carrier selection change
   const handleCarrierChange = (value: string) => {
     setSelectedCarrier(value);
     if (value !== 'OTHER') {
@@ -63,7 +62,6 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
     }
   };
 
-  // Handle file change
   const handleFileChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
     const newNoteMap: Record<string, string> = {};
     newFileList.forEach((file) => {
@@ -75,7 +73,6 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
     setFileList(newFileList);
   };
 
-  // Handle note change for a specific file
   const handleNoteChange = (uid: string, value: string) => {
     setNoteMap((prev) => ({
       ...prev,
@@ -83,14 +80,12 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
     }));
   };
 
-  // Handle submit
   const handleSubmit = async () => {
     try {
-      const values = await form.validateFields();
+      await form.validateFields();
 
-      // Validation
-      if (!values.trackingCode?.trim()) {
-        message.error(VI.provider.orders.validation.trackingRequired);
+      if (!selectedCarrier) {
+        message.error(VI.provider.orders.validation.carrierSelectRequired);
         return;
       }
 
@@ -99,34 +94,34 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
         return;
       }
 
-      // Resolve carrier name: dropdown value or custom input
-      const carrierName =
-        selectedCarrier === 'OTHER' ? customCarrier.trim() : (selectedCarrier ?? '');
+      const carrierName = resolveCarrierName(selectedCarrier, customCarrier);
+      if (!carrierName) {
+        message.error(VI.provider.orders.validation.carrierRequired);
+        return;
+      }
 
-      // Build notes array in the same order as fileList
       const notes: string[] = [];
       const images: File[] = [];
 
       for (const file of fileList) {
         if (file.originFileObj) {
           images.push(file.originFileObj);
-          const note = noteMap[file.uid] || '';
-          notes.push(note);
+          notes.push(noteMap[file.uid] || '');
         }
       }
 
       await onSubmit({
-        trackingCode: values.trackingCode.trim(),
+        trackingCode: '',
         shippingCarrierName: carrierName,
         notes,
         images,
+        autoCreateGhn: true,
       });
     } catch {
-      // Validation error - don't submit
+      // validation
     }
   };
 
-  // Custom upload props
   const uploadProps: UploadProps = {
     multiple: true,
     fileList,
@@ -135,6 +130,9 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
     listType: 'picture-card',
     accept: 'image/*',
   };
+
+  const formatFee = (amount: number) =>
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
   return (
     <Modal
@@ -153,26 +151,48 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
       destroyOnClose
     >
       <Form form={form} layout="vertical">
-        <Form.Item
-          name="trackingCode"
-          label={VI.provider.orders.shipModal.trackingCode}
-          rules={[{ required: true, message: VI.provider.orders.validation.trackingRequired }]}
-        >
-          <Input placeholder={VI.provider.orders.shipModal.trackingCodePlaceholder} />
-        </Form.Item>
-
-        <Form.Item
-          label={VI.provider.orders.shipModal.carrierName}
-          required
-        >
+        <Form.Item label={VI.provider.orders.shipModal.carrierName} required>
           <Select
             placeholder={VI.provider.orders.shipModal.selectCarrier}
-            options={CARRIER_OPTIONS}
+            options={[...SHIPPING_CARRIER_OPTIONS]}
             value={selectedCarrier}
             onChange={handleCarrierChange}
             style={{ width: '100%' }}
           />
         </Form.Item>
+
+        {hasCarrier && (
+          <Alert
+            type="info"
+            showIcon
+            className="mb-4"
+            message={VI.provider.orders.shipModal.autoTrackingHint}
+          />
+        )}
+
+        {hasCarrier && (
+          <div className="mb-4 rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+            <span className="font-medium text-foreground">
+              {VI.provider.orders.shipModal.shippingFeeLabel}:{' '}
+            </span>
+            {feeLoading && (
+              <span className="text-muted-foreground">{VI.provider.orders.shipModal.ghnFeeLoading}</span>
+            )}
+            {!feeLoading && fee != null && (
+              <span className="font-semibold text-pink-600">{formatFee(fee)}</span>
+            )}
+            {!feeLoading && fee == null && (
+              <span className="text-muted-foreground">
+                {feeError ?? VI.provider.orders.shipModal.ghnFeeUnavailable}
+              </span>
+            )}
+            {!feeLoading && fee != null && feeApproximate && (
+              <p className="mt-1 text-xs text-amber-700">
+                {VI.provider.orders.shipModal.shippingFeeApproximateHint}
+              </p>
+            )}
+          </div>
+        )}
 
         {selectedCarrier === 'OTHER' && (
           <Form.Item

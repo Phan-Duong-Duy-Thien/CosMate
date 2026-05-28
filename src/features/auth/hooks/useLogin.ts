@@ -2,9 +2,8 @@ import { useCallback, useState } from "react"
 import { message } from "antd"
 
 import { VI } from "@/shared/i18n/vi"
-import { loginWithGoogle } from "@/services/authService"
 import type { LoginFormValues } from "../types"
-import { login } from "../api/auth.api"
+import { googleLogin, login } from "../api/auth.api"
 import { saveAuth, getRoles } from "../services/tokenStorage"
 import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
 import { extractApiErrorMessage } from "@/shared/utils/apiError"
@@ -12,7 +11,6 @@ import type { FormInstance } from "antd"
 
 export function useLogin() {
   const [submitting, setSubmitting] = useState(false)
-  const [googleLoading, setGoogleLoading] = useState(false)
   const [formError, setFormError] = useState("")
 
   const handleEmailLogin = useCallback(async (values: LoginFormValues, form?: FormInstance<LoginFormValues>): Promise<string[] | null> => {
@@ -65,45 +63,41 @@ export function useLogin() {
   }, [])
 
   const handleGoogleLogin = useCallback(async (idToken: string): Promise<string[] | null> => {
-    setGoogleLoading(true)
+    setSubmitting(true)
     setFormError("")
 
     try {
-      const response = await loginWithGoogle(idToken)
+      const response = await googleLogin({
+        idToken,
+        code: "",
+        redirectUri: "",
+      })
 
       if (response.code !== 0) {
-        console.warn("⚠️ Google login failed with code:", response.code, response.message)
         setFormError(response.message || VI.auth.login.messages.loginFailed)
         return null
       }
 
       if (!response.result.token) {
-        console.error("❌ Google login response missing token:", response.result)
-        setFormError("Đăng nhập thất bại - không nhận được token!")
+        setFormError(VI.auth.login.messages.loginMissingToken)
         return null
       }
 
+      // Google login is treated as persistent by default.
       saveAuth(response.result, true)
-      console.log("💾 Google login token saved")
-
       const roles = getRoles()
-      console.log("👤 Google user roles:", roles)
-
       message.success(VI.auth.login.messages.loginSuccess)
-
       return roles
     } catch (error: unknown) {
-      console.error("❌ Google login error:", error)
-      setFormError(extractApiErrorMessage(error, VI.auth.login.messages.loginFailed))
+      setFormError(extractApiErrorMessage(error, VI.auth.login.messages.invalidCredentials))
       return null
     } finally {
-      setGoogleLoading(false)
+      setSubmitting(false)
     }
   }, [])
 
   return {
     submitting,
-    googleLoading,
     formError,
     handleEmailLogin,
     handleGoogleLogin,

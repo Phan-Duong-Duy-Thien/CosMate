@@ -86,7 +86,7 @@ export function ExtendRentalModal({
   const isValid = extendDays >= 1 && selectedPayment !== null;
 
   return (
-    <Dialog open={open} onOpenChange={onClose}>
+    <Dialog open={open} onOpenChange={onClose} overlayClassName="!z-[1100]">
       <DialogContent className="max-w-md" onClose={onClose}>
         {/* Title */}
         <div className="pr-6">

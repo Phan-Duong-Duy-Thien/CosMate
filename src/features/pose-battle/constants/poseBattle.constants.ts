@@ -1,3 +1,8 @@
+import mascotPose from "@/assets/mascot-pose.png"
+import mascotPoseBad from "@/assets/mascot-pose-bad.png"
+import mascotPoseGood from "@/assets/mascot-pose-good.png"
+import mascotPoseVeryGood from "@/assets/mascot-pose-verygood.png"
+import mascotPose100 from "@/assets/mascot-pose-100.png"
 import type { PoseReferenceItem } from "../types"
 
 export const POSE_TIPS = [
@@ -28,9 +33,10 @@ export const POSE_REFERENCE_LIST: PoseReferenceItem[] = [
 ]
 
 export const POSE_SCORE_ASSETS = {
-  loading: "/src/assets/mascot-pose.png",
-  bad: "/src/assets/mascot-pose-bad.png",
-  good: "/src/assets/mascot-pose-good.png",
-  veryGood: "/src/assets/mascot-pose-verygood.png",
-  perfect: "/src/assets/mascot-pose-100.png",
+  loading: mascotPose,
+  bad: mascotPoseBad,
+  good: mascotPoseGood,
+  veryGood: mascotPoseVeryGood,
+  perfect: mascotPose100,
 }
+

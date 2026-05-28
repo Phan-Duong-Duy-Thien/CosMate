@@ -1,6 +1,6 @@
 /**
  * useAdminUsers Hook
- * 
+ *
  * State management for admin user management
  * Handles data fetching, filtering, and user actions
  */
@@ -10,28 +10,40 @@ import { message } from 'antd';
 import * as adminUsersService from '../services/adminUsers.service';
 import type { AdminUser, AdminUserProfile, UserActionType } from '../types';
 import { VI } from '@/shared/i18n/vi';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
+import { DATA_SYNC_EVENTS, notifyUsersChanged } from '@/shared/sync/dataSync';
+
+function statusAfterAction(actionType: UserActionType): string {
+  switch (actionType) {
+    case 'lock':
+      return 'INACTIVE';
+    case 'unlock':
+      return 'ACTIVE';
+    case 'ban':
+      return 'BANNED';
+    case 'unban':
+      return 'ACTIVE';
+  }
+}
 
 export function useAdminUsers() {
-  // Data state
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Filter state
+
   const [searchText, setSearchText] = useState('');
   const [roleFilter, setRoleFilter] = useState<string[]>([]);
   const [statusFilter, setStatusFilter] = useState<string>('');
-  
-  // Action state
+
   const [actionLoadingId, setActionLoadingId] = useState<number | null>(null);
 
-  // Modal profile state (detail fetched from GET /api/users/{id}/profile)
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
   const [profile, setProfile] = useState<AdminUserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const profileRequestIdRef = useRef(0);
 
-  // Export and import state
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -39,51 +51,78 @@ export function useAdminUsers() {
   const [pageSize, setPageSize] = useState(20);
   const [total, setTotal] = useState(0);
 
-  /**
-   * Fetch users from backend
-   */
-  const fetchUsers = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-      
-      const params: Record<string, any> = {
-        page: page - 1,
-        size: pageSize,
-      };
+  const { mergeFetched, setPendingField } = usePendingListMutation<AdminUser, string>({
+    getItemId: (u) => u.id,
+    getFieldValue: (u) => u.status,
+    setFieldValue: (u, status) => ({ ...u, status }),
+  });
 
-      if (searchText) params.search = searchText;
-      if (statusFilter) params.status = statusFilter;
-      
-      if (roleFilter && roleFilter.length > 0) {
-        params.role = roleFilter.join(',');
+  const fetchUsers = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      try {
+        if (!silent) {
+          setIsLoading(true);
+        }
+        setError(null);
+
+        const params: Record<string, unknown> = {
+          page: page - 1,
+          size: pageSize,
+        };
+
+        if (searchText) params.search = searchText;
+        if (statusFilter) params.status = statusFilter;
+
+        if (roleFilter && roleFilter.length > 0) {
+          params.role = roleFilter.join(',');
+        }
+
+        const data = await adminUsersService.getAdminUsersPage(params);
+
+        setUsers(mergeFetched(data.content || []));
+        setTotal(data.totalElements || 0);
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : VI.admin.users.messages.fetchError;
+        setError(errorMessage);
+        if (!silent) {
+          message.error(errorMessage);
+        }
+      } finally {
+        if (!silent) {
+          setIsLoading(false);
+        }
       }
+    },
+    [page, pageSize, searchText, statusFilter, roleFilter, mergeFetched],
+  );
 
-      const data = await adminUsersService.getAdminUsersPage(params);
-      
-      setUsers(data.content || []);
-      setTotal(data.totalElements || 0);
-
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : VI.admin.users.messages.fetchError;
-      setError(errorMessage);
-      message.error(errorMessage);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [page, pageSize, searchText, statusFilter, roleFilter]);
-
-  /**
-   * Initial fetch on mount
-   */
-  useEffect(() => {
-    fetchUsers();
+  const scheduleSyncRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(() => fetchUsers({ silent: true }));
   }, [fetchUsers]);
 
-  /**
-   * Open profile modal: set selectedUserId and fetch profile.
-   * Stale request guard: quick row switching won't show wrong profile.
-   */
+  useEffect(() => {
+    void fetchUsers();
+  }, [fetchUsers]);
+
+  useDataSyncRefetch(() => fetchUsers({ silent: true }), DATA_SYNC_EVENTS.USERS_CHANGED);
+
+  const applyUserStatus = useCallback(
+    (userId: number, nextStatus: string) => {
+      setPendingField(userId, nextStatus);
+      setUsers((prev) =>
+        prev.map((u) => (u.id === userId ? { ...u, status: nextStatus } : u)),
+      );
+      setProfile((prev) =>
+        prev && prev.id === userId
+          ? { ...prev, status: nextStatus as AdminUserProfile['status'] }
+          : prev,
+      );
+      notifyUsersChanged({ userId });
+    },
+    [setPendingField],
+  );
+
   const openProfile = useCallback((userId: number) => {
     setProfile(null);
     setSelectedUserId(userId);
@@ -108,25 +147,17 @@ export function useAdminUsers() {
       });
   }, []);
 
-  /**
-   * Close profile modal: clear profile state.
-   */
   const closeProfile = useCallback(() => {
     setSelectedUserId(null);
     setProfile(null);
     setProfileLoading(false);
   }, []);
 
-  /**
-   * Execute a user action (ban/unban/lock/unlock)
-   * CRITICAL: Always refetch after successful action
-   */
   const runAction = useCallback(
     async (actionType: UserActionType, userId: number) => {
       try {
         setActionLoadingId(userId);
-        
-        // Execute action via service
+
         switch (actionType) {
           case 'ban':
             await adminUsersService.ban(userId);
@@ -145,9 +176,9 @@ export function useAdminUsers() {
             message.success(VI.admin.users.messages.unlockSuccess);
             break;
         }
-        
-        // CRITICAL: Refetch to get updated status from backend
-        await fetchUsers();
+
+        applyUserStatus(userId, statusAfterAction(actionType));
+        scheduleSyncRefetch();
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : VI.admin.users.messages.actionError;
         message.error(errorMessage);
@@ -155,13 +186,9 @@ export function useAdminUsers() {
         setActionLoadingId(null);
       }
     },
-    [fetchUsers]
+    [applyUserStatus, scheduleSyncRefetch],
   );
 
-  // Export and import
-  /**
-   * Trigger download of a blob file
-   */
   const triggerDownload = (blob: Blob, fileName: string) => {
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -177,15 +204,13 @@ export function useAdminUsers() {
     try {
       setIsExporting(true);
       const blob = await adminUsersService.exportUsersExcel();
-      
-      // Tạo chuỗi thời gian format theo chuẩn YYYYMMDD_HHMMSS
+
       const now = new Date();
       const timeString = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}_${now.getHours().toString().padStart(2, '0')}${now.getMinutes().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
-      
-      // Ghép tên danh sách với thời gian
+
       triggerDownload(blob, `Danh_sach_nguoi_dung_${timeString}.xlsx`);
       message.success('Xuất file thành công!');
-    } catch (err) {
+    } catch {
       message.error('Lỗi khi xuất file Excel');
     } finally {
       setIsExporting(false);
@@ -196,7 +221,7 @@ export function useAdminUsers() {
     try {
       const blob = await adminUsersService.downloadUserTemplate();
       triggerDownload(blob, `user_template.xlsx`);
-    } catch (err) {
+    } catch {
       message.error('Lỗi khi tải file mẫu');
     }
   };
@@ -206,8 +231,8 @@ export function useAdminUsers() {
       setIsImporting(true);
       const res = await adminUsersService.importUsersExcel(file);
       message.success(`Import thành công ${res.successCount} dòng, lỗi ${res.failureCount} dòng!`);
-      fetchUsers(); // Refresh lại danh sách
-    } catch (err) {
+      void fetchUsers();
+    } catch {
       message.error('Lỗi khi import file Excel');
     } finally {
       setIsImporting(false);
@@ -215,7 +240,6 @@ export function useAdminUsers() {
   };
 
   return {
-    // Data & Pagination
     users,
     page,
     setPage,
@@ -224,28 +248,20 @@ export function useAdminUsers() {
     total,
     isLoading,
     error,
-    
-    // Filters
     searchText,
     setSearchText,
     roleFilter,
     setRoleFilter,
     statusFilter,
     setStatusFilter,
-    
-    // Actions
     runAction,
     actionLoadingId,
     refetch: fetchUsers,
-    
-    // Modal profile (GET /api/users/{id}/profile)
     selectedUserId,
     profile,
     profileLoading,
     openProfile,
     closeProfile,
-
-    // Export and import
     isExporting,
     isImporting,
     handleExport,

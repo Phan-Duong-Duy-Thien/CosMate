@@ -1,9 +1,17 @@
 import { useState, useEffect, useRef } from "react"
 import { MessageCircle, Send, Image } from "lucide-react"
-import { useChatRooms } from "../hooks/useChatRooms"
-import { getChatMessagesService, markRoomAsReadService, uploadImageService } from "../services/chat.service"
+import { message } from "antd"
+import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
+import {
+  getOrCreateChatRoomService,
+  markRoomAsReadService,
+  uploadImageService,
+} from "../services/chat.service"
+import { useLoadChatHistory } from "../hooks/useLoadChatHistory"
+import type { SearchUserResult } from "../services/user.service"
 import { useUnreadCount } from "../hooks/useUnreadCount"
-import { ChatRoomList } from "./ChatRoomList"
+import { ChatInboxSidebar } from "./ChatInboxSidebar"
+import { VI } from "@/shared/i18n/vi"
 import {
   connectChatSocket,
   subscribeChatRoom,
@@ -33,23 +41,15 @@ export function ProviderChatPanel() {
   const { refetch: refetchUnread } = useUnreadCount(currentUserId)
 
   // ── Message store (single source of truth) ────────────────────────────
-  const { messages, setMessages, mergeServerMessage, clearMessages, addOptimisticMessage, removeOptimisticMessage } = useChatMessageStore()
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false)
+  const activeRoomId = activeRoom?.roomId ?? null
+  const { messages, setMessages, mergeServerMessage, addOptimisticMessage, removeOptimisticMessage } =
+    useChatMessageStore(activeRoomId)
+  const isLoadingHistory = useLoadChatHistory(activeRoomId, setMessages)
+  const showHistoryLoader = isLoadingHistory && messages.length === 0
   const [isConnected, setIsConnected] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const unsubscribeRef = useRef<(() => void) | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-
-  // Load history from REST API when room changes
-  useEffect(() => {
-    if (activeRoom?.roomId == null) return
-    setIsLoadingHistory(true)
-    clearMessages()
-    getChatMessagesService(activeRoom.roomId)
-      .then((data) => setMessages(data?.content ?? []))
-      .catch(() => setMessages([]))
-      .finally(() => setIsLoadingHistory(false))
-  }, [activeRoom?.roomId, setMessages, clearMessages])
 
   // Mark room as read when user opens it
   useEffect(() => {
@@ -91,6 +91,32 @@ export function ProviderChatPanel() {
   // ── Select room ────────────────────────────────────────────────────────
   const handleSelectRoom = (room: ChatRoomListItem) => {
     setActiveRoom(room)
+  }
+
+  const handlePickUser = async (user: SearchUserResult) => {
+    if (currentUserId === null) {
+      message.warning(VI.common.messages.chatNeedLogin)
+      throw new Error("not logged in")
+    }
+    const existingRoom = rooms.find((r) => r.partnerId === user.id)
+    if (existingRoom) {
+      setActiveRoom(existingRoom)
+      return
+    }
+    try {
+      const newRoom = await getOrCreateChatRoomService(currentUserId, user.id)
+      refreshChatRoomsList()
+      setActiveRoom({
+        roomId: newRoom.id,
+        partnerId: user.id,
+        partnerName: user.fullName,
+        partnerAvatar: user.avatarUrl,
+        lastMessageAt: newRoom.lastMessageAt,
+      })
+    } catch {
+      message.error(VI.common.messages.chatStartFailed)
+      throw new Error("create room failed")
+    }
   }
 
   // ── Send message ──────────────────────────────────────────────────────
@@ -153,7 +179,7 @@ export function ProviderChatPanel() {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -165,35 +191,22 @@ export function ProviderChatPanel() {
 
   return (
     <div className="flex h-[500px] overflow-hidden rounded-xl border border-slate-200 bg-white">
-      {/* LEFT: Room List Sidebar */}
-      <div className="flex w-48 shrink-0 flex-col border-r border-slate-100">
-        <div className="flex h-11 shrink-0 items-center justify-center border-b border-slate-100">
-          <p className="text-sm font-semibold text-slate-500">Messages</p>
-        </div>
-        <div className="flex flex-1 min-h-0 flex-col overflow-y-auto">
-          {roomsLoading ? (
-            <div className="flex flex-col gap-2 p-2">
-              {Array.from({ length: 4 }).map((_, i) => (
-                <div key={i} className="flex items-center gap-2">
-                  <div className="h-8 w-8 shrink-0 rounded-full bg-slate-100 animate-pulse" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-3 w-full rounded bg-slate-100 animate-pulse" />
-                    <div className="h-2 w-1/2 rounded bg-slate-100 animate-pulse" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <ChatRoomList rooms={rooms} activeRoomId={activeRoom?.roomId ?? null} onSelectRoom={handleSelectRoom} />
-          )}
-        </div>
-      </div>
+      <ChatInboxSidebar
+        variant="comfortable"
+        headerStart={<h2 className="truncate text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
+        rooms={rooms}
+        roomsLoading={roomsLoading}
+        activeRoomId={activeRoom?.roomId ?? null}
+        onSelectRoom={handleSelectRoom}
+        currentUserId={currentUserId}
+        onPickUser={handlePickUser}
+      />
 
       {/* RIGHT: Chat Area */}
       <div className="flex flex-1 min-h-0 flex-col">
         {/* Header */}
-        <div className="flex h-14 shrink-0 items-center border-b border-slate-100 bg-white px-4">
-          <div className="flex items-center gap-3">
+        <div className="flex shrink-0 items-center border-b border-slate-100 bg-white px-4 pt-3 pb-2.5">
+          <div className="flex items-start gap-3">
             <div className="relative shrink-0">
               {avatar ? (
                 <img
@@ -211,8 +224,11 @@ export function ProviderChatPanel() {
                 isConnected ? "bg-green-400" : "bg-slate-300"
               )} />
             </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-semibold text-slate-800">{displayName}</p>
+            <div className="flex min-w-0 flex-col">
+              <p className="truncate text-sm font-semibold leading-tight text-slate-800">{displayName}</p>
+              <p className="truncate text-xs leading-none text-slate-400">
+                {isConnected ? VI.common.status.online : VI.common.status.offline}
+              </p>
             </div>
           </div>
         </div>
@@ -225,7 +241,7 @@ export function ProviderChatPanel() {
               <p className="text-sm font-medium">Select a conversation</p>
               <p className="text-xs">Choose a chat from the left</p>
             </div>
-          ) : isLoadingHistory ? (
+          ) : showHistoryLoader ? (
             <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
               <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
               <p className="text-sm font-medium">Loading...</p>
@@ -255,10 +271,10 @@ export function ProviderChatPanel() {
                     <div key={msg.id} className={cn("flex", isMine ? "justify-end" : "justify-start")}>
                       <div
                         className={cn(
-                          "max-w-[75%] rounded-2xl px-3 py-2 text-sm shadow-sm overflow-hidden",
+                          "max-w-[75%] rounded-xl px-2.5 py-1.5 text-sm shadow-sm overflow-hidden",
                           isMine ? "rounded-br-sm" : "rounded-bl-sm"
                         )}
-                        style={isMine ? { background: "linear-gradient(135deg, #f472b6, #ec4899)" } : {}}
+                        style={isMine ? { background: "var(--gradient-chat-mine)" } : {}}
                       >
                         {msg.messageType === "IMAGE" || (msg.content ?? "").startsWith("http") ? (() => {
                           const imgSrc = resolveImageUrl(msg.content ?? "")
@@ -276,7 +292,7 @@ export function ProviderChatPanel() {
                             />
                           )
                         })() : (
-                          <p className="whitespace-pre-wrap wrap-break-word">{msg.content}</p>
+                          <p className="whitespace-pre-wrap wrap-break-word leading-snug">{msg.content}</p>
                         )}
                         <p className={cn("mt-0.5 text-[10px]", isMine ? "text-pink-200" : "text-slate-400")}>
                           {time}
@@ -326,7 +342,7 @@ export function ProviderChatPanel() {
             disabled={!activeRoom || !isConnected}
             rows={1}
             className="flex-1 resize-none rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 outline-none placeholder:text-slate-400 disabled:cursor-not-allowed disabled:opacity-50 focus:border-pink-300 focus:bg-pink-50/50 overflow-y-auto whitespace-pre-wrap wrap-break-word"
-            style={{ maxHeight: "120px" }}
+            style={{ maxHeight: "120px", resize: "none" }}
           />
           <button
             type="button"

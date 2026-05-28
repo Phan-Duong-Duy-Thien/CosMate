@@ -8,6 +8,20 @@ export default defineConfig({
     react(),
     tailwindcss(),
   ],
+  server: {
+    proxy: {
+      '/ghn-proxy': {
+        target: 'https://online-gateway.ghn.vn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/ghn-proxy/, ''),
+      },
+      '/geovina-proxy': {
+        target: 'https://www.geovina.io.vn',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/geovina-proxy/, ''),
+      },
+    },
+  },
   define: {
     global: 'globalThis',
   },

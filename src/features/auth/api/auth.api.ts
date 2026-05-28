@@ -1,5 +1,13 @@
 import axiosInstance from '@/services/axiosInstance';
-import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } from '../types';
+import type {
+  GoogleLoginRequest,
+  GoogleLoginResponse,
+  LoginRequest,
+  LoginResponse,
+  QrGenerateResponse,
+  RegisterRequest,
+  RegisterResponse,
+} from '../types';
 
 /**
  * Login with username/email and password
@@ -8,6 +16,16 @@ import type { LoginRequest, LoginResponse, RegisterRequest, RegisterResponse } f
  */
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
   const response = await axiosInstance.post<LoginResponse>('/api/auth/login', payload);
+  return response.data;
+}
+
+/**
+ * Login with Google credential token
+ * @param payload - Google login payload
+ * @returns Login response with token
+ */
+export async function googleLogin(payload: GoogleLoginRequest): Promise<GoogleLoginResponse> {
+  const response = await axiosInstance.post<GoogleLoginResponse>('/api/auth/google/login', payload);
   return response.data;
 }
 
@@ -41,16 +59,6 @@ export async function resetPassword(token: string, newPassword: string): Promise
 }
 
 /**
- * Login/Register with Google idToken
- * @param idToken - Google OAuth idToken from Google Identity Services
- * @returns Login response with token
- */
-export async function loginWithGoogle(idToken: string): Promise<LoginResponse> {
-  const response = await axiosInstance.post<LoginResponse>('/api/auth/google/login', { idToken });
-  return response.data;
-}
-
-/**
  * Update the current user's role (for onboarding flow)
  * @param role - The role to assign to the user
  * @returns Updated user info
@@ -69,4 +77,12 @@ export async function changePassword(userId: number, payload: {
   newPassword: string;
 }): Promise<void> {
   await axiosInstance.post<void>(`/api/users/${userId}/change-password`, payload);
+}
+
+/**
+ * GET /api/auth/qr-generate — BE creates sessionId for QR + WebSocket topic.
+ */
+export async function generateQrSession(): Promise<QrGenerateResponse> {
+  const response = await axiosInstance.get<QrGenerateResponse>('/api/auth/qr-generate');
+  return response.data;
 }

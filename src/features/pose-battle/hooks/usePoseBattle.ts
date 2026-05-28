@@ -9,9 +9,15 @@ import {
   scorePose,
   updatePoseHistoryName,
 } from "../services/poseBattle.service"
+import { notifyTokenChanged } from "@/shared/sync/dataSync"
 import type { PoseHistoryItem, PoseScoringResult } from "../types"
 
-export function usePoseBattle() {
+export type UsePoseBattleOptions = {
+  assertCanUse?: () => boolean
+  handleApiError?: (error: unknown) => boolean
+}
+
+export function usePoseBattle(options?: UsePoseBattleOptions) {
   const [referenceImage, setReferenceImage] = useState<string | null>(null)
   const [characterName, setCharacterName] = useState("")
   const [userImageFile, setUserImageFile] = useState<File | null>(null)
@@ -54,6 +60,10 @@ export function usePoseBattle() {
       return
     }
 
+    if (options?.assertCanUse && !options.assertCanUse()) {
+      return
+    }
+
     setLoading(true)
     try {
       const response = await scorePose({
@@ -66,10 +76,13 @@ export function usePoseBattle() {
       setUserImageFile(null)
       setCharacterName("")
 
+      window.dispatchEvent(new Event('profile:refresh'))
+      notifyTokenChanged()
       await loadHistory(searchKeyword)
 
       notification.success({ description: "Đã chấm điểm xong. Kết quả đã lưu vào lịch sử Pose Battle." })
     } catch (error) {
+      if (options?.handleApiError?.(error)) return
       notification.error({ description: mapPoseError(error) })
     } finally {
       setLoading(false)

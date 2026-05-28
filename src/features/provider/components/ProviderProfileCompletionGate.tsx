@@ -21,13 +21,7 @@ export function ProviderProfileCompletionGate({
 
   return (
     <div
-      style={{
-        minHeight: '60vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '24px 16px',
-      }}
+      className="flex min-h-0 flex-1 items-center justify-center px-4 py-6"
     >
       <Card
         style={{
@@ -44,14 +38,14 @@ export function ProviderProfileCompletionGate({
               width: 64,
               height: 64,
               borderRadius: '50%',
-              background: '#F5F3FF',
+              background: "var(--cosmate-lavender-surface)",
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 16,
             }}
           >
-            <CheckCircleOutlined style={{ fontSize: 28, color: '#7C3AED' }} />
+            <CheckCircleOutlined style={{ fontSize: 28, color: "var(--primary)" }} />
           </div>
           <Title level={3} style={{ marginBottom: 8 }}>
             {VI.provider.profileCompletion.title}
@@ -83,7 +77,7 @@ export function ProviderProfileCompletionGate({
           <Paragraph strong style={{ marginBottom: 8 }}>
             {VI.provider.profileCompletion.requirementsLabel}
           </Paragraph>
-          <ul style={{ paddingLeft: 20, color: '#6B5A94', fontSize: 14, margin: 0 }}>
+          <ul className="m-0 pl-5 text-sm text-cosmate-mauve">
             <li>{VI.provider.profileCompletion.reqShopName}</li>
             <li>{VI.provider.profileCompletion.reqAddress}</li>
             <li>{VI.provider.profileCompletion.reqBio}</li>

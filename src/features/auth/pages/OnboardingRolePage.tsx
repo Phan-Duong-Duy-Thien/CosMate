@@ -6,7 +6,7 @@ import { message } from "antd"
 import { AuthLayout } from "../layout/AuthLayout"
 import { VI } from "@/shared/i18n/vi"
 import { updateUserRole } from "../api/auth.api"
-import { saveAuth, getAuth, decodeJwtPayload } from "../services/tokenStorage"
+import { saveAuth, getAuth, decodeJwtPayload, isAuthPersistent } from "../services/tokenStorage"
 import { getRedirectPath } from "../utils/roleRedirect"
 
 type RoleKey = "cosplayer" | "provider" | "staff" | "photographer"
@@ -89,7 +89,7 @@ export default function OnboardingRolePage() {
           }
           const newToken = reEncodeJwt(auth.token, newPayload)
           if (newToken) {
-            saveAuth({ token: newToken, tokenType: auth.tokenType }, true)
+            saveAuth({ token: newToken, tokenType: auth.tokenType }, isAuthPersistent())
           }
         }
       }
@@ -109,13 +109,13 @@ export default function OnboardingRolePage() {
 
   return (
     <AuthLayout variant="single">
-      <div className="w-full max-w-4xl rounded-3xl border border-white/40 bg-white/85 p-[clamp(20px,4vw,40px)] shadow-2xl">
+      <div className="w-full max-w-4xl rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-[clamp(20px,4vw,40px)] shadow-[12px_12px_0_0_rgba(30,27,75,0.45)]">
         <div className="flex w-full flex-col gap-[clamp(16px,2vw,24px)]">
           <div className="space-y-2 text-center">
-            <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-[#111827]">
+            <h1 className="text-[clamp(28px,3vw,42px)] font-extrabold leading-tight text-indigo-950">
               {VI.auth.onboarding.title}
             </h1>
-            <p className="text-sm text-[#6B7280] sm:text-base">
+            <p className="text-sm font-medium text-indigo-900/75 sm:text-base">
               {VI.auth.onboarding.subtitle}
             </p>
           </div>
@@ -128,21 +128,21 @@ export default function OnboardingRolePage() {
                   key={option.key}
                   type="button"
                   onClick={() => setSelectedRole(option.key)}
-                  className={`group text-left transition ${isSelected ? "ring-2 ring-purple-500 ring-offset-2" : ""}`}
+                  className={`group text-left transition focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-300 ${isSelected ? "ring-4 ring-pink-400 ring-offset-2 ring-offset-[#fffbeb]" : ""}`}
                 >
-                  <div className={`flex items-center justify-between gap-4 rounded-2xl border bg-white p-4 shadow-sm transition group-hover:shadow-md ${isSelected ? "border-purple-500" : "border-gray-200"}`}>
+                  <div
+                    className={`flex items-center justify-between gap-4 rounded-2xl border-[3px] bg-white p-4 shadow-[4px_4px_0_0_rgba(30,27,75,0.25)] transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_0_rgba(236,72,153,0.3)] motion-safe:hover:-translate-y-0.5 ${isSelected ? "border-fuchsia-600" : "border-indigo-950/40"}`}
+                  >
                     <div className="space-y-1">
-                      <div className="text-base font-semibold text-gray-900">
-                        {option.title}
-                      </div>
-                      <div className="text-sm text-gray-500">{option.description}</div>
+                      <div className="text-base font-extrabold text-indigo-950">{option.title}</div>
+                      <div className="text-sm font-medium text-indigo-900/75">{option.description}</div>
                     </div>
                     {isSelected ? (
-                      <span className="rounded-full bg-purple-500 px-3 py-1 text-xs font-medium text-white">
+                      <span className="rounded-lg border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1 text-xs font-extrabold text-white shadow-[3px_3px_0_0_#1e1b4b]">
                         {VI.auth.onboarding.selected}
                       </span>
                     ) : (
-                      <ChevronRight className="h-5 w-5 text-gray-300" />
+                      <ChevronRight className="h-5 w-5 text-indigo-950/35" aria-hidden />
                     )}
                   </div>
                 </button>
@@ -154,7 +154,7 @@ export default function OnboardingRolePage() {
             type="button"
             onClick={handleContinue}
             disabled={!selectedRole || submitting}
-            className="w-full rounded-full py-3 text-sm font-semibold transition bg-purple-600 text-white hover:bg-purple-700 disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+            className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 py-3 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition hover:brightness-105 disabled:cursor-not-allowed disabled:border-indigo-950/30 disabled:bg-slate-200 disabled:bg-none disabled:text-slate-500 disabled:shadow-none"
           >
             {submitting ? VI.auth.onboarding.loading : VI.auth.onboarding.continue}
           </button>

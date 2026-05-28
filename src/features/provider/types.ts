@@ -53,6 +53,11 @@ export interface SubscriptionPlan {
   description: string | null;
   price: number;
   billingCycleMonths: number;
+  /** From BE admin catalog (optional). */
+  cycleMonths?: number;
+  billingCycle?: string;
+  /** Precomputed display label for activation UI. */
+  cycleLabel?: string;
   isActive: boolean;
   features: string[];
   createdAt: string;
@@ -73,6 +78,15 @@ export interface SubscribeRequest {
  * result is a plain string (the payment URL), not an object.
  */
 export type SubscribeResponse = string;
+
+/**
+ * Current provider subscription summary from GET /api/providers/id/{id}/subscriptions-info
+ */
+export interface ProviderSubscriptionInfo {
+  currentPlanName: string;
+  currentDaysRemaining: number;
+  totalRemainingDays: number;
+}
 
 // Placeholder to allow component file creation
 export type PaymentMethod = 'VNPAY' | 'MOMO';

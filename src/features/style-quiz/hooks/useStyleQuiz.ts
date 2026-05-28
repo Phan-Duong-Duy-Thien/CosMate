@@ -3,7 +3,9 @@ import { notification } from "antd"
 
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
+import { notifyTokenChanged } from "@/shared/sync/dataSync"
 import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz } from "../services/styleQuiz.service"
+import { resolveLocalArchetypeId } from "../utils/resolveLocalArchetype"
 import type { SearchResponseItem, Stage1Question, Stage2Question, SubmitQuizCustomAnswer, SubmitQuizPayload, SubmitQuizStaticAnswer } from "../types"
 
 type QuizScreen = "quiz" | "checkpoint" | "loading" | "result"
@@ -80,7 +82,12 @@ function clearDraft() {
   }
 }
 
-export function useStyleQuiz() {
+export type UseStyleQuizOptions = {
+  assertCanUse?: () => boolean
+  handleApiError?: (error: unknown) => boolean
+}
+
+export function useStyleQuiz(options?: UseStyleQuizOptions) {
   const [screen, setScreen] = useState<QuizScreen>("quiz")
   const [phase, setPhase] = useState<QuizPhase>("stage1")
   const [stage1Questions, setStage1Questions] = useState<Stage1Question[]>([])
@@ -168,6 +175,14 @@ export function useStyleQuiz() {
     if (phase === "stage1") return currentIndex + 1
     return 8 + currentIndex + 1
   }, [phase, currentIndex])
+
+  const isQuizSubmitStep = useMemo(
+    () =>
+      phase === "stage2" &&
+      stage2Questions.length > 0 &&
+      currentIndex === stage2Questions.length - 1,
+    [phase, stage2Questions.length, currentIndex],
+  )
 
   useEffect(() => {
     if (!draftCheckDone || surveyLoading || screen === "loading" || screen === "result" || showResumeModal) return
@@ -393,16 +408,15 @@ export function useStyleQuiz() {
 
       setScreen("loading")
       setLoading(true)
-      const startTime = Date.now(); // 1. Bắt đầu bấm giờ ngay khi bật loading
+      const startTime = Date.now()
 
       try {
-        const finalArchetypeId = await submitStyleQuiz(buildSubmitQuizPayload())
-        setArchetypeId(finalArchetypeId)
+        const previewArchetypeId = resolveLocalArchetypeId(nextE, nextA, nextO)
+        setArchetypeId(previewArchetypeId)
 
-        // 2. CHẶN LẠI: API chạy nhanh quá thì ép nó chờ cho đủ 800ms
-        const elapsed = Date.now() - startTime;
+        const elapsed = Date.now() - startTime
         if (elapsed < 1000) {
-          await wait(1000 - elapsed); 
+          await wait(1000 - elapsed)
         }
 
         setScreen("checkpoint")
@@ -421,6 +435,10 @@ export function useStyleQuiz() {
       return
     }
 
+    if (options?.assertCanUse && !options.assertCanUse()) {
+      return
+    }
+
     const payload = buildSubmitQuizPayload()
     setScreen("loading")
     setLoading(true)
@@ -428,12 +446,18 @@ export function useStyleQuiz() {
     try {
       const finalArchetypeId = await submitStyleQuiz(payload)
       setArchetypeId(finalArchetypeId)
+      notifyTokenChanged()
       const resolvedBudgetMetadata = resolveBudgetMetadata(budgetMetadata)
       await runRecommend(finalArchetypeId, "", resolvedBudgetMetadata)
     } catch (err) {
+      if (options?.handleApiError?.(err)) {
+        setScreen("quiz")
+        return
+      }
       const msg = mapQuizError(err)
       setError(msg)
       notification.error({ description: msg })
+      setScreen("quiz")
     } finally {
       setLoading(false)
     }
@@ -566,5 +590,6 @@ export function useStyleQuiz() {
     restoreDraft,
     discardDraftAndStartNew,
     restart,
+    isQuizSubmitStep,
   }
 }

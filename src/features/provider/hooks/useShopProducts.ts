@@ -36,7 +36,7 @@ const initialFilterState: ProductFilterState = {
 export function useShopProducts(providerId: number | undefined): UseShopProductsResult {
   const [filterState, setFilterState] = useState<ProductFilterState>(initialFilterState)
   const safeProviderId = providerId ?? 0
-  const { items: shopItems } = useProviderCostumesForShop(safeProviderId)
+  const { items: shopItems } = useProviderCostumesForShop(safeProviderId, undefined, Number.MAX_SAFE_INTEGER)
   const { items: publicItems } = usePublicCostumes()
 
   const mapToShopProduct = (input: {

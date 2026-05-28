@@ -18,14 +18,18 @@ export function useOrderExtends(orderId: number | null): UseOrderExtendsResult {
   const [error, setError] = useState<string | null>(null);
 
   const fetch = useCallback(async () => {
-    if (!orderId) return;
+    if (!orderId) {
+      setExtendsList([]);
+      return;
+    }
     setLoading(true);
     setError(null);
     try {
       const data = await getOrderExtends(orderId);
-      setExtendsList(data);
+      setExtendsList(Array.isArray(data) ? data : []);
     } catch {
       setError('Không thể tải lịch sử gia hạn.');
+      setExtendsList([]);
     } finally {
       setLoading(false);
     }

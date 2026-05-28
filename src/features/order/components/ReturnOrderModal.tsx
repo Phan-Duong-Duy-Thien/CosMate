@@ -1,80 +1,99 @@
 /**
- * ReturnOrderModal
- *
- * UI-only modal for returning an order
- * Props: open, orderId, loading, onCancel, onSubmit
+ * ReturnOrderModal — cosplayer return shipment
  */
 
 import { useState, useEffect } from 'react';
-import { Modal, Upload, Button, Input, message } from 'antd';
-import { UploadOutlined, InboxOutlined } from '@ant-design/icons';
-import type { UploadProps } from 'antd';
+import { Modal, Upload, Button, Input, message, Select, Alert } from 'antd';
+import { InboxOutlined } from '@ant-design/icons';
+import type { UploadFile, UploadProps } from 'antd';
 import { VI } from '@/shared/i18n/vi';
+import { SHIPPING_CARRIER_OPTIONS, resolveCarrierName } from '../constants/shippingCarriers';
+import { useGhnShippingFee } from '../hooks/useGhnShippingFee';
+
+export interface ReturnOrderSubmitData {
+  trackingCode: string;
+  shippingCarrierName: string;
+  images: File[];
+  notes: string[];
+  autoCreateGhn: boolean;
+}
 
 interface ReturnOrderModalProps {
   open: boolean;
   orderId: number;
   loading: boolean;
   onCancel: () => void;
-  onSubmit: (data: { trackingCode: string; images: File[]; notes: string[] }) => Promise<void>;
+  onSubmit: (data: ReturnOrderSubmitData) => Promise<void>;
 }
 
 export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }: ReturnOrderModalProps) {
   const [fileList, setFileList] = useState<UploadFile[]>([]);
-  const [trackingCode, setTrackingCode] = useState('');
+  const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
+  const [customCarrier, setCustomCarrier] = useState('');
 
-  // Reset form when modal opens/closes
+  const hasCarrier = Boolean(selectedCarrier);
+  const { fee, loading: feeLoading, error: feeError, approximate: feeApproximate } =
+    useGhnShippingFee(open && hasCarrier ? orderId : null, 'return');
+
   useEffect(() => {
     if (!open) {
       setFileList([]);
-      setTrackingCode('');
+      setSelectedCarrier(null);
+      setCustomCarrier('');
     }
   }, [open]);
 
-  // Handle file change
   const handleFileChange: UploadProps['onChange'] = ({ fileList: newFileList }) => {
     setFileList(newFileList);
   };
 
-  // Handle submit
   const handleSubmit = async () => {
-    // Validate tracking code
-    if (!trackingCode.trim()) {
-      message.error(VI.profile.orders.validationReturn?.trackingRequired || 'Vui lòng nhập mã vận đơn');
+    if (!selectedCarrier) {
+      message.error(VI.profile.orders.validationReturn.carrierSelectRequired);
       return;
     }
 
-    // Validate images
     if (fileList.length === 0) {
-      message.error(VI.profile.orders.validationReturn?.imagesRequired || 'Vui lòng tải lên ít nhất một hình ảnh');
+      message.error(VI.profile.orders.validationReturn.imagesRequired);
       return;
     }
 
-    // Build images and notes arrays (notes as empty strings - hidden from user)
+    const carrierName = resolveCarrierName(selectedCarrier, customCarrier);
+    if (!carrierName) {
+      message.error(VI.provider.orders.validation.carrierRequired);
+      return;
+    }
+
     const images: File[] = [];
     const notes: string[] = [];
 
     for (const file of fileList) {
       if (file.originFileObj) {
         images.push(file.originFileObj);
-        notes.push(''); // Empty notes as per business decision
+        notes.push('');
       }
     }
 
-    await onSubmit({ trackingCode: trackingCode.trim(), images, notes });
+    await onSubmit({
+      trackingCode: '',
+      shippingCarrierName: carrierName,
+      images,
+      notes,
+      autoCreateGhn: true,
+    });
   };
 
-  // Custom upload props
   const uploadProps: UploadProps = {
     multiple: true,
     fileList,
     onChange: handleFileChange,
-    beforeUpload: () => {
-      return false;
-    },
+    beforeUpload: () => false,
     listType: 'picture-card',
     accept: 'image/*',
   };
+
+  const formatFee = (amount: number) =>
+    new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
 
   return (
     <Modal
@@ -89,20 +108,61 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
           {VI.profile.orders.actionReturn}
         </Button>,
       ]}
-      width={500}
+      width={520}
       destroyOnClose
     >
       <div className="space-y-4">
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">
-            {VI.profile.orders.returnTrackingCode}
+            {VI.profile.orders.returnCarrierName}
           </label>
-          <Input
-            placeholder={VI.profile.orders.returnTrackingCodePlaceholder}
-            value={trackingCode}
-            onChange={(e) => setTrackingCode(e.target.value)}
+          <Select
+            placeholder={VI.profile.orders.returnSelectCarrier}
+            options={[...SHIPPING_CARRIER_OPTIONS]}
+            value={selectedCarrier}
+            onChange={(value) => setSelectedCarrier(value)}
+            style={{ width: '100%' }}
           />
         </div>
+
+        {hasCarrier && (
+          <Alert type="info" showIcon message={VI.profile.orders.returnAutoTrackingHint} />
+        )}
+
+        {hasCarrier && (
+          <div className="rounded-lg border border-border bg-muted/30 px-3 py-2 text-sm">
+            <span className="font-medium">{VI.provider.orders.shipModal.shippingFeeLabel}: </span>
+            {feeLoading && (
+              <span className="text-muted-foreground">{VI.provider.orders.shipModal.ghnFeeLoading}</span>
+            )}
+            {!feeLoading && fee != null && (
+              <span className="font-semibold text-pink-600">{formatFee(fee)}</span>
+            )}
+            {!feeLoading && fee == null && (
+              <span className="text-muted-foreground">
+                {feeError ?? VI.provider.orders.shipModal.ghnFeeUnavailable}
+              </span>
+            )}
+            {!feeLoading && fee != null && feeApproximate && (
+              <p className="mt-1 text-xs text-amber-700">
+                {VI.provider.orders.shipModal.shippingFeeApproximateHint}
+              </p>
+            )}
+          </div>
+        )}
+
+        {selectedCarrier === 'OTHER' && (
+          <div>
+            <label className="mb-1 block text-sm font-medium text-slate-700">
+              {VI.provider.orders.shipModal.carrierNameOther}
+            </label>
+            <Input
+              placeholder={VI.provider.orders.shipModal.carrierNameOtherPlaceholder}
+              value={customCarrier}
+              onChange={(e) => setCustomCarrier(e.target.value)}
+            />
+          </div>
+        )}
 
         <div>
           <label className="mb-1 block text-sm font-medium text-slate-700">

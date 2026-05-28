@@ -13,7 +13,7 @@ export function useMenuManagement() {
       setLoading(true);
       const data = await menuApi.getMenus();
       setMenus(data);
-    } catch (error) { message.error('Lỗi khi tải danh sách Menu'); } 
+    } catch (error) { message.error('Lỗi khi tải danh sách Menu'); }
     finally { setLoading(false); }
   }, []);
 
@@ -29,42 +29,42 @@ export function useMenuManagement() {
   };
 
   const handleCreateMenu = async (values: any) => {
-    try { 
-      await menuApi.createMenu(values); 
-      message.success('Tạo Nhóm Menu thành công!'); 
-      fetchMenus(); 
+    try {
+      await menuApi.createMenu(values);
+      message.success('Tạo Nhóm Menu thành công!');
+      fetchMenus();
       window.dispatchEvent(new Event('menuUpdated'));
-    } 
+    }
     catch (error) { message.error('Lỗi tạo Menu'); }
   };
 
   const handleDeleteMenu = async (id: string) => {
-    try { 
-      await menuApi.deleteMenu(id); 
-      message.success('Xóa Menu thành công!'); 
-      fetchMenus(); 
+    try {
+      await menuApi.deleteMenu(id);
+      message.success('Xóa Menu thành công!');
+      fetchMenus();
       window.dispatchEvent(new Event('menuUpdated'));
-    } 
+    }
     catch (error) { message.error('Lỗi xóa Menu'); }
   };
 
   const handleCreateMenuItem = async (values: any) => {
-    try { 
-      await menuApi.createMenuItem(values); 
-      message.success('Thêm Link thành công! Hãy F5 để làm mới Sidebar.'); 
-      fetchMenus(); 
+    try {
+      await menuApi.createMenuItem(values);
+      message.success('Thêm Link thành công! Sidebar đã tự cập nhật.');
+      fetchMenus();
       window.dispatchEvent(new Event('menuUpdated'));
-    } 
+    }
     catch (error) { message.error('Lỗi thêm Item'); }
   };
 
   const handleDeleteMenuItem = async (id: string) => {
-    try { 
-      await menuApi.deleteMenuItem(id); 
-      message.success('Xóa Link thành công!'); 
-      fetchMenus(); 
+    try {
+      await menuApi.deleteMenuItem(id);
+      message.success('Xóa Link thành công!');
+      fetchMenus();
       window.dispatchEvent(new Event('menuUpdated'));
-    } 
+    }
     catch (error) { message.error('Lỗi xóa Item'); }
   };
 
@@ -84,7 +84,7 @@ export function useMenuManagement() {
       const blob = await menuApi.exportMenusExcel();
       triggerDownload(blob, `menu_export_${new Date().getTime()}.xlsx`);
       message.success('Xuất file thành công!');
-    } catch (err) { message.error('Backend chưa hỗ trợ API Xuất Excel Menu (HTTP 404)'); } 
+    } catch (err) { message.error('Backend chưa hỗ trợ API Xuất Excel Menu (HTTP 404)'); }
     finally { setIsExporting(false); }
   };
 
@@ -102,13 +102,13 @@ export function useMenuManagement() {
       message.success(`Import Menu thành công!`);
       fetchMenus();
       window.dispatchEvent(new Event('menuUpdated'));
-    } catch (err) { message.error('Backend chưa hỗ trợ API Nhập Excel Menu (HTTP 404)'); } 
+    } catch (err) { message.error('Backend chưa hỗ trợ API Nhập Excel Menu (HTTP 404)'); }
     finally { setIsImporting(false); }
   };
 
-  return { 
-    menus, loading, fetchMenus, 
-    handleToggleMenu, handleCreateMenu, handleDeleteMenu, 
+  return {
+    menus, loading, fetchMenus,
+    handleToggleMenu, handleCreateMenu, handleDeleteMenu,
     handleCreateMenuItem, handleDeleteMenuItem,
     isExporting, isImporting, handleExport, handleDownloadTemplate, handleImport
   };

@@ -12,6 +12,8 @@ export type PaymentMethod = 'MOMO' | 'VNPAY' | 'WALLET';
 // Rental draft - stored in sessionStorage for checkout
 export interface RentalDraft {
   costumeId: number;
+  /** Display name for checkout breadcrumb (set on detail page). */
+  costumeName?: string;
   rentDay: number;
   rentStart: string; // ISO format-ready (YYYY-MM-DD)
   selectedAccessoryIds: number[];
@@ -178,4 +180,11 @@ export interface OrderDetail {
   rentalOptions: OrderRentalOption[];
   images: OrderImage[];
   trackings: OrderTracking[];
+}
+
+/** Địa chỉ text từ DB/đơn hàng — input cho map GHN. */
+export interface AddressFieldsForGhn {
+  city: string;
+  district: string;
+  address?: string;
 }

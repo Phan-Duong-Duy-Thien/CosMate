@@ -6,6 +6,9 @@ import {
   removeNotification,
 } from "../services/notification.service"
 import type { NotificationItem } from "../types"
+import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
+import { DATA_SYNC_EVENTS, notifyNotificationsChanged } from "@/shared/sync/dataSync"
+import { isAuthenticated } from "@/features/auth/utils/authStorage"
 
 interface UseNotificationsResult {
   notifications: NotificationItem[]
@@ -14,8 +17,8 @@ interface UseNotificationsResult {
   refetch: () => void
   setNotifications: React.Dispatch<React.SetStateAction<NotificationItem[]>>
   markNotificationRead: (id: number) => Promise<void>
-  markAllRead: () => Promise<void>
-  deleteNotification: (id: number) => Promise<void>
+  markAllRead: () => Promise<boolean>
+  deleteNotification: (id: number) => Promise<boolean>
 }
 
 export function useNotifications(): UseNotificationsResult {
@@ -23,6 +26,12 @@ export function useNotifications(): UseNotificationsResult {
   const [loading, setLoading] = useState(false)
 
   const fetch = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setNotifications([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       console.log("[useNotifications] Fetching notifications...")
@@ -45,6 +54,7 @@ export function useNotifications(): UseNotificationsResult {
     )
     try {
       await markRead(id)
+      notifyNotificationsChanged()
       console.log("[useNotifications] Marked as read success:", id)
     } catch (err) {
       setNotifications((prev) =>
@@ -60,10 +70,13 @@ export function useNotifications(): UseNotificationsResult {
     setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })))
     try {
       await markAllReadService()
+      notifyNotificationsChanged()
       console.log("[useNotifications] Mark all as read success")
+      return true
     } catch (err) {
       setNotifications(previous)
       console.error("[useNotifications] Mark all as read failed:", err)
+      return false
     }
   }, [notifications])
 
@@ -72,16 +85,35 @@ export function useNotifications(): UseNotificationsResult {
     setNotifications((prev) => prev.filter((n) => n.id !== id))
     try {
       await removeNotification(id)
+      notifyNotificationsChanged()
       console.log("[useNotifications] Delete success:", id)
+      return true
     } catch (err) {
       setNotifications(previous)
       console.error("[useNotifications] Delete failed:", err)
+      return false
     }
   }, [notifications])
 
   useEffect(() => {
     fetch()
   }, [fetch])
+
+  useEffect(() => {
+    const handleAuthChanged = () => {
+      if (!isAuthenticated()) {
+        setNotifications([])
+        setLoading(false)
+        return
+      }
+      void fetch()
+    }
+
+    window.addEventListener("auth:changed", handleAuthChanged)
+    return () => window.removeEventListener("auth:changed", handleAuthChanged)
+  }, [fetch])
+
+  useDataSyncRefetch(fetch, DATA_SYNC_EVENTS.NOTIFICATIONS_CHANGED)
 
   const unreadCount = notifications.filter((n) => !n.isRead).length
 

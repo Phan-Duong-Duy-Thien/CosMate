@@ -4,15 +4,21 @@
  */
 import React, { useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Button } from '@/shared/components/Button';
+import { Button } from "@/shared/components/Button"
+import { Card } from "@/shared/components/Card"
 import { VI } from '@/shared/i18n/vi';
 import { useCreateAddress } from '../hooks/useCreateAddress';
 import { getUserId } from '@/features/auth/services/tokenStorage';
+import { AddressRequiredLabel, AddressOptionalLabel } from '../components/AddressRequiredLabel';
+import { DistrictSelect, ProvinceSelect } from '../components/AddressLocationSelects';
+import { AddressPhoneInput } from '../components/AddressPhoneInput';
+import { getPhoneValidationError } from '../utils/addressValidation';
 
 export default function AddressCreatePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const returnTo = searchParams.get('returnTo') || '/';
+  const [phoneError, setPhoneError] = React.useState<string | undefined>();
 
   const {
     name,
@@ -59,6 +65,12 @@ export default function AddressCreatePage() {
     const provinceName = selectedProvince?.name || '';
     const districtName = selectedDistrict?.name || '';
 
+    const phoneValidationError = getPhoneValidationError(phone);
+    if (phoneValidationError) {
+      setPhoneError(phoneValidationError);
+      return;
+    }
+
     const success = await submit(userId, provinceName, districtName);
     if (success) {
       navigate(returnTo);
@@ -70,15 +82,16 @@ export default function AddressCreatePage() {
   };
 
   return (
-    <section className="min-h-screen bg-[linear-gradient(180deg,#FCE7F3_0%,#FDF2F8_40%,#F8FAFC_100%)] pb-20">
+    <section className="home-anime min-h-[calc(100vh-64px)] bg-transparent px-3 py-8 md:px-4 md:py-10">
       <div className="mx-auto w-full max-w-2xl px-4 pt-10">
-        <div className="rounded-3xl border border-white/80 bg-white/80 p-6 shadow-sm">
+        <Card className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_rgba(30,27,75,0.38)]">
+          <div className="p-6">
           {/* Header */}
           <div className="mb-6 text-center">
-            <h1 className="text-2xl font-semibold text-slate-900">
+            <h1 className="text-2xl font-semibold text-foreground">
               {VI.profile.address.createPage.title}
             </h1>
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-muted-foreground">
               {VI.profile.address.createPage.subtitle}
             </p>
           </div>
@@ -87,107 +100,93 @@ export default function AddressCreatePage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Name (recipient) */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressRequiredLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.recipientName}
-              </label>
+              </AddressRequiredLabel>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder={VI.profile.address.form.recipientNamePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
             {/* Phone */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressRequiredLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.phone}
-              </label>
-              <input
-                type="tel"
+              </AddressRequiredLabel>
+              <AddressPhoneInput
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder={VI.profile.address.form.phonePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                onChange={(value) => {
+                  setPhone(value);
+                  if (phoneError) setPhoneError(getPhoneValidationError(value));
+                }}
+                onBlur={() => setPhoneError(getPhoneValidationError(phone))}
+                hasError={Boolean(phoneError)}
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
+              {phoneError && (
+                <p className="mt-1 text-xs font-medium text-destructive">{phoneError}</p>
+              )}
             </div>
 
             {/* Address Name */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressOptionalLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.addressName}
-              </label>
+              </AddressOptionalLabel>
               <input
                 type="text"
                 value={addressName}
                 onChange={(e) => setAddressName(e.target.value)}
                 placeholder={VI.profile.address.form.addressNamePlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
             {/* City/Province */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressRequiredLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.city}
-              </label>
-              <select
-                value={provinceCode ?? ''}
-                onChange={(e) => setProvinceCode(e.target.value ? Number(e.target.value) : null)}
-                disabled={isLoadingProvinces}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 disabled:opacity-50"
-              >
-                <option value="">
-                  {isLoadingProvinces
-                    ? VI.common.status.loading
-                    : VI.profile.address.form.cityPlaceholder}
-                </option>
-                {provinces.map((province) => (
-                  <option key={province.code} value={province.code}>
-                    {province.name}
-                  </option>
-                ))}
-              </select>
+              </AddressRequiredLabel>
+              <ProvinceSelect
+                provinceCode={provinceCode}
+                provinces={provinces}
+                loading={isLoadingProvinces}
+                onProvinceChange={(code) => {
+                  setProvinceCode(code)
+                  if (code == null) setDistrictCode(null)
+                }}
+              />
             </div>
 
             {/* District */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressRequiredLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.district}
-              </label>
-              <select
-                value={districtCode ?? ''}
-                onChange={(e) => setDistrictCode(e.target.value ? Number(e.target.value) : null)}
-                disabled={!provinceCode || isLoadingDistricts}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 disabled:opacity-50"
-              >
-                <option value="">
-                  {isLoadingDistricts
-                    ? VI.common.status.loading
-                    : provinceCode
-                      ? VI.profile.address.form.districtPlaceholder
-                      : VI.profile.address.form.cityPlaceholder}
-                </option>
-                {districts.map((district) => (
-                  <option key={district.code} value={district.code}>
-                    {district.name}
-                  </option>
-                ))}
-              </select>
+              </AddressRequiredLabel>
+              <DistrictSelect
+                provinceCode={provinceCode}
+                districtCode={districtCode}
+                districts={districts}
+                loading={isLoadingDistricts}
+                onDistrictChange={(code) => setDistrictCode(code)}
+              />
             </div>
 
             {/* Street Address */}
             <div>
-              <label className="mb-1 block text-sm font-medium text-slate-700">
+              <AddressRequiredLabel className="mb-1 block text-sm font-medium text-foreground">
                 {VI.profile.address.form.streetAddress}
-              </label>
+              </AddressRequiredLabel>
               <input
                 type="text"
                 value={streetAddress}
                 onChange={(e) => setStreetAddress(e.target.value)}
                 placeholder={VI.profile.address.form.streetAddressPlaceholder}
-                className="w-full rounded-full border border-slate-200 px-4 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200"
+                className="w-full rounded-full border border-border bg-background px-4 py-2.5 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cosmate-pink/35"
               />
             </div>
 
@@ -213,7 +212,8 @@ export default function AddressCreatePage() {
               </Button>
             </div>
           </form>
-        </div>
+          </div>
+        </Card>
       </div>
     </section>
   );

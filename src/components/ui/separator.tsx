@@ -7,7 +7,7 @@ const Separator = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivE
     <div
       ref={ref}
       role="separator"
-      className={cn("h-px w-full bg-[#E5E7EB]", className)}
+      className={cn("h-px w-full bg-border", className)}
       {...props}
     />
   )

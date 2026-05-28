@@ -8,24 +8,18 @@
  */
 
 import { useNavigate } from 'react-router-dom'
-import { notification, Steps, Typography, Row, Col, Card, Spin } from 'antd'
+import { notification, Steps, Spin } from 'antd'
 import { DashboardLayout } from '@/app/layouts/DashboardLayout'
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout'
 import { providerSidebarItems } from '@/features/provider/constants/sidebar'
 import { useCreateCostumeWizard } from '../hooks/useCreateCostumeWizard'
 import Phase1BasicInfoForm from '../components/create/Phase1BasicInfoForm'
 import Phase2BuilderTabs from '../components/create/Phase2BuilderTabs'
-import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
 import { useCurrentProviderProfile } from '@/features/provider/hooks/useCurrentProviderProfile'
-import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
-import { VI } from '@/shared/i18n/vi'
-
-const { Title } = Typography
 
 export default function ProviderCreateCostumePage() {
   const navigate = useNavigate()
   const wizard = useCreateCostumeWizard()
-  const gate = useProviderGate()
   const { provider, loading: providerLoading } = useCurrentProviderProfile()
 
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
@@ -53,56 +47,27 @@ export default function ProviderCreateCostumePage() {
 
   return (
     <DashboardLayout
-      title="Đăng trang phục mới"
+      title="Tạo trang phục mới"
       sidebarItems={sidebarItems}
       showChatButton={false}
       brandName="CosMate Provider"
     >
-      {gate.profileLoading && (
-        <div style={{ textAlign: 'center', padding: '80px 0' }}>
-          <Spin size="large" />
-          <p style={{ color: '#6B7280', marginTop: 16 }}>{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
+        <div className="mx-auto w-full max-w-5xl">
+          <h2 className="mb-6 text-center text-2xl font-semibold text-foreground">
+            Đăng trang phục mới
+          </h2>
 
-      {!gate.profileLoading && gate.verified === false && (
-        <ProviderActivationGate
-          plans={gate.plans}
-          plansLoading={gate.plansLoading}
-          plansError={gate.plansError}
-          selectedPlanId={gate.selectedPlanId}
-          onSelectPlan={gate.setSelectedPlanId}
-          selectedMethod={gate.selectedMethod}
-          onSelectMethod={gate.setSelectedMethod}
-          onSubscribe={gate.handleSubscribe}
-          subscribing={gate.subscribing}
-          subscribeError={gate.subscribeError}
-        />
-      )}
-
-      {!gate.profileLoading && gate.verified === true && (
-        <Row justify="center">
-          <Col xs={24} sm={22} md={20} lg={18} xl={16}>
-            <Title level={3} style={{ marginBottom: 24 }}>
-              Đăng trang phục mới
-            </Title>
-
+          <div className="mx-auto w-full max-w-4xl">
             <Steps
               current={wizard.phase - 1}
-              style={{ marginBottom: 32 }}
+              className="mb-8"
               items={[
                 { title: 'Thông tin cơ bản' },
                 { title: 'Phụ phí & Gói thuê' },
               ]}
             />
 
-            <Card
-              variant="borderless"
-              style={{
-                borderRadius: 12,
-                boxShadow: '0 1px 3px rgba(0,0,0,0.1)',
-              }}
-            >
+            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
               {wizard.phase === 1 && (
                 <Phase1BasicInfoForm
                   onSubmit={(values) => {
@@ -118,6 +83,7 @@ export default function ProviderCreateCostumePage() {
                   loading={wizard.isPhase1Loading}
                   error={wizard.phase1Error}
                   disabled={wizard.isPhase1Loading || providerLoading || !provider?.id}
+                  providerId={provider?.id}
                 />
               )}
 
@@ -141,10 +107,9 @@ export default function ProviderCreateCostumePage() {
                   error={wizard.phase2Error}
                 />
               )}
-            </Card>
-          </Col>
-        </Row>
-      )}
+            </div>
+          </div>
+        </div>
     </DashboardLayout>
   )
 }
