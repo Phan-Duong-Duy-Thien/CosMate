@@ -22,6 +22,14 @@ export const DATA_SYNC_EVENTS = {
   PROFILE_CHANGED: 'profile:refresh',
   /** AI token balance (numberOfToken) */
   TOKEN_CHANGED: 'cosmate:token-changed',
+  /** Admin users list / user status updates */
+  USERS_CHANGED: 'cosmate:users-changed',
+  /** Admin providers list / provider status updates */
+  PROVIDERS_CHANGED: 'cosmate:providers-changed',
+  /** Provider profile changed (edit/verification/completion) */
+  PROVIDER_PROFILE_CHANGED: 'cosmate:provider-profile-changed',
+  /** Admin subscription plans list changed */
+  SUBSCRIPTION_PLANS_CHANGED: 'cosmate:subscription-plans-changed',
 } as const;
 
 export type DataSyncEventName = (typeof DATA_SYNC_EVENTS)[keyof typeof DATA_SYNC_EVENTS];
@@ -68,6 +76,22 @@ export function notifyNotificationsChanged(): void {
 
 export function notifyTokenChanged(): void {
   dispatch(DATA_SYNC_EVENTS.TOKEN_CHANGED);
+}
+
+export function notifyUsersChanged(detail?: { userId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.USERS_CHANGED, detail);
+}
+
+export function notifyProvidersChanged(detail?: { providerId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.PROVIDERS_CHANGED, detail);
+}
+
+export function notifyProviderProfileChanged(detail?: { providerId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.PROVIDER_PROFILE_CHANGED, detail);
+}
+
+export function notifySubscriptionPlansChanged(detail?: { planId?: number }): void {
+  dispatch(DATA_SYNC_EVENTS.SUBSCRIPTION_PLANS_CHANGED, detail);
 }
 
 export function subscribeDataSync<T = unknown>(
