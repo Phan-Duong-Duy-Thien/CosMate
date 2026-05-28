@@ -1,5 +1,6 @@
 import { useCallback, useState } from "react"
 import { Link, Navigate, useNavigate } from "react-router-dom"
+import { Divider } from "antd"
 
 import loginHero from "@/assets/saukura.jpg"
 import { useLogin } from "../hooks/useLogin"
@@ -8,17 +9,23 @@ import { AuthMarketingHero } from "../components/AuthMarketingHero"
 import { LoginForm } from "../components/LoginForm"
 import { LoginMethodTabs, type LoginMethod } from "../components/LoginMethodTabs"
 import { QrLoginPanel } from "../components/QrLoginPanel"
+import { GoogleLoginButton } from "../components/GoogleLoginButton"
 import { getRedirectPath } from "../utils/roleRedirect"
 import type { LoginFormValues } from "../types"
 import { VI } from "@/shared/i18n/vi"
 import { useUserProfile } from "@/app/providers/UserProfileProvider"
 import { isAuthenticated } from "../utils/authStorage"
+import { getGoogleClientId } from "@/shared/config/env"
+
+const FALLBACK_GOOGLE_CLIENT_ID =
+  "337837384532-8utjang3ns1kd4n5dpbf846s0auhu22a.apps.googleusercontent.com"
 
 export default function LoginPage() {
-  const { submitting, formError, handleEmailLogin } = useLogin()
+  const { submitting, formError, handleEmailLogin, handleGoogleLogin } = useLogin()
   const navigate = useNavigate()
   const { refreshProfile } = useUserProfile()
   const [loginMethod, setLoginMethod] = useState<LoginMethod>("email")
+  const googleClientId = getGoogleClientId() || FALLBACK_GOOGLE_CLIENT_ID
 
   const completeLogin = useCallback(
     (roles: string[]) => {
@@ -41,6 +48,16 @@ export default function LoginPage() {
       completeLogin(roles)
     },
     [completeLogin]
+  )
+
+  const onGoogleCredential = useCallback(
+    async (idToken: string) => {
+      const roles = await handleGoogleLogin(idToken)
+      if (roles) {
+        completeLogin(roles)
+      }
+    },
+    [completeLogin, handleGoogleLogin]
   )
 
   if (isAuthenticated()) {
@@ -66,11 +83,23 @@ export default function LoginPage() {
         />
 
         {loginMethod === "email" ? (
-          <LoginForm
-            onSubmit={onLoginSubmit}
-            submitting={submitting}
-            formError={formError}
-          />
+          <div className="space-y-3">
+            <LoginForm
+              onSubmit={onLoginSubmit}
+              submitting={submitting}
+              formError={formError}
+            />
+
+            <Divider className="my-2! border-indigo-200! text-xs! font-bold! text-indigo-900!">
+              {VI.auth.login.orDivider}
+            </Divider>
+
+            <GoogleLoginButton
+              clientId={googleClientId}
+              disabled={submitting}
+              onCredential={onGoogleCredential}
+            />
+          </div>
         ) : (
           <QrLoginPanel active={loginMethod === "qr"} onApproved={onQrApproved} />
         )}

@@ -540,13 +540,17 @@ export const VI = {
         loginFailed: "Đăng nhập thất bại. Vui lòng thử lại.",
         loginSuccess: "Đăng nhập thành công! Chào mừng bạn trở lại CosMate 🎉",
         invalidCredentials: "Không thể đăng nhập. Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
+        loginMissingToken: "Đăng nhập thất bại - không nhận được token!",
       },
 
       methodTabsLabel: "Phương thức đăng nhập",
       methodEmail: "Email / mật khẩu",
       methodQr: "Đăng nhập bằng QR",
+      orDivider: "Hoặc",
+      continueWithGoogle: "Tiếp tục với Google",
 
-      googleNotConfigured: "(chưa cấu hình)",
+      googleNotConfigured: "Google Sign-In chưa được cấu hình.",
+      googleLoadFailed: "Không thể tải Google Sign-In. Vui lòng thử lại.",
     },
 
     qrLogin: {
