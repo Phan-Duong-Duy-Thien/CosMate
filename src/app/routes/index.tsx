@@ -232,7 +232,7 @@ export default function AppRoutes() {
           <Route path="/staff/orders" element={<StaffOrdersPage />} />
           <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
           <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
-          <Route path="/staff/reports" element={<StaffPlaceholderPage title={VI.staff.sidebar.reports} />} />
+          <Route path="/staff/reports" element={<AdminReportsPage />} />
           <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />
           <Route path="/staff/settings" element={<DashboardProfilePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
