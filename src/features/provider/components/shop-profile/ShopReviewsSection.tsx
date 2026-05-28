@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react'
 import { Star } from 'lucide-react'
 import { Card } from '@/shared/components/Card'
 import { ProviderReplyBlock } from '@/shared/components/ProviderReplyBlock'
@@ -29,6 +30,17 @@ function formatDate(dateString: string): string {
 
 export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) {
   const rating10 = (stats.averageRating * 2).toFixed(1)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  const sortedReviews = useMemo(
+    () =>
+      [...reviews].sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      ),
+    [reviews],
+  )
+  const previewReviews = sortedReviews.slice(0, 3)
+  const hasMoreReviews = sortedReviews.length > 3
 
   return (
     <div className="space-y-4">
@@ -87,10 +99,59 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
           {VI.provider.shop.reviews.noReviews}
         </Card>
       ) : (
-        <div className="space-y-3">
-          {reviews.map(review => (
-            <ReviewCard key={review.id} review={review} />
-          ))}
+        <div className="space-y-4">
+          <div className="space-y-3">
+            {previewReviews.map(review => (
+              <ReviewCard key={review.id} review={review} />
+            ))}
+          </div>
+
+          {hasMoreReviews && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(true)}
+                className="rounded-xl border-[3px] border-indigo-950 bg-cyan-200 px-5 py-2 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-cyan-300"
+              >
+                Xem thêm
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {isModalOpen && (
+        <div
+          className="fixed inset-0 z-[1100] flex items-center justify-center bg-indigo-950/45 px-4 py-6"
+          onClick={() => setIsModalOpen(false)}
+          role="presentation"
+        >
+          <div
+            className="w-full max-w-4xl rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] shadow-[10px_10px_0_0_#1e1b4b]"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-label={VI.provider.shop.reviews.title}
+          >
+            <div className="flex items-center justify-between border-b-[3px] border-indigo-950 px-5 py-4">
+              <h3 className="text-lg font-extrabold text-indigo-950">{VI.provider.shop.reviews.title}</h3>
+              <button
+                type="button"
+                onClick={() => setIsModalOpen(false)}
+                className="rounded-lg border-[3px] border-indigo-950 bg-rose-200 px-3 py-1 text-xs font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] transition hover:bg-rose-300"
+              >
+                Đóng
+              </button>
+            </div>
+
+            <div className="max-h-[500px] overflow-y-auto p-5">
+              <div className="space-y-3">
+                {sortedReviews.map(review => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
