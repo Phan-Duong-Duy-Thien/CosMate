@@ -14,7 +14,7 @@ import {
   qrPayloadMatchesCurrentUser,
 } from "@/shared/utils/mobileQrUrl"
 
-const MAX_MEDIA = 10
+const MAX_IMAGES = 10
 const QR_REFRESH_COOLDOWN_MS = 15 * 60 * 1000
 const SESSION_TTL_MS = 10 * 60 * 1000
 
@@ -23,12 +23,9 @@ const QR_BASE =
   import.meta.env.VITE_MOBILE_CONFIRM_DELIVERY_QR_BASE?.replace(/\/+$/, "") ||
   "https://cosmate.vn/app/provider-upload-media"
 
-type QrMediaKind = "image" | "video"
-
-export type ProviderQrMediaItem = {
+export type ProviderQrImageItem = {
   id: string
   url: string
-  kind: QrMediaKind
   mimeType: string
 }
 
@@ -76,7 +73,7 @@ function formatCooldownLabel(remainingMs: number): string {
   return `${String(min).padStart(2, "0")}:${String(sec).padStart(2, "0")}`
 }
 
-function revokeMediaUrls(items: ProviderQrMediaItem[]): void {
+function revokeImageUrls(items: ProviderQrImageItem[]): void {
   items.forEach((item) => {
     if (item.url.startsWith("blob:")) {
       URL.revokeObjectURL(item.url)
@@ -100,20 +97,20 @@ export function useProviderMediaQrSession(active: boolean) {
   const [qrCreatedAt, setQrCreatedAt] = useState(0)
   const [refreshCooldownMs, setRefreshCooldownMs] = useState(0)
   const [isListening, setIsListening] = useState(false)
-  const [mediaItems, setMediaItems] = useState<ProviderQrMediaItem[]>([])
-  const mediaItemsRef = useRef(mediaItems)
+  const [imageItems, setImageItems] = useState<ProviderQrImageItem[]>([])
+  const imageItemsRef = useRef(imageItems)
 
-  mediaItemsRef.current = mediaItems
+  imageItemsRef.current = imageItems
 
-  const clearMediaItems = useCallback(() => {
-    setMediaItems((prev) => {
-      revokeMediaUrls(prev)
+  const clearImageItems = useCallback(() => {
+    setImageItems((prev) => {
+      revokeImageUrls(prev)
       return []
     })
   }, [])
 
-  const removeMediaItem = useCallback((id: string) => {
-    setMediaItems((prev) => {
+  const removeImageItem = useCallback((id: string) => {
+    setImageItems((prev) => {
       const target = prev.find((item) => item.id === id)
       if (target?.url.startsWith("blob:")) {
         URL.revokeObjectURL(target.url)
@@ -167,31 +164,34 @@ export function useProviderMediaQrSession(active: boolean) {
   const handleWsMessage = useCallback(async (body: string) => {
     const mediaId = parseImageIdFromWsBody(body)
     if (!mediaId) return
-    if (mediaItemsRef.current.some((item) => item.id === mediaId)) return
-    if (mediaItemsRef.current.length >= MAX_MEDIA) {
-      message.warning(`Tối đa ${MAX_MEDIA} tệp media từ QR.`)
+    if (imageItemsRef.current.some((item) => item.id === mediaId)) return
+    if (imageItemsRef.current.length >= MAX_IMAGES) {
+      message.warning(`Tối đa ${MAX_IMAGES} ảnh từ QR.`)
       return
     }
 
     try {
       const blob = await fetchWsImageBlobWithRetry(mediaId)
       const mimeType = blob.type || ""
-      const kind: QrMediaKind = mimeType.startsWith("video/") ? "video" : "image"
+      if (mimeType.startsWith("video/")) {
+        message.warning("QR hiện chỉ hỗ trợ gửi ảnh. Vui lòng tải video từ máy tính.")
+        return
+      }
       const url = URL.createObjectURL(blob)
 
-      setMediaItems((prev) => {
+      setImageItems((prev) => {
         if (prev.some((item) => item.id === mediaId)) {
           URL.revokeObjectURL(url)
           return prev
         }
-        if (prev.length >= MAX_MEDIA) {
+        if (prev.length >= MAX_IMAGES) {
           URL.revokeObjectURL(url)
           return prev
         }
-        return [...prev, { id: mediaId, url, kind, mimeType }]
+        return [...prev, { id: mediaId, url, mimeType }]
       })
     } catch {
-      message.error("Không thể tải media từ QR. Vui lòng thử lại.")
+      message.error("Không thể tải ảnh từ QR. Vui lòng thử lại.")
     }
   }, [])
 
@@ -212,7 +212,7 @@ export function useProviderMediaQrSession(active: boolean) {
       setQrCreatedAt(0)
       setRefreshCooldownMs(0)
       setIsListening(false)
-      clearMediaItems()
+      clearImageItems()
       return
     }
 
@@ -246,7 +246,7 @@ export function useProviderMediaQrSession(active: boolean) {
         setSessionLoading(false)
       }
     })()
-  }, [active, clearMediaItems, createSessionFromApi])
+  }, [active, clearImageItems, createSessionFromApi])
 
   useEffect(() => {
     if (!active || !qrCreatedAt) {
@@ -293,7 +293,7 @@ export function useProviderMediaQrSession(active: boolean) {
   }, [active, handleWsMessage, sessionToken])
 
   useEffect(() => {
-    return () => revokeMediaUrls(mediaItemsRef.current)
+    return () => revokeImageUrls(imageItemsRef.current)
   }, [])
 
   return {
@@ -305,11 +305,8 @@ export function useProviderMediaQrSession(active: boolean) {
     refreshCooldownLabel:
       refreshCooldownMs > 0 ? formatCooldownLabel(refreshCooldownMs) : null,
     isListening,
-    mediaItems,
-    imageItems: mediaItems.filter((item) => item.kind === "image"),
-    videoItems: mediaItems.filter((item) => item.kind === "video"),
-    clearMediaItems,
-    removeMediaItem,
-    maxMedia: MAX_MEDIA,
+    imageItems,
+    removeImageItem,
+    maxImages: MAX_IMAGES,
   }
 }

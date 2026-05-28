@@ -10,7 +10,7 @@ import { useLocation } from 'react-router-dom'
 import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message, QRCode, Spin } from 'antd'
 import { CloseOutlined, InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
 import { Image as AntImage } from 'antd'
-import { ImageIcon, RefreshCw, Smartphone, Video } from 'lucide-react'
+import { ImageIcon, RefreshCw, Smartphone } from 'lucide-react'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
@@ -88,9 +88,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     refreshCooldownLabel,
     isListening,
     imageItems: qrImageItems,
-    videoItems: qrVideoItems,
-    removeMediaItem,
-    maxMedia,
+    removeImageItem,
+    maxImages,
   } = useProviderMediaQrSession(true)
 
   const watchedName = Form.useWatch('name', form)
@@ -273,17 +272,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         )
       }
 
-      let qrVideoFile: File | null = null
-      if (qrVideoItems.length > 0) {
-        const firstQrVideo = qrVideoItems[0]
-        const blobRes = await fetch(firstQrVideo.url)
-        const blob = await blobRes.blob()
-        const ext = blob.type.includes('quicktime') ? 'mov' : 'mp4'
-        qrVideoFile = new File([blob], `provider-qr-video-${firstQrVideo.id}.${ext}`, {
-          type: blob.type || 'video/mp4',
-        })
-      }
-
       const submitPayload = {
         name: values.name,
         description: values.description,
@@ -295,7 +283,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         depositAmount: values.depositAmount,
         imageFiles: [...rawFiles, ...qrImageFiles],
         rentalOptions: null,
-        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? qrVideoFile,
+        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
       }
       await onSubmit(submitPayload)
     } catch (err: unknown) {
@@ -517,7 +505,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <div className="mb-3 flex items-center justify-between gap-3">
             <div className="flex items-center gap-2">
               <Smartphone className="h-4 w-4 text-cosmate-pink" />
-              <p className="text-sm font-semibold text-foreground">Quét QR để tải media từ điện thoại</p>
+              <p className="text-sm font-semibold text-foreground">Quét QR để tải ảnh từ điện thoại</p>
             </div>
             <Button
               type="link"
@@ -539,61 +527,27 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
               <QRCode value={qrValue} size={160} bordered={false} />
             )}
             <p className="text-center text-xs text-muted-foreground">
-              Hỗ trợ ảnh và video. Tối đa {maxMedia} tệp media qua QR.
+              Tối đa {maxImages} ảnh qua QR. Video vui lòng tải từ máy tính bên dưới.
             </p>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="rounded-lg border border-border bg-background p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase text-muted-foreground">Ảnh từ QR</p>
-                <span className="text-xs font-semibold">{qrImageItems.length}</span>
-              </div>
-              {qrImageItems.length === 0 ? (
-                <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
-                  {isListening ? <Spin size="small" /> : <ImageIcon className="h-4 w-4" />}
-                  <span>Đang chờ media từ mobile</span>
-                </div>
-              ) : (
-                <AntImage.PreviewGroup>
-                  <ul className="grid grid-cols-3 gap-2">
-                    {qrImageItems.map((item) => (
-                      <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
-                        <Button
-                          danger
-                          type="primary"
-                          size="small"
-                          shape="circle"
-                          icon={<CloseOutlined />}
-                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
-                          onClick={(event) => {
-                            event.preventDefault()
-                            event.stopPropagation()
-                            removeMediaItem(item.id)
-                          }}
-                        />
-                        <AntImage src={item.url} alt="" className="!h-full !w-full !object-cover" rootClassName="!h-full !w-full" />
-                      </li>
-                    ))}
-                  </ul>
-                </AntImage.PreviewGroup>
-              )}
+          <div className="rounded-lg border border-border bg-background p-3">
+            <div className="mb-2 flex items-center justify-between">
+              <p className="text-xs font-semibold uppercase text-muted-foreground">Ảnh từ QR</p>
+              <span className="text-xs font-semibold">
+                {qrImageItems.length}/{maxImages}
+              </span>
             </div>
-
-            <div className="rounded-lg border border-border bg-background p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <p className="text-xs font-semibold uppercase text-muted-foreground">Video từ QR</p>
-                <span className="text-xs font-semibold">{qrVideoItems.length}</span>
+            {qrImageItems.length === 0 ? (
+              <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
+                {isListening ? <Spin size="small" /> : <ImageIcon className="h-4 w-4" />}
+                <span>Đang chờ ảnh từ mobile</span>
               </div>
-              {qrVideoItems.length === 0 ? (
-                <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
-                  {isListening ? <Spin size="small" /> : <Video className="h-4 w-4" />}
-                  <span>Chưa có video từ mobile</span>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {qrVideoItems.map((item) => (
-                    <div key={item.id} className="group relative">
+            ) : (
+              <AntImage.PreviewGroup>
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {qrImageItems.map((item) => (
+                    <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
                       <Button
                         danger
                         type="primary"
@@ -601,14 +555,18 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
                         shape="circle"
                         icon={<CloseOutlined />}
                         className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
-                        onClick={() => removeMediaItem(item.id)}
+                        onClick={(event) => {
+                          event.preventDefault()
+                          event.stopPropagation()
+                          removeImageItem(item.id)
+                        }}
                       />
-                      <video src={item.url} controls className="h-24 w-full rounded-md border border-border bg-black object-cover" />
-                    </div>
+                      <AntImage src={item.url} alt="" className="!h-full !w-full !object-cover" rootClassName="!h-full !w-full" />
+                    </li>
                   ))}
-                </div>
-              )}
-            </div>
+                </ul>
+              </AntImage.PreviewGroup>
+            )}
           </div>
         </div>
 
