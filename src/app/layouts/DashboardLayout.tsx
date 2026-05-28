@@ -643,8 +643,6 @@ export function DashboardLayout({
     }
   }, [sidebarWidth, enableSidebarResize, isResizing]);
 
-  const effectiveWidth = collapsed ? 80 : sidebarWidth;
-
   return (
     <ConfigProvider
       theme={{
@@ -669,12 +667,8 @@ export function DashboardLayout({
         collapsedWidth={80}
         style={{
           overflow: 'auto',
-          height: '100vh',
-          position: 'fixed',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          borderRight: "1px solid var(--border)",
+          height: '100%',
+          borderRight: '1px solid var(--border)',
           userSelect: isResizing ? 'none' : undefined,
         }}
       >
@@ -746,11 +740,9 @@ export function DashboardLayout({
       <Layout
         className="cosmate-dashboard-main"
         style={{
-          marginLeft: effectiveWidth,
-          transition: isResizing ? 'none' : 'margin-left 0.2s',
           flex: 1,
-          minHeight: '100vh',
-          height: '100vh',
+          minHeight: 0,
+          height: '100%',
           minWidth: 0,
           display: 'flex',
           flexDirection: 'column',
