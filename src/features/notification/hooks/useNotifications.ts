@@ -8,6 +8,7 @@ import {
 import type { NotificationItem } from "../types"
 import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
 import { DATA_SYNC_EVENTS, notifyNotificationsChanged } from "@/shared/sync/dataSync"
+import { isAuthenticated } from "@/features/auth/utils/authStorage"
 
 interface UseNotificationsResult {
   notifications: NotificationItem[]
@@ -25,6 +26,12 @@ export function useNotifications(): UseNotificationsResult {
   const [loading, setLoading] = useState(false)
 
   const fetch = useCallback(async () => {
+    if (!isAuthenticated()) {
+      setNotifications([])
+      setLoading(false)
+      return
+    }
+
     setLoading(true)
     try {
       console.log("[useNotifications] Fetching notifications...")
@@ -90,6 +97,20 @@ export function useNotifications(): UseNotificationsResult {
 
   useEffect(() => {
     fetch()
+  }, [fetch])
+
+  useEffect(() => {
+    const handleAuthChanged = () => {
+      if (!isAuthenticated()) {
+        setNotifications([])
+        setLoading(false)
+        return
+      }
+      void fetch()
+    }
+
+    window.addEventListener("auth:changed", handleAuthChanged)
+    return () => window.removeEventListener("auth:changed", handleAuthChanged)
   }, [fetch])
 
   useDataSyncRefetch(fetch, DATA_SYNC_EVENTS.NOTIFICATIONS_CHANGED)
