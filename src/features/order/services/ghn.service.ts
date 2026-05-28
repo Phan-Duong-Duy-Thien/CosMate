@@ -1,6 +1,9 @@
 /**
  * Resolve order addresses to GHN IDs and estimate shipping fee (FE-only).
  *
+ * Master-data (provinces/districts/wards) is loaded from public/data/ghn-master.json.
+ * Only calculateGhnShippingFee calls GHN API at runtime.
+ *
  * Address semantics (Province Open API V2):
  * - city     → Tỉnh / Thành phố
  * - district → Phường / Xã (ward); legacy rows may store quận name
@@ -11,14 +14,17 @@ import { isGeovinaConfigured } from '../api/geovina.api';
 import { normalizeAddressViaGeovina } from './geovinaAddress.service';
 import {
   calculateGhnShippingFee,
-  fetchGhnDistricts,
-  fetchGhnProvinces,
-  fetchGhnWards,
   isGhnConfigured,
-  type GhnDistrict,
   type GhnWard,
 } from '../api/ghn.api';
 import { fetchProvinces, fetchWardsByProvince } from '@/shared/api/vnLocation.api';
+import {
+  loadGhnMasterData,
+  getGhnMasterDataVersion,
+  getGhnMasterDistricts,
+  getGhnMasterProvinces,
+  getGhnMasterWards,
+} from '@/shared/data/ghnMasterData';
 import {
   matchAdminUnitByName,
   matchAdminUnitByVariants,
@@ -28,6 +34,8 @@ import {
 import {
   buildGhnAddressCacheKey,
   getGhnAddressCache,
+  getGhnAddressCacheById,
+  invalidateGhnAddressCacheIfMasterVersionChanged,
   setGhnAddressCache,
   type GhnCachedResolve,
 } from '@/shared/utils/ghnAddressCache';
@@ -36,10 +44,6 @@ const DEFAULT_WEIGHT_GRAM = Number(import.meta.env.VITE_GHN_DEFAULT_WEIGHT_GRAM)
 const DEFAULT_LENGTH = Number(import.meta.env.VITE_GHN_DEFAULT_LENGTH_CM) || 30;
 const DEFAULT_WIDTH = Number(import.meta.env.VITE_GHN_DEFAULT_WIDTH_CM) || 30;
 const DEFAULT_HEIGHT = Number(import.meta.env.VITE_GHN_DEFAULT_HEIGHT_CM) || 10;
-
-const BATCH_SIZE = 8;
-const WARD_FETCH_RETRIES = 2;
-const WARD_RETRY_DELAY_MS = 300;
 
 export type GhnResolveTier = GhnCachedResolve['resolveTier'];
 
@@ -69,17 +73,10 @@ type GlobalWardHit = {
 };
 
 const wardIndexByProvince = new Map<number, WardIndexEntry[]>();
-const ghnDistrictsByProvince = new Map<number, GhnDistrict[]>();
-const ghnWardsByDistrict = new Map<number, GhnWard[]>();
 const globalWardByNormName = new Map<string, GlobalWardHit[]>();
-
-let provincesCache: Awaited<ReturnType<typeof fetchGhnProvinces>> | null = null;
-let openApiProvincesCache: Awaited<ReturnType<typeof fetchProvinces>> | null = null;
 let globalWardCacheReady = false;
 
-function delay(ms: number): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
+let openApiProvincesCache: Awaited<ReturnType<typeof fetchProvinces>> | null = null;
 
 function toCachedResult(result: GhnResolveResult): GhnCachedResolve {
   return {
@@ -87,6 +84,7 @@ function toCachedResult(result: GhnResolveResult): GhnCachedResolve {
     wardCode: result.wardCode,
     approximate: result.approximate,
     resolveTier: result.resolveTier,
+    masterDataVersion: getGhnMasterDataVersion(),
   };
 }
 
@@ -94,12 +92,9 @@ function fromCachedResult(cached: GhnCachedResolve): GhnResolveResult {
   return { ...cached };
 }
 
-async function getGhnProvinces() {
-  if (!provincesCache) {
-    const raw = await fetchGhnProvinces();
-    provincesCache = Array.isArray(raw) ? raw : [];
-  }
-  return provincesCache;
+async function ensureMasterDataLoaded(): Promise<void> {
+  await loadGhnMasterData();
+  invalidateGhnAddressCacheIfMasterVersionChanged(getGhnMasterDataVersion());
 }
 
 async function getOpenApiProvinces() {
@@ -109,63 +104,21 @@ async function getOpenApiProvinces() {
   return openApiProvincesCache;
 }
 
-async function fetchWardsWithRetry(districtId: number): Promise<GhnWard[]> {
-  let lastError: unknown;
-  for (let attempt = 0; attempt <= WARD_FETCH_RETRIES; attempt++) {
-    try {
-      return await fetchGhnWards(districtId);
-    } catch (err) {
-      lastError = err;
-      if (attempt < WARD_FETCH_RETRIES) {
-        await delay(WARD_RETRY_DELAY_MS);
-      }
-    }
-  }
-  if (import.meta.env.DEV) {
-    console.warn(`[GHN] fetchGhnWards failed for district ${districtId}`, lastError);
-  }
-  return [];
-}
-
-async function getGhnDistricts(ghnProvinceId: number): Promise<GhnDistrict[]> {
-  const cached = ghnDistrictsByProvince.get(ghnProvinceId);
-  if (cached) return cached;
-  const districts = await fetchGhnDistricts(ghnProvinceId);
-  const list = Array.isArray(districts) ? districts : [];
-  ghnDistrictsByProvince.set(ghnProvinceId, list);
-  return list;
-}
-
-async function getGhnWardsForDistrict(districtId: number): Promise<GhnWard[]> {
-  const cached = ghnWardsByDistrict.get(districtId);
-  if (cached) return cached;
-  const wards = await fetchWardsWithRetry(districtId);
-  const list = Array.isArray(wards) ? wards : [];
-  ghnWardsByDistrict.set(districtId, list);
-  return list;
-}
-
-async function buildWardIndexForProvince(ghnProvinceId: number): Promise<WardIndexEntry[]> {
+function buildWardIndexForProvince(ghnProvinceId: number): WardIndexEntry[] {
   const cached = wardIndexByProvince.get(ghnProvinceId);
   if (cached) return cached;
 
-  const districts = await getGhnDistricts(ghnProvinceId);
+  const districts = getGhnMasterDistricts(ghnProvinceId);
   const index: WardIndexEntry[] = [];
 
-  for (let i = 0; i < districts.length; i += BATCH_SIZE) {
-    const batch = districts.slice(i, i + BATCH_SIZE);
-    const wardGroups = await Promise.all(
-      batch.map(async (d) => {
-        const wards = await getGhnWardsForDistrict(d.DistrictID);
-        return wards.map((w) => ({
-          districtId: d.DistrictID,
-          wardCode: w.WardCode,
-          wardName: w.WardName,
-        }));
-      })
-    );
-    for (const group of wardGroups) {
-      index.push(...group);
+  for (const d of districts) {
+    const wards = getGhnMasterWards(d.DistrictID);
+    for (const w of wards) {
+      index.push({
+        districtId: d.DistrictID,
+        wardCode: w.WardCode,
+        wardName: w.WardName,
+      });
     }
   }
 
@@ -173,12 +126,12 @@ async function buildWardIndexForProvince(ghnProvinceId: number): Promise<WardInd
   return index;
 }
 
-async function ensureGlobalWardCache(): Promise<void> {
+function ensureGlobalWardCache(): void {
   if (globalWardCacheReady) return;
 
-  const provinces = await getGhnProvinces();
+  const provinces = getGhnMasterProvinces();
   for (const province of provinces) {
-    const index = await buildWardIndexForProvince(province.ProvinceID);
+    const index = buildWardIndexForProvince(province.ProvinceID);
     for (const entry of index) {
       const norm = normalizeVnAdminName(entry.wardName);
       if (!norm) continue;
@@ -196,8 +149,8 @@ async function ensureGlobalWardCache(): Promise<void> {
   globalWardCacheReady = true;
 }
 
-async function resolveGhnProvinceId(cityLabel: string): Promise<number> {
-  const provinces = await getGhnProvinces();
+function resolveGhnProvinceId(cityLabel: string): number {
+  const provinces = getGhnMasterProvinces();
   const provinceList = provinces.map((p) => ({
     id: p.ProvinceID,
     name: p.ProvinceName,
@@ -206,14 +159,28 @@ async function resolveGhnProvinceId(cityLabel: string): Promise<number> {
   const direct = matchAdminUnitByName(provinceList, cityLabel);
   if (direct) return direct.id;
 
-  const openProvinces = await getOpenApiProvinces();
-  const openProvince = matchAdminUnitByName(openProvinces, cityLabel);
-  if (openProvince) {
-    const viaOpenApi = matchAdminUnitByName(provinceList, openProvince.name);
-    if (viaOpenApi) return viaOpenApi.id;
-  }
-
   throw new Error(`Không map được tỉnh/thành: ${cityLabel}`);
+}
+
+async function resolveGhnProvinceIdWithOpenApiBridge(cityLabel: string): Promise<number> {
+  try {
+    return resolveGhnProvinceId(cityLabel);
+  } catch {
+    const provinces = getGhnMasterProvinces();
+    const provinceList = provinces.map((p) => ({
+      id: p.ProvinceID,
+      name: p.ProvinceName,
+    }));
+
+    const openProvinces = await getOpenApiProvinces();
+    const openProvince = matchAdminUnitByName(openProvinces, cityLabel);
+    if (openProvince) {
+      const viaOpenApi = matchAdminUnitByName(provinceList, openProvince.name);
+      if (viaOpenApi) return viaOpenApi.id;
+    }
+
+    throw new Error(`Không map được tỉnh/thành: ${cityLabel}`);
+  }
 }
 
 function matchWardInIndex(
@@ -267,15 +234,13 @@ async function findOpenApiWard(cityLabel: string, districtLabel: string) {
   return { openProvince, openWard };
 }
 
-async function resolveViaOpenApiBridge(
+function resolveViaOpenApiBridge(
   cityLabel: string,
   districtLabel: string,
-  ghnProvinceId: number
-): Promise<GhnResolveResult | undefined> {
-  const openMatch = await findOpenApiWard(cityLabel, districtLabel);
-  if (!openMatch) return undefined;
-
-  const wardIndex = await buildWardIndexForProvince(ghnProvinceId);
+  ghnProvinceId: number,
+  openMatch: NonNullable<Awaited<ReturnType<typeof findOpenApiWard>>>
+): GhnResolveResult | undefined {
+  const wardIndex = buildWardIndexForProvince(ghnProvinceId);
   const labelsToTry = [
     ...expandWardSearchLabels(openMatch.openWard.name),
     ...expandWardSearchLabels(districtLabel),
@@ -296,15 +261,12 @@ async function resolveViaOpenApiBridge(
   return undefined;
 }
 
-async function resolveViaGlobalWardScan(
-  cityLabel: string,
+function resolveViaGlobalWardScan(
   districtLabel: string,
-  preferredGhnProvinceId: number
-): Promise<GhnResolveResult | undefined> {
-  const openMatch = await findOpenApiWard(cityLabel, districtLabel);
-  if (!openMatch) return undefined;
-
-  await ensureGlobalWardCache();
+  preferredGhnProvinceId: number,
+  openMatch: NonNullable<Awaited<ReturnType<typeof findOpenApiWard>>>
+): GhnResolveResult | undefined {
+  ensureGlobalWardCache();
 
   const labelsToTry = [
     ...expandWardSearchLabels(openMatch.openWard.name),
@@ -332,19 +294,19 @@ async function resolveViaGlobalWardScan(
   return undefined;
 }
 
-async function resolveViaGhnDistrictFallback(
+function resolveViaGhnDistrictFallback(
   ghnProvinceId: number,
   districtLabel: string,
   streetAddress?: string
-): Promise<GhnResolveResult> {
-  const districts = await getGhnDistricts(ghnProvinceId);
+): GhnResolveResult {
+  const districts = getGhnMasterDistricts(ghnProvinceId);
   const districtList = districts.map((d) => ({ id: d.DistrictID, name: d.DistrictName }));
   const matched = matchAdminUnitByVariants(districtList, districtLabel);
   if (!matched) {
     throw new Error(`Không map được phường/xã: ${districtLabel}`);
   }
 
-  const wards = await getGhnWardsForDistrict(matched.id);
+  const wards = getGhnMasterWards(matched.id);
   const ward = pickDefaultWardInDistrict(wards, streetAddress);
 
   return {
@@ -404,9 +366,9 @@ async function resolveAddressFieldsToGhnCore(
     throw new Error('Thiếu phường/xã trên địa chỉ đơn hàng');
   }
 
-  const ghnProvinceId = await resolveGhnProvinceId(city);
+  const ghnProvinceId = await resolveGhnProvinceIdWithOpenApiBridge(city);
 
-  const wardIndex = await buildWardIndexForProvince(ghnProvinceId);
+  const wardIndex = buildWardIndexForProvince(ghnProvinceId);
   const wardEntry = matchWardInIndex(wardIndex, district);
   if (wardEntry) {
     return {
@@ -417,22 +379,24 @@ async function resolveAddressFieldsToGhnCore(
     };
   }
 
-  const openApiResult = await resolveViaOpenApiBridge(city, district, ghnProvinceId);
-  if (openApiResult) {
-    return openApiResult;
-  }
+  const openMatch = await findOpenApiWard(city, district);
+  if (openMatch) {
+    const openApiResult = resolveViaOpenApiBridge(city, district, ghnProvinceId, openMatch);
+    if (openApiResult) return openApiResult;
 
-  const globalResult = await resolveViaGlobalWardScan(city, district, ghnProvinceId);
-  if (globalResult) {
-    return globalResult;
+    const globalResult = resolveViaGlobalWardScan(district, ghnProvinceId, openMatch);
+    if (globalResult) return globalResult;
   }
 
   return resolveViaGhnDistrictFallback(ghnProvinceId, district, street);
 }
 
 export async function resolveAddressFieldsToGhn(
-  fields: AddressFieldsForGhn
+  fields: AddressFieldsForGhn,
+  options?: { addressId?: number }
 ): Promise<GhnResolveResult> {
+  await ensureMasterDataLoaded();
+
   const city = fields.city?.trim() ?? '';
   const district = fields.district?.trim() ?? '';
   const street = fields.address?.trim() ?? '';
@@ -441,9 +405,16 @@ export async function resolveAddressFieldsToGhn(
     throw new Error('Thiếu phường/xã trên địa chỉ đơn hàng');
   }
 
+  if (options?.addressId != null) {
+    const byId = getGhnAddressCacheById(options.addressId);
+    if (byId && (byId.masterDataVersion ?? 0) === getGhnMasterDataVersion()) {
+      return fromCachedResult(byId);
+    }
+  }
+
   const cacheKey = buildGhnAddressCacheKey(city, district, street);
   const cached = getGhnAddressCache(cacheKey);
-  if (cached) {
+  if (cached && (cached.masterDataVersion ?? 0) === getGhnMasterDataVersion()) {
     return fromCachedResult(cached);
   }
 
@@ -457,7 +428,10 @@ export async function resolveAddressFieldsToGhn(
   for (const candidate of candidates) {
     try {
       const result = await resolveAddressFieldsToGhnCore(candidate);
-      setGhnAddressCache(cacheKey, toCachedResult(result));
+      setGhnAddressCache(cacheKey, toCachedResult(result), {
+        addressId: options?.addressId,
+        masterDataVersion: getGhnMasterDataVersion(),
+      });
       return result;
     } catch (err) {
       lastError = err;
@@ -471,11 +445,14 @@ export async function resolveAddressFieldsToGhn(
 }
 
 export async function resolveAddressToGhn(address: OrderAddress): Promise<GhnResolveResult> {
-  return resolveAddressFieldsToGhn({
-    city: address.city,
-    district: address.district,
-    address: address.address,
-  });
+  return resolveAddressFieldsToGhn(
+    {
+      city: address.city,
+      district: address.district,
+      address: address.address,
+    },
+    { addressId: address.id }
+  );
 }
 
 export type GhnShippingDirection = 'ship' | 'return';
@@ -487,6 +464,8 @@ export async function estimateOrderGhnFee(
   if (!isGhnConfigured()) {
     throw new Error('GHN_NOT_CONFIGURED');
   }
+
+  await ensureMasterDataLoaded();
 
   const detail = await fetchOrderDetail(orderId);
   const provider = detail.addresses?.find((a) => a.addressFrom === 'PROVIDER');

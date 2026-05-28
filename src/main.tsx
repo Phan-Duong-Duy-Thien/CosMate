@@ -5,6 +5,7 @@ import { message, notification } from "antd"
 
 import App from "@/app/App"
 import ScrollToTop from "@/shared/components/ScrollToTop"
+import { prefetchGhnMasterData } from "@/shared/data/ghnMasterData"
 import faviconImage from "@/assets/logo.png"
 import "antd/dist/reset.css"
 import "./index.css"
@@ -12,6 +13,9 @@ import "./index.css"
 // Global default: all antd toasts auto-dismiss after 5 seconds
 message.config({ duration: 5 })
 notification.config({ duration: 5 })
+
+// Prefetch GHN master-data for shipping fee estimate (local JSON, no API storm)
+prefetchGhnMasterData()
 
 // Move required asterisk (*) from BEFORE label to AFTER label
 const requiredAsteriskStyle = `
