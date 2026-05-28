@@ -1,17 +1,16 @@
+import { useLocation } from 'react-router-dom';
+import { WalletHubContent } from '@/features/profile/components/WalletHubContent';
+import { getProviderDashboardBackPath } from '@/features/profile/utils/tokenRoutes';
+
 /**
- * Provider Wallet Page
- * Fixed wrapper that uses VI.wallet.* (top-level) instead of VI.profile.wallet.*
- * Navigation links are derived from current location so they work for any provider type.
+ * Provider wallet — dashboard-style UI inside ProviderWalletLayout outlet.
  */
-import { useLocation } from "react-router-dom";
-import WalletPage from "@/features/profile/pages/WalletPage";
-
 export default function ProviderWalletPage() {
-  const location = useLocation();
+  const { pathname } = useLocation();
+  const walletBase = pathname.replace(/\/wallet(\/.*)?$/, '/wallet');
+  const backPath = getProviderDashboardBackPath(pathname);
 
-  // Derive wallet base path from current URL
-  // e.g. /provider-photograph/wallet -> /provider-photograph/wallet
-  const walletBase = location.pathname.replace(/\/wallet(\/.*)?$/, "/wallet");
-
-  return <WalletPage walletBase={walletBase} />;
+  return (
+    <WalletHubContent variant="provider" walletBase={walletBase} backPath={backPath} />
+  );
 }

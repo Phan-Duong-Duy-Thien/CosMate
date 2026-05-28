@@ -48,13 +48,42 @@ export async function getProviderStatistics(
   return response.data.result;
 }
 
+type RawProviderProfile = Record<string, unknown>;
+
+/** BE may use snake_case; `id` is provider record id, `userId` is account id. */
+export function normalizeProviderProfile(raw: RawProviderProfile): ProviderProfile {
+  const id = Number(raw.id) || 0;
+  const userId = Number(raw.userId ?? raw.user_id) || 0;
+
+  return {
+    id,
+    userId,
+    shopName: (raw.shopName ?? raw.shop_name ?? null) as string | null,
+    shopAddressId: (() => {
+      const n = Number(raw.shopAddressId ?? raw.shop_address_id);
+      return Number.isFinite(n) ? n : null;
+    })(),
+    avatarUrl: (raw.avatarUrl ?? raw.avatar_url ?? null) as string | null,
+    coverImageUrl: (raw.coverImageUrl ?? raw.cover_image_url ?? null) as string | null,
+    bio: (raw.bio ?? null) as string | null,
+    bankAccountNumber: (raw.bankAccountNumber ?? raw.bank_account_number ?? null) as string | null,
+    bankName: (raw.bankName ?? raw.bank_name ?? null) as string | null,
+    verified: Boolean(raw.verified),
+    completedOrders: Number(raw.completedOrders ?? raw.completed_orders) || 0,
+    totalRating: Number(raw.totalRating ?? raw.total_rating) || 0,
+    totalReviews: Number(raw.totalReviews ?? raw.total_reviews) || 0,
+  };
+}
+
 export async function getProviderByUserId(userId: number): Promise<ProviderProfile> {
-  console.log('[getProviderByUserId] userId:', userId);
-  const response = await axiosInstance.get<ApiResponse<ProviderProfile>>(
-    `/api/providers/user/${userId}`
+  const response = await axiosInstance.get<ApiResponse<RawProviderProfile>>(
+    `/api/providers/user/${userId}`,
   );
-  console.log('[getProviderByUserId] raw response.data:', response.data);
-  return response.data.result;
+  const { code, message, result } = response.data;
+  if (code !== 0 || !result) {
+    throw new Error(message || 'Không thể tải hồ sơ nhà cung cấp.');
+  }
+  return normalizeProviderProfile(result);
 }
 
 /**

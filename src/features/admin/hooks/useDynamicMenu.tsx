@@ -9,6 +9,7 @@ import {
   Menu as MenuIcon,
   CreditCard,
   Coins,
+  Settings,
 } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
@@ -47,19 +48,21 @@ const getIconComponent = (iconName?: string): LucideIcon => {
     case 'coins':
     case 'token':
     case 'ai-token': return Coins;
+    case 'settings':
+    case 'config': return Settings;
     default: return Folder;
   }
 };
 
 const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
-  { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} /> },
-  { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} /> },
+  { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} />, type: 'core' },
+  { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} />, type: 'core' },
 ];
 
 const ADMIN_ROLE_ALLOWLIST = ['SUPERADMIN', 'ADMIN', '2'];
 const CORE_MENU_PATHS = new Set(ADMIN_CORE_MENUS.map((item) => item.path).filter(Boolean) as string[]);
 
-const normalizeChildren = (children: MenuItemDto[] = []): DashboardSidebarItem[] => {
+const normalizeChildren = (children: MenuItemDto[] = [], menuId?: string): DashboardSidebarItem[] => {
   return children
     .filter((item) => item?.isActive !== false && item?.url && !CORE_MENU_PATHS.has(item.url))
     .sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))
@@ -70,7 +73,12 @@ const normalizeChildren = (children: MenuItemDto[] = []): DashboardSidebarItem[]
         label: item.title || item.url || 'Menu item',
         path: item.url,
         icon: <Icon size={16} />,
-        children: normalizeChildren(item.children || []),
+        children: normalizeChildren(item.children || [], menuId),
+        id: item.id,
+        type: 'item',
+        displayOrder: item.displayOrder ?? 0,
+        menuId: menuId,
+        iconName: item.icon,
       };
     });
 };
@@ -107,7 +115,7 @@ export function useDynamicMenu() {
       const dynamicMenus: DashboardSidebarItem[] = [];
       for (const menu of safeMenus.filter((menu) => menu?.isActive !== false).sort((a, b) => (a.displayOrder ?? 0) - (b.displayOrder ?? 0))) {
         const menuItems = await getMenuGroupItems(menu);
-        const children = normalizeChildren(menuItems);
+        const children = normalizeChildren(menuItems, menu.id);
         if (!children.length) continue;
 
         dynamicMenus.push({
@@ -115,6 +123,9 @@ export function useDynamicMenu() {
           label: menu.name || 'Menu',
           icon: <Folder size={16} />,
           children,
+          id: menu.id,
+          type: 'group',
+          displayOrder: menu.displayOrder ?? 0,
         });
       }
 
@@ -134,5 +145,5 @@ export function useDynamicMenu() {
     return () => window.removeEventListener('menuUpdated', onMenuUpdated);
   }, [fetchMenu]);
 
-  return { sidebarItems, loading };
+  return { sidebarItems, setSidebarItems, loading, fetchMenu };
 }

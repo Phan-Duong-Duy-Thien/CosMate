@@ -75,6 +75,7 @@ export function ChatInboxSidebar({
         CHAT_UI.sidebar,
         CHAT_UI.sidebarBorder,
         isCompact ? CHAT_UI.sidebarCompact : CHAT_UI.sidebarComfortable,
+        "shrink-0",
       )}
     >
       <div
@@ -91,7 +92,7 @@ export function ChatInboxSidebar({
             setSearchKeyword("")
           }}
           className={cn(
-            "ml-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-colors",
+            "ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all",
             searchMode ? CHAT_UI.searchActive : CHAT_UI.searchIdle,
           )}
           aria-label={VI.common.messages.chatSearchAria}
@@ -103,12 +104,13 @@ export function ChatInboxSidebar({
       {searchMode && (
         <div
           className={cn(
-            "shrink-0 border-b border-cosmate-lavender-border",
+            "shrink-0",
+            CHAT_UI.sidebarDivider,
             isCompact ? CHAT_UI.sidebarSearchPadCompact : CHAT_UI.sidebarSearchPadComfortable,
           )}
         >
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-900/45" />
             <input
               autoFocus
               type="text"
@@ -124,7 +126,7 @@ export function ChatInboxSidebar({
               <button
                 type="button"
                 onClick={() => setSearchKeyword("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-900/45 hover:text-indigo-950"
                 aria-label={VI.common.actions.close}
               >
                 <X className="h-3 w-3" />
@@ -134,7 +136,7 @@ export function ChatInboxSidebar({
         </div>
       )}
 
-      <div className="min-h-0 flex-1 overflow-y-auto">
+      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-visible">
         {searchMode ? (
           searchLoading ? (
             <div className={cn("flex flex-col gap-2", isCompact ? "p-2" : "p-3")}>
@@ -154,9 +156,10 @@ export function ChatInboxSidebar({
                 <button
                   key={user.id}
                   type="button"
+                  title={isCompact ? `${user.fullName} (@${user.username})` : undefined}
                   onClick={() => void handleSelectUser(user)}
                   className={cn(
-                    "group relative flex w-full items-center gap-2 rounded-xl px-2 py-2 text-left transition-colors",
+                    "group relative flex w-full items-center gap-2 rounded-xl border-2 border-transparent px-2 py-2 text-left transition-all",
                     CHAT_UI.userRowHover,
                   )}
                 >
@@ -172,15 +175,17 @@ export function ChatInboxSidebar({
                         {computeInitials(user.fullName)}
                       </div>
                     )}
-                    <div className={cn(CHAT_UI.tooltip, "group-hover:opacity-100")}>
-                      <span className="block font-medium">{user.fullName}</span>
-                      <span className={CHAT_UI.tooltipSub}>@{user.username}</span>
-                      <div className={CHAT_UI.tooltipArrow} />
-                    </div>
+                    {!isCompact ? (
+                      <div className={cn(CHAT_UI.tooltip, "group-hover:opacity-100")}>
+                        <span className="block font-medium">{user.fullName}</span>
+                        <span className={CHAT_UI.tooltipSub}>@{user.username}</span>
+                        <div className={CHAT_UI.tooltipArrow} />
+                      </div>
+                    ) : null}
                   </div>
                   <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">
-                    <span className="truncate text-xs font-medium text-foreground">{user.fullName}</span>
-                    <span className="truncate text-[10px] text-muted-foreground">{user.role}</span>
+                    <span className="truncate text-xs font-bold text-indigo-950">{user.fullName}</span>
+                    <span className="truncate text-[10px] font-semibold text-indigo-900/55">{user.role}</span>
                   </div>
                 </button>
               ))}
@@ -208,6 +213,7 @@ export function ChatInboxSidebar({
             rooms={rooms}
             activeRoomId={activeRoomId}
             onSelectRoom={handleSelectRoom}
+            showHoverTooltip={!isCompact}
           />
         )}
       </div>
@@ -215,7 +221,7 @@ export function ChatInboxSidebar({
       {searchMode ? (
         <div
           className={cn(
-            "shrink-0 border-t border-cosmate-lavender-border",
+            "shrink-0 border-t-[2px] border-indigo-950/15",
             isCompact ? CHAT_UI.sidebarSearchPadCompact : CHAT_UI.sidebarSearchPadComfortable,
           )}
         >
@@ -225,7 +231,7 @@ export function ChatInboxSidebar({
               setSearchMode(false)
               setSearchKeyword("")
             }}
-            className="flex w-full items-center justify-center gap-1 rounded-lg py-1.5 text-xs text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            className={CHAT_UI.sidebarFooterBtn}
           >
             <X className="h-3 w-3" />
             {VI.common.messages.chatExitSearch}

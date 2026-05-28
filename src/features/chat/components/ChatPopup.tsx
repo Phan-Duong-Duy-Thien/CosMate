@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, Fragment } from "react"
+import { createPortal } from "react-dom"
 import { X, Send, MessageCircle, Image } from "lucide-react"
 import { useChatPopup } from "./ChatPopupContext"
 import { useChatRooms, refreshChatRoomsList } from "../hooks/useChatRooms"
@@ -85,6 +86,11 @@ export function ChatPopup() {
   } = useChatPopup()
   const { rooms, loading: roomsLoading } = useChatRooms()
   const [currentUserId, setCurrentUserId] = useState<number | null>(getUserId())
+  const [portalReady, setPortalReady] = useState(false)
+
+  useEffect(() => {
+    setPortalReady(true)
+  }, [])
 
   // Keep currentUserId in sync with auth changes (login/logout)
   useEffect(() => {
@@ -264,12 +270,12 @@ export function ChatPopup() {
     }
   }
 
-  if (!isOpen) return null
+  if (!isOpen || !portalReady) return null
 
   const displayName = activeRoom?.partnerName ?? "Chat"
   const avatar = activeRoom?.partnerAvatar
-  return (
-    <div className={CHAT_UI.popupShell}>
+  return createPortal(
+    <div className={CHAT_UI.popupShell} role="dialog" aria-modal="true" aria-label={VI.common.messages.title}>
 
       <ChatInboxSidebar
         variant="compact"
@@ -330,19 +336,19 @@ export function ChatPopup() {
           {!activeRoom ? (
             <div className={CHAT_UI.messageEmpty}>
               <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
-              <p className="text-sm font-medium">Select a conversation</p>
-              <p className="text-xs text-muted-foreground">Choose a chat from the left</p>
+              <p className={CHAT_UI.emptyTitle}>Chọn cuộc trò chuyện</p>
+              <p className={CHAT_UI.emptySubtitle}>Chọn một mục bên trái để bắt đầu</p>
             </div>
           ) : showHistoryLoader ? (
             <div className={CHAT_UI.messageEmpty}>
               <div className={CHAT_UI.spinner} />
-              <p className="text-sm font-medium">Loading...</p>
+              <p className={CHAT_UI.emptyTitle}>{VI.common.status.loading}</p>
             </div>
           ) : messages.length === 0 ? (
             <div className={CHAT_UI.messageEmpty}>
               <MessageCircle className={cn("h-10 w-10", CHAT_UI.emptyIcon)} />
-              <p className="text-sm font-medium">No messages yet</p>
-              <p className="text-xs text-muted-foreground">Say hi to start the conversation!</p>
+              <p className={CHAT_UI.emptyTitle}>Chưa có tin nhắn</p>
+              <p className={CHAT_UI.emptySubtitle}>Gửi lời chào để bắt đầu trò chuyện nhé!</p>
             </div>
           ) : (
             <div className={cn(CHAT_UI.messageScroll, CHAT_UI.messageScrollPad)}>
@@ -450,6 +456,7 @@ export function ChatPopup() {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

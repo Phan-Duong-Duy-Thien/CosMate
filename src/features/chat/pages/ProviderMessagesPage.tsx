@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { MessageCircle, Plus } from "lucide-react"
 import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
 import type { SearchUserResult } from "../services/user.service"
@@ -15,6 +15,7 @@ import { useUnreadCount } from "../hooks/useUnreadCount"
 import { ChatInboxSidebar } from "../components/ChatInboxSidebar"
 import { ChatMessageList } from "../components/ChatMessageList"
 import { ChatFooterInput } from "../components/ChatFooterInput"
+import { CHAT_UI } from "../constants/chatUi"
 import {
   connectChatSocket,
   subscribeChatRoom,
@@ -26,6 +27,7 @@ import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
 import { useCreateServiceBooking } from "@/features/service/hooks/useCreateServiceBooking"
 import { useProviderServices } from "@/features/service/hooks/useProviderServices"
+import { ServiceBookingPriceBreakdown } from "@/features/service/components/ServiceBookingPriceBreakdown"
 import { useCurrentProviderProfile } from "@/features/provider/hooks/useCurrentProviderProfile"
 import { Modal } from "antd"
 import { cn } from "@/lib/utils"
@@ -56,7 +58,7 @@ export default function ProviderMessagesPage() {
   const [bookingDate, setBookingDate] = useState<dayjs.Dayjs | null>(null)
   const [timeSlot, setTimeSlot] = useState("09:00")
   const [numberOfHuman, setNumberOfHuman] = useState<number>(1)
-  const [rentSlotAmount, setRentSlotAmount] = useState<number>(1)
+  const [rentSlotAmount, setRentSlotAmount] = useState<number>(0)
   const [form] = Form.useForm()
 
   const currentUserId = getUserId()
@@ -65,15 +67,27 @@ export default function ProviderMessagesPage() {
 
   // ── Provider profile (needed for providerId to fetch services) ────────
   const { provider } = useCurrentProviderProfile()
-  console.log("[ProviderMessages] provider:", provider)
 
   // ── Provider services (for booking modal) ──────────────────────────────
   const { services } = useProviderServices(provider?.id ?? 0)
-  console.log("[ProviderMessages] providerId for services:", provider?.id ?? 0)
-  console.log("[ProviderMessages] services:", services)
 
   // ── Booking hook ──────────────────────────────────────────────────────────
   const { createBooking, loading: bookingLoading } = useCreateServiceBooking()
+
+  const selectedService = useMemo(
+    () => services.find((s) => s.id === selectedServiceId) ?? null,
+    [services, selectedServiceId],
+  )
+
+  const handleServiceChange = (serviceId: number) => {
+    setSelectedServiceId(serviceId)
+    const svc = services.find((s) => s.id === serviceId)
+    if (svc) {
+      const defaultPrice = svc.pricePerSlot > 0 ? svc.pricePerSlot : 0
+      setRentSlotAmount(defaultPrice)
+      form.setFieldValue("rentSlotAmount", defaultPrice)
+    }
+  }
 
   // ── Message store (single source of truth) ────────────────────────────────
   const activeRoomId = activeRoom?.roomId ?? null
@@ -196,15 +210,38 @@ export default function ProviderMessagesPage() {
     }
   }
 
-  const handleOpenBookingModal = () => {
+  const resetBookingDraft = useCallback(() => {
     setSelectedServiceId(null)
     setBookingDate(null)
     setTimeSlot("09:00")
     setNumberOfHuman(1)
-    setRentSlotAmount(1)
+    setRentSlotAmount(0)
     form.resetFields()
+  }, [form])
+
+  const handleOpenBookingModal = () => {
+    form.setFieldsValue({
+      service: selectedServiceId ?? undefined,
+      bookingDate: bookingDate ?? undefined,
+      numberOfHuman,
+      rentSlotAmount,
+    })
     setShowBookingModal(true)
   }
+
+  const handleCloseBookingModal = () => {
+    setShowBookingModal(false)
+  }
+
+  const prevBookingRoomIdRef = useRef<number | null>(null)
+  useEffect(() => {
+    const roomId = activeRoom?.roomId ?? null
+    if (prevBookingRoomIdRef.current !== null && prevBookingRoomIdRef.current !== roomId) {
+      resetBookingDraft()
+      setShowBookingModal(false)
+    }
+    prevBookingRoomIdRef.current = roomId
+  }, [activeRoom?.roomId, resetBookingDraft])
 
   const handleSubmitBooking = async () => {
     if (!selectedServiceId || !bookingDate || !activeRoom) return
@@ -219,6 +256,7 @@ export default function ProviderMessagesPage() {
     })
 
     if (result) {
+      resetBookingDraft()
       setShowBookingModal(false)
       message.success(VI.booking.create.success)
     }
@@ -239,9 +277,15 @@ export default function ProviderMessagesPage() {
   const canCreateBooking = canBooking && !roles.includes(ROLE.PROVIDER_RENTAL)
 
   return (
-    <DashboardLayout title={VI.provider.sidebar.messages} sidebarItems={sidebarItems} brandName="CosMate Provider" showChatButton={false}>
-      <div className="flex min-h-0 flex-1 overflow-hidden rounded-xl border border-slate-200 bg-white">
-
+    <DashboardLayout
+      title={VI.provider.sidebar.messages}
+      sidebarItems={sidebarItems}
+      brandName="CosMate Provider"
+      showChatButton={false}
+      contentMode="fill"
+    >
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className={CHAT_UI.providerDashboardShell}>
         <ChatInboxSidebar
           variant="comfortable"
           headerStart={<h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
@@ -254,7 +298,7 @@ export default function ProviderMessagesPage() {
         />
 
         {/* RIGHT: Chat Window */}
-        <div className="flex flex-1 min-h-0 flex-col">
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           {/* Header */}
           <div className="flex shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4 pt-3.5 pb-3">
             <div className="flex items-start gap-3">
@@ -346,15 +390,17 @@ export default function ProviderMessagesPage() {
             />
           )}
         </div>
+        </div>
       </div>
 
       {/* Create Booking Modal */}
       <Modal
         open={showBookingModal}
         title={VI.booking.create.title}
-        onCancel={() => setShowBookingModal(false)}
+        onCancel={handleCloseBookingModal}
         footer={null}
-        destroyOnClose
+        destroyOnClose={false}
+        maskClosable
         className="booking-modal"
       >
         <p className="text-sm text-slate-500 mb-4">
@@ -375,7 +421,7 @@ export default function ProviderMessagesPage() {
             <Select
               placeholder={VI.booking.create.selectService}
               value={selectedServiceId}
-              onChange={setSelectedServiceId}
+              onChange={handleServiceChange}
               size="large"
             >
               {services.map((s) => (
@@ -393,12 +439,36 @@ export default function ProviderMessagesPage() {
             </Select>
           </Form.Item>
 
+          {selectedService && (selectedService.depositAmount ?? 0) + (selectedService.equipmentDepreciationCost ?? 0) > 0 && (
+            <div className="rounded-lg border border-slate-200 bg-slate-50 px-3 py-2.5 text-sm">
+              <p className="font-medium text-slate-700">{VI.booking.create.packageFeesTitle}</p>
+              <ul className="mt-1 space-y-0.5 text-slate-600">
+                {(selectedService.depositAmount ?? 0) > 0 && (
+                  <li>
+                    {VI.booking.create.priceBreakdownDeposit}:{" "}
+                    <span className="font-medium text-slate-800">
+                      {(selectedService.depositAmount ?? 0).toLocaleString("vi-VN")} ₫
+                    </span>
+                  </li>
+                )}
+                {(selectedService.equipmentDepreciationCost ?? 0) > 0 && (
+                  <li>
+                    {VI.booking.create.priceBreakdownEquipment}:{" "}
+                    <span className="font-medium text-slate-800">
+                      {selectedService.equipmentDepreciationCost.toLocaleString("vi-VN")} ₫
+                    </span>
+                  </li>
+                )}
+              </ul>
+            </div>
+          )}
+
           <div className="grid grid-cols-2 gap-3">
             <Form.Item
               label={VI.booking.create.bookingDate}
               name="bookingDate"
               rules={[{ required: true, message: VI.booking.create.bookingDate }]}
-              extra="Không thể đặt lịch cho ngày trong quá khứ"
+              
             >
               <DatePicker
                 className="w-full"
@@ -421,48 +491,66 @@ export default function ProviderMessagesPage() {
             </Form.Item>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <Form.Item
-              label={VI.booking.create.numberOfPeople}
-              name="numberOfHuman"
-              initialValue={1}
-            >
-              <InputNumber
-                min={1}
-                value={numberOfHuman}
-                onChange={(val) => setNumberOfHuman(val ?? 1)}
-                size="large"
-                className="w-full"
-              />
-            </Form.Item>
+          <Form.Item
+            label={VI.booking.create.numberOfPeople}
+            name="numberOfHuman"
+            initialValue={1}
+          >
+            <InputNumber
+              min={1}
+              value={numberOfHuman}
+              onChange={(val) => setNumberOfHuman(val ?? 1)}
+              size="large"
+              className="w-full max-w-[200px]"
+            />
+          </Form.Item>
 
-            <Form.Item
-              label={VI.booking.create.price}
-              name="rentSlotAmount"
-              initialValue={1}
-            >
-              <InputNumber
-                min={1}
-                value={rentSlotAmount}
-                onChange={(val) => setRentSlotAmount(val ?? 1)}
-                size="large"
-                className="w-full"
-                addonAfter="VNĐ"
-              />
-            </Form.Item>
-          </div>
+          <Form.Item
+            label={VI.booking.create.price}
+            name="rentSlotAmount"
+            initialValue={0}
+            extra={VI.booking.create.priceHint}
+            rules={[{ required: true, message: VI.booking.create.price }]}
+          >
+            <InputNumber
+              min={0}
+              value={rentSlotAmount}
+              onChange={(val) => setRentSlotAmount(val ?? 0)}
+              size="large"
+              className="w-full"
+              addonAfter="VNĐ"
+              formatter={(value) =>
+                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+              }
+              parser={(value) => Number((value ?? "").replace(/,/g, "")) || 0}
+            />
+          </Form.Item>
+
+          {selectedService && (
+            <ServiceBookingPriceBreakdown
+              rentSlotAmount={rentSlotAmount}
+              depositAmount={selectedService.depositAmount}
+              equipmentDepreciationCost={selectedService.equipmentDepreciationCost}
+              showHint={rentSlotAmount <= 0}
+            />
+          )}
 
           <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
             <button
               type="button"
-              onClick={() => setShowBookingModal(false)}
+              onClick={handleCloseBookingModal}
               className="px-5 py-2 rounded-lg border border-slate-200 bg-white text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
             >
               {VI.booking.create.cancel}
             </button>
             <button
               type="submit"
-              disabled={!selectedServiceId || !bookingDate || bookingLoading}
+              disabled={
+                !selectedServiceId ||
+                !bookingDate ||
+                rentSlotAmount <= 0 ||
+                bookingLoading
+              }
               className="px-5 py-2 rounded-lg bg-pink-400 text-sm font-semibold text-white hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {bookingLoading ? VI.booking.create.creating : VI.booking.create.create}

@@ -1,5 +1,7 @@
 import axiosInstance from '@/services/axiosInstance';
 import type {
+  GoogleLoginRequest,
+  GoogleLoginResponse,
   LoginRequest,
   LoginResponse,
   QrGenerateResponse,
@@ -14,6 +16,16 @@ import type {
  */
 export async function login(payload: LoginRequest): Promise<LoginResponse> {
   const response = await axiosInstance.post<LoginResponse>('/api/auth/login', payload);
+  return response.data;
+}
+
+/**
+ * Login with Google credential token
+ * @param payload - Google login payload
+ * @returns Login response with token
+ */
+export async function googleLogin(payload: GoogleLoginRequest): Promise<GoogleLoginResponse> {
+  const response = await axiosInstance.post<GoogleLoginResponse>('/api/auth/google/login', payload);
   return response.data;
 }
 

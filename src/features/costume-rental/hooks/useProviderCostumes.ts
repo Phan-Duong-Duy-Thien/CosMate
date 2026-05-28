@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback, useRef }from 'react'
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch'
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge'
 import { DATA_SYNC_EVENTS, notifyCostumesChanged } from '@/shared/sync/dataSync'
 import { message }from 'antd'
 import { getCostumesByProvider, getCostumeById, deleteCostume } from '../api/costumeRental.api'
@@ -146,8 +147,9 @@ export function useProviderCostumes() {
         if (selectedCostume?.id === costumeId) {
           closeDetail()
         }
-        await fetchCostumes()
+        setCostumes((prev) => prev.filter((c) => c.id !== costumeId))
         notifyCostumesChanged({ costumeId })
+        scheduleBackgroundRefetch(() => fetchCostumes())
         return true
       } catch (err) {
         const msg = err instanceof Error ? err.message : 'Không thể xóa trang phục.'

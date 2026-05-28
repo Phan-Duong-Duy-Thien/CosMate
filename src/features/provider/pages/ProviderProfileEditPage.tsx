@@ -358,7 +358,14 @@ export default function ProviderProfileEditPage() {
                     }}
                     bodyStyle={{ padding: 16 }}
                   >
-                    <div style={{ textAlign: 'center' }}>
+                    <div
+                      style={{
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        textAlign: 'center',
+                      }}
+                    >
                       {profile.avatarUrl ? (
                         <img
                           src={profile.avatarUrl}
@@ -370,6 +377,7 @@ export default function ProviderProfileEditPage() {
                             objectFit: 'cover',
                             border: "3px solid var(--border)",
                             marginBottom: 12,
+                            display: 'block',
                           }}
                         />
                       ) : (
@@ -385,7 +393,7 @@ export default function ProviderProfileEditPage() {
                             fontSize: 24,
                             fontWeight: 700,
                             color: "var(--primary)",
-                            margin: '0 auto 12px',
+                            marginBottom: 12,
                           }}
                         >
                           {profile.shopName?.charAt(0)?.toUpperCase() ?? 'P'}

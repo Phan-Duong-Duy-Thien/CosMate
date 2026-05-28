@@ -40,3 +40,29 @@ export const SITE_HEADER_UI = {
   searchDropdown:
     "absolute left-0 right-0 top-[calc(100%+6px)] z-50 overflow-hidden rounded-2xl border-2 border-indigo-950/30 bg-[#fffaf0] shadow-[6px_6px_0_0_rgba(30,27,75,0.22)]",
 } as const
+
+/** Header notification popover (neo-brutal, matches NotificationsPage cards) */
+export const NOTIFICATION_POPOVER_UI = {
+  shell:
+    "home-anime w-[min(340px,calc(100vw-2rem))] overflow-hidden rounded-[1.25rem] border-[3px] border-indigo-950 bg-[#fffbeb] shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]",
+  header:
+    "flex items-center justify-between gap-2 border-b-[3px] border-indigo-950 bg-white/90 px-4 py-3",
+  title: "m-0 text-sm font-extrabold text-indigo-950",
+  markAllBtn:
+    "shrink-0 rounded-lg border-2 border-indigo-950/25 bg-white px-2 py-1 text-xs font-extrabold text-cosmate-pink shadow-[2px_2px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:border-indigo-950 hover:bg-cosmate-soft-pink/50 disabled:pointer-events-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
+  list: "max-h-[360px] overflow-y-auto bg-[linear-gradient(180deg,#fff7fb_0%,#fffbeb_100%)]",
+  empty: "p-8 text-center text-sm font-semibold text-indigo-900/55",
+  item:
+    "cursor-pointer border-b-2 border-indigo-950/10 px-4 py-3 transition-all last:border-b-0 hover:-translate-y-px hover:bg-cosmate-soft-pink/45",
+  itemUnread: "bg-gradient-to-r from-pink-50/90 to-[#fffbeb]",
+  itemHeaderRead: "m-0 text-sm font-semibold leading-snug text-indigo-900/70",
+  itemHeaderUnread: "m-0 text-sm font-extrabold leading-snug text-indigo-950",
+  itemContent: "mt-1 line-clamp-2 text-xs font-medium leading-relaxed text-indigo-900/55",
+  deleteBtn:
+    "shrink-0 rounded-lg border-2 border-indigo-950 bg-[#fffbeb] p-1.5 text-indigo-950 shadow-[2px_2px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:border-indigo-950 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-300",
+  footer:
+    "cursor-pointer border-t-[3px] border-indigo-950 bg-gradient-to-r from-pink-100/80 to-fuchsia-100/50 px-4 py-3 text-center text-sm font-extrabold text-cosmate-pink transition hover:bg-cosmate-soft-pink/60",
+  unreadDot:
+    "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-indigo-950 bg-gradient-to-br from-pink-500 to-fuchsia-600 shadow-[1px_1px_0_0_#1e1b4b]",
+  readDot: "mt-1.5 h-2.5 w-2.5 shrink-0 rounded-full border-2 border-indigo-950/25 bg-slate-300",
+} as const

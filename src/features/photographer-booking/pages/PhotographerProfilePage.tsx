@@ -5,7 +5,6 @@ import { ProfileSidebar } from "../components/ProfileSidebar"
 import { ProfileMainContent } from "../components/ProfileMainContent"
 import { useProviderProfile } from "@/features/provider/hooks/useProviderProfile"
 import { useStartChat } from "@/features/chat/hooks/useStartChat"
-import type { PortfolioImage } from "../types"
 
 export default function PhotographerProfilePage() {
   const { photographerId } = useParams()
@@ -35,7 +34,8 @@ export default function PhotographerProfilePage() {
   }
 
   const handleChat = () => {
-    if (provider.userId) startChat(provider.userId, provider.shopName ?? undefined)
+    if (!provider.verified || !provider.userId) return
+    startChat(provider.userId, provider.shopName ?? undefined)
   }
 
   const reviewCount = provider.totalReviews ?? 0
@@ -58,57 +58,6 @@ export default function PhotographerProfilePage() {
     chatLoading,
   }
 
-  const portfolioItems: PortfolioImage[] = [
-    {
-      id: "p1",
-      url: "https://images.unsplash.com/photo-1542332213-9b5a5a3fad35?auto=format&fit=crop&q=80&w=800",
-      title: "Genshin Impact - Raiden Shogun",
-      category: "Fantasy Ngoại cảnh",
-      likes: "1.2k",
-      views: "15k",
-    },
-    {
-      id: "p2",
-      url: "https://images.unsplash.com/photo-1560932763-0ad9298a995f?auto=format&fit=crop&q=80&w=800",
-      title: "Chân dung Cyberpunk Neon",
-      category: "Chụp đêm",
-      likes: "856",
-      views: "12k",
-    },
-    {
-      id: "p3",
-      url: "https://images.unsplash.com/photo-1621446173275-27427183ef28?auto=format&fit=crop&q=80&w=800",
-      title: "Tinh linh Rừng cổ",
-      category: "Kỹ xảo / Fantasy",
-      likes: "2.1k",
-      views: "25k",
-    },
-    {
-      id: "p4",
-      url: "https://images.unsplash.com/photo-1578632292335-df3abbb0d586?auto=format&fit=crop&q=80&w=800",
-      title: "Cosplay Tech-wear hiện đại",
-      category: "Phong cách đường phố",
-      likes: "945",
-      views: "8k",
-    },
-    {
-      id: "p5",
-      url: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?auto=format&fit=crop&q=80&w=800",
-      title: "Bộ ảnh Thánh đường Gothic",
-      category: "Điện ảnh (Cinematic)",
-      likes: "1.5k",
-      views: "18k",
-    },
-    {
-      id: "p6",
-      url: "https://images.unsplash.com/photo-1627137504228-a2990a274515?auto=format&fit=crop&q=80&w=800",
-      title: "Quyết đấu Samurai trong tuyết",
-      category: "Studio / Hiệu ứng",
-      likes: "3.2k",
-      views: "42k",
-    },
-  ]
-
   return (
     <div className="relative isolate min-h-screen overflow-x-clip pb-16 home-anime bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
       <div
@@ -124,7 +73,7 @@ export default function PhotographerProfilePage() {
       <div className="relative z-[1] mx-auto w-full min-w-0 px-0 pt-6 sm:pt-8">
         <div className="flex flex-col gap-8 lg:flex-row lg:items-start lg:gap-8 xl:gap-10">
           <ProfileSidebar {...photographerData} onChat={handleChat} />
-          <ProfileMainContent portfolioItems={portfolioItems} providerId={providerId} />
+          <ProfileMainContent providerId={providerId} />
         </div>
       </div>
     </div>

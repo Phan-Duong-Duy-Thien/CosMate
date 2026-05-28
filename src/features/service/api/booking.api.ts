@@ -35,7 +35,8 @@ export interface ServiceOrderBooking {
   timeSlot: string;
   numberOfHuman: number;
   rentSlotAmount: number;
-  depositSlotAmount?: number; // from provider API response
+  depositSlotAmount?: number;
+  equipmentDepreciationSlotAmount?: number;
 }
 
 export interface ServiceOrder {
@@ -45,7 +46,14 @@ export interface ServiceOrder {
   providerId: number;
   orderType: string;
   status: string;
+  /** Tổng từ BE (có thể chưa gồm phí khấu hao). */
   totalAmount: number;
+  totalDepositAmount?: number;
+  totalEquipmentDepreciationAmount?: number;
+  /** FE: tổng sau khi bổ sung phí từ gói dịch vụ nếu BE thiếu. */
+  payableTotalAmount?: number;
+  /** FE: chi tiết phí để hiển thị breakdown. */
+  displayPriceBreakdown?: import('../utils/computeServiceMinPrice').ServiceBookingPriceParts;
   createdAt: string;
   bookings: ServiceOrderBooking[];
 }
@@ -78,10 +86,10 @@ export async function getServiceOrdersByCosplayer(
   );
   const result = response.data.result;
   if (Array.isArray(result)) {
-    return { orders: result, total: result.length, isPaginated: false };
+    return { orders: result as ServiceOrder[], total: result.length, isPaginated: false };
   }
   return {
-    orders: result.content,
+    orders: result.content as ServiceOrder[],
     total: result.totalElements,
     isPaginated: true,
   };
@@ -142,6 +150,40 @@ export async function confirmServiceOrder(orderId: number): Promise<void> {
   return response.data.result;
 }
 
+/** Parsed result from POST /api/service-orders/{id}/pay */
+export interface ServicePayResult {
+  paymentUrl: string | null;
+  status: string | null;
+}
+
+function parseServicePayResult(raw: unknown): ServicePayResult {
+  if (typeof raw === 'string') {
+    return { paymentUrl: raw, status: null };
+  }
+
+  if (typeof raw !== 'object' || raw === null) {
+    return { paymentUrl: null, status: null };
+  }
+
+  const obj = raw as Record<string, unknown>;
+  let paymentUrl: string | null = null;
+  if (typeof obj.paymentUrl === 'string') {
+    paymentUrl = obj.paymentUrl;
+  }
+
+  let status: string | null = null;
+  if (typeof obj.status === 'string') {
+    status = obj.status;
+  } else if (typeof obj.order === 'object' && obj.order !== null) {
+    const orderStatus = (obj.order as { status?: string }).status;
+    if (typeof orderStatus === 'string') {
+      status = orderStatus;
+    }
+  }
+
+  return { paymentUrl, status };
+}
+
 /**
  * POST /api/service-orders/{id}/pay
  * Triggers payment for a service order.
@@ -150,7 +192,7 @@ export async function payServiceOrder(
   orderId: number,
   paymentMethod: PaymentMethod,
   returnUrl: string
-): Promise<string | null> {
+): Promise<ServicePayResult> {
   // ── Debug: log exact payload sent to BE ────────────────────────────────
   console.log('SERVICE PAY PAYLOAD:', {
     id: orderId,
@@ -185,26 +227,10 @@ export async function payServiceOrder(
     data !== null &&
     'result' in data;
   const rawResult = hasResultWrapper
-    ? (data as ApiResponse<{ paymentUrl?: string | null } | string | null>).result
+    ? (data as ApiResponse<{ paymentUrl?: string | null; status?: string } | string | null>).result
     : data;
 
-  // Case 1: result is URL string directly
-  if (typeof rawResult === 'string') {
-    return rawResult;
-  }
-
-  // Case 2: result is object containing paymentUrl
-  if (
-    typeof rawResult === 'object' &&
-    rawResult !== null &&
-    'paymentUrl' in rawResult
-  ) {
-    const url = (rawResult as { paymentUrl?: string | null }).paymentUrl;
-    return typeof url === 'string' ? url : null;
-  }
-
-  // Case 3: wallet/no redirect or empty response body
-  return null;
+  return parseServicePayResult(rawResult);
 }
 
 /**

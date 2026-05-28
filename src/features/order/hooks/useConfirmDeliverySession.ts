@@ -2,12 +2,16 @@ import { useCallback, useEffect, useRef, useState } from "react"
 import { message } from "antd"
 
 import { generateQrSession } from "@/features/auth/api/auth.api"
+import { getUserId } from "@/features/auth/services/tokenStorage"
 import { fetchWsImageBlobWithRetry, parseImageIdFromWsBody } from "../api/wsImage.api"
 import { buildConfirmDeliveryQrUrl } from "../constants/confirmDeliveryQr"
 import { confirmDeliveryOrder } from "../services/order.service"
 import { subscribeWsImageSession } from "../services/wsImageSession.service"
 import { extractApiErrorMessage } from "@/shared/utils/apiError"
-import { qrPayloadMatchesCurrentApi } from "@/shared/utils/mobileQrUrl"
+import {
+  qrPayloadMatchesCurrentApi,
+  qrPayloadMatchesCurrentUser,
+} from "@/shared/utils/mobileQrUrl"
 import { VI } from "@/shared/i18n/vi"
 
 const MAX_IMAGES = 5
@@ -20,6 +24,7 @@ type StoredQrSession = {
   sessionToken: string
   qrValue: string
   createdAt: number
+  userId: number
 }
 
 function qrSessionStorageKey(orderId: number): string {
@@ -31,7 +36,9 @@ function loadStoredQrSession(orderId: number): StoredQrSession | null {
     const raw = sessionStorage.getItem(qrSessionStorageKey(orderId))
     if (!raw) return null
     const parsed = JSON.parse(raw) as StoredQrSession
-    if (!parsed.sessionToken || !parsed.qrValue || !parsed.createdAt) return null
+    if (!parsed.sessionToken || !parsed.qrValue || !parsed.createdAt || !parsed.userId) {
+      return null
+    }
     return parsed
   } catch {
     return null
@@ -102,12 +109,13 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
   }, [])
 
   const applySession = useCallback(
-    (sessionId: string, createdAt: number) => {
-      const qr = buildConfirmDeliveryQrUrl(sessionId, orderId)
+    (sessionId: string, createdAt: number, userId: number) => {
+      const qr = buildConfirmDeliveryQrUrl(sessionId, orderId, userId)
       const stored: StoredQrSession = {
         sessionToken: sessionId,
         qrValue: qr,
         createdAt,
+        userId,
       }
       setSessionToken(sessionId)
       setQrValue(qr)
@@ -131,6 +139,12 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
   )
 
   const createSessionFromApi = useCallback(async (): Promise<boolean> => {
+    const userId = getUserId()
+    if (!userId) {
+      setSessionError(VI.profile.orders.confirmDeliveryQr.sessionOwnerRequired)
+      return false
+    }
+
     setSessionLoading(true)
     setSessionError("")
     try {
@@ -142,7 +156,7 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
         return false
       }
 
-      applySession(response.result.sessionId, Date.now())
+      applySession(response.result.sessionId, Date.now(), userId)
       return true
     } catch (err) {
       setSessionError(
@@ -229,7 +243,16 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
       try {
         const stored = loadStoredQrSession(orderId)
 
-        if (stored && !isSessionExpired(stored.createdAt) && qrPayloadMatchesCurrentApi(stored.qrValue)) {
+        const currentUserId = getUserId()
+        const storedValid =
+          stored &&
+          currentUserId &&
+          !isSessionExpired(stored.createdAt) &&
+          qrPayloadMatchesCurrentApi(stored.qrValue) &&
+          stored.userId === currentUserId &&
+          qrPayloadMatchesCurrentUser(stored.qrValue, currentUserId)
+
+        if (storedValid) {
           restoreStoredSession(stored)
           return
         }

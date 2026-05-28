@@ -275,6 +275,13 @@
   body {
     @apply bg-background text-foreground font-sans antialiased;
   }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+    height: 100%;
+  }
 }
 
 /* Custom Scrollbar Styles */
@@ -294,6 +301,38 @@
 
 ::-webkit-scrollbar-thumb:hover {
   background: color-mix(in oklch, var(--muted-foreground) 45%, var(--border));
+}
+
+/* Header notification popover: gap below site header (popover anchors to bell) */
+.cosmate-notif-popover.ant-popover {
+  margin-top: 12px !important;
+}
+
+.cosmate-provider-notif-popover.ant-popover {
+  margin-top: 8px !important;
+}
+
+.cosmate-provider-notif-popover.ant-popover .ant-popover-container,
+.cosmate-provider-notif-popover.ant-popover .ant-popover-inner,
+.cosmate-provider-notif-popover.ant-popover .ant-popover-content,
+.cosmate-provider-notif-popover > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* Header notification popover: remove Ant Design default white card wrapper */
+.cosmate-notif-popover.ant-popover .ant-popover-container,
+.cosmate-notif-popover.ant-popover .ant-popover-inner,
+.cosmate-notif-popover.ant-popover .ant-popover-content,
+.cosmate-notif-popover > div {
+  background: transparent !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  border: none !important;
+  border-radius: 0 !important;
 }
 
 /* Ant Design Message — use default animations, no custom overrides */
@@ -331,6 +370,70 @@
   .costume-card-media .cosmate-costume-card-status--rented {
     background-color: var(--cosmate-warning);
     color: var(--cosmate-ink);
+  }
+
+  /* DashboardLayout: custom collapse control in sider header (no bottom trigger bar). */
+  .cosmate-dashboard-sider .ant-layout-sider-trigger {
+    display: none !important;
+  }
+
+  /*
+   * Dashboard shell: lock page scroll; scroll only inside [data-cosmate-dashboard-scroll].
+   * Sider stays in flex row (not position:fixed) so main column fills remaining height.
+   */
+  html.cosmate-dashboard-active,
+  html.cosmate-dashboard-active body {
+    overflow: hidden;
+    height: 100%;
+  }
+
+  .cosmate-dashboard-root.ant-layout.ant-layout-has-sider {
+    flex-direction: row !important;
+    align-items: stretch !important;
+    height: 100% !important;
+    max-height: 100% !important;
+    min-height: 0 !important;
+  }
+
+  .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-main.ant-layout {
+    flex: 1 1 auto !important;
+    width: 0;
+    min-width: 0;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .cosmate-dashboard-main > .ant-layout-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .cosmate-dashboard-root.ant-layout-has-sider > .cosmate-dashboard-sider.ant-layout-sider {
+    position: relative !important;
+    align-self: stretch !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    flex-shrink: 0;
+  }
+
+  /* Floating FABs / chat popup — portaled to body, must not affect page flow */
+  #cosmate-floating-actions {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 100;
+    width: max-content;
+    height: max-content;
+    margin: 0;
+    padding: 0;
+    border: none;
+    pointer-events: none;
   }
 }
 

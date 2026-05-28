@@ -15,15 +15,11 @@ import { providerSidebarItems } from '@/features/provider/constants/sidebar'
 import { useCreateCostumeWizard } from '../hooks/useCreateCostumeWizard'
 import Phase1BasicInfoForm from '../components/create/Phase1BasicInfoForm'
 import Phase2BuilderTabs from '../components/create/Phase2BuilderTabs'
-import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
 import { useCurrentProviderProfile } from '@/features/provider/hooks/useCurrentProviderProfile'
-import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
-import { VI } from '@/shared/i18n/vi'
 
 export default function ProviderCreateCostumePage() {
   const navigate = useNavigate()
   const wizard = useCreateCostumeWizard()
-  const gate = useProviderGate()
   const { provider, loading: providerLoading } = useCurrentProviderProfile()
 
   const sidebarItems: DashboardSidebarItem[] = providerSidebarItems.map((item) => {
@@ -56,29 +52,6 @@ export default function ProviderCreateCostumePage() {
       showChatButton={false}
       brandName="CosMate Provider"
     >
-      {gate.profileLoading && (
-        <div className="py-20 text-center">
-          <Spin size="large" />
-          <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {!gate.profileLoading && gate.verified === false && (
-        <ProviderActivationGate
-          plans={gate.plans}
-          plansLoading={gate.plansLoading}
-          plansError={gate.plansError}
-          selectedPlanId={gate.selectedPlanId}
-          onSelectPlan={gate.setSelectedPlanId}
-          selectedMethod={gate.selectedMethod}
-          onSelectMethod={gate.setSelectedMethod}
-          onSubscribe={gate.handleSubscribe}
-          subscribing={gate.subscribing}
-          subscribeError={gate.subscribeError}
-        />
-      )}
-
-      {!gate.profileLoading && gate.verified === true && (
         <div className="mx-auto w-full max-w-5xl">
           <h2 className="mb-6 text-center text-2xl font-semibold text-foreground">
             Đăng trang phục mới
@@ -110,6 +83,7 @@ export default function ProviderCreateCostumePage() {
                   loading={wizard.isPhase1Loading}
                   error={wizard.phase1Error}
                   disabled={wizard.isPhase1Loading || providerLoading || !provider?.id}
+                  providerId={provider?.id}
                 />
               )}
 
@@ -136,7 +110,6 @@ export default function ProviderCreateCostumePage() {
             </div>
           </div>
         </div>
-      )}
     </DashboardLayout>
   )
 }

@@ -7,6 +7,73 @@
 import axiosInstance from '@/services/axiosInstance';
 import type { CreateServicePayload, CreatedService, ServiceItem, PublicServiceItem } from '../types';
 
+type RawServiceRecord = Record<string, unknown>;
+
+function readPositiveId(...values: unknown[]): number {
+  for (const value of values) {
+    const n = Number(value);
+    if (Number.isFinite(n) && n > 0) return n;
+  }
+  return 0;
+}
+
+function readNumber(...values: unknown[]): number {
+  for (const value of values) {
+    const n = Number(value);
+    if (Number.isFinite(n)) return n;
+  }
+  return 0;
+}
+
+function readNullableNumber(...values: unknown[]): number | null {
+  for (const value of values) {
+    if (value == null || value === '') continue;
+    const n = Number(value);
+    if (Number.isFinite(n)) return n;
+  }
+  return null;
+}
+
+/** Map BE aliases (snake_case, partial list rows) to canonical ServiceItem fields. */
+export function normalizeServiceItem<T extends ServiceItem | PublicServiceItem>(raw: RawServiceRecord & T): T {
+  const userId = readPositiveId(
+    raw.userId,
+    raw.user_id,
+    raw.providerUserId,
+    raw.provider_user_id,
+    raw.ownerUserId,
+    raw.owner_user_id,
+    raw.createdByUserId,
+    raw.created_by_user_id,
+  );
+  const providerId = readPositiveId(raw.providerId, raw.provider_id);
+
+  const imageUrls = (raw.imageUrls ?? raw.image_urls ?? []) as string[];
+  const areas = (raw.areas ?? []) as ServiceItem['areas'];
+
+  return {
+    ...raw,
+    id: readNumber(raw.id),
+    serviceName: String(raw.serviceName ?? raw.service_name ?? ''),
+    serviceType: String(raw.serviceType ?? raw.service_type ?? ''),
+    description: String(raw.description ?? ''),
+    slotDurationHours: readNumber(raw.slotDurationHours, raw.slot_duration_hours),
+    pricePerSlot: readNumber(raw.pricePerSlot, raw.price_per_slot),
+    equipmentDepreciationCost: readNumber(
+      raw.equipmentDepreciationCost,
+      raw.equipment_depreciation_cost,
+    ),
+    depositAmount: readNumber(raw.depositAmount, raw.deposit_amount),
+    minPrice: readNullableNumber(raw.minPrice, raw.min_price) ?? 0,
+    maxPrice: readNullableNumber(raw.maxPrice, raw.max_price) ?? 0,
+    status: String(raw.status ?? ''),
+    areas,
+    imageUrls: Array.isArray(imageUrls) ? imageUrls : [],
+    userId,
+    providerId: providerId || readNumber(raw.providerId),
+  } as T;
+}
+
 interface ApiResponse<T> {
   code: number;
   message?: string;
@@ -57,7 +124,8 @@ export async function getProviderServices(
   const response = await axiosInstance.get<ApiResponse<ServiceItem[]>>(
     `/api/services/provider/${providerId}`
   );
-  return response.data.result;
+  const list = response.data.result ?? [];
+  return list.map((item) => normalizeServiceItem(item as RawServiceRecord & ServiceItem));
 }
 
 /**
@@ -68,7 +136,8 @@ export async function getPublicServices(): Promise<PublicServiceItem[]> {
   const response = await axiosInstance.get<ApiResponse<PublicServiceItem[]>>(
     '/api/services'
   );
-  return response.data.result;
+  const list = response.data.result ?? [];
+  return list.map((item) => normalizeServiceItem(item as RawServiceRecord & PublicServiceItem));
 }
 
 /**
@@ -81,7 +150,8 @@ export async function getServiceById(
   const response = await axiosInstance.get<ApiResponse<ServiceItem>>(
     `/api/services/${serviceId}`
   );
-  return response.data.result;
+  const raw = response.data.result;
+  return normalizeServiceItem(raw as RawServiceRecord & ServiceItem);
 }
 
 /**

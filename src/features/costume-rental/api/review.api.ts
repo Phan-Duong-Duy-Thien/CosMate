@@ -1,3 +1,4 @@
+import { isAxiosError } from "axios"
 import axiosInstance from "@/services/axiosInstance"
 
 export interface CreateReviewParams {
@@ -103,19 +104,32 @@ export async function getReviewsByCostumeId(costumeId: number): Promise<ReviewIt
  * Check if a review exists for a given order.
  * Returns null if no review found (user can review), or the review if it exists.
  */
+function normalizeReviewResult(
+  payload: ReviewItem | ReviewItem[] | null | undefined,
+): ReviewItem | null {
+  if (!payload) return null
+  if (Array.isArray(payload)) {
+    return payload[0] ?? null
+  }
+  return payload
+}
+
 export async function getReviewByOrderId(orderId: number): Promise<ReviewItem | null> {
   try {
     const res = await axiosInstance.get<ApiResponse<ReviewItem | ReviewItem[] | null>>(
       `/api/reviews/order/${orderId}`
     )
-    const payload = res.data.result
-    if (!payload) return null
-    if (Array.isArray(payload)) {
-      return payload[0] ?? null
+    if (res.data.code !== 0) {
+      return null
     }
-    return payload
-  } catch {
-    // 404 means no review exists yet — this is expected
+    return normalizeReviewResult(res.data.result)
+  } catch (err) {
+    if (isAxiosError(err) && err.response?.status === 404) {
+      return null
+    }
+    if (import.meta.env.DEV) {
+      console.warn("[getReviewByOrderId] unexpected error:", orderId, err)
+    }
     return null
   }
 }

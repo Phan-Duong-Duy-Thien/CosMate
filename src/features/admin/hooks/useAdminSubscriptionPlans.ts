@@ -3,6 +3,10 @@ import { message } from 'antd';
 import { createAdminSubscriptionPlan, getAdminSubscriptionPlans, updateAdminSubscriptionPlan } from '../api/adminSubscriptionPlans.api';
 import type { AdminSubscriptionPlan, CreateSubscriptionPlanRequest } from '../types';
 import { formatBillingCycleMonths } from '../utils/formatBillingCycleMonths';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
+import { DATA_SYNC_EVENTS, notifySubscriptionPlansChanged } from '@/shared/sync/dataSync';
 
 export function useAdminSubscriptionPlans() {
   const [plans, setPlans] = useState<AdminSubscriptionPlan[]>([]);
@@ -14,25 +18,43 @@ export function useAdminSubscriptionPlans() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const fetchPlans = useCallback(async (options?: { silent?: boolean }) => {
-    const silent = options?.silent === true;
-    try {
-      if (!silent) setLoading(true);
-      const data = await getAdminSubscriptionPlans();
-      setPlans(Array.isArray(data) ? data : []);
-    } catch {
-      if (!silent) {
-        message.error('Không thể tải danh sách gói đăng ký');
-        setPlans([]);
+  const { mergeFetched, setPendingField } = usePendingListMutation<AdminSubscriptionPlan, boolean>({
+    getItemId: (p) => p.id,
+    getFieldValue: (p) => p.isActive,
+    setFieldValue: (p, isActive) => ({ ...p, isActive }),
+  });
+
+  const fetchPlans = useCallback(
+    async (options?: { silent?: boolean }) => {
+      const silent = options?.silent === true;
+      try {
+        if (!silent) setLoading(true);
+        const data = await getAdminSubscriptionPlans();
+        setPlans(mergeFetched(Array.isArray(data) ? data : []));
+      } catch {
+        if (!silent) {
+          message.error('Không thể tải danh sách gói đăng ký');
+          setPlans([]);
+        }
+      } finally {
+        if (!silent) setLoading(false);
       }
-    } finally {
-      if (!silent) setLoading(false);
-    }
-  }, []);
+    },
+    [mergeFetched],
+  );
+
+  const scheduleSyncRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(() => fetchPlans({ silent: true }));
+  }, [fetchPlans]);
 
   useEffect(() => {
     void fetchPlans();
   }, [fetchPlans]);
+
+  useDataSyncRefetch(
+    () => fetchPlans({ silent: true }),
+    DATA_SYNC_EVENTS.SUBSCRIPTION_PLANS_CHANGED,
+  );
 
   useEffect(() => {
     setPage(1);
@@ -66,7 +88,8 @@ export function useAdminSubscriptionPlans() {
         setIsCreating(true);
         await createAdminSubscriptionPlan(payload);
         message.success('Tạo gói đăng ký thành công');
-        await fetchPlans({ silent: true });
+        notifySubscriptionPlansChanged();
+        scheduleSyncRefetch();
         return true;
       } catch (err: unknown) {
         const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -76,7 +99,7 @@ export function useAdminSubscriptionPlans() {
         setIsCreating(false);
       }
     },
-    [fetchPlans]
+    [scheduleSyncRefetch],
   );
 
   const updatePlan = useCallback(
@@ -85,7 +108,25 @@ export function useAdminSubscriptionPlans() {
         setIsUpdating(true);
         await updateAdminSubscriptionPlan(id, payload);
         message.success('Cập nhật gói đăng ký thành công');
-        await fetchPlans({ silent: true });
+        setPendingField(id, payload.isActive);
+        setPlans((prev) =>
+          prev.map((p) =>
+            p.id === id
+              ? {
+                  ...p,
+                  name: payload.name,
+                  billingCycle: payload.billingCycle,
+                  cycleMonths: payload.cycleMonths,
+                  price: payload.price,
+                  isActive: payload.isActive,
+                  monthlyToken: payload.monthlyToken,
+                  description: payload.description,
+                }
+              : p,
+          ),
+        );
+        notifySubscriptionPlansChanged({ planId: id });
+        scheduleSyncRefetch();
         return true;
       } catch (err: unknown) {
         const msg = (err as { response?: { data?: { message?: string } } })?.response?.data?.message;
@@ -95,7 +136,7 @@ export function useAdminSubscriptionPlans() {
         setIsUpdating(false);
       }
     },
-    [fetchPlans]
+    [setPendingField, scheduleSyncRefetch],
   );
 
   return {

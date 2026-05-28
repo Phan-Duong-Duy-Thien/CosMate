@@ -94,6 +94,11 @@ export default function CostumeListPage() {
   const sortedItems = React.useMemo(() => {
     const next = [...filteredItems]
     next.sort((a, b) => {
+      // Có sẵn luôn hiển thị trước; đã thuê / không khả dụng xuống cuối
+      if (a.isAvailable !== b.isAvailable) {
+        return a.isAvailable ? -1 : 1
+      }
+
       if (sortKey === "newest") return Date.parse(b.createdAt) - Date.parse(a.createdAt)
       if (sortKey === "bestSeller") {
         if (a.bestSeller !== b.bestSeller) return a.bestSeller ? -1 : 1
@@ -273,6 +278,9 @@ export default function CostumeListPage() {
                     <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600">AI MATCHES</p>
                     <p className="text-base font-extrabold text-indigo-900 md:text-lg">
                       Kết quả gợi ý từ AI ({aiResults.length})
+                      <span className="ml-2 text-xs font-normal italic text-indigo-500/80">
+                        (Kết quả phân tích AI chỉ mang tính chất tham khảo)
+                      </span>
                     </p>
                   </div>
 
@@ -311,6 +319,18 @@ export default function CostumeListPage() {
                       onToggleWishlist={handleToggleWishlist}
                     />
                   </>
+                )}
+
+                {exactMatches.length === 0 && suggestedMatches.length === 0 && (
+                  <div className="flex flex-col items-center gap-3 rounded-xl border-[3px] border-dashed border-indigo-950/15 bg-white/60 px-6 py-10 text-center">
+                    <span className="text-4xl" aria-hidden="true">🔍</span>
+                    <p className="text-sm font-bold text-indigo-900">
+                      AI không tìm thấy trang phục nào phù hợp
+                    </p>
+                    <p className="max-w-md text-xs leading-relaxed text-indigo-800/70">
+                      Hãy thử mô tả chi tiết hơn hoặc tải lên một bức ảnh rõ nét hơn để AI có thể phân tích chính xác hơn nhé!
+                    </p>
+                  </div>
                 )}
               </div>
             )}

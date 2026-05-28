@@ -51,7 +51,9 @@ import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
 import CharacterRequestManagementPage from "@/features/admin/pages/CharacterRequestManagement"
 import AdminSubscriptionPlansPage from "@/features/admin/pages/AdminSubscriptionPlansPage"
+import AdminAiTokenPlansPage from "@/features/admin/pages/AdminAiTokenPlansPage"
 import AdminAiTokenPurchasesPage from "@/features/admin/pages/AdminAiTokenPurchasesPage"
+import AdminSystemConfigsPage from "@/features/admin/pages/AdminSystemConfigsPage"
 import AdminLayout from "@/app/layouts/AdminLayout"
 import ProviderHomePage from "@/features/provider/pages/ProviderHomePage"
 import ShopProfilePage from "@/features/provider/pages/ShopProfilePage"
@@ -60,6 +62,7 @@ import ProviderCreateCostumePage from "@/features/costume-rental/pages/ProviderC
 import CheckoutReviewPage from "@/features/order/pages/CheckoutReviewPage"
 import ProviderOrdersPage from "@/features/order/pages/ProviderOrdersPage"
 import ProviderReviewsPage from "@/features/provider/pages/ProviderReviewsPage"
+import ProviderNotificationsPage from "@/features/provider/pages/ProviderNotificationsPage"
 import ProviderServiceOrdersPage from "@/features/service/pages/ProviderServiceOrdersPage"
 import EventStaffHomePage from "@/features/provider/pages/EventStaffHomePage"
 import PhotographHomePage from "@/features/provider/pages/PhotographHomePage"
@@ -140,7 +143,9 @@ export default function AppRoutes() {
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
           <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
           <Route path="/admin/subscription-plans" element={<AdminSubscriptionPlansPage />} />
+          <Route path="/admin/ai-token-plans" element={<AdminAiTokenPlansPage />} />
           <Route path="/admin/ai-token-purchases" element={<AdminAiTokenPurchasesPage />} />
+          <Route path="/admin/system-configs" element={<AdminSystemConfigsPage />} />
           <Route path="/admin/audit-logs" element={<AdminAuditLogsPage />} />
           <Route path="/admin/profile" element={<DashboardProfilePage />} />
         </Route>
@@ -162,6 +167,7 @@ export default function AppRoutes() {
         <Route path="/provider-rental/orders" element={<ProviderOrdersPage />} />
         <Route path="/provider-rental/packages" element={<Navigate to="/provider-rental/subscription" replace />} />
         <Route path="/provider-rental/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-rental/notifications" element={<ProviderNotificationsPage />} />
         <Route path="/provider/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider/settings/edit" element={<ProviderProfileEditPage />} />
@@ -185,6 +191,7 @@ export default function AppRoutes() {
         <Route path="/provider-photograph/service-orders" element={<ProviderServiceOrdersPage />} />
         <Route path="/provider-photograph/packages" element={<Navigate to="/provider-photograph/subscription" replace />} />
         <Route path="/provider-photograph/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-photograph/notifications" element={<ProviderNotificationsPage />} />
         <Route path="/provider-photograph/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-photograph/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-photograph/settings/edit" element={<ProviderProfileEditPage />} />
@@ -208,6 +215,7 @@ export default function AppRoutes() {
         <Route path="/provider-event-staff/service-orders" element={<ProviderServiceOrdersPage />} />
         <Route path="/provider-event-staff/packages" element={<Navigate to="/provider-event-staff/subscription" replace />} />
         <Route path="/provider-event-staff/subscription" element={<ProviderPackageManagementPage />} />
+        <Route path="/provider-event-staff/notifications" element={<ProviderNotificationsPage />} />
         <Route path="/provider-event-staff/reviews" element={<ProviderReviewsPage />} />
         <Route path="/provider-event-staff/settings" element={<ProviderProfileViewPage />} />
         <Route path="/provider-event-staff/settings/edit" element={<ProviderProfileEditPage />} />

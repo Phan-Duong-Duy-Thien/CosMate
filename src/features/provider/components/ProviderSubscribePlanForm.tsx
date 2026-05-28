@@ -4,6 +4,7 @@
  */
 import { Alert, Button, Card, Col, Radio, Row, Spin, Tag, Typography } from 'antd';
 import { CheckCircleOutlined } from '@ant-design/icons';
+import { formatBillingCycleMonths } from '@/features/admin/utils/formatBillingCycleMonths';
 import { VI } from '@/shared/i18n/vi';
 import type { SubscriptionPlan } from '../types';
 
@@ -30,11 +31,14 @@ function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price);
 }
 
-function getPlanLabel(months: number): string {
-  if (months === 1) return VI.provider.activation.planMonth;
-  if (months === 3) return VI.provider.activation.planQuarter;
-  if (months === 12) return VI.provider.activation.planYear;
-  return `${months} ${VI.provider.activation.planCustom}`;
+function getPlanCycleLabel(plan: SubscriptionPlan): string {
+  if (plan.cycleLabel && plan.cycleLabel !== '—') {
+    return plan.cycleLabel;
+  }
+  return formatBillingCycleMonths(
+    plan.billingCycleMonths ?? plan.cycleMonths ?? 0,
+    plan.billingCycle ?? '',
+  );
 }
 
 export function ProviderSubscribePlanForm({
@@ -77,6 +81,8 @@ export function ProviderSubscribePlanForm({
           <Row gutter={[12, 12]}>
             {plans.map((plan) => {
               const isSelected = selectedPlanId === plan.id;
+              const cycleLabel = getPlanCycleLabel(plan);
+              const showCycleTag = cycleLabel && cycleLabel !== '—';
               return (
                 <Col xs={24} sm={8} key={plan.id}>
                   <Card
@@ -102,9 +108,11 @@ export function ProviderSubscribePlanForm({
                         }}
                       />
                     )}
-                    <Tag color="purple" style={{ marginBottom: 8 }}>
-                      {getPlanLabel(plan.billingCycleMonths)}
-                    </Tag>
+                    {showCycleTag ? (
+                      <Tag color="purple" style={{ marginBottom: 8 }}>
+                        {cycleLabel}
+                      </Tag>
+                    ) : null}
                     <div style={{ fontSize: 18, fontWeight: 700, color: 'var(--primary)' }}>
                       {formatPrice(plan.price)}
                     </div>

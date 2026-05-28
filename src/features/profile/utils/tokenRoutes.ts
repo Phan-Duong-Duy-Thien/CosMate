@@ -14,7 +14,10 @@ export function isProviderDashboardPath(pathname: string): boolean {
   return (
     pathname.startsWith('/provider-rental') ||
     pathname.startsWith('/provider-photograph') ||
-    pathname.startsWith('/provider-event-staff')
+    pathname.startsWith('/provider-event-staff') ||
+    pathname.startsWith('/provider/reviews') ||
+    pathname.startsWith('/provider/settings') ||
+    pathname.startsWith('/provider/messages')
   );
 }
 
@@ -50,6 +53,36 @@ export function getProviderDashboardBackPath(pathname: string): string {
   if (pathname.startsWith('/provider-photograph')) return '/provider-photograph';
   if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff';
   return '/provider-rental';
+}
+
+export function getProviderNotificationsPath(pathname: string): string {
+  if (pathname.startsWith('/provider-photograph')) return '/provider-photograph/notifications';
+  if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff/notifications';
+  return '/provider-rental/notifications';
+}
+
+export function getProviderOrdersPath(pathname: string): string {
+  if (pathname.startsWith('/provider-photograph')) return '/provider-photograph/service-orders';
+  if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff/service-orders';
+  return '/provider-rental/orders';
+}
+
+export function getProviderMessagesPath(pathname: string): string {
+  if (pathname.startsWith('/provider-photograph')) return '/provider-photograph/messages';
+  if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff/messages';
+  return '/provider/messages';
+}
+
+export function getProviderWalletPath(pathname: string): string {
+  if (pathname.startsWith('/provider-photograph')) return '/provider-photograph/wallet';
+  if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff/wallet';
+  return '/provider-rental/wallet';
+}
+
+export function getProviderSubscriptionPath(pathname: string): string {
+  if (pathname.startsWith('/provider-photograph')) return '/provider-photograph/subscription';
+  if (pathname.startsWith('/provider-event-staff')) return '/provider-event-staff/subscription';
+  return '/provider-rental/subscription';
 }
 
 export function getWalletTopUpRedirectForToken(pathname: string): string {

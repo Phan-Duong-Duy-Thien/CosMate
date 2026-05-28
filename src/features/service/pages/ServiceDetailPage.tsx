@@ -162,6 +162,8 @@ export default function ServiceDetailPage() {
       : `/photographer/${service.providerId}`
 
   const isActive = service.status === "ACTIVE"
+  const chatUserId = service.userId > 0 ? service.userId : 0
+  const chatDisabled = chatLoading || !chatUserId
 
   return (
     <div className="relative isolate min-h-screen overflow-x-clip pb-16 home-anime bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)]">
@@ -234,11 +236,14 @@ export default function ServiceDetailPage() {
                   <button
                     type="button"
                     onClick={() =>
-                      service.userId
-                        ? void startChat(service.userId, displayTitle)
+                      chatUserId ? void startChat(chatUserId, displayTitle) : undefined
+                    }
+                    disabled={chatDisabled}
+                    title={
+                      chatDisabled && !chatLoading && !chatUserId
+                        ? "Không thể nhắn tin — thiếu thông tin nhà cung cấp"
                         : undefined
                     }
-                    disabled={chatLoading || !service.userId}
                     className="inline-flex items-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-4 py-2 text-xs font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     {chatLoading ? (

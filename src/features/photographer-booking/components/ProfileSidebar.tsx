@@ -1,4 +1,4 @@
-import { Star, MessageCircle, Calendar, ShieldCheck, Instagram, Twitter, Globe, Loader2 } from "lucide-react"
+import { Star, MessageCircle, ShieldCheck, Instagram, Twitter, Globe, Loader2 } from "lucide-react"
 
 import { ImageWithFallback } from "../mocks/ImageWithFallback"
 import { cn } from "@/lib/utils"
@@ -90,19 +90,13 @@ export function ProfileSidebar({
           </div>
         </div>
 
-        <div className="mb-8 space-y-3">
-          <button
-            type="button"
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 py-3.5 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition hover:brightness-110 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-400"
-          >
-            <Calendar className="h-5 w-5 shrink-0" aria-hidden />
-            Đặt lịch ngay
-          </button>
+        <div className="mb-8">
           <button
             type="button"
             onClick={onChat}
-            disabled={chatLoading}
-            className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-white py-3.5 text-sm font-extrabold text-indigo-950 shadow-[5px_5px_0_0_rgba(30,27,75,0.25)] transition hover:bg-pink-50 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-400"
+            disabled={chatLoading || !verified}
+            title={!verified ? "Nhà cung cấp chưa được xác minh" : undefined}
+            className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 py-3.5 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pink-400"
           >
             {chatLoading ? (
               <Loader2 className="h-5 w-5 shrink-0 animate-spin" aria-hidden />

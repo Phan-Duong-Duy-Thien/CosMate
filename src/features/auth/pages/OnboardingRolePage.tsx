@@ -6,7 +6,7 @@ import { message } from "antd"
 import { AuthLayout } from "../layout/AuthLayout"
 import { VI } from "@/shared/i18n/vi"
 import { updateUserRole } from "../api/auth.api"
-import { saveAuth, getAuth, decodeJwtPayload } from "../services/tokenStorage"
+import { saveAuth, getAuth, decodeJwtPayload, isAuthPersistent } from "../services/tokenStorage"
 import { getRedirectPath } from "../utils/roleRedirect"
 
 type RoleKey = "cosplayer" | "provider" | "staff" | "photographer"
@@ -89,7 +89,7 @@ export default function OnboardingRolePage() {
           }
           const newToken = reEncodeJwt(auth.token, newPayload)
           if (newToken) {
-            saveAuth({ token: newToken, tokenType: auth.tokenType }, true)
+            saveAuth({ token: newToken, tokenType: auth.tokenType }, isAuthPersistent())
           }
         }
       }

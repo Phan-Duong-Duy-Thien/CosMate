@@ -6,6 +6,7 @@ import {
   ClipboardList,
   PlusCircle,
   MessageCircle,
+  Bell,
   Wallet,
   Coins,
   Crown,
@@ -69,6 +70,12 @@ export const providerSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.messages,
     icon: MessageCircle,
     path: '/provider/messages',
+  },
+  {
+    key: 'notifications',
+    label: VI.provider.sidebar.notifications,
+    icon: Bell,
+    path: '/provider-rental/notifications',
   },
   {
     key: 'packageManagement',
@@ -137,6 +144,12 @@ export const photographSidebarItems: ProviderSidebarItem[] = [
     path: '/provider-photograph/messages',
   },
   {
+    key: 'notifications',
+    label: VI.provider.sidebar.notifications,
+    icon: Bell,
+    path: '/provider-photograph/notifications',
+  },
+  {
     key: 'packageManagement',
     label: VI.provider.sidebar.packageManagement,
     icon: Crown,
@@ -201,6 +214,12 @@ export const eventStaffSidebarItems: ProviderSidebarItem[] = [
     label: VI.provider.sidebar.messages,
     icon: MessageCircle,
     path: '/provider-event-staff/messages',
+  },
+  {
+    key: 'notifications',
+    label: VI.provider.sidebar.notifications,
+    icon: Bell,
+    path: '/provider-event-staff/notifications',
   },
   {
     key: 'packageManagement',

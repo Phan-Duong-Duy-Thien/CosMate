@@ -3,24 +3,38 @@
  * https://api.ghn.vn/home/docs/detail
  */
 
-const GHN_BASE =
-  import.meta.env.VITE_GHN_API_BASE?.replace(/\/$/, '') || '/ghn-proxy';
+import {
+  getGhnApiBase,
+  getGhnConfigStatus,
+  getGhnShopId,
+  getGhnToken,
+} from '@/shared/config/env';
 
-function ghnToken(): string {
-  return import.meta.env.VITE_GHN_TOKEN ?? '';
-}
+export type GhnErrorCode =
+  | 'GHN_HTML_RESPONSE'
+  | 'GHN_INVALID_JSON'
+  | 'GHN_HTTP_ERROR'
+  | 'GHN_API_ERROR';
 
-function ghnShopId(): string {
-  return import.meta.env.VITE_GHN_SHOP_ID ?? '';
+export class GhnResponseError extends Error {
+  readonly code: GhnErrorCode;
+  readonly httpStatus?: number;
+
+  constructor(message: string, code: GhnErrorCode, httpStatus?: number) {
+    super(message);
+    this.name = 'GhnResponseError';
+    this.code = code;
+    this.httpStatus = httpStatus;
+  }
 }
 
 function ghnHeaders(requireShopId = true): HeadersInit {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
-    Token: ghnToken(),
+    Token: getGhnToken(),
   };
   if (requireShopId) {
-    headers.ShopId = ghnShopId();
+    headers.ShopId = getGhnShopId();
   }
   return headers;
 }
@@ -36,14 +50,42 @@ async function ghnRequest<T>(
   init?: RequestInit & { requireShopId?: boolean }
 ): Promise<GhnApiEnvelope<T>> {
   const { requireShopId = true, ...fetchInit } = init ?? {};
-  const res = await fetch(`${GHN_BASE}${path}`, {
+  const res = await fetch(`${getGhnApiBase()}${path}`, {
     ...fetchInit,
     headers: {
       ...ghnHeaders(requireShopId),
       ...(fetchInit.headers ?? {}),
     },
   });
-  return (await res.json()) as GhnApiEnvelope<T>;
+
+  const text = await res.text();
+  const trimmed = text.trim();
+
+  if (trimmed.startsWith('<')) {
+    throw new GhnResponseError(
+      'GHN returned HTML instead of JSON',
+      'GHN_HTML_RESPONSE',
+      res.status
+    );
+  }
+
+  if (!res.ok) {
+    const snippet = trimmed.slice(0, 120);
+    throw new GhnResponseError(
+      snippet ? `GHN HTTP ${res.status}: ${snippet}` : `GHN HTTP ${res.status}`,
+      'GHN_HTTP_ERROR',
+      res.status
+    );
+  }
+
+  let json: GhnApiEnvelope<T>;
+  try {
+    json = JSON.parse(trimmed) as GhnApiEnvelope<T>;
+  } catch {
+    throw new GhnResponseError('Invalid JSON from GHN', 'GHN_INVALID_JSON', res.status);
+  }
+
+  return json;
 }
 
 async function ghnFetch<T>(
@@ -52,7 +94,7 @@ async function ghnFetch<T>(
 ): Promise<T> {
   const json = await ghnRequest<T>(path, init);
   if (json.code !== 200 || json.data == null) {
-    throw new Error(json.message ?? 'GHN API error');
+    throw new GhnResponseError(json.message ?? 'GHN API error', 'GHN_API_ERROR');
   }
   return json.data;
 }
@@ -64,7 +106,7 @@ async function ghnFetchList<T>(
 ): Promise<T[]> {
   const json = await ghnRequest<T[]>(path, init);
   if (json.code !== 200) {
-    throw new Error(json.message ?? 'GHN API error');
+    throw new GhnResponseError(json.message ?? 'GHN API error', 'GHN_API_ERROR');
   }
   return Array.isArray(json.data) ? json.data : [];
 }
@@ -102,8 +144,10 @@ export interface GhnFeeResult {
 }
 
 export function isGhnConfigured(): boolean {
-  return Boolean(ghnToken() && ghnShopId());
+  return getGhnConfigStatus() === 'ok';
 }
+
+export { getGhnConfigStatus } from '@/shared/config/env';
 
 export async function fetchGhnProvinces(): Promise<GhnProvince[]> {
   return ghnFetchList<GhnProvince>('/shiip/public-api/master-data/province', { method: 'GET' });

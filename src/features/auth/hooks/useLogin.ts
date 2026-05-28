@@ -3,7 +3,7 @@ import { message } from "antd"
 
 import { VI } from "@/shared/i18n/vi"
 import type { LoginFormValues } from "../types"
-import { login } from "../api/auth.api"
+import { googleLogin, login } from "../api/auth.api"
 import { saveAuth, getRoles } from "../services/tokenStorage"
 import { applyFieldErrors, extractFieldErrors } from "@/shared/utils/formValidationErrors"
 import { extractApiErrorMessage } from "@/shared/utils/apiError"
@@ -62,9 +62,44 @@ export function useLogin() {
     }
   }, [])
 
+  const handleGoogleLogin = useCallback(async (idToken: string): Promise<string[] | null> => {
+    setSubmitting(true)
+    setFormError("")
+
+    try {
+      const response = await googleLogin({
+        idToken,
+        code: "",
+        redirectUri: "",
+      })
+
+      if (response.code !== 0) {
+        setFormError(response.message || VI.auth.login.messages.loginFailed)
+        return null
+      }
+
+      if (!response.result.token) {
+        setFormError(VI.auth.login.messages.loginMissingToken)
+        return null
+      }
+
+      // Google login is treated as persistent by default.
+      saveAuth(response.result, true)
+      const roles = getRoles()
+      message.success(VI.auth.login.messages.loginSuccess)
+      return roles
+    } catch (error: unknown) {
+      setFormError(extractApiErrorMessage(error, VI.auth.login.messages.invalidCredentials))
+      return null
+    } finally {
+      setSubmitting(false)
+    }
+  }, [])
+
   return {
     submitting,
     formError,
     handleEmailLogin,
+    handleGoogleLogin,
   }
 }

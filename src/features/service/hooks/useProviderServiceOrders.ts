@@ -16,6 +16,8 @@ import type { ServiceOrder } from '../api/booking.api';
 import { getUserById } from '@/features/admin/api/adminUsers.api';
 import { canFetchOtherUserProfiles } from '@/shared/utils/canFetchUserProfile';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
+import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import {
   DATA_SYNC_EVENTS,
   notifyServiceOrdersChanged,
@@ -48,9 +50,7 @@ export interface UseProviderServiceOrdersResult {
 }
 
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
-  // allOrders — always holds the complete unfiltered list (used for tab counts)
   const [allOrders, setAllOrders] = useState<ServiceOrder[]>([]);
-  // filteredOrders — only the orders matching the selected tab (used for display)
   const [filteredOrders, setFilteredOrders] = useState<ServiceOrder[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -59,116 +59,140 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   const selectedStatusRef = useRef(selectedStatus);
   selectedStatusRef.current = selectedStatus;
 
-  const patchOrderStatus = useCallback(
-    (orderId: number, status: OrderStatusValue) => {
-      const patch = (list: ServiceOrder[]) =>
-        list.map((o) => (o.id === orderId ? { ...o, status } : o));
-      setAllOrders((prev) => patch(prev));
-      setFilteredOrders((prev) => patch(prev));
-      notifyServiceOrdersChanged({ orderId });
-    },
-    [],
-  );
+  const { mergeFetched, setPendingField } = usePendingListMutation<ServiceOrder, string>({
+    getItemId: (o) => o.id,
+    getFieldValue: (o) => o.status,
+    setFieldValue: (o, status) => ({ ...o, status }),
+  });
 
-  const fetchData = useCallback(async (status?: ProviderServiceOrderTab) => {
-    try {
-      setLoading(true);
-      setError(null);
-      const apiStatuses = status && status !== 'all' ? status : undefined;
-      let data = await fetchProviderServiceOrders(apiStatuses);
-
-      if (canFetchOtherUserProfiles()) {
-        const ordersNeedingName = data.filter((o) => !o.cosplayerName?.trim());
-        if (ordersNeedingName.length > 0) {
-          const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
-          const userResults = await Promise.all(
-            uniqueCosplayerIds.map((id) => getUserById(id)),
-          );
-          const cosplayerMap = Object.fromEntries(
-            userResults
-              .filter((u): u is NonNullable<typeof u> => u !== null)
-              .map((u) => [u.id, u.fullName ?? '—']),
-          );
-          data = data.map((order) =>
-            !order.cosplayerName?.trim()
-              ? { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName }
-              : order,
-          );
-        }
-      }
-
-      const sorted = [...data].sort(
-        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      );
-
-      if (!apiStatuses) {
-        // No filter → this IS the full list for counts
-        setAllOrders(sorted);
-        setFilteredOrders(sorted);
-      } else {
-        // Filtered response → keep allOrders intact, update display only
-        setFilteredOrders(sorted);
-      }
-    } catch (err) {
-      console.error('[useProviderServiceOrders] Failed to fetch orders:', err);
-      setError('Không thể tải danh sách đơn đặt dịch vụ');
-    } finally {
-      setLoading(false);
-    }
+  const enrichOrders = useCallback(async (data: ServiceOrder[]) => {
+    if (!canFetchOtherUserProfiles()) return data;
+    const ordersNeedingName = data.filter((o) => !o.cosplayerName?.trim());
+    if (ordersNeedingName.length === 0) return data;
+    const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
+    const userResults = await Promise.all(uniqueCosplayerIds.map((id) => getUserById(id)));
+    const cosplayerMap = Object.fromEntries(
+      userResults
+        .filter((u): u is NonNullable<typeof u> => u !== null)
+        .map((u) => [u.id, u.fullName ?? '—']),
+    );
+    return data.map((order) =>
+      !order.cosplayerName?.trim()
+        ? { ...order, cosplayerName: cosplayerMap[order.cosplayerId] ?? order.cosplayerName }
+        : order,
+    );
   }, []);
 
-  // Load all orders on mount (no filter) for correct counts
+  const fetchData = useCallback(
+    async (status?: ProviderServiceOrderTab, options?: { silent?: boolean }) => {
+      const silent = options?.silent ?? false;
+      try {
+        if (!silent) {
+          setLoading(true);
+        }
+        setError(null);
+        const apiStatuses = status && status !== 'all' ? status : undefined;
+        let data = await fetchProviderServiceOrders(apiStatuses);
+        data = await enrichOrders(data);
+
+        const sorted = mergeFetched(
+          [...data].sort(
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          ),
+        );
+
+        if (!apiStatuses) {
+          setAllOrders(sorted);
+          setFilteredOrders(sorted);
+        } else {
+          setFilteredOrders(sorted);
+        }
+      } catch (err) {
+        console.error('[useProviderServiceOrders] Failed to fetch orders:', err);
+        setError('Không thể tải danh sách đơn đặt dịch vụ');
+      } finally {
+        if (!silent) {
+          setLoading(false);
+        }
+      }
+    },
+    [enrichOrders, mergeFetched],
+  );
+
   useEffect(() => {
-    fetchData();
+    void fetchData();
+  }, [fetchData]);
+
+  const applyOrderStatusMutation = useCallback(
+    (orderId: number, newStatus: OrderStatusValue) => {
+      setPendingField(orderId, newStatus);
+      const tab = selectedStatusRef.current;
+      setAllOrders((prev) =>
+        prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
+      );
+      setFilteredOrders((prev) => {
+        if (tab !== 'all' && newStatus !== tab) {
+          return prev.filter((o) => o.id !== orderId);
+        }
+        return prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o));
+      });
+      notifyServiceOrdersChanged({ orderId });
+    },
+    [setPendingField],
+  );
+
+  const scheduleSyncRefetch = useCallback(() => {
+    scheduleBackgroundRefetch(async () => {
+      await fetchData(undefined, { silent: true });
+      const tab = selectedStatusRef.current;
+      if (tab !== 'all') {
+        await fetchData(tab, { silent: true });
+      }
+    });
   }, [fetchData]);
 
   const handleSetStatus = useCallback(
     (status: ProviderServiceOrderTab) => {
       setSelectedStatus(status);
       if (status === 'all') {
-        // Restore full list from stored allOrders
         setFilteredOrders(
           [...allOrders].sort(
-            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-          )
+            (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+          ),
         );
       } else {
-        fetchData(status);
+        void fetchData(status);
       }
     },
-    [fetchData, allOrders]
+    [fetchData, allOrders],
   );
-
-  const refreshAfterMutation = useCallback(async () => {
-    await fetchData();
-    const tab = selectedStatusRef.current;
-    if (tab !== 'all') {
-      await fetchData(tab);
-    }
-  }, [fetchData]);
 
   const refetch = useCallback(async () => {
     await fetchData(selectedStatus === 'all' ? undefined : selectedStatus);
   }, [fetchData, selectedStatus]);
 
-  useDataSyncRefetch(refetch, DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED);
+  useDataSyncRefetch(() => refetch(), DATA_SYNC_EVENTS.SERVICE_ORDERS_CHANGED);
 
   const handleSetWaitingStatus = useCallback(
     async (orderId: number) => {
       try {
         setLoadingAction(orderId);
         await setWaitingStatus(orderId);
-        patchOrderStatus(orderId, 'WAITING_SERVICE_DATE');
-        await refreshAfterMutation();
+        applyOrderStatusMutation(orderId, 'WAITING_SERVICE_DATE');
+        scheduleSyncRefetch();
         message.success('Đã chuyển sang chờ ngày thực hiện');
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[useProviderServiceOrders] setWaitingStatus failed:', err);
-        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+        const msg =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        message.error(msg || 'Có lỗi xảy ra');
       } finally {
         setLoadingAction(null);
       }
     },
-    [patchOrderStatus, refreshAfterMutation]
+    [applyOrderStatusMutation, scheduleSyncRefetch],
   );
 
   const handleStartService = useCallback(
@@ -176,17 +200,21 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       try {
         setLoadingAction(orderId);
         await startService(orderId);
-        patchOrderStatus(orderId, 'IN_SERVICE');
-        await refreshAfterMutation();
+        applyOrderStatusMutation(orderId, 'IN_SERVICE');
+        scheduleSyncRefetch();
         message.success('Đã bắt đầu dịch vụ');
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[useProviderServiceOrders] startService failed:', err);
-        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+        const msg =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        message.error(msg || 'Có lỗi xảy ra');
       } finally {
         setLoadingAction(null);
       }
     },
-    [patchOrderStatus, refreshAfterMutation]
+    [applyOrderStatusMutation, scheduleSyncRefetch],
   );
 
   const handleCompleteService = useCallback(
@@ -194,20 +222,23 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
       try {
         setLoadingAction(orderId);
         await completeService(orderId);
-        patchOrderStatus(orderId, 'COMPLETED');
-        await refreshAfterMutation();
+        applyOrderStatusMutation(orderId, 'COMPLETED');
+        scheduleSyncRefetch();
         message.success('Đã hoàn thành dịch vụ');
-      } catch (err: any) {
+      } catch (err: unknown) {
         console.error('[useProviderServiceOrders] completeService failed:', err);
-        message.error(err?.response?.data?.message || 'Có lỗi xảy ra');
+        const msg =
+          err && typeof err === 'object' && 'response' in err
+            ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : undefined;
+        message.error(msg || 'Có lỗi xảy ra');
       } finally {
         setLoadingAction(null);
       }
     },
-    [patchOrderStatus, refreshAfterMutation]
+    [applyOrderStatusMutation, scheduleSyncRefetch],
   );
 
-  // Return allOrders for counts, filteredOrders for display
   const orders = selectedStatus === 'all' ? allOrders : filteredOrders;
   const tabCounts = useMemo<Record<ProviderServiceOrderTab, number>>(() => {
     const countByStatus = (status: ProviderServiceOrderTab) =>

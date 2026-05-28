@@ -15,10 +15,9 @@ import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import { CreateServiceForm } from '../components/CreateServiceForm';
 import { ServiceDetailModal } from '../components/ServiceDetailModal';
 import { useViewService } from '../hooks/useViewService';
+import { useEditService } from '../hooks/useEditService';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { photographSidebarItems, eventStaffSidebarItems } from '@/features/provider/constants/sidebar';
-import { useProviderGate } from '@/features/provider/hooks/useProviderGate';
-import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate';
 import { useProviderServices } from '../hooks/useProviderServices';
 import { useProviderVerification } from '@/features/provider/hooks/useProviderVerification';
 import type { ServiceItem } from '../types';
@@ -82,24 +81,8 @@ function formatPrice(value: number | null): string {
 
 export default function ProviderServiceListPage() {
   const navigate = useNavigate();
-  const [editingService, setEditingService] = useState<ServiceItem | null>(null);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [viewModalOpen, setViewModalOpen] = useState(false);
-
-  const {
-    verified,
-    profileLoading,
-    plans,
-    plansLoading,
-    plansError,
-    selectedPlanId,
-    setSelectedPlanId,
-    selectedMethod,
-    setSelectedMethod,
-    handleSubscribe,
-    subscribing,
-    subscribeError,
-  } = useProviderGate();
 
   const { profile } = useProviderVerification();
   const {
@@ -111,6 +94,13 @@ export default function ProviderServiceListPage() {
     removeService,
   } = useProviderServices(profile?.id ?? 0);
   const { serviceDetail, loading: viewLoading, error: viewError, open: openView, close: closeView } = useViewService();
+  const {
+    editingService,
+    loading: editLoading,
+    error: editError,
+    open: openEdit,
+    close: closeEdit,
+  } = useEditService();
 
   const sidebarItems = deriveSidebarItems();
   const brandName = deriveBrandName();
@@ -200,8 +190,8 @@ export default function ProviderServiceListPage() {
           <Tooltip title={VI.common.actions.edit}>
             <EditOutlined
               onClick={() => {
-                setEditingService(record);
                 setEditModalOpen(true);
+                void openEdit(record.id);
               }}
               style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-success)' }}
             />
@@ -225,30 +215,6 @@ export default function ProviderServiceListPage() {
 
   return (
     <DashboardLayout title={VI.service.list.pageTitle} sidebarItems={sidebarItems} brandName={brandName} showChatButton={false}>
-      {profileLoading && (
-        <div className="flex flex-col items-center justify-center gap-4 py-20">
-          <Spin size="large" />
-          <p className="text-sm text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
-        </div>
-      )}
-
-      {!profileLoading && verified === false && (
-        <ProviderActivationGate
-          plans={plans}
-          plansLoading={plansLoading}
-          plansError={plansError}
-          selectedPlanId={selectedPlanId}
-          onSelectPlan={setSelectedPlanId}
-          selectedMethod={selectedMethod}
-          onSelectMethod={setSelectedMethod}
-          onSubscribe={handleSubscribe}
-          subscribing={subscribing}
-          subscribeError={subscribeError}
-        />
-      )}
-
-      {!profileLoading && verified === true && (
-        <>
           {error && <Alert type="error" message={error} className="mb-4" />}
 
           <div className="mb-4 flex flex-wrap items-center justify-between gap-4">
@@ -287,29 +253,37 @@ export default function ProviderServiceListPage() {
               />
             )}
           </div>
-        </>
-      )}
 
       <Modal
         open={editModalOpen}
         title={VI.service.edit?.pageTitle ?? 'Chỉnh sửa dịch vụ'}
         onCancel={() => {
           setEditModalOpen(false);
-          setEditingService(null);
+          closeEdit();
         }}
         footer={null}
         width={720}
         destroyOnClose
       >
-        {editingService && (
+        {editLoading && (
+          <div className="flex flex-col items-center justify-center gap-2 py-16">
+            <Spin />
+            <span className="text-sm text-muted-foreground">{VI.common.status.loading}</span>
+          </div>
+        )}
+        {editError && !editLoading && (
+          <Alert type="error" message={editError} className="mb-4" />
+        )}
+        {editingService && !editLoading && (
           <CreateServiceForm
+            key={editingService.id}
             mode="edit"
             serviceType={serviceType as 'Photographer' | 'Event Staff'}
             providerId={profile?.id ?? 0}
             editingService={editingService}
             onSuccess={() => {
               setEditModalOpen(false);
-              setEditingService(null);
+              closeEdit();
               void refetch();
             }}
           />

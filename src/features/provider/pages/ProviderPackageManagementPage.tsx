@@ -14,6 +14,7 @@ import {
 } from '../constants/sidebar';
 import { useProviderSubscriptionInfo } from '../hooks/useProviderSubscriptionInfo';
 import { ProviderSubscriptionOverview } from '../components/ProviderSubscriptionOverview';
+import { ProviderSubscriptionPlansPreview } from '../components/ProviderSubscriptionPlansPreview';
 import { ProviderRenewSubscriptionModal } from '../components/ProviderRenewSubscriptionModal';
 import { VI } from '@/shared/i18n/vi';
 
@@ -21,6 +22,7 @@ export default function ProviderPackageManagementPage() {
   const location = useLocation();
   const { info, loading, error } = useProviderSubscriptionInfo();
   const [renewModalOpen, setRenewModalOpen] = useState(false);
+  const [preselectedPlanId, setPreselectedPlanId] = useState<number | null>(null);
 
   const isPhotograph = location.pathname.startsWith('/provider-photograph');
   const isEventStaff = location.pathname.startsWith('/provider-event-staff');
@@ -42,6 +44,16 @@ export default function ProviderPackageManagementPage() {
       ? 'CosMate Event Staff'
       : 'CosMate Provider';
 
+  const openRenew = (planId?: number) => {
+    setPreselectedPlanId(planId ?? null);
+    setRenewModalOpen(true);
+  };
+
+  const closeRenew = () => {
+    setRenewModalOpen(false);
+    setPreselectedPlanId(null);
+  };
+
   return (
     <DashboardLayout
       title={VI.provider.subscription.pageTitle}
@@ -49,29 +61,34 @@ export default function ProviderPackageManagementPage() {
       brandName={brandName}
       showChatButton={false}
     >
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div className="mb-4 flex shrink-0 flex-wrap items-start justify-between gap-3">
-          <div>
-            <h2 style={{ fontSize: 20, fontWeight: 600, marginBottom: 4 }}>
-              {VI.provider.subscription.pageTitle}
-            </h2>
-            <p className="text-[13px] text-muted-foreground">{VI.provider.subscription.pageSubtitle}</p>
-          </div>
+      <>
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-cosmate-lavender-border bg-gradient-to-r from-cosmate-soft-pink/30 to-transparent px-4 py-3 sm:px-5">
+          <p className="max-w-2xl text-sm leading-relaxed text-cosmate-mauve">
+            {VI.provider.subscription.pageSubtitle}
+          </p>
           <Button
             type="primary"
+            size="large"
             icon={<PlusCircleOutlined />}
-            onClick={() => setRenewModalOpen(true)}
+            onClick={() => openRenew()}
+            className="!h-10 !rounded-lg !px-5 !font-semibold shadow-[0_4px_14px_color-mix(in_oklch,var(--cosmate-pink)_35%,transparent)]"
           >
             {VI.provider.subscription.renewButton}
           </Button>
         </div>
-        <ProviderSubscriptionOverview info={info} loading={loading} error={error} />
-      </div>
 
-      <ProviderRenewSubscriptionModal
-        open={renewModalOpen}
-        onClose={() => setRenewModalOpen(false)}
-      />
+        <ProviderSubscriptionOverview info={info} loading={loading} error={error} />
+
+        {!loading && !error && info && (
+          <ProviderSubscriptionPlansPreview onSelectPlan={(id) => openRenew(id)} />
+        )}
+
+        <ProviderRenewSubscriptionModal
+          open={renewModalOpen}
+          onClose={closeRenew}
+          initialPlanId={preselectedPlanId}
+        />
+      </>
     </DashboardLayout>
   );
 }

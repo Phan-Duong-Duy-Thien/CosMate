@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Payment Result Page
  * Displays payment result after redirect from payment gateway.
  *

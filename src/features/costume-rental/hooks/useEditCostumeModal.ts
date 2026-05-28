@@ -39,6 +39,7 @@ import type {
   AccessoryInput,
   AccessoryUpdateInput,
 } from '../types'
+import { getAuth } from '@/features/auth/services/tokenStorage'
 import { VI } from '@/shared/i18n/vi'
 import { useCostumeImages } from './useCostumeImages'
 import { useCostumeImageActions } from './useCostumeImageActions'
@@ -55,7 +56,7 @@ async function imageUrlToFile(url: string, filename: string): Promise<File | nul
 
 /** Read providerId from JWT payload – same pattern as useCreateCostumeWizard */
 function getProviderIdFromToken(): number | null {
-  const token = localStorage.getItem('cosmate_access_token')
+  const token = getAuth()?.token
   if (!token) return null
   try {
     const base64 = token.split('.')[1]

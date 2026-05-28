@@ -35,8 +35,6 @@ import { useProviderCostumes, type CostumeSortKey }from '../hooks/useProviderCos
 import { useEditCostumeModal }from '../hooks/useEditCostumeModal'
 import EditCostumeModal from '../components/edit/EditCostumeModal'
 import type { Costume, CostumeStatus }from '../types'
-import { useProviderGate } from '@/features/provider/hooks/useProviderGate'
-import { ProviderActivationGate } from '@/features/provider/components/ProviderActivationGate'
 import { VI } from '@/shared/i18n/vi'
 import { Button as UiButton } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -230,8 +228,6 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
 export default function ProviderCostumeListPage() {
   const navigate = useNavigate()
 
-  const gate = useProviderGate()
-
   const {
     filteredCostumes,
     isLoading,
@@ -383,28 +379,6 @@ export default function ProviderCostumeListPage() {
       showChatButton={false}
       brandName="CosMate Provider"
     >
-        {/* Verification gate */}
-        {gate.profileLoading && (
-          <div style={{ textAlign: 'center', padding: '80px 0' }}>
-            <Spin size="large" />
-            <p className="mt-4 text-muted-foreground">{VI.provider.activation.loadingProfile}</p>
-          </div>
-        )}
-        {!gate.profileLoading && gate.verified === false && (
-          <ProviderActivationGate
-            plans={gate.plans}
-            plansLoading={gate.plansLoading}
-            plansError={gate.plansError}
-            selectedPlanId={gate.selectedPlanId}
-            onSelectPlan={gate.setSelectedPlanId}
-            selectedMethod={gate.selectedMethod}
-            onSelectMethod={gate.setSelectedMethod}
-            onSubscribe={gate.handleSubscribe}
-            subscribing={gate.subscribing}
-            subscribeError={gate.subscribeError}
-          />
-        )}
-        {!gate.profileLoading && gate.verified === true && (<>
         {/* Toolbar: Tier 1 (search/actions) + Tier 2 (filters/sort) */}
         <div className="mb-4 flex flex-col gap-4">
           <div className="flex flex-wrap items-center justify-between gap-4">
@@ -492,7 +466,6 @@ export default function ProviderCostumeListPage() {
         bordered={false}
         style={{ borderRadius: 8 }}
       />
-      </>)}
     </DashboardLayout>
 
       {/* View-only detail modal */}

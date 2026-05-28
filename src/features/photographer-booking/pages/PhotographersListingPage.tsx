@@ -11,7 +11,9 @@ import { useProvidersByRole, PROVIDER_ROLE } from "@/features/photographer-booki
 const PAGE_SIZE = 8
 
 export default function PhotographersListingPage() {
-  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER)
+  const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER, {
+    verifiedOnly: true,
+  })
   const [currentPage, setCurrentPage] = useState(1)
 
   const totalPages = Math.max(1, Math.ceil(providers.length / PAGE_SIZE))
@@ -45,7 +47,7 @@ export default function PhotographersListingPage() {
       />
 
       <main className="relative z-[1] mx-auto w-full min-w-0 px-0 pt-6 sm:pt-8">
-        <header className="mb-8">
+        <header className="relative z-30 mb-8 overflow-visible">
           <div
             className={cn(
               "mb-8 flex flex-col gap-6 rounded-[1.35rem] border-[4px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] via-pink-50/80 to-violet-100 p-6 shadow-[10px_10px_0_0_rgba(30,27,75,0.35)] md:flex-row md:items-end md:justify-between md:p-8"
