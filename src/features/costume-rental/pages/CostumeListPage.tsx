@@ -9,6 +9,8 @@ import { CostumeGrid } from "../components/CostumeGrid"
 import { Pagination } from "../components/Pagination"
 import { Button } from "@/shared/components/Button"
 import AISearchBar from "@/features/search/components/AISearchBar"
+import { AiTokenEmptyState } from "@/features/profile/components/AiTokenEmptyState"
+import { useAiTokenGate } from "@/features/profile/hooks/useAiTokenGate"
 import type { AISearchResultItem } from "@/features/search/hooks/useAISearch"
 import { useWishlist } from "@/features/wishlist/hooks/useWishlist"
 
@@ -35,6 +37,7 @@ const initialFilters: FilterState = {
 }
 
 export default function CostumeListPage() {
+  const tokenGate = useAiTokenGate({ feature: "cosplayer.searchImage" })
   const [filters, setFilters] = React.useState<FilterState>(initialFilters)
   const [sortKey, setSortKey] = React.useState<SortKey>("relevance")
   const [currentPage, setCurrentPage] = React.useState(1)
@@ -234,7 +237,24 @@ export default function CostumeListPage() {
           />
 
           <div className="space-y-4">
-            <AISearchBar onSearchCompleted={handleAISearchCompleted} />
+            <AISearchBar
+              onSearchCompleted={handleAISearchCompleted}
+              canUse={tokenGate.canUse}
+              tokenLoading={tokenGate.loading}
+              cost={tokenGate.cost}
+              featureLabel={tokenGate.featureLabel}
+              onBeforeSearch={tokenGate.assertCanUse}
+            />
+
+            {(tokenGate.blocked || (!tokenGate.loading && !tokenGate.canUse)) && (
+              <AiTokenEmptyState
+                cost={tokenGate.cost}
+                balance={tokenGate.balance}
+                tokenHubPath={tokenGate.tokenHubPath}
+                featureLabel={tokenGate.featureLabel}
+                message={tokenGate.blockedMessage}
+              />
+            )}
 
             {!aiResults && (
               <div className="rounded-xl border-[3px] border-indigo-950/20 bg-white px-4 py-3 text-sm font-semibold text-indigo-800">

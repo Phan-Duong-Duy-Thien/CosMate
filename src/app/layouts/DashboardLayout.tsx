@@ -2,7 +2,7 @@ import { useState, useEffect, createElement, type ReactNode, useCallback } from 
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { ConfigProvider, Layout, Menu, Dropdown, Avatar, Spin } from 'antd';
 import type { MenuProps } from 'antd';
-import { LogOut, User, ChevronRight, ChevronLeft, MessageCircle, type LucideIcon } from 'lucide-react';
+import { LogOut, User, ChevronRight, MessageCircle, type LucideIcon } from 'lucide-react';
 import { clearAuth } from '@/features/auth/utils/authStorage';
 import { VI } from '@/shared/i18n/vi';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
@@ -10,19 +10,12 @@ import { useUserProfile } from '@/app/providers/UserProfileProvider';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getUserProfile } from '@/features/admin/services/adminUsers.service';
 import {
-  getProviderNotificationsPath,
+  getTokenHubPathFromPathname,
   isProviderDashboardPath,
 } from '@/features/profile/utils/tokenRoutes';
-import { ProviderNotificationHeaderBell } from '@/features/provider/components/ProviderNotificationHeaderBell';
-import {
-  resolveDashboardContentMode,
-  type DashboardContentMode,
-} from '@/app/layouts/dashboardContentMode';
-import { cn } from '@/lib/utils';
-import { ProviderGateBoundary } from '@/features/provider/components/ProviderGateBoundary';
+import { DATA_SYNC_EVENTS, subscribeDataSync } from '@/shared/sync/dataSync';
 import { useChatPopup } from '@/features/chat/components/ChatPopupContext';
 import { useUnreadCount } from '@/features/chat/hooks/useUnreadCount';
-import { AdminSidebarMenu } from '@/features/admin/components/AdminSidebarMenu';
 import { ProviderSubscriptionBadge } from '@/features/provider/components/ProviderSubscriptionBadge';
 
 const { Header, Sider, Content } = Layout;
@@ -90,11 +83,6 @@ export type DashboardSidebarItem = {
   icon?: LucideIcon | ReactNode;
   path?: string;
   children?: DashboardSidebarItem[];
-  id?: string;
-  type?: 'core' | 'group' | 'item';
-  displayOrder?: number;
-  menuId?: string;
-  iconName?: string;
 };
 
 type DashboardLayoutProps = {
@@ -105,11 +93,6 @@ type DashboardLayoutProps = {
   children?: ReactNode;
   /** Hide the chat button in the header (used for provider dashboards) */
   showChatButton?: boolean;
-  /** scroll = form/list (default); fill = full-height panel e.g. messages */
-  contentMode?: DashboardContentMode;
-  /** Enable drag-to-resize sidebar width. Only used by Admin layout. */
-  enableSidebarResize?: boolean;
-  onSidebarItemsChange?: (items: DashboardSidebarItem[]) => void;
 };
 
 export function DashboardLayout({
@@ -119,25 +102,7 @@ export function DashboardLayout({
   brandShort = 'CM',
   children,
   showChatButton = true,
-  contentMode: contentModeProp,
-  enableSidebarResize = false,
-  onSidebarItemsChange,
 }: DashboardLayoutProps) {
-  const SIDEBAR_STORAGE_KEY = 'cosmate-admin-sidebar-width';
-  const DEFAULT_SIDEBAR_WIDTH = 240;
-  const MIN_SIDEBAR_WIDTH = 200;
-  const MAX_SIDEBAR_WIDTH = 400;
-
-  const [sidebarWidth, setSidebarWidth] = useState(() => {
-    if (!enableSidebarResize) return DEFAULT_SIDEBAR_WIDTH;
-    const stored = localStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (stored) {
-      const parsed = Number(stored);
-      if (Number.isFinite(parsed) && parsed >= MIN_SIDEBAR_WIDTH && parsed <= MAX_SIDEBAR_WIDTH) return parsed;
-    }
-    return DEFAULT_SIDEBAR_WIDTH;
-  });
-  const [isResizing, setIsResizing] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -224,11 +189,6 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
         { label: VI.common.breadcrumb.users || 'Quản lý người dùng' },
       ]);
-    } else if (path === '/admin/ai-token-plans') {
-      setItems([
-        { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
-        { label: VI.admin.aiTokenPlans.title },
-      ]);
     } else if (path === '/admin/ai-token-purchases') {
       setItems([
         { label: VI.common.breadcrumb.admin || 'Quản trị', to: '/admin' },
@@ -311,11 +271,6 @@ export function DashboardLayout({
         { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
         { label: VI.profile.token.hubTitle },
       ]);
-    } else if (path === '/provider-rental/notifications') {
-      setItems([
-        { label: VI.common.breadcrumb.provider, to: '/provider-rental' },
-        { label: VI.notification.title },
-      ]);
     } else if (path === '/provider-photograph') {
       setItems([{ label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' }]);
     } else if (path === '/provider-photograph/wallet') {
@@ -339,11 +294,6 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
         { label: VI.profile.token.hubTitle },
-      ]);
-    } else if (path === '/provider-photograph/notifications') {
-      setItems([
-        { label: VI.common.breadcrumb.providerPhotograph, to: '/provider-photograph' },
-        { label: VI.notification.title },
       ]);
     } else if (path === '/provider-photograph/services') {
       setItems([
@@ -420,11 +370,6 @@ export function DashboardLayout({
       setItems([
         { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
         { label: VI.profile.token.hubTitle },
-      ]);
-    } else if (path === '/provider-event-staff/notifications') {
-      setItems([
-        { label: VI.common.breadcrumb.providerEventStaff, to: '/provider-event-staff' },
-        { label: VI.notification.title },
       ]);
     } else if (path === '/provider-event-staff/services') {
       setItems([
@@ -567,8 +512,17 @@ export function DashboardLayout({
     };
 
     window.addEventListener('profile:refresh', handleProfileRefresh);
-    return () => window.removeEventListener('profile:refresh', handleProfileRefresh);
+    const unsubToken = subscribeDataSync(DATA_SYNC_EVENTS.TOKEN_CHANGED, () => {
+      void refreshHeaderProfile();
+    });
+    return () => {
+      window.removeEventListener('profile:refresh', handleProfileRefresh);
+      unsubToken();
+    };
   }, [refreshHeaderProfile]);
+
+  const providerTokenHubPath =
+    getTokenHubPathFromPathname(location.pathname) ?? '/provider-rental/token';
 
   const userName = userProfile.fullName || 'Admin';
   const currentPath = location.pathname;
@@ -631,46 +585,6 @@ export function DashboardLayout({
 
   const displayTitle = breadcrumbItems.length > 0 ? breadcrumbItems[breadcrumbItems.length - 1].label : title;
   const antdColorPrimary = useSyncedCosmatePrimaryForAntd();
-  const applyProviderGate = isProviderDashboardPath(location.pathname);
-  const contentMode = resolveDashboardContentMode(location.pathname, contentModeProp);
-  const isFillContent = contentMode === 'fill';
-
-  // Sidebar resize handlers (admin only)
-  const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
-    e.preventDefault();
-    setIsResizing(true);
-
-    const startX = e.clientX;
-    const startWidth = sidebarWidth;
-
-    const handleMouseMove = (ev: MouseEvent) => {
-      const newWidth = Math.min(MAX_SIDEBAR_WIDTH, Math.max(MIN_SIDEBAR_WIDTH, startWidth + (ev.clientX - startX)));
-      setSidebarWidth(newWidth);
-    };
-
-    const handleMouseUp = () => {
-      setIsResizing(false);
-      document.removeEventListener('mousemove', handleMouseMove);
-      document.removeEventListener('mouseup', handleMouseUp);
-      // Persist after release
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth));
-    };
-
-    document.addEventListener('mousemove', handleMouseMove);
-    document.addEventListener('mouseup', handleMouseUp);
-  }, [sidebarWidth]);
-
-  // Persist sidebar width on change
-  useEffect(() => {
-    if (enableSidebarResize && !isResizing) {
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth));
-    }
-  }, [sidebarWidth, enableSidebarResize, isResizing]);
-
-  useEffect(() => {
-    document.documentElement.classList.add('cosmate-dashboard-active');
-    return () => document.documentElement.classList.remove('cosmate-dashboard-active');
-  }, []);
 
   return (
     <ConfigProvider
@@ -681,93 +595,56 @@ export function DashboardLayout({
         },
       }}
     >
-    <Layout className="cosmate-dashboard-root h-full max-h-full overflow-hidden">
+    <Layout style={{ minHeight: '100vh' }}>
       <Sider
-        className="cosmate-dashboard-sider"
         collapsible
         collapsed={collapsed}
         onCollapse={setCollapsed}
-        trigger={null}
         theme="light"
-        width={sidebarWidth}
-        collapsedWidth={80}
+        width={240}
         style={{
           overflow: 'auto',
-          flex: '0 0 auto',
-          alignSelf: 'stretch',
+          height: '100vh',
+          position: 'fixed',
+          left: 0,
+          top: 0,
+          bottom: 0,
           borderRight: "1px solid var(--border)",
-          userSelect: isResizing ? 'none' : undefined,
         }}
       >
         <div
-          className={cn(
-            'flex h-16 shrink-0 items-center border-b border-border',
-            collapsed ? 'justify-center px-2' : 'justify-between gap-2 px-4',
-          )}
+          style={{
+            height: 64,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: collapsed ? 'center' : 'flex-start',
+            paddingLeft: collapsed ? 0 : 24,
+            borderBottom: "1px solid var(--border)",
+            fontWeight: 700,
+            fontSize: 18,
+            color: "var(--cosmate-pink)",
+          }}
         >
-          {!collapsed && (
-            <span className="min-w-0 truncate text-lg font-bold text-cosmate-pink">{brandName}</span>
-          )}
-          <button
-            type="button"
-            onClick={() => setCollapsed((c) => !c)}
-            className={cn(
-              'flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition-colors',
-              'hover:border-cosmate-pink/30 hover:bg-cosmate-soft-pink/40 hover:text-cosmate-pink',
-            )}
-            aria-label={collapsed ? 'Mở rộng menu' : 'Thu gọn menu'}
-            title={collapsed ? brandName : undefined}
-          >
-            {collapsed ? <ChevronRight size={18} aria-hidden /> : <ChevronLeft size={18} aria-hidden />}
-          </button>
+          {collapsed ? brandShort : brandName}
         </div>
 
-        {enableSidebarResize ? (
-          <AdminSidebarMenu
-            sidebarItems={sidebarItems}
-            onSidebarItemsChange={onSidebarItemsChange}
-            collapsed={collapsed}
-            activeKey={activeKey}
-            navigate={navigate}
-          />
-        ) : (
-          <Menu
-            mode="inline"
-            inlineCollapsed={collapsed}
-            selectedKeys={[activeKey]}
-            defaultOpenKeys={defaultOpenKeys}
-            items={menuItems}
-            style={{ borderRight: 0, marginTop: 16 }}
-          />
-        )}
-
-        {/* Drag handle for sidebar resize — admin only */}
-        {enableSidebarResize && !collapsed && (
-          <div
-            onMouseDown={handleResizeMouseDown}
-            style={{
-              position: 'absolute',
-              top: 0,
-              right: -3,
-              bottom: 0,
-              width: 6,
-              cursor: 'col-resize',
-              zIndex: 100,
-              background: isResizing ? 'var(--cosmate-pink)' : 'transparent',
-              opacity: isResizing ? 0.3 : 1,
-              transition: 'background 0.15s',
-            }}
-            title="Kéo để thay đổi kích thước sidebar"
-            onMouseEnter={(e) => { (e.currentTarget.style.background) = 'color-mix(in oklch, var(--cosmate-pink) 25%, transparent)'; }}
-            onMouseLeave={(e) => { if (!isResizing) e.currentTarget.style.background = 'transparent'; }}
-          />
-        )}
+        <Menu
+          mode="inline"
+          inlineCollapsed={collapsed}
+          selectedKeys={[activeKey]}
+          defaultOpenKeys={defaultOpenKeys}
+          items={menuItems}
+          style={{ borderRight: 0, marginTop: 16 }}
+        />
       </Sider>
 
       <Layout
-        className="cosmate-dashboard-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden px-5 pb-5"
         style={{
-          transition: isResizing ? 'none' : 'width 0.2s',
+          marginLeft: collapsed ? 80 : 240,
+          transition: 'margin-left 0.2s',
+          minHeight: '100vh',
+          display: 'flex',
+          flexDirection: 'column',
           background: 'var(--background)',
         }}
       >
@@ -794,8 +671,10 @@ export function DashboardLayout({
           <div className="flex h-16 shrink-0 items-center gap-2 sm:gap-3">
             {showTokenBadge && <ProviderSubscriptionBadge />}
             {showTokenBadge && (
-              <div
-                className="hidden min-w-[110px] cursor-default items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm sm:flex"
+              <button
+                type="button"
+                onClick={() => navigate(providerTokenHubPath)}
+                className="hidden min-w-[110px] cursor-pointer items-center justify-end rounded-full border border-pink-100 bg-pink-50/60 px-3 py-1.5 text-sm font-semibold text-pink-700 shadow-sm transition hover:border-pink-200 hover:bg-pink-100/80 sm:flex"
                 title={VI.profile.token.headerHint}
               >
                 {tokenLoading ? (
@@ -805,7 +684,7 @@ export function DashboardLayout({
                     🪙 {(tokenBalance ?? 0).toLocaleString('vi-VN')} {VI.profile.token.unit}
                   </span>
                 )}
-              </div>
+              </button>
             )}
             {showChatButton && (
               <button
@@ -822,11 +701,6 @@ export function DashboardLayout({
                 )}
               </button>
             )}
-            {showTokenBadge && (
-              <ProviderNotificationHeaderBell
-                viewAllPath={getProviderNotificationsPath(location.pathname)}
-              />
-            )}
             <Dropdown menu={{ items: userMenuItems }} placement="bottomRight" trigger={['click']}>
               <div className="flex h-9 max-h-9 cursor-pointer items-center gap-2 rounded-xl border border-transparent px-2 text-foreground transition-colors hover:border-cosmate-pink/20 hover:bg-cosmate-soft-pink/40 sm:gap-3">
                 {userProfile.avatarUrl ? (
@@ -841,15 +715,19 @@ export function DashboardLayout({
         </Header>
 
         <Content
-          className="mt-5! flex min-h-0 flex-1 flex-col overflow-hidden"
           style={{
-            padding: 24,
+            flex: 1,
+            margin: 16,
+            padding: 20,
             background: 'var(--card)',
             borderRadius: 8,
+            display: 'flex',
+            flexDirection: 'column',
+            minHeight: 0,
           }}
         >
           {breadcrumbItems.length > 0 && (
-            <div style={{ marginBottom: 16, flexShrink: 0 }}>
+            <div style={{ marginBottom: 12, flexShrink: 0 }}>
               {breadcrumbItems.map((item, index) => (
                 <span key={index} style={{ display: 'inline-flex', alignItems: 'center' }}>
                   {item.to ? (
@@ -873,27 +751,8 @@ export function DashboardLayout({
               ))}
             </div>
           )}
-          <div
-            data-cosmate-dashboard-scroll
-            className={cn(
-              'flex min-h-0 min-w-0 flex-1 flex-col',
-              isFillContent ? 'overflow-hidden' : 'overflow-y-auto',
-            )}
-          >
-            {applyProviderGate ? (
-              <ProviderGateBoundary contentMode={contentMode}>
-                {children ?? <Outlet />}
-              </ProviderGateBoundary>
-            ) : (
-              <div
-                className={cn(
-                  'min-h-0 w-full',
-                  isFillContent ? 'flex min-h-0 flex-1 flex-col' : undefined,
-                )}
-              >
-                {children || <Outlet />}
-              </div>
-            )}
+          <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+            {children || <Outlet />}
           </div>
         </Content>
       </Layout>

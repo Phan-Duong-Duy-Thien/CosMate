@@ -7,6 +7,8 @@ import { VI } from "@/shared/i18n/vi"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
+import { AiTokenEmptyState } from "@/features/profile/components/AiTokenEmptyState"
+import { useAiTokenGate } from "@/features/profile/hooks/useAiTokenGate"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 import type { PoseHistoryItem } from "../types"
@@ -34,6 +36,7 @@ function cleanAiComment(raw: string) {
 }
 
 export default function PoseBattlePage() {
+  const tokenGate = useAiTokenGate({ feature: "cosplayer.poseScore" })
   const {
     referenceImage,
     setReferenceImage,
@@ -50,7 +53,10 @@ export default function PoseBattlePage() {
     submit,
     closeResult,
     removeHistoryItem,
-  } = usePoseBattle()
+  } = usePoseBattle({
+    assertCanUse: tokenGate.assertCanUse,
+    handleApiError: tokenGate.handleApiError,
+  })
 
   const [historyOverlayResult, setHistoryOverlayResult] = useState<PoseHistoryItem | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
@@ -103,6 +109,16 @@ export default function PoseBattlePage() {
         </h1>
       </header>
 
+      {(tokenGate.blocked || (!tokenGate.loading && !tokenGate.canUse)) && (
+        <AiTokenEmptyState
+          cost={tokenGate.cost}
+          balance={tokenGate.balance}
+          tokenHubPath={tokenGate.tokenHubPath}
+          featureLabel={tokenGate.featureLabel}
+          message={tokenGate.blockedMessage}
+        />
+      )}
+
       <div className="pointer-events-none absolute left-4 top-4 h-24 w-24 rounded-full bg-fuchsia-300/30 blur-3xl" />
       <div className="pointer-events-none absolute right-6 top-10 h-28 w-28 rounded-full bg-cyan-300/30 blur-3xl" />
 
@@ -150,14 +166,19 @@ export default function PoseBattlePage() {
         <Card className="rounded-[1.75rem] border-[3px] border-indigo-950 p-4 shadow-[8px_8px_0px_#fbcfe8]">
           <div className="mb-2 flex items-center justify-between gap-3">
             <h2 className="text-base font-extrabold text-indigo-950">Ảnh người dùng upload</h2>
-            <button
-              type="button"
-              onClick={submit}
-              disabled={loading}
-              className="group relative rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-r from-fuchsia-200 via-pink-200 to-amber-200 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81] transition-all duration-300 hover:-translate-y-0.5 hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {loading ? 'Đang chấm...' : 'Chấm điểm'}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <span className="text-[11px] font-bold text-indigo-800/80">
+                {VI.profile.token.costPerUse(tokenGate.featureLabel, tokenGate.cost)}
+              </span>
+              <button
+                type="button"
+                onClick={submit}
+                disabled={loading || tokenGate.loading || !tokenGate.canUse}
+                className="group relative rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-r from-fuchsia-200 via-pink-200 to-amber-200 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81] transition-all duration-300 hover:-translate-y-0.5 hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? "Đang chấm..." : "Chấm điểm"}
+              </button>
+            </div>
           </div>
 
           <div className="flex items-center justify-between gap-2">

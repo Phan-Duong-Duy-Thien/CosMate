@@ -1190,6 +1190,19 @@ export const VI = {
       walletPay: "Ví CosMate",
       walletPayDesc: "Thanh toán bằng số dư ví CosMate",
       walletInsufficient: "Số dư ví không đủ để mua gói này",
+      insufficient: "Bạn không đủ số dư Token. Vui lòng nạp thêm!",
+      emptyTitle: "Không đủ token AI",
+      buyMoreCta: "Mua thêm token",
+      costPerUse: (feature: string, cost: number) =>
+        `${feature}: ${cost} ${"xu"}/lần (trừ khi thành công)`,
+      insufficientDetail: (feature: string, cost: number, balance: number) =>
+        `${feature} cần ${cost} xu. Bạn đang có ${balance.toLocaleString("vi-VN")} xu.`,
+      features: {
+        searchImage: "Tìm kiếm AI theo ảnh",
+        poseScore: "Chấm pose",
+        styleQuiz: "Quiz phong cách",
+        generateDescription: "Tạo mô tả trang phục AI",
+      },
       columns: {
         name: "Tên gói",
         price: "Giá",

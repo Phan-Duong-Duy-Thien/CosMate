@@ -8,6 +8,7 @@ import { getUserId } from '@/features/auth/services/tokenStorage';
 import { useUserProfile } from '../hooks/useUserProfile';
 import { useAiTokenPurchaseHistory } from '../hooks/useAiTokenPurchaseHistory';
 import { BuyTokenPlansSection } from './BuyTokenPlansSection';
+import { notifyTokenChanged } from '@/shared/sync/dataSync';
 import { DEFAULT_COSPLAYER_WALLET_TOPUP_REDIRECT } from '../utils/tokenRoutes';
 
 function formatCurrency(amount: number): string {
@@ -141,7 +142,10 @@ export function TokenHubContent({
 
           <BuyTokenPlansSection
             walletTopUpRedirect={walletTopUpRedirect}
-            onPurchaseSuccess={() => void refetch()}
+            onPurchaseSuccess={() => {
+              void refetch();
+              notifyTokenChanged();
+            }}
           />
         </div>
       </Card>

@@ -21,6 +21,7 @@ import {
   notifyOrdersChanged,
   notifyServiceOrdersChanged,
   notifyWalletChanged,
+  notifyTokenChanged,
 } from '@/shared/sync/dataSync';
 
 type PaymentStatus = 'success' | 'failed' | 'cancelled' | 'pending' | 'unknown';
@@ -154,6 +155,7 @@ export default function PaymentResultPage() {
     if (!isSuccess) return;
     if (isTokenContext) {
       window.dispatchEvent(new Event('profile:refresh'));
+      notifyTokenChanged();
     }
     if (isWalletContext) {
       notifyWalletChanged();

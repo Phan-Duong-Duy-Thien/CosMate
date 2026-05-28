@@ -2,6 +2,7 @@ import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { message } from 'antd';
 import { getReturnUrl } from '@/features/order/utils/paymentReturnUrls';
+import { notifyTokenChanged } from '@/shared/sync/dataSync';
 import { VI } from '@/shared/i18n/vi';
 import * as aiTokenPurchaseService from '../services/aiTokenPurchase.service';
 import type { TokenPaymentMethod } from '../types';
@@ -35,6 +36,7 @@ export function usePurchaseAiToken(options?: UsePurchaseAiTokenOptions) {
 
         if (result.type === 'wallet') {
           window.dispatchEvent(new Event('profile:refresh'));
+          notifyTokenChanged();
           options?.onWalletSuccess?.();
           const purchaseQuery = result.purchaseId ? `&purchaseId=${result.purchaseId}` : '';
           navigate(

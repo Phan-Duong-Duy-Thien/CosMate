@@ -5,10 +5,16 @@ import { Camera, Loader2, Search, Sparkles, X } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { VI } from "@/shared/i18n/vi"
 import { useAISearch, type AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
 interface AISearchBarProps {
   onSearchCompleted?: (results: AISearchResultItem[]) => void
+  canUse?: boolean
+  tokenLoading?: boolean
+  cost?: number
+  featureLabel?: string
+  onBeforeSearch?: () => boolean
 }
 
 const promptSuggestions = [
@@ -19,7 +25,14 @@ const promptSuggestions = [
   "Áo choàng đỏ",
 ]
 
-export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
+export default function AISearchBar({
+  onSearchCompleted,
+  canUse = true,
+  tokenLoading = false,
+  cost,
+  featureLabel,
+  onBeforeSearch,
+}: AISearchBarProps) {
   const { executeSearch, isLoading, fallbackUsed } = useAISearch()
 
   const [keyword, setKeyword] = useState("")
@@ -68,6 +81,10 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
       return
     }
 
+    if (onBeforeSearch && !onBeforeSearch()) {
+      return
+    }
+
     const result = await executeSearch({
       files: selectedFile ? [selectedFile] : [],
       text: keyword.trim(),
@@ -110,6 +127,11 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
             <p className="mt-1.5 text-sm font-semibold leading-relaxed text-indigo-950/80">
               Bạn có thể upload ảnh, nhập mô tả, hoặc dùng cả hai để AI tìm chính xác hơn.
             </p>
+            {featureLabel && cost != null && (
+              <p className="mt-1 text-xs font-bold text-indigo-800/70">
+                {VI.profile.token.costPerUse(featureLabel, cost)}
+              </p>
+            )}
           </div>
 
           <div className="relative">
@@ -144,7 +166,7 @@ export default function AISearchBar({ onSearchCompleted }: AISearchBarProps) {
             <Button
               type="button"
               size="lg"
-              disabled={!hasEnoughInput || isLoading}
+              disabled={!hasEnoughInput || isLoading || tokenLoading || !canUse}
               onClick={handleSubmit}
               className="h-12 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-6 font-extrabold text-white shadow-[5px_5px_0_0_#1e1b4b] hover:brightness-110 disabled:opacity-50"
             >
