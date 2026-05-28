@@ -7,8 +7,10 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message } from 'antd'
-import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message, QRCode, Spin } from 'antd'
+import { CloseOutlined, InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import { Image as AntImage } from 'antd'
+import { ImageIcon, RefreshCw, Smartphone, Video } from 'lucide-react'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
@@ -21,6 +23,7 @@ import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
 import { VI } from '@/shared/i18n/vi'
 import { notifyTokenChanged } from '@/shared/sync/dataSync'
 import { mapGenerateDescriptionError } from '../../utils/costumeAiErrors'
+import { useProviderMediaQrSession } from '../../hooks/useProviderMediaQrSession'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -80,6 +83,19 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
   const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
+  const {
+    qrValue,
+    sessionLoading,
+    sessionError,
+    refreshSession,
+    canRefreshQr,
+    refreshCooldownLabel,
+    isListening,
+    imageItems: qrImageItems,
+    videoItems: qrVideoItems,
+    removeMediaItem,
+    maxMedia,
+  } = useProviderMediaQrSession(true)
 
   const watchedName = Form.useWatch('name', form)
   const watchedImages = Form.useWatch('imageFiles', form)
@@ -250,6 +266,29 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     setModerationError(null)
 
     try {
+      const qrImageFiles: File[] = []
+      for (const qrImage of qrImageItems) {
+        const blobRes = await fetch(qrImage.url)
+        const blob = await blobRes.blob()
+        const ext = blob.type.includes('png') ? 'png' : 'jpg'
+        qrImageFiles.push(
+          new File([blob], `provider-qr-image-${qrImage.id}.${ext}`, {
+            type: blob.type || 'image/jpeg',
+          }),
+        )
+      }
+
+      let qrVideoFile: File | null = null
+      if (qrVideoItems.length > 0) {
+        const firstQrVideo = qrVideoItems[0]
+        const blobRes = await fetch(firstQrVideo.url)
+        const blob = await blobRes.blob()
+        const ext = blob.type.includes('quicktime') ? 'mov' : 'mp4'
+        qrVideoFile = new File([blob], `provider-qr-video-${firstQrVideo.id}.${ext}`, {
+          type: blob.type || 'video/mp4',
+        })
+      }
+
       const submitPayload = {
         name: values.name,
         description: values.description,
@@ -259,9 +298,9 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         pricePerDay: values.pricePerDay,
         rentDiscount: values.rentDiscount,
         depositAmount: values.depositAmount,
-        imageFiles: rawFiles,
+        imageFiles: [...rawFiles, ...qrImageFiles],
         rentalOptions: null,
-        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
+        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? qrVideoFile,
       }
       await onSubmit(submitPayload)
     } catch (err: unknown) {
@@ -471,6 +510,105 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
           </Dragger>
         </Form.Item>
+
+        <div className="mb-6 rounded-xl border border-cosmate-pink/20 bg-cosmate-soft-pink/10 p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Smartphone className="h-4 w-4 text-cosmate-pink" />
+              <p className="text-sm font-semibold text-foreground">Quét QR để tải media từ điện thoại</p>
+            </div>
+            <Button
+              type="link"
+              size="small"
+              icon={<RefreshCw className="h-3.5 w-3.5" />}
+              onClick={refreshSession}
+              disabled={sessionLoading || !canRefreshQr}
+            >
+              {canRefreshQr ? 'Làm mới QR' : `Làm mới sau ${refreshCooldownLabel ?? ''}`}
+            </Button>
+          </div>
+
+          <div className="mb-3 flex flex-col items-center gap-2 rounded-lg border border-border bg-background p-3">
+            {sessionError ? (
+              <p className="text-sm font-medium text-rose-600">{sessionError}</p>
+            ) : sessionLoading || !qrValue ? (
+              <Spin />
+            ) : (
+              <QRCode value={qrValue} size={160} bordered={false} />
+            )}
+            <p className="text-center text-xs text-muted-foreground">
+              Hỗ trợ ảnh và video. Tối đa {maxMedia} tệp media qua QR.
+            </p>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <div className="rounded-lg border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Ảnh từ QR</p>
+                <span className="text-xs font-semibold">{qrImageItems.length}</span>
+              </div>
+              {qrImageItems.length === 0 ? (
+                <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
+                  {isListening ? <Spin size="small" /> : <ImageIcon className="h-4 w-4" />}
+                  <span>Đang chờ media từ mobile</span>
+                </div>
+              ) : (
+                <AntImage.PreviewGroup>
+                  <ul className="grid grid-cols-3 gap-2">
+                    {qrImageItems.map((item) => (
+                      <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
+                        <Button
+                          danger
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon={<CloseOutlined />}
+                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeMediaItem(item.id)
+                          }}
+                        />
+                        <AntImage src={item.url} alt="" className="!h-full !w-full !object-cover" rootClassName="!h-full !w-full" />
+                      </li>
+                    ))}
+                  </ul>
+                </AntImage.PreviewGroup>
+              )}
+            </div>
+
+            <div className="rounded-lg border border-border bg-background p-3">
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-xs font-semibold uppercase text-muted-foreground">Video từ QR</p>
+                <span className="text-xs font-semibold">{qrVideoItems.length}</span>
+              </div>
+              {qrVideoItems.length === 0 ? (
+                <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
+                  {isListening ? <Spin size="small" /> : <Video className="h-4 w-4" />}
+                  <span>Chưa có video từ mobile</span>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {qrVideoItems.map((item) => (
+                    <div key={item.id} className="group relative">
+                      <Button
+                        danger
+                        type="primary"
+                        size="small"
+                        shape="circle"
+                        icon={<CloseOutlined />}
+                        className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                        onClick={() => removeMediaItem(item.id)}
+                      />
+                      <video src={item.url} controls className="h-24 w-full rounded-md border border-border bg-black object-cover" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
 
         <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
           <Upload.Dragger {...videoUploadProps}>
