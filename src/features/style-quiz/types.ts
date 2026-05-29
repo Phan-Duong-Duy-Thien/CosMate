@@ -4,6 +4,7 @@ export interface SearchResponseItem {
   imageUrl: string
   price: number
   similarityScore: number
+  isCollaborative?: boolean
 }
 
 export interface ApiResponse<T> {

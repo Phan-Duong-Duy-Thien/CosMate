@@ -76,7 +76,7 @@ export default function StyleQuizPage() {
   }, [quiz.results, sortBy, nameFilter])
 
   return (
-    <section className="mx-auto max-w-6xl space-y-5 py-6 md:py-7">
+    <section className="mx-auto max-w-6xl space-y-1 py-1 md:py-1">
       <header className="text-center">
         <h1 className="mx-auto max-w-4xl text-balance text-[1.35rem] font-extrabold leading-tight tracking-tight text-indigo-950 md:text-2xl lg:text-3xl">
           <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
@@ -177,7 +177,7 @@ export default function StyleQuizPage() {
         <div className="space-y-6 rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-100/90 via-[#fffbeb] to-violet-100/80 p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cosmate-pink">Checkpoint 70%</p>
           <h2 className="text-2xl font-semibold leading-snug text-foreground md:text-3xl">Hệ thống đã quét được <span className="font-extrabold text-cosmate-pink">70%</span> bản ngã của bạn và xếp bạn vào nhóm <span className="font-extrabold text-cosmate-pink">{quiz.archetypeProfile.name}</span>. Bạn muốn xem kết quả ngay hay test thêm 7 câu để phân tích chi tiết <span className="font-extrabold text-cosmate-pink">100%</span>?</h2>
-          
+
           {/* Giới tính mong muốn */}
           <div className="mx-auto max-w-md rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[4px_4px_0_0_#1e1b4b]">
             <p className="mb-2 text-center text-xs font-black uppercase tracking-wider text-indigo-950">
@@ -229,8 +229,8 @@ export default function StyleQuizPage() {
       {quiz.screen === "loading" && <AILoadingMascot type="quiz" />}
 
       {quiz.screen === "result" && quiz.results.length > 0 && (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <section className="h-full rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-50 to-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+        <div className="grid gap-6 lg:grid-cols-10">
+          <section className="h-full lg:col-span-4 rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-50 to-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
             <p className="text-xs font-semibold uppercase tracking-wide text-cosmate-pink">Thẻ Bản Ngã (Archetype Card)</p>
             <h3 className="mt-3 text-2xl font-bold text-cosmate-pink">{quiz.archetypeProfile.name}</h3>
             <p className="mt-3 text-sm leading-6 text-slate-700">{quiz.archetypeProfile.coreDesire}</p>
@@ -238,33 +238,76 @@ export default function StyleQuizPage() {
             <div className="mt-5"><p className="text-sm font-semibold text-cosmate-pink">Bảng màu phù hợp:</p><div className="mt-2 flex flex-wrap items-center gap-2">{quiz.archetypeProfile.color_palette.map((hex) => (<span key={hex} title={hex} className={["h-7 w-7 rounded-full border border-background shadow ring-1 ring-cosmate-pink/18", SWATCH_CLASS_BY_HEX[hex.toUpperCase()] ?? "bg-cosmate-soft-pink"].join(" ")} />))}</div></div>
             <div className="mt-5"><p className="text-sm font-semibold text-cosmate-pink">Nhân vật nổi bật:</p><div className="mt-2 flex flex-wrap gap-2">{quiz.archetypeProfile.famousCharacters.map((name) => { const searchUrl = `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(`${name} anime character`)}`; return (<Tooltip key={name} title="Mở Google Images để xem nhân vật"><a href={searchUrl} target="_blank" rel="noreferrer" className="rounded-full border border-cosmate-pink/30 bg-card px-3 py-1 text-xs font-semibold text-cosmate-pink transition hover:border-cosmate-pink/55 hover:bg-cosmate-soft-pink/30">{name}</a></Tooltip>) })}</div></div>
           </section>
-          <section className="rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
+          <section className="lg:col-span-6 rounded-3xl border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.32)]">
             <div className="mb-4 flex flex-col gap-3">
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="text-xl font-extrabold text-indigo-950">Trang phục gợi ý cho bạn</h3>
-                  <span className="text-xs font-medium text-indigo-900/70">{filteredResults.length} gợi ý phù hợp</span>
+                  <span className="text-xs font-semibold text-indigo-900/70">
+                    {filteredResults.length} gợi ý và {quiz.totalUsers} người cùng tính cách với bạn đã được kiểm tra
+                  </span>
                 </div>
                 <button type="button" onClick={quiz.restart} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-auto px-4 py-2")}>
                   Làm lại quiz
                 </button>
               </div>
               <div className="grid gap-3 md:grid-cols-3">
-                <Select value={sortBy} onChange={(value) => setSortBy(value)} options={[{ value: "similarity", label: "Khớp nhất (Similarity)" }, { value: "price_asc", label: "Giá thấp → cao" }, { value: "price_desc", label: "Giá cao → thấp" }]} className="w-full" />
-                <Select
-                  value={quiz.preferredGender}
-                  onChange={(value) => quiz.changePreferredGender(value)}
-                  options={[
-                    { value: "ALL", label: "Tất cả giới tính" },
-                    { value: "MALE", label: "Chỉ đồ Nam (MALE)" },
-                    { value: "FEMALE", label: "Chỉ đồ Nữ (FEMALE)" }
-                  ]}
-                  className="w-full"
-                />
-                <Search allowClear value={nameFilter} onChange={(event) => setNameFilter(event.target.value)} placeholder="Filter: tìm tên nhân vật" />
+                {/* Sort Select */}
+                <div className="relative flex items-center">
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as SortValue)}
+                    className="w-full appearance-none rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-1.5 pr-8 text-xs font-black text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] outline-none transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#1e1b4b] focus:border-pink-500 focus:shadow-[4px_4px_0_0_#ec4899]"
+                  >
+                    <option value="similarity">Khớp nhất (Mức độ phù hợp)</option>
+                    <option value="price_asc">Giá thấp → cao</option>
+                    <option value="price_desc">Giá cao → thấp</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-3 text-indigo-950 text-[10px] font-black">▼</div>
+                </div>
+
+                {/* Gender Select */}
+                <div className="relative flex items-center">
+                  <select
+                    value={quiz.preferredGender}
+                    onChange={(e) => quiz.changePreferredGender(e.target.value)}
+                    className="w-full appearance-none rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-1.5 pr-8 text-xs font-black text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] outline-none transition-all hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#1e1b4b] focus:border-pink-500 focus:shadow-[4px_4px_0_0_#ec4899]"
+                  >
+                    <option value="ALL">Tất cả giới tính</option>
+                    <option value="MALE">Chỉ đồ Nam (MALE)</option>
+                    <option value="FEMALE">Chỉ đồ Nữ (FEMALE)</option>
+                  </select>
+                  <div className="pointer-events-none absolute right-3 text-indigo-950 text-[10px] font-black">▼</div>
+                </div>
+
+                {/* Search Input */}
+                <div className="relative flex items-center">
+                  <input
+                    type="text"
+                    value={nameFilter}
+                    onChange={(e) => setNameFilter(e.target.value)}
+                    placeholder="Filter: tìm tên nhân vật..."
+                    className="w-full rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-3 py-1.5 pr-8 text-xs font-bold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b] outline-none transition-all placeholder:text-indigo-950/50 hover:-translate-y-0.5 hover:shadow-[4px_4px_0_0_#1e1b4b] focus:border-pink-500 focus:shadow-[4px_4px_0_0_#ec4899]"
+                  />
+                  {nameFilter && (
+                    <button
+                      type="button"
+                      onClick={() => setNameFilter("")}
+                      className="absolute right-8 text-xs font-bold text-indigo-950/60 hover:text-indigo-950"
+                    >
+                      ✕
+                    </button>
+                  )}
+                  <span className="absolute right-3 text-indigo-950 text-[10px]">🔍</span>
+                </div>
               </div>
             </div>
-            <div className="max-h-[70vh] overflow-y-auto pr-1"><ResultCostumeGrid items={filteredResults} onView={(id) => navigate(`/costumes/${id}`)} /></div>
+            <div className="max-h-[70vh] overflow-y-auto pr-1">
+              <ResultCostumeGrid items={filteredResults} onView={(id) => navigate(`/costumes/${id}`)} />
+            </div>
+            <p className="mt-3 text-center text-[10px] font-bold text-slate-400/90 italic">
+              (*) Mức độ phù hợp do AI đánh giá dựa trên bản ngã chỉ mang tính chất tham khảo.
+            </p>
           </section>
         </div>
       )}

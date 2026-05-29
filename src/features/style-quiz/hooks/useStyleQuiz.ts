@@ -4,7 +4,7 @@ import { notification } from "antd"
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
 import { notifyTokenChanged } from "@/shared/sync/dataSync"
-import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz } from "../services/styleQuiz.service"
+import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz, getArchetypeStats } from "../services/styleQuiz.service"
 import { resolveLocalArchetypeId } from "../utils/resolveLocalArchetype"
 import type { SearchResponseItem, Stage1Question, Stage2Question, SubmitQuizCustomAnswer, SubmitQuizPayload, SubmitQuizStaticAnswer } from "../types"
 
@@ -98,6 +98,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
   const [stage2Answers, setStage2Answers] = useState<Record<string, number>>({})
   const [stage1CustomAnswers, setStage1CustomAnswers] = useState<Record<string, string>>({})
   const [stage2CustomAnswers, setStage2CustomAnswers] = useState<Record<string, string>>({})
+  const [totalUsers, setTotalUsers] = useState<number>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [E, setE] = useState(0)
   const [A, setA] = useState(0)
@@ -364,6 +365,14 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
         budgetMetadata,
         preferredGender: gender === "ALL" ? undefined : gender
       })
+      
+      try {
+        const stats = await getArchetypeStats(finalArchetypeId)
+        setTotalUsers(stats.totalUsers)
+      } catch (err) {
+        console.warn("Failed to fetch archetype stats", err)
+      }
+
       setArchetypeId(finalArchetypeId)
       setSubTypeId(finalSubtypeId)
       setResults(recommendItems)
@@ -603,6 +612,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     restart,
     isQuizSubmitStep,
     preferredGender,
+    totalUsers,
     changePreferredGender: async (gender: string) => {
       setPreferredGender(gender)
       if (screen === "result" && archetypeId) {
