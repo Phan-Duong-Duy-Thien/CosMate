@@ -177,6 +177,38 @@ export default function StyleQuizPage() {
         <div className="space-y-6 rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-br from-pink-100/90 via-[#fffbeb] to-violet-100/80 p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)] md:p-8">
           <p className="text-xs font-semibold uppercase tracking-[0.18em] text-cosmate-pink">Checkpoint 70%</p>
           <h2 className="text-2xl font-semibold leading-snug text-foreground md:text-3xl">Hệ thống đã quét được <span className="font-extrabold text-cosmate-pink">70%</span> bản ngã của bạn và xếp bạn vào nhóm <span className="font-extrabold text-cosmate-pink">{quiz.archetypeProfile.name}</span>. Bạn muốn xem kết quả ngay hay test thêm 7 câu để phân tích chi tiết <span className="font-extrabold text-cosmate-pink">100%</span>?</h2>
+          
+          {/* Giới tính mong muốn */}
+          <div className="mx-auto max-w-md rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] p-4 shadow-[4px_4px_0_0_#1e1b4b]">
+            <p className="mb-2 text-center text-xs font-black uppercase tracking-wider text-indigo-950">
+              ⚡ Giới tính trang phục mong muốn
+            </p>
+            <div className="grid grid-cols-3 gap-2">
+              {[
+                { value: "ALL", label: "Tất cả" },
+                { value: "MALE", label: "Nam" },
+                { value: "FEMALE", label: "Nữ" },
+              ].map((g) => {
+                const active = quiz.preferredGender === g.value
+                return (
+                  <button
+                    key={g.value}
+                    type="button"
+                    onClick={() => quiz.changePreferredGender(g.value)}
+                    className={cn(
+                      "rounded-xl border-[2px] border-indigo-950 py-1.5 text-xs font-extrabold transition-all",
+                      active
+                        ? "bg-gradient-to-r from-pink-400 to-fuchsia-500 text-white shadow-[2px_2px_0_0_#1e1b4b]"
+                        : "bg-white text-indigo-950 hover:bg-pink-100"
+                    )}
+                  >
+                    {g.label}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
             <button type="button" onClick={quiz.viewResultNow} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}>
               Xem kết quả ngay
@@ -217,7 +249,20 @@ export default function StyleQuizPage() {
                   Làm lại quiz
                 </button>
               </div>
-              <div className="grid gap-3 md:grid-cols-2"><Select value={sortBy} onChange={(value) => setSortBy(value)} options={[{ value: "similarity", label: "Khớp nhất (Similarity)" }, { value: "price_asc", label: "Giá thấp → cao" }, { value: "price_desc", label: "Giá cao → thấp" }]} className="w-full" /><Search allowClear value={nameFilter} onChange={(event) => setNameFilter(event.target.value)} placeholder="Filter: tìm tên nhân vật" /></div>
+              <div className="grid gap-3 md:grid-cols-3">
+                <Select value={sortBy} onChange={(value) => setSortBy(value)} options={[{ value: "similarity", label: "Khớp nhất (Similarity)" }, { value: "price_asc", label: "Giá thấp → cao" }, { value: "price_desc", label: "Giá cao → thấp" }]} className="w-full" />
+                <Select
+                  value={quiz.preferredGender}
+                  onChange={(value) => quiz.changePreferredGender(value)}
+                  options={[
+                    { value: "ALL", label: "Tất cả giới tính" },
+                    { value: "MALE", label: "Chỉ đồ Nam (MALE)" },
+                    { value: "FEMALE", label: "Chỉ đồ Nữ (FEMALE)" }
+                  ]}
+                  className="w-full"
+                />
+                <Search allowClear value={nameFilter} onChange={(event) => setNameFilter(event.target.value)} placeholder="Filter: tìm tên nhân vật" />
+              </div>
             </div>
             <div className="max-h-[70vh] overflow-y-auto pr-1"><ResultCostumeGrid items={filteredResults} onView={(id) => navigate(`/costumes/${id}`)} /></div>
           </section>

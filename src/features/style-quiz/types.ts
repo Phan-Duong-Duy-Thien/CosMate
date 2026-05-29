@@ -16,6 +16,7 @@ export interface RecommendationRequestPayload {
   archetypeId: string
   subTypeId: string
   budgetMetadata: string
+  preferredGender?: string
 }
 
 export interface Option {
