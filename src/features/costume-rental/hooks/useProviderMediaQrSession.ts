@@ -89,7 +89,9 @@ function buildProviderMediaQrUrl(sessionId: string, userId: number): string {
   return url.toString()
 }
 
-export function useProviderMediaQrSession(active: boolean) {
+export function useProviderMediaQrSession(active: boolean, externalImageCount = 0) {
+  const externalImageCountRef = useRef(externalImageCount)
+  externalImageCountRef.current = externalImageCount
   const [sessionToken, setSessionToken] = useState("")
   const [qrValue, setQrValue] = useState("")
   const [sessionLoading, setSessionLoading] = useState(false)
@@ -165,8 +167,8 @@ export function useProviderMediaQrSession(active: boolean) {
     const mediaId = parseImageIdFromWsBody(body)
     if (!mediaId) return
     if (imageItemsRef.current.some((item) => item.id === mediaId)) return
-    if (imageItemsRef.current.length >= MAX_IMAGES) {
-      message.warning(`Tối đa ${MAX_IMAGES} ảnh từ QR.`)
+    if (imageItemsRef.current.length + externalImageCountRef.current >= MAX_IMAGES) {
+      message.warning(`Tối đa ${MAX_IMAGES} ảnh (QR + máy tính).`)
       return
     }
 
@@ -184,7 +186,7 @@ export function useProviderMediaQrSession(active: boolean) {
           URL.revokeObjectURL(url)
           return prev
         }
-        if (prev.length >= MAX_IMAGES) {
+        if (prev.length + externalImageCountRef.current >= MAX_IMAGES) {
           URL.revokeObjectURL(url)
           return prev
         }
