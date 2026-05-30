@@ -288,6 +288,7 @@ export default function ProviderMessagesPage() {
         <div className={CHAT_UI.providerDashboardShell}>
         <ChatInboxSidebar
           variant="comfortable"
+          theme="provider"
           headerStart={<h2 className="text-base font-semibold text-slate-700">{VI.common.messages.title}</h2>}
           rooms={rooms}
           roomsLoading={roomsLoading}
@@ -312,7 +313,7 @@ export default function ProviderMessagesPage() {
                         className="h-9 w-9 rounded-full object-cover ring-2 ring-white shadow-sm"
                       />
                     ) : (
-                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-pink-100 to-pink-200 text-xs font-semibold text-pink-600 shadow-sm ring-2 ring-white">
+                      <div className="flex h-9 w-9 items-center justify-center rounded-full bg-linear-to-br from-violet-100 to-violet-200 text-xs font-semibold text-violet-600 shadow-sm ring-2 ring-white">
                         {(activeRoom.partnerName || "?").slice(0, 2).toUpperCase()}
                       </div>
                     )}
@@ -346,7 +347,7 @@ export default function ProviderMessagesPage() {
               <button
                 type="button"
                 onClick={handleOpenBookingModal}
-                className="inline-flex items-center gap-1.5 rounded-full bg-pink-400 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-pink-500 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-violet-700 disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {VI.booking.create.title}
@@ -364,7 +365,7 @@ export default function ProviderMessagesPage() {
               </div>
             ) : showHistoryLoader ? (
               <div className="flex h-full w-full flex-col items-center justify-center gap-2 bg-slate-50 text-slate-400">
-                <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-pink-400" />
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-200 border-t-violet-600" />
                 <p className="text-sm font-medium">{VI.common.status.loading}</p>
               </div>
             ) : messages.length === 0 ? (
@@ -374,7 +375,7 @@ export default function ProviderMessagesPage() {
                 <p className="text-sm">{VI.common.messages.sayHello}</p>
               </div>
             ) : (
-              <ChatMessageList messages={messages} currentUserId={currentUserId} />
+              <ChatMessageList messages={messages} currentUserId={currentUserId} theme="provider" />
             )}
           </div>
 
@@ -387,6 +388,7 @@ export default function ProviderMessagesPage() {
               onSendImage={handleSendImage}
               isUploading={isUploading}
               disabled={!isConnected}
+              theme="provider"
             />
           )}
         </div>
@@ -551,7 +553,7 @@ export default function ProviderMessagesPage() {
                 rentSlotAmount <= 0 ||
                 bookingLoading
               }
-              className="px-5 py-2 rounded-lg bg-pink-400 text-sm font-semibold text-white hover:bg-pink-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2 rounded-lg bg-violet-600 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {bookingLoading ? VI.booking.create.creating : VI.booking.create.create}
             </button>

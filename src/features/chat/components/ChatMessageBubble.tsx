@@ -7,11 +7,13 @@ import type { ChatMessage } from "../types"
 interface ChatMessageBubbleProps {
   message: ChatMessage;
   isMine: boolean;
+  theme?: "user" | "provider";
 }
 
-export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
+export function ChatMessageBubble({ message, isMine, theme = "user" }: ChatMessageBubbleProps) {
   const time = formatChatTime(message.createdAt ?? "")
   const [previewOpen, setPreviewOpen] = useState(false)
+  const isProvider = theme === "provider"
 
   // Also detect IMAGE from URL content in case server doesn't broadcast messageType
   const isImageMessage = message.messageType === "IMAGE" || (message.content ?? "").startsWith("http")
@@ -45,7 +47,7 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
             <p
               className={cn(
                 "px-1.5 pb-0.5 pt-0.5 text-[10px]",
-                isMine ? "text-right text-pink-200" : "text-slate-400"
+                isMine ? (isProvider ? "text-right text-violet-200" : "text-right text-pink-200") : "text-slate-400"
               )}
             >
               {time}
@@ -86,7 +88,7 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
         className={cn(
           "group relative max-w-[70%] rounded-xl px-2.5 py-1.5 text-sm shadow-sm transition-all overflow-hidden",
           isMine
-            ? "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white"
+            ? (isProvider ? "rounded-br-sm bg-linear-to-br from-indigo-500 to-[#7C3AED] text-white" : "rounded-br-sm bg-linear-to-br from-pink-400 to-pink-500 text-white")
             : "rounded-bl-sm border border-slate-100 bg-white text-slate-700"
         )}
       >
@@ -94,11 +96,11 @@ export function ChatMessageBubble({ message, isMine }: ChatMessageBubbleProps) {
         <p
           className={cn(
             "mt-0.5 flex items-center gap-1 text-[10px]",
-            isMine ? "justify-end text-pink-200" : "text-slate-400"
+            isMine ? "justify-end text-violet-200" : "text-slate-400"
           )}
         >
           {!isMine && (
-            <svg className="h-3 w-3 text-pink-300 opacity-0 transition-opacity group-hover:opacity-100" viewBox="0 0 12 12" fill="currentColor">
+            <svg className={cn("h-3 w-3 opacity-0 transition-opacity group-hover:opacity-100", isProvider ? "text-violet-400" : "text-pink-300")} viewBox="0 0 12 12" fill="currentColor">
               <path d="M10.97 4.97a.75.75 0 0 1 1.07 1.05l-3.99 4.99a.75.75 0 0 1-1.08.02L4.324 8.384a.75.75 0 1 1 1.06-1.06l2.094 2.093 3.473-4.425a.267.267 0 0 1 .02-.022z"/>
             </svg>
           )}

@@ -6,6 +6,7 @@ import type { ChatMessage } from "../types"
 interface ChatMessageListProps {
   messages: ChatMessage[];
   currentUserId: number | null;
+  theme?: "user" | "provider";
 }
 
 /** Returns a label for the date group (e.g. "Today", "Yesterday", "Thứ 2", "28 Thg 3") */
@@ -20,7 +21,7 @@ function getDateLabel(date: Date): string {
   return date.toLocaleDateString([], { day: "numeric", month: "long" })
 }
 
-export function ChatMessageList({ messages, currentUserId }: ChatMessageListProps) {
+export function ChatMessageList({ messages, currentUserId, theme = "user" }: ChatMessageListProps) {
   const bottomRef = useRef<HTMLDivElement>(null)
 
   const items = useMemo(() => {
@@ -67,6 +68,7 @@ export function ChatMessageList({ messages, currentUserId }: ChatMessageListProp
             <ChatMessageBubble
               message={msg}
               isMine={msg.senderId === currentUserId}
+              theme={theme}
             />
           </div>
         ))}
