@@ -422,3 +422,30 @@ export async function getExtendDetail(
   );
   return response.data.result;
 }
+
+/**
+ * Pay for an existing unpaid costume order
+ * POST /api/orders/{id}/pay
+ */
+export async function payOrder(
+  orderId: number,
+  cosplayerId: number,
+  payload: {
+    paymentMethod: string;
+    returnUrl?: string;
+  }
+): Promise<CreateOrderResponse> {
+  const response = await axiosInstance.post<ApiResponse<CreateOrderResponse>>(
+    `/api/orders/${orderId}/pay`,
+    null,
+    {
+      params: {
+        cosplayerId,
+        paymentMethod: payload.paymentMethod,
+        returnUrl: payload.returnUrl,
+      },
+    }
+  );
+  return response.data.result;
+}
+
