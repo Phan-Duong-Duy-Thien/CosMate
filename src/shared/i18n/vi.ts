@@ -1443,6 +1443,7 @@ export const VI = {
       toastDisputeSuccess: "Đã gửi khiếu nại thành công",
       toastDisputeFailed: "Gửi khiếu nại thất bại",
       actionCancel: "Hủy đơn",
+      actionRepay: "Thanh toán lại",
       toastCancelSuccess: "Hủy đơn thành công",
       toastCancelFailed: "Không thể hủy đơn",
       cancelModal: {
