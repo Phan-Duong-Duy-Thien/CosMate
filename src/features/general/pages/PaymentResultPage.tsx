@@ -128,7 +128,7 @@ export default function PaymentResultPage() {
 
   const getDescription = () => {
     if (isLoading) return VI.paymentResult.verifying;
-    if (error) return error;
+    if (error && !isSuccess) return error;
     if (isWalletContext && finalStatus === 'success') {
       return VI.paymentResult.walletSuccessDesc;
     }

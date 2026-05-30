@@ -57,7 +57,7 @@ export function usePaymentVerification(rawOrderId: string | null): UsePaymentVer
           order.orderType,
           '— ignoring to prevent cross-contamination.'
         );
-        setError('Order type mismatch — expected costume order.');
+        setError(null);
         setStatus('unknown');
         setIsLoading(false);
         return;
@@ -82,7 +82,7 @@ export function usePaymentVerification(rawOrderId: string | null): UsePaymentVer
         setStatus('unknown');
       }
     } catch {
-      setError('Could not verify payment status.');
+      setError(null);
       setStatus('unknown');
     } finally {
       setIsLoading(false);
