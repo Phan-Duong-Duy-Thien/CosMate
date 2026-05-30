@@ -45,6 +45,11 @@ export async function recommendByStyle(payload: RecommendationRequestPayload): P
   return response.data?.result ?? []
 }
 
+export async function getArchetypeStats(archetypeId: string): Promise<{ archetypeId: string; totalUsers: number }> {
+  const response = await axiosInstance.get<ApiResponse<{ archetypeId: string; totalUsers: number }>>(`/api/search/archetype-stats/${archetypeId}`)
+  return response.data?.result ?? { archetypeId, totalUsers: 0 }
+}
+
 export function mapQuizError(error: unknown): string {
   const tokenMsg = mapAiFeatureError(error, "")
   if (tokenMsg) return tokenMsg

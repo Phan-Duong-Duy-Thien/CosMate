@@ -6,8 +6,11 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
-import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Upload, message } from 'antd'
-import { InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import { useLocation } from 'react-router-dom'
+import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message, QRCode, Spin } from 'antd'
+import { CloseOutlined, InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import { Image as AntImage } from 'antd'
+import { ImageIcon, Monitor, RefreshCw, Smartphone } from 'lucide-react'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
 import type { CreateCostumeBasicPayload, CostumeSizeOption } from '../../types'
 import { generateCostumeDescriptionByAI } from '../../api/costumeRental.api'
@@ -15,8 +18,13 @@ import { createCharacterRequest } from '../../api/characterRequests.api'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import AILoadingMascot from '@/shared/components/AILoadingMascot'
+import { AiTokenEmptyState } from '@/features/profile/components/AiTokenEmptyState'
+import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
+import { VI } from '@/shared/i18n/vi'
+import { notifyTokenChanged } from '@/shared/sync/dataSync'
+import { mapGenerateDescriptionError } from '../../utils/costumeAiErrors'
+import { useProviderMediaQrSession } from '../../hooks/useProviderMediaQrSession'
 
-const { Dragger } = Upload
 const { TextArea } = Input
 
 const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
@@ -35,7 +43,6 @@ interface FormValues {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
-  imageFiles: { fileList: UploadFile[] }
   videoFiles?: { fileList: UploadFile[] }
 }
 
@@ -70,15 +77,30 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
   const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
+  const [localImageFileList, setLocalImageFileList] = useState<UploadFile[]>([])
+  const [qrPreviewOpen, setQrPreviewOpen] = useState(false)
+  const {
+    qrValue,
+    sessionLoading,
+    sessionError,
+    refreshSession,
+    canRefreshQr,
+    refreshCooldownLabel,
+    isListening,
+    imageItems: qrImageItems,
+    removeImageItem,
+    maxImages,
+  } = useProviderMediaQrSession(true, localImageFileList.length)
 
   const watchedName = Form.useWatch('name', form)
-  const watchedImages = Form.useWatch('imageFiles', form)
+
+  const totalImageCount = qrImageItems.length + localImageFileList.length
+  const remainingImageSlots = Math.max(0, maxImages - totalImageCount)
 
   const canGenerateAI = useMemo(() => {
     const hasName = Boolean(watchedName?.trim())
-    const hasImages = (watchedImages?.fileList?.length ?? 0) > 0
-    return hasName && hasImages
-  }, [watchedImages, watchedName])
+    return hasName && totalImageCount > 0
+  }, [totalImageCount, watchedName])
 
   const selectedCharacterIds = Form.useWatch('characterIds', form) ?? []
   const isCharacterSelectionFull = selectedCharacterIds.length >= 3
@@ -128,9 +150,102 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     void fetchCharacters()
   }, [])
 
-  const extractFilesFromForm = (values?: FormValues): File[] => {
-    const raw = values?.imageFiles?.fileList ?? []
-    return raw.map((f: UploadFile) => f.originFileObj).filter((f): f is File => f !== undefined)
+  const qrImagesToFiles = async (): Promise<File[]> => {
+    const files: File[] = []
+    for (const qrImage of qrImageItems) {
+      const blobRes = await fetch(qrImage.url)
+      const blob = await blobRes.blob()
+      const ext = blob.type.includes('png') ? 'png' : 'jpg'
+      files.push(
+        new File([blob], `provider-qr-image-${qrImage.id}.${ext}`, {
+          type: blob.type || 'image/jpeg',
+        }),
+      )
+    }
+    return files
+  }
+
+  const localImagesToFiles = (): File[] =>
+    localImageFileList
+      .map((file) => file.originFileObj)
+      .filter((file): file is File => file !== undefined)
+
+  const getAllImageFiles = async (): Promise<File[]> => {
+    const qrFiles = await qrImagesToFiles()
+    return [...localImagesToFiles(), ...qrFiles]
+  }
+
+  const imageUploadProps: UploadProps = {
+    multiple: true,
+    accept: 'image/*',
+    fileList: localImageFileList,
+    showUploadList: false,
+    beforeUpload: (file) => {
+      if (remainingImageSlots <= 0) {
+        message.warning(`Tối đa ${maxImages} ảnh (QR + máy tính).`)
+        return Upload.LIST_IGNORE
+      }
+      if (!file.thumbUrl && file.type.startsWith('image/')) {
+        file.thumbUrl = URL.createObjectURL(file)
+      }
+      return false
+    },
+    onChange: ({ fileList }) => {
+      const maxLocal = Math.max(0, maxImages - qrImageItems.length)
+      const next = fileList.slice(0, maxLocal)
+      setLocalImageFileList((prev) => {
+        const removed = prev.filter((item) => !next.some((n) => n.uid === item.uid))
+        removed.forEach((item) => {
+          if (item.thumbUrl?.startsWith('blob:')) {
+            URL.revokeObjectURL(item.thumbUrl)
+          }
+        })
+        return next
+      })
+    },
+  }
+
+  const removeLocalImage = (uid: string) => {
+    setLocalImageFileList((prev) => {
+      const target = prev.find((file) => file.uid === uid)
+      if (target?.thumbUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(target.thumbUrl)
+      }
+      return prev.filter((file) => file.uid !== uid)
+    })
+  }
+
+  const handleGenerateDescription = async () => {
+    const values = form.getFieldsValue()
+    const name = String(values?.name || '').trim()
+
+    if (!name) {
+      message.warning('Vui lòng nhập tên trang phục trước khi tạo mô tả AI.')
+      return
+    }
+    if (totalImageCount === 0) {
+      message.warning('Vui lòng thêm ít nhất 1 hình ảnh (QR hoặc từ máy tính) trước khi tạo mô tả AI.')
+      return
+    }
+
+    setIsAiGenerating(true)
+    try {
+      const files = await getAllImageFiles()
+      const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
+      if (aiDescription?.trim()) {
+        form.setFieldValue('description', aiDescription)
+        message.success('AI đã tạo mô tả thành công.')
+        notifyTokenChanged()
+      } else {
+        message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
+      }
+    } catch (err: unknown) {
+      if (!applyFormValidationErrors(form, err)) {
+        message.error(mapGenerateDescriptionError(err))
+      }
+    } finally {
+      setIsAiGenerating(false)
+    }
   }
 
   const videoUploadProps: UploadProps = {
@@ -163,39 +278,6 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     listType: 'picture',
   }
 
-  const handleGenerateDescription = async () => {
-    const values = form.getFieldsValue()
-    const name = String(values?.name || '').trim()
-    const files = extractFilesFromForm(values)
-
-    if (!name) {
-      message.warning('Vui lòng nhập tên trang phục trước khi tạo mô tả AI.')
-      return
-    }
-    if (files.length === 0) {
-      message.warning('Vui lòng tải lên ít nhất 1 hình ảnh trước khi tạo mô tả AI.')
-      return
-    }
-
-    setIsAiGenerating(true)
-    try {
-      const aiDescription = await generateCostumeDescriptionByAI(name, files, personaId)
-      if (aiDescription?.trim()) {
-        form.setFieldValue('description', aiDescription)
-        message.success('AI đã tạo mô tả thành công.')
-      } else {
-        message.warning('AI chưa trả về mô tả phù hợp. Bạn có thể thử lại.')
-      }
-    } catch (err: unknown) {
-      if (!applyFormValidationErrors(form, err)) {
-        const errMsg = err instanceof Error ? err.message : 'Không thể tạo mô tả bằng AI.'
-        message.error(errMsg)
-      }
-    } finally {
-      setIsAiGenerating(false)
-    }
-  }
-
   const handleCharacterRequestSubmit = async () => {
     try {
       const values = await characterRequestForm.validateFields()
@@ -221,7 +303,11 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   }
 
   const handleFinish = async (values: FormValues) => {
-    const rawFiles = extractFilesFromForm(values)
+    if (totalImageCount === 0) {
+      message.error('Vui lòng thêm ít nhất 1 hình ảnh (QR hoặc từ máy tính).')
+      return
+    }
+
     const rangeValues = values as FormValues & {
       heightMin?: number
       heightMax?: number
@@ -239,6 +325,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     setModerationError(null)
 
     try {
+      const imageFiles = await getAllImageFiles()
+
       const submitPayload = {
         name: values.name,
         description: values.description,
@@ -248,7 +336,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         pricePerDay: values.pricePerDay,
         rentDiscount: values.rentDiscount,
         depositAmount: values.depositAmount,
-        imageFiles: rawFiles,
+        imageFiles,
         rentalOptions: null,
         videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
       }
@@ -335,14 +423,142 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </div>
         </Form.Item>
 
-        <Form.Item label="Hình ảnh" name="imageFiles" valuePropName="imageFiles">
-          <Dragger multiple beforeUpload={() => false} accept="image/*" listType="picture">
-            <p className="ant-upload-drag-icon">
-              <InboxOutlined />
-            </p>
-            <p className="ant-upload-text">Kéo thả hoặc nhấn để tải ảnh lên</p>
-            <p className="ant-upload-hint">Hỗ trợ tải nhiều ảnh cùng lúc</p>
-          </Dragger>
+        <Form.Item
+          label="Hình ảnh trang phục"
+          required
+          extra={`Tối đa ${maxImages} ảnh — quét QR từ điện thoại hoặc chọn từ máy tính`}
+        >
+          <div className="rounded-xl border border-cosmate-pink/20 bg-cosmate-soft-pink/10 p-4">
+            <div className="mb-4 flex items-center justify-between gap-2">
+              <p className="text-sm font-semibold text-foreground">
+                Đã chọn {totalImageCount}/{maxImages} ảnh
+              </p>
+              {remainingImageSlots <= 0 && (
+                <span className="text-xs font-medium text-amber-700">Đã đủ số lượng ảnh</span>
+              )}
+            </div>
+
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <Smartphone className="h-4 w-4 text-cosmate-pink" />
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Từ điện thoại</p>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  {sessionError ? (
+                    <p className="text-center text-xs font-medium text-rose-600">{sessionError}</p>
+                  ) : sessionLoading || !qrValue ? (
+                    <Spin size="small" />
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setQrPreviewOpen(true)}
+                      className="cursor-zoom-in rounded-lg border border-transparent p-1 transition-colors hover:border-cosmate-pink/30 hover:bg-cosmate-soft-pink/20"
+                      title="Nhấn để phóng to QR"
+                      aria-label="Phóng to mã QR"
+                    >
+                      <QRCode value={qrValue} size={128} bordered={false} />
+                    </button>
+                  )}
+                  {!sessionLoading && qrValue && (
+                    <p className="text-center text-xs text-muted-foreground">Nhấn QR để phóng to</p>
+                  )}
+                  <Button
+                    type="link"
+                    size="small"
+                    icon={<RefreshCw className="h-3.5 w-3.5" />}
+                    onClick={refreshSession}
+                    disabled={sessionLoading || !canRefreshQr}
+                    className="!px-0"
+                  >
+                    {canRefreshQr ? 'Làm mới QR' : `Làm mới sau ${refreshCooldownLabel ?? ''}`}
+                  </Button>
+                  {isListening && qrImageItems.length === 0 && (
+                    <p className="text-center text-xs text-muted-foreground">Đang chờ ảnh từ mobile…</p>
+                  )}
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-border bg-background p-3">
+                <div className="mb-2 flex items-center gap-2">
+                  <Monitor className="h-4 w-4 text-cosmate-pink" />
+                  <p className="text-xs font-semibold uppercase text-muted-foreground">Từ máy tính</p>
+                </div>
+                <Upload.Dragger
+                  {...imageUploadProps}
+                  disabled={remainingImageSlots <= 0}
+                  className="!bg-muted/20 [&_.ant-upload-drag]:!border-dashed [&_.ant-upload-drag]:!border-border [&_.ant-upload-drag]:!bg-transparent [&_.ant-upload-drag]:!py-6"
+                >
+                  <p className="ant-upload-drag-icon !mb-1">
+                    <InboxOutlined className="!text-cosmate-pink" />
+                  </p>
+                  <p className="text-xs font-medium text-foreground">Kéo thả hoặc nhấn để chọn ảnh</p>
+                  <p className="text-xs text-muted-foreground">Còn thêm được {remainingImageSlots} ảnh</p>
+                </Upload.Dragger>
+              </div>
+            </div>
+
+            <div className="mt-4 rounded-lg border border-border bg-background p-3">
+              <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Ảnh đã chọn</p>
+              {totalImageCount === 0 ? (
+                <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
+                  <ImageIcon className="h-4 w-4" />
+                  <span>Chưa có ảnh — hãy quét QR hoặc chọn từ máy tính</span>
+                </div>
+              ) : (
+                <AntImage.PreviewGroup>
+                  <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                    {localImageFileList.map((file) => (
+                        <li
+                          key={file.uid}
+                          className="group relative aspect-square overflow-hidden rounded-md border border-border"
+                        >
+                          <Button
+                            danger
+                            type="primary"
+                            size="small"
+                            shape="circle"
+                            icon={<CloseOutlined />}
+                            className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                            onClick={(event) => {
+                              event.preventDefault()
+                              event.stopPropagation()
+                              removeLocalImage(file.uid)
+                            }}
+                          />
+                          {file.thumbUrl ? (
+                            <AntImage
+                              src={file.thumbUrl}
+                              alt=""
+                              className="!h-full !w-full !object-cover"
+                              rootClassName="!h-full !w-full"
+                            />
+                          ) : null}
+                        </li>
+                      ))}
+                    {qrImageItems.map((item) => (
+                      <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
+                        <Button
+                          danger
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon={<CloseOutlined />}
+                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeImageItem(item.id)
+                          }}
+                        />
+                        <AntImage src={item.url} alt="" className="!h-full !w-full !object-cover" rootClassName="!h-full !w-full" />
+                      </li>
+                    ))}
+                  </ul>
+                </AntImage.PreviewGroup>
+              )}
+            </div>
+          </div>
         </Form.Item>
 
         <Form.Item label="Video giới thiệu" name="videoFiles" valuePropName="videoFiles">
@@ -458,13 +674,33 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
         </Form.Item>
 
-
         <Form.Item>
           <Button type="primary" htmlType="submit" loading={loading} block>
             Tiếp theo →
           </Button>
         </Form.Item>
       </Form>
+
+      <Modal
+        title="Quét mã QR"
+        open={qrPreviewOpen && Boolean(qrValue)}
+        onCancel={() => setQrPreviewOpen(false)}
+        footer={null}
+        centered
+        width={360}
+        destroyOnClose
+      >
+        {qrValue && (
+          <div className="flex flex-col items-center gap-3 py-2">
+            <div className="rounded-xl border border-border bg-white p-4 shadow-sm">
+              <QRCode value={qrValue} size={280} bordered={false} />
+            </div>
+            <p className="text-center text-sm text-muted-foreground">
+              Mở app CosMate trên điện thoại và quét mã để tải ảnh lên.
+            </p>
+          </div>
+        )}
+      </Modal>
 
       <Modal
         title="Yêu cầu thêm nhân vật mới"

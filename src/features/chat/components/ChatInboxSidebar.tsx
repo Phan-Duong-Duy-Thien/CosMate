@@ -23,6 +23,7 @@ function computeInitials(fullName: string): string {
 
 export interface ChatInboxSidebarProps {
   variant: ChatInboxSidebarVariant
+  theme?: "user" | "provider"
   /** Left side of header row (logo, title, etc.) */
   headerStart: ReactNode
   rooms: ChatRoomListItem[]
@@ -35,6 +36,7 @@ export interface ChatInboxSidebarProps {
 
 export function ChatInboxSidebar({
   variant,
+  theme = "user",
   headerStart,
   rooms,
   roomsLoading,
@@ -48,6 +50,7 @@ export function ChatInboxSidebar({
   const { users, loading: searchLoading } = useUserSearch(searchKeyword)
 
   const isCompact = variant === "compact"
+  const isProvider = theme === "provider"
 
   const handleSelectRoom = (room: ChatRoomListItem) => {
     setSearchMode(false)
@@ -72,15 +75,15 @@ export function ChatInboxSidebar({
   return (
     <div
       className={cn(
-        CHAT_UI.sidebar,
-        CHAT_UI.sidebarBorder,
+        isProvider ? CHAT_UI.providerSidebar : CHAT_UI.sidebar,
+        isProvider ? CHAT_UI.providerSidebarBorder : CHAT_UI.sidebarBorder,
         isCompact ? CHAT_UI.sidebarCompact : CHAT_UI.sidebarComfortable,
         "shrink-0",
       )}
     >
       <div
         className={cn(
-          CHAT_UI.sidebarHeader,
+          isProvider ? CHAT_UI.providerSidebarHeader : CHAT_UI.sidebarHeader,
           isCompact ? CHAT_UI.sidebarHeaderCompact : CHAT_UI.sidebarHeaderComfortable,
         )}
       >
@@ -93,7 +96,9 @@ export function ChatInboxSidebar({
           }}
           className={cn(
             "ml-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-xl transition-all",
-            searchMode ? CHAT_UI.searchActive : CHAT_UI.searchIdle,
+            searchMode
+              ? (isProvider ? "border border-violet-200 bg-violet-50 text-[#7C3AED]" : CHAT_UI.searchActive)
+              : (isProvider ? "text-slate-400 hover:bg-slate-50 hover:text-slate-600" : CHAT_UI.searchIdle),
           )}
           aria-label={VI.common.messages.chatSearchAria}
         >
@@ -105,12 +110,12 @@ export function ChatInboxSidebar({
         <div
           className={cn(
             "shrink-0",
-            CHAT_UI.sidebarDivider,
+            isProvider ? CHAT_UI.providerSidebarDivider : CHAT_UI.sidebarDivider,
             isCompact ? CHAT_UI.sidebarSearchPadCompact : CHAT_UI.sidebarSearchPadComfortable,
           )}
         >
           <div className="relative">
-            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-indigo-900/45" />
+            <Search className="absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
             <input
               autoFocus
               type="text"
@@ -118,7 +123,9 @@ export function ChatInboxSidebar({
               onChange={(e) => setSearchKeyword(e.target.value)}
               placeholder={VI.common.messages.chatSearchPlaceholder}
               className={cn(
-                CHAT_UI.pillSearch,
+                isProvider
+                  ? "w-full rounded-xl border border-slate-200 bg-slate-50 pl-8 pr-3 text-slate-800 placeholder:text-slate-400 focus:border-violet-300 focus:bg-white focus:outline-none focus:ring-4 focus:ring-violet-100"
+                  : CHAT_UI.pillSearch,
                 isCompact ? "h-8 pl-7 text-xs" : "h-9 pl-8 text-sm",
               )}
             />
@@ -126,7 +133,7 @@ export function ChatInboxSidebar({
               <button
                 type="button"
                 onClick={() => setSearchKeyword("")}
-                className="absolute right-2 top-1/2 -translate-y-1/2 text-indigo-900/45 hover:text-indigo-950"
+                className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
                 aria-label={VI.common.actions.close}
               >
                 <X className="h-3 w-3" />
@@ -160,7 +167,7 @@ export function ChatInboxSidebar({
                   onClick={() => void handleSelectUser(user)}
                   className={cn(
                     "group relative flex w-full items-center gap-2 rounded-xl border-2 border-transparent px-2 py-2 text-left transition-all",
-                    CHAT_UI.userRowHover,
+                    isProvider ? "hover:bg-slate-50" : CHAT_UI.userRowHover,
                   )}
                 >
                   <div className="relative">
@@ -171,21 +178,21 @@ export function ChatInboxSidebar({
                         className={CHAT_UI.avatarSm}
                       />
                     ) : (
-                      <div className={CHAT_UI.avatarFallbackSm}>
+                      <div className={isProvider ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[10px] font-extrabold text-[#7C3AED]" : CHAT_UI.avatarFallbackSm}>
                         {computeInitials(user.fullName)}
                       </div>
                     )}
                     {!isCompact ? (
-                      <div className={cn(CHAT_UI.tooltip, "group-hover:opacity-100")}>
+                      <div className={cn(CHAT_UI.tooltip, isProvider && "border-slate-200 bg-white shadow-sm shadow-slate-100 font-normal", "group-hover:opacity-100")}>
                         <span className="block font-medium">{user.fullName}</span>
-                        <span className={CHAT_UI.tooltipSub}>@{user.username}</span>
-                        <div className={CHAT_UI.tooltipArrow} />
+                        <span className={isProvider ? "block font-normal text-slate-400" : CHAT_UI.tooltipSub}>@{user.username}</span>
+                        <div className={cn(CHAT_UI.tooltipArrow, isProvider && "border-b border-r border-slate-200 bg-white")} />
                       </div>
                     ) : null}
                   </div>
                   <div className="flex w-0 min-w-0 flex-1 flex-col overflow-hidden">
-                    <span className="truncate text-xs font-bold text-indigo-950">{user.fullName}</span>
-                    <span className="truncate text-[10px] font-semibold text-indigo-900/55">{user.role}</span>
+                    <span className={cn("truncate text-xs font-bold", isProvider ? "text-slate-800" : "text-indigo-950")}>{user.fullName}</span>
+                    <span className={cn("truncate text-[10px] font-semibold", isProvider ? "text-slate-400" : "text-indigo-900/55")}>{user.role}</span>
                   </div>
                 </button>
               ))}
@@ -214,6 +221,7 @@ export function ChatInboxSidebar({
             activeRoomId={activeRoomId}
             onSelectRoom={handleSelectRoom}
             showHoverTooltip={!isCompact}
+            theme={theme}
           />
         )}
       </div>
@@ -221,7 +229,8 @@ export function ChatInboxSidebar({
       {searchMode ? (
         <div
           className={cn(
-            "shrink-0 border-t-[2px] border-indigo-950/15",
+            "shrink-0",
+            isProvider ? "border-t border-slate-100 p-3" : "border-t-[2px] border-indigo-950/15",
             isCompact ? CHAT_UI.sidebarSearchPadCompact : CHAT_UI.sidebarSearchPadComfortable,
           )}
         >
@@ -231,7 +240,7 @@ export function ChatInboxSidebar({
               setSearchMode(false)
               setSearchKeyword("")
             }}
-            className={CHAT_UI.sidebarFooterBtn}
+            className={isProvider ? "flex w-full items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white py-2 text-xs font-bold text-slate-500 transition hover:bg-slate-50 hover:text-slate-700" : CHAT_UI.sidebarFooterBtn}
           >
             <X className="h-3 w-3" />
             {VI.common.messages.chatExitSearch}

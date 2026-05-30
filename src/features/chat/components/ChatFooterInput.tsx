@@ -12,12 +12,14 @@ interface ChatFooterInputProps {
   onSendImage?: (file: File) => Promise<void>
   disabled?: boolean
   isUploading?: boolean
+  theme?: "user" | "provider"
 }
 
-export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled, isUploading }: ChatFooterInputProps) {
+export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled, isUploading, theme = "user" }: ChatFooterInputProps) {
   const [focused, setFocused] = useState(false)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const isProvider = theme === "provider"
 
   const autoResize = () => {
     const ta = textareaRef.current
@@ -79,7 +81,9 @@ export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled
       <div className="mx-auto flex max-w-2xl items-center gap-2">
         <div className={cn(
           "flex flex-1 items-center gap-2 rounded-2xl border bg-white px-4 py-2 transition-all",
-          focused ? "border-pink-300 bg-pink-50/30 shadow-sm" : "border-slate-200",
+          focused
+            ? (isProvider ? "border-violet-300 bg-violet-50/20 shadow-sm" : "border-pink-300 bg-pink-50/30 shadow-sm")
+            : "border-slate-200",
           disabled && "bg-slate-50 opacity-60"
         )}>
           <textarea
@@ -114,7 +118,7 @@ export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled
               className={cn(
                 "shrink-0 rounded-full p-0! transition-all",
                 canSendImage
-                  ? "h-10 w-10 text-slate-500 hover:bg-slate-100 active:scale-95"
+                  ? (isProvider ? "h-10 w-10 text-slate-500 hover:bg-slate-100 active:scale-95 hover:text-violet-600" : "h-10 w-10 text-slate-500 hover:bg-slate-100 active:scale-95 hover:text-pink-600")
                   : "h-10 w-10 text-slate-300"
               )}
               aria-label="Send image"
@@ -132,7 +136,7 @@ export function ChatFooterInput({ value, onChange, onSend, onSendImage, disabled
           className={cn(
             "shrink-0 rounded-full p-0! transition-all",
             canSend
-              ? "h-10 w-10 bg-pink-400 text-white hover:bg-pink-500 active:scale-95"
+              ? (isProvider ? "h-10 w-10 bg-violet-600 text-white hover:bg-violet-700 active:scale-95" : "h-10 w-10 bg-pink-400 text-white hover:bg-pink-500 active:scale-95")
               : "h-10 w-10 text-slate-300"
           )}
           aria-label="Send message"

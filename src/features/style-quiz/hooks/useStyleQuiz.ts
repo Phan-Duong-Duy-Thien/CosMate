@@ -4,7 +4,7 @@ import { notification } from "antd"
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
 import { notifyTokenChanged } from "@/shared/sync/dataSync"
-import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz } from "../services/styleQuiz.service"
+import { getStage1Survey, getStage2Survey, mapQuizError, recommendByStyle, submitStyleQuiz, getArchetypeStats } from "../services/styleQuiz.service"
 import { resolveLocalArchetypeId } from "../utils/resolveLocalArchetype"
 import type { SearchResponseItem, Stage1Question, Stage2Question, SubmitQuizCustomAnswer, SubmitQuizPayload, SubmitQuizStaticAnswer } from "../types"
 
@@ -25,6 +25,7 @@ interface QuizDraft {
   A: number
   O: number
   archetypeId: string
+  preferredGender?: string
   stage1Answers: Record<string, number>
   stage2Answers: Record<string, number>
   stage1CustomAnswers: Record<string, string>
@@ -56,6 +57,7 @@ function safeGetDraft(): QuizDraft | null {
       A: parsed.A,
       O: parsed.O,
       archetypeId: typeof parsed.archetypeId === "string" ? parsed.archetypeId : "",
+      preferredGender: typeof parsed.preferredGender === "string" ? parsed.preferredGender : "ALL",
       stage1Answers: parsed.stage1Answers && typeof parsed.stage1Answers === "object" ? parsed.stage1Answers : {},
       stage2Answers: parsed.stage2Answers && typeof parsed.stage2Answers === "object" ? parsed.stage2Answers : {},
       stage1CustomAnswers: (parsed as any).stage1CustomAnswers && typeof (parsed as any).stage1CustomAnswers === "object" ? (parsed as any).stage1CustomAnswers : {},
@@ -96,12 +98,14 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
   const [stage2Answers, setStage2Answers] = useState<Record<string, number>>({})
   const [stage1CustomAnswers, setStage1CustomAnswers] = useState<Record<string, string>>({})
   const [stage2CustomAnswers, setStage2CustomAnswers] = useState<Record<string, string>>({})
+  const [totalUsers, setTotalUsers] = useState<number>(0)
   const [currentIndex, setCurrentIndex] = useState(0)
   const [E, setE] = useState(0)
   const [A, setA] = useState(0)
   const [O, setO] = useState(0)
   const [archetypeId, setArchetypeId] = useState("")
   const [subTypeId, setSubTypeId] = useState("")
+  const [preferredGender, setPreferredGender] = useState<string>("ALL")
   const [loading, setLoading] = useState(false)
   const [surveyLoading, setSurveyLoading] = useState(false)
   const [results, setResults] = useState<SearchResponseItem[]>([])
@@ -126,6 +130,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     setO(0)
     setArchetypeId("")
     setSubTypeId("")
+    setPreferredGender("ALL")
   }
 
   useEffect(() => {
@@ -196,12 +201,13 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
       A,
       O,
       archetypeId,
+      preferredGender,
       stage1Answers,
       stage2Answers,
       stage1CustomAnswers,
       stage2CustomAnswers,
     })
-  }, [draftCheckDone, surveyLoading, screen, showResumeModal, phase, currentIndex, globalQuestionIndex, E, A, O, archetypeId, stage1Answers, stage2Answers, stage1CustomAnswers, stage2CustomAnswers])
+  }, [draftCheckDone, surveyLoading, screen, showResumeModal, phase, currentIndex, globalQuestionIndex, E, A, O, archetypeId, preferredGender, stage1Answers, stage2Answers, stage1CustomAnswers, stage2CustomAnswers])
 
   const selectedOptionIndex = useMemo(() => {
     if (phase === "stage1") {
@@ -347,13 +353,26 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     return { staticAnswers, customAnswers }
   }
 
-  const runRecommend = async (finalArchetypeId: string, finalSubtypeId: string, budgetMetadata: string) => {
+  const runRecommend = async (finalArchetypeId: string, finalSubtypeId: string, budgetMetadata: string, gender: string = preferredGender) => {
     setScreen("loading")
     setLoading(true)
     setError(null)
 
     try {
-      const recommendItems = await recommendByStyle({ archetypeId: finalArchetypeId, subTypeId: finalSubtypeId, budgetMetadata })
+      const recommendItems = await recommendByStyle({
+        archetypeId: finalArchetypeId,
+        subTypeId: finalSubtypeId,
+        budgetMetadata,
+        preferredGender: gender === "ALL" ? undefined : gender
+      })
+      
+      try {
+        const stats = await getArchetypeStats(finalArchetypeId)
+        setTotalUsers(stats.totalUsers)
+      } catch (err) {
+        console.warn("Failed to fetch archetype stats", err)
+      }
+
       setArchetypeId(finalArchetypeId)
       setSubTypeId(finalSubtypeId)
       setResults(recommendItems)
@@ -448,7 +467,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
       setArchetypeId(finalArchetypeId)
       notifyTokenChanged()
       const resolvedBudgetMetadata = resolveBudgetMetadata(budgetMetadata)
-      await runRecommend(finalArchetypeId, "", resolvedBudgetMetadata)
+      await runRecommend(finalArchetypeId, "", resolvedBudgetMetadata, preferredGender)
     } catch (err) {
       if (options?.handleApiError?.(err)) {
         setScreen("quiz")
@@ -470,7 +489,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     setError(null)
 
     try {
-      await runRecommend(archetypeId, "", "mid_budget")
+      await runRecommend(archetypeId, "", "mid_budget", preferredGender)
     } catch (err) {
       const msg = mapQuizError(err)
       setError(msg)
@@ -529,6 +548,7 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     setA(pendingDraft.A)
     setO(pendingDraft.O)
     setArchetypeId(pendingDraft.archetypeId)
+    setPreferredGender(pendingDraft.preferredGender ?? "ALL")
     
     if (pendingDraft.phase === "stage2" && pendingDraft.archetypeId) {
       setSurveyLoading(true)
@@ -591,5 +611,13 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     discardDraftAndStartNew,
     restart,
     isQuizSubmitStep,
+    preferredGender,
+    totalUsers,
+    changePreferredGender: async (gender: string) => {
+      setPreferredGender(gender)
+      if (screen === "result" && archetypeId) {
+        await runRecommend(archetypeId, subTypeId, "mid_budget", gender)
+      }
+    },
   }
 }

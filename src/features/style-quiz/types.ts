@@ -4,6 +4,7 @@ export interface SearchResponseItem {
   imageUrl: string
   price: number
   similarityScore: number
+  isCollaborative?: boolean
 }
 
 export interface ApiResponse<T> {
@@ -16,6 +17,7 @@ export interface RecommendationRequestPayload {
   archetypeId: string
   subTypeId: string
   budgetMetadata: string
+  preferredGender?: string
 }
 
 export interface Option {

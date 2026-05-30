@@ -24,13 +24,13 @@ export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridPr
               onView(item.costumeId)
             }
           }}
-          className="group min-w-0 cursor-pointer rounded-2xl border border-pink-100 bg-pink-50/40 p-3 transition hover:-translate-y-0.5 hover:border-pink-400 hover:shadow-md"
+          className="group min-w-0 cursor-pointer rounded-2xl border-[3px] border-indigo-950 bg-[#fffbeb] p-3 transition hover:-translate-y-1 hover:shadow-[6px_6px_0_0_#ec4899] shadow-[4px_4px_0_0_#1e1b4b]"
         >
-          <div className="overflow-hidden rounded-xl">
+          <div className="overflow-hidden rounded-xl border-[2px] border-indigo-950">
             <img
               src={item.imageUrl || FALLBACK_IMAGE}
               alt={item.costumeName}
-              className="h-56 w-full object-cover transition duration-300 group-hover:scale-105"
+              className="h-52 w-full object-cover transition duration-300 group-hover:scale-105"
               onError={(event) => {
                 const target = event.currentTarget
                 target.onerror = null
@@ -38,9 +38,9 @@ export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridPr
               }}
             />
           </div>
-          <div className="mt-3 space-y-1">
+          <div className="mt-3 space-y-2">
             <h3
-              className="overflow-hidden text-base font-semibold leading-snug text-slate-800"
+              className="overflow-hidden text-sm font-extrabold leading-snug text-indigo-950"
               title={item.costumeName}
             >
               <span className="block truncate group-hover:hidden">{item.costumeName}</span>
@@ -53,8 +53,20 @@ export default function ResultCostumeGrid({ items, onView }: ResultCostumeGridPr
                 </span>
               </span>
             </h3>
-            <p className="text-sm text-pink-600">Độ tương đồng: {(item.similarityScore * 100).toFixed(1)}%</p>
-            <p className="text-sm text-slate-500">Giá tham khảo: {Number(item.price).toLocaleString("vi-VN")}đ</p>
+            <div className="flex flex-col gap-1.5">
+              {item.isCollaborative ? (
+                <p className="text-[10px] font-black text-pink-600 bg-pink-100/70 border-[2px] border-indigo-950 px-2 py-0.5 rounded-lg inline-block self-start shadow-[2px_2px_0_0_#1e1b4b]">
+                  ✨ Bạn cùng nhóm cũng thuê bộ này
+                </p>
+              ) : (
+                <p className="text-[10px] font-black text-pink-600 bg-pink-50 border-[2px] border-indigo-950 px-2 py-0.5 rounded-lg inline-block self-start shadow-[2px_2px_0_0_#1e1b4b]">
+                  Mức độ phù hợp: {(item.similarityScore * 100).toFixed(1)}%
+                </p>
+              )}
+              <p className="text-[10px] font-black text-indigo-950 bg-amber-200 border-[2px] border-indigo-950 px-2 py-0.5 rounded-lg inline-block self-start shadow-[2px_2px_0_0_#1e1b4b]">
+                Giá thuê: {Number(item.price).toLocaleString("vi-VN")}đ
+              </p>
+            </div>
           </div>
         </div>
       ))}

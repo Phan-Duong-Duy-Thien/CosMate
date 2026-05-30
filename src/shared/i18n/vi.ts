@@ -1902,6 +1902,7 @@ export const VI = {
       time: "Thời gian",
       numberOfPeople: "Số người",
       price: "Giá dịch vụ (báo cho khách)",
+      priceHint: "Nhập giá dịch vụ đã thỏa thuận với khách hàng.",
       priceBreakdownTitle: "Khách hàng sẽ thanh toán",
       priceBreakdownHint: "Nhập giá dịch vụ để xem tổng thanh toán.",
       priceBreakdownServiceFee: "Phí dịch vụ",

@@ -322,7 +322,7 @@ export default function ProviderOrdersPage() {
       </div>
 
       {/* Tier 2: Status filter — inline chips (no dropdown) */}
-      <div className="mb-4 -mx-1 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+      <div className="mb-4 flex flex-wrap items-center gap-x-3 gap-y-4 overflow-x-auto pb-1 sm:overflow-visible">
         {ORDER_STATUS_TABS.map((tab) => {
           const labelText = VI.provider.orders.tabs[tab.label as keyof typeof VI.provider.orders.tabs];
           const count = tabCounts[tab.key] ?? 0;

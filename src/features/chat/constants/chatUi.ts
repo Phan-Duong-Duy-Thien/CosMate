@@ -110,4 +110,29 @@ export const CHAT_UI = {
     "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl",
   sidebarFooterBtn:
     "flex w-full items-center justify-center gap-1 rounded-xl border-2 border-indigo-950/30 bg-white py-2 text-xs font-bold text-indigo-900/70 transition hover:border-indigo-950 hover:bg-cosmate-soft-pink/40 hover:text-indigo-950",
+  // Provider Theme overrides (clean style, thin borders, violet/lavender accent)
+  providerSidebar:
+    "flex h-full shrink-0 flex-col bg-white",
+  providerSidebarBorder:
+    "border-r border-slate-100",
+  providerSidebarDivider:
+    "border-b border-slate-100",
+  providerSidebarHeader:
+    "flex h-14 shrink-0 items-center justify-between border-b border-slate-100 bg-white px-4",
+  providerRoomRowActive:
+    "border border-violet-100 bg-violet-50/50 shadow-none border-l-[4px] border-l-[#7C3AED]",
+  providerRoomRowHover:
+    "hover:bg-slate-50 border border-transparent",
+  providerMineBubble:
+    "max-w-[80%] overflow-hidden rounded-2xl rounded-br-md bg-linear-to-br from-indigo-500 to-[#7C3AED] px-3 py-2 text-sm font-medium text-white shadow-sm md:max-w-[75%]",
+  providerTimeOnMine:
+    "font-semibold text-violet-100",
+  providerFooterBar:
+    "flex shrink-0 items-start gap-2 border-t border-slate-100 bg-white p-3",
+  providerTextarea:
+    "max-h-24 flex-1 resize-none overflow-y-auto whitespace-pre-wrap wrap-break-word rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-800 outline-none placeholder:text-slate-400 focus:border-violet-300 focus:bg-white focus:ring-4 focus:ring-violet-100 disabled:cursor-not-allowed disabled:opacity-50",
+  providerSendFab:
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#7C3AED] text-white shadow-sm transition hover:bg-violet-700 disabled:bg-slate-100 disabled:text-slate-400",
+  providerGhostIconBtn:
+    "flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-700",
 } as const

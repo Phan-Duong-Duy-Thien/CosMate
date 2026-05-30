@@ -7,6 +7,7 @@ import { ChevronUp } from "lucide-react"
 import { useChatPopup } from "@/features/chat/components/ChatPopupContext"
 import { isAuthenticated } from "@/features/auth/utils/authStorage"
 import { isDashboardShellPath } from "@/app/layouts/dashboardShellPaths"
+import { isProviderDashboardPath } from "@/features/profile/utils/tokenRoutes"
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 
@@ -27,6 +28,7 @@ export function ScrollToTopFab() {
   const { isOpen: chatOpen, toggleChat } = useChatPopup()
   const loggedIn = isAuthenticated()
   const useDashboardScroll = isDashboardShellPath(location.pathname)
+  const showChatFab = loggedIn && !isProviderDashboardPath(location.pathname)
 
   React.useEffect(() => {
     setMounted(true)
@@ -89,7 +91,7 @@ export function ScrollToTopFab() {
       className="pointer-events-none fixed bottom-6 right-6 z-100 flex flex-col-reverse items-center gap-3"
       aria-live="polite"
     >
-      {loggedIn ? (
+      {showChatFab ? (
         <button
           type="button"
           aria-label={chatOpen ? VI.common.actions.close : VI.common.railChatCta}

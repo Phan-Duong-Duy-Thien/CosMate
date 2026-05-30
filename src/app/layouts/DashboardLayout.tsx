@@ -146,6 +146,8 @@ export function DashboardLayout({
   const userId = getUserId();
   const { unreadCount: chatUnreadCount } = useUnreadCount(userId ?? null);
   const { openChat } = useChatPopup();
+  const showHeaderChatButton =
+    showChatButton && !isProviderDashboardPath(location.pathname);
 
   const resolveIcon = (icon?: DashboardSidebarItem['icon']): React.ReactNode => {
     if (!icon) return undefined;
@@ -786,7 +788,7 @@ export function DashboardLayout({
                 )}
               </div>
             )}
-            {showChatButton && (
+            {showHeaderChatButton && (
               <button
                 type="button"
                 onClick={() => openChat(0, 0)}

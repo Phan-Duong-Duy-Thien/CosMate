@@ -10,6 +10,7 @@ interface ChatRoomListProps {
   onSelectRoom: (room: ChatRoomListItem) => void;
   /** Compact sidebar: native title only (avoids tooltip clipped by overflow) */
   showHoverTooltip?: boolean;
+  theme?: "user" | "provider";
 }
 
 function computeInitials(fullName: string | null | undefined): string {
@@ -25,11 +26,14 @@ export function ChatRoomList({
   activeRoomId,
   onSelectRoom,
   showHoverTooltip = true,
+  theme = "user",
 }: ChatRoomListProps) {
+  const isProvider = theme === "provider"
+
   if (rooms.length === 0) {
     return (
-      <div className={CHAT_UI.emptyInbox}>
-        <MessageCircle className={cn("h-8 w-8", CHAT_UI.emptyIcon)} />
+      <div className={cn(isProvider ? "flex h-full w-full flex-col items-center justify-center gap-2 p-4 text-slate-400" : CHAT_UI.emptyInbox)}>
+        <MessageCircle className={cn("h-8 w-8", isProvider ? "text-slate-300" : CHAT_UI.emptyIcon)} />
         <p className="text-xs">No conversations yet</p>
       </div>
     )
@@ -47,7 +51,9 @@ export function ChatRoomList({
             onClick={() => onSelectRoom(room)}
             className={cn(
               CHAT_UI.roomRow,
-              isActive ? CHAT_UI.roomRowActive : CHAT_UI.roomRowHover,
+              isActive
+                ? (isProvider ? CHAT_UI.providerRoomRowActive : CHAT_UI.roomRowActive)
+                : (isProvider ? CHAT_UI.providerRoomRowHover : CHAT_UI.roomRowHover),
             )}
           >
             <div className="relative shrink-0">
@@ -58,14 +64,14 @@ export function ChatRoomList({
                   className={CHAT_UI.avatarSm}
                 />
               ) : (
-                <div className={CHAT_UI.avatarFallbackSm}>
+                <div className={isProvider ? "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-slate-50 text-[10px] font-extrabold text-[#7C3AED]" : CHAT_UI.avatarFallbackSm}>
                   {computeInitials(room.partnerName)}
                 </div>
               )}
               {showHoverTooltip ? (
-                <div className={CHAT_UI.tooltip}>
+                <div className={cn(CHAT_UI.tooltip, isProvider && "border-slate-200 bg-white shadow-sm shadow-slate-100 font-normal")}>
                   <span className="block font-medium">{room.partnerName || "Unknown"}</span>
-                  <div className={CHAT_UI.tooltipArrow} />
+                  <div className={cn(CHAT_UI.tooltipArrow, isProvider && "border-b border-r border-slate-200 bg-white")} />
                 </div>
               ) : null}
             </div>
@@ -74,13 +80,15 @@ export function ChatRoomList({
               <span
                 className={cn(
                   "block truncate text-xs",
-                  isActive ? CHAT_UI.roomNameActive : CHAT_UI.roomNameIdle,
+                  isProvider
+                    ? (isActive ? "font-bold text-slate-800" : "font-medium text-slate-500")
+                    : (isActive ? CHAT_UI.roomNameActive : CHAT_UI.roomNameIdle),
                 )}
               >
                 {room.partnerName || "Unknown"}
               </span>
               {room.lastMessageAt && (
-                <span className={CHAT_UI.roomTime}>
+                <span className={isProvider ? "block truncate text-[10px] font-medium leading-tight text-slate-400" : CHAT_UI.roomTime}>
                   {formatRoomTime(room.lastMessageAt)}
                 </span>
               )}
