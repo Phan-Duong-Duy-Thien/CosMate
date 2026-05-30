@@ -154,6 +154,7 @@ export default function PurchaseHistoryPage() {
   } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
   const {
+    serviceOrders: allServiceOrders,
     filteredOrders: serviceFilteredOrders,
     counts: serviceCounts,
     loading: serviceLoading,
@@ -171,6 +172,26 @@ export default function PurchaseHistoryPage() {
     pageSize: servicePageSize,
     total: serviceTotal,
   } = useServiceOrders()
+
+  // Keep service detail modal in sync with list after pay / background refetch
+  useEffect(() => {
+    if (!serviceDetailModalOpen || !serviceDetailOrder) return
+    const latest =
+      allServiceOrders.find((o) => o.id === serviceDetailOrder.id) ??
+      serviceFilteredOrders.find((o) => o.id === serviceDetailOrder.id)
+    if (!latest) return
+    if (
+      latest.status !== serviceDetailOrder.status ||
+      latest.totalAmount !== serviceDetailOrder.totalAmount
+    ) {
+      setServiceDetailOrder(latest)
+    }
+  }, [
+    serviceDetailModalOpen,
+    serviceDetailOrder,
+    allServiceOrders,
+    serviceFilteredOrders,
+  ])
 
   // ── Review modal state ─────────────────────────────────────────────────────
   const [reviewModalOpen, setReviewModalOpen] = useState(false)

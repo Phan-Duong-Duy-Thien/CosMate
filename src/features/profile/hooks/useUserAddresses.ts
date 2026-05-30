@@ -6,6 +6,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { getUserAddresses } from '../services/userAddress.service';
 import type { UserAddress } from '../types';
 import { VI } from '@/shared/i18n/vi';
+import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
+import { useRefetchOnWindowFocus } from '@/shared/hooks/useRefetchOnWindowFocus';
+import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 
 interface UseUserAddressesResult {
   addresses: UserAddress[];
@@ -42,6 +45,9 @@ export function useUserAddresses(userId: number | null | undefined): UseUserAddr
   useEffect(() => {
     fetchAddresses();
   }, [fetchAddresses]);
+
+  useDataSyncRefetch(fetchAddresses, DATA_SYNC_EVENTS.ADDRESSES_CHANGED, userId != null);
+  useRefetchOnWindowFocus(fetchAddresses, userId != null);
 
   return {
     addresses,

@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { message } from 'antd';
 import { VI } from '@/shared/i18n/vi';
+import { notifyAddressesChanged } from '@/shared/sync/dataSync';
 import * as vnLocationApi from '../api/vnLocation.api';
 import * as userAddressService from '../services/userAddress.service';
 import type { Province, District } from '../types';
@@ -139,6 +140,7 @@ export function useCreateAddress(): UseCreateAddressResult {
         };
 
         await userAddressService.createUserAddress(userId, formData, provinceName, districtName);
+        notifyAddressesChanged();
         message.success(VI.profile.address.messages.createSuccess);
         return true;
       } catch (err) {

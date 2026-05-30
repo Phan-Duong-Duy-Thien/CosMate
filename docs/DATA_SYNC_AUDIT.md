@@ -26,7 +26,8 @@
 | `cosmate:wallet-changed` | Wallet top-up / payment `context=wallet` | `useWallet` |
 | `cosmate:costumes-changed` | Provider edit/delete costume | `useProviderCostumes`, `usePublicCostumes`, `usePublicCostumeDetail` |
 | `cosmate:notifications-changed` | Mark read / delete notification | `useNotifications` (layout + page) |
-| `profile:refresh` (legacy) | Login, token purchase, pose battle | `UserProfileProvider`, `DashboardLayout` |
+| `profile:refresh` (legacy) | Login, token purchase, pose battle, profile/avatar edit | `UserProfileProvider`, `useUserProfile` |
+| `cosmate:addresses-changed` | Create/edit/delete address | `useUserAddresses` (profile + modals) |
 
 ### Provider costume orders (your example)
 
@@ -44,7 +45,7 @@
 | Costume orders (cosplayer) | `PurchaseHistoryPage`, `usePurchaseOrders`, `CosplayerProfilePage` counts | Provider orders | Events + optimistic on confirm/return |
 | Order detail modal | `OrderDetailDrawer` | List vs modal | Listens `orders-changed` |
 | Service orders (provider) | `useProviderServiceOrders` | Tab filter bug after mutation | Optimistic + `refreshAfterMutation` |
-| Service orders (cosplayer) | `useServiceOrders` | Purchase history service tab | Event listener |
+| Service orders (cosplayer) | `useServiceOrders`, `CosplayerProfilePage` | Purchase history service tab, profile service badge | Event listener + `useCreateServiceBooking` notify |
 | Wallet | `WalletPage`, `CosplayerProfilePage`, `BuyTokenPlansSection` | Payment return | `wallet-changed` + PaymentResultPage |
 | Costumes catalog | Public list, provider list, detail | Edit on provider → public list | `costumes-changed` |
 | Notifications | `CosplayerSiteLayout`, `NotificationsPage` | Duplicate hook instances | `notifications-changed` |
