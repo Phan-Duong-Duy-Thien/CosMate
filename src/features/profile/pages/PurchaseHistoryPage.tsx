@@ -175,26 +175,6 @@ export default function PurchaseHistoryPage() {
     total: serviceTotal,
   } = useServiceOrders()
 
-  // Keep service detail modal in sync with list after pay / background refetch
-  useEffect(() => {
-    if (!serviceDetailModalOpen || !serviceDetailOrder) return
-    const latest =
-      allServiceOrders.find((o) => o.id === serviceDetailOrder.id) ??
-      serviceFilteredOrders.find((o) => o.id === serviceDetailOrder.id)
-    if (!latest) return
-    if (
-      latest.status !== serviceDetailOrder.status ||
-      latest.totalAmount !== serviceDetailOrder.totalAmount
-    ) {
-      setServiceDetailOrder(latest)
-    }
-  }, [
-    serviceDetailModalOpen,
-    serviceDetailOrder,
-    allServiceOrders,
-    serviceFilteredOrders,
-  ])
-
   // ── Review modal state ─────────────────────────────────────────────────────
   const [reviewModalOpen, setReviewModalOpen] = useState(false)
   const [reviewOrderId, setReviewOrderId] = useState<number | null>(null)
@@ -282,6 +262,26 @@ export default function PurchaseHistoryPage() {
   const [detailOrderType, setDetailOrderType] = useState<string>('RENT_COSTUME')
   const [serviceDetailModalOpen, setServiceDetailModalOpen] = useState(false)
   const [serviceDetailOrder, setServiceDetailOrder] = useState<ServiceOrder | null>(null)
+
+  // Keep service detail modal in sync with list after pay / background refetch
+  useEffect(() => {
+    if (!serviceDetailModalOpen || !serviceDetailOrder) return
+    const latest =
+      allServiceOrders.find((o) => o.id === serviceDetailOrder.id) ??
+      serviceFilteredOrders.find((o) => o.id === serviceDetailOrder.id)
+    if (!latest) return
+    if (
+      latest.status !== serviceDetailOrder.status ||
+      latest.totalAmount !== serviceDetailOrder.totalAmount
+    ) {
+      setServiceDetailOrder(latest)
+    }
+  }, [
+    serviceDetailModalOpen,
+    serviceDetailOrder,
+    allServiceOrders,
+    serviceFilteredOrders,
+  ])
 
   // ── Payment modal state ──────────────────────────────────────────────────────
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
