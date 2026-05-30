@@ -105,6 +105,8 @@ type DashboardLayoutProps = {
   contentMode?: DashboardContentMode;
   /** Enable drag-to-resize sidebar width. Only used by Admin layout. */
   enableSidebarResize?: boolean;
+  /** Admin dynamic menu is loading from API */
+  sidebarMenuLoading?: boolean;
   onSidebarItemsChange?: (items: DashboardSidebarItem[]) => void;
 };
 
@@ -117,9 +119,11 @@ export function DashboardLayout({
   showChatButton = true,
   contentMode: contentModeProp,
   enableSidebarResize = false,
+  sidebarMenuLoading = false,
   onSidebarItemsChange,
 }: DashboardLayoutProps) {
   const SIDEBAR_STORAGE_KEY = 'cosmate-admin-sidebar-width';
+  const SIDEBAR_COLLAPSED_KEY = 'cosmate-admin-sidebar-collapsed';
   const DEFAULT_SIDEBAR_WIDTH = 240;
   const MIN_SIDEBAR_WIDTH = 200;
   const MAX_SIDEBAR_WIDTH = 400;
@@ -134,7 +138,10 @@ export function DashboardLayout({
     return DEFAULT_SIDEBAR_WIDTH;
   });
   const [isResizing, setIsResizing] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (!enableSidebarResize || typeof window === 'undefined') return false;
+    return localStorage.getItem(SIDEBAR_COLLAPSED_KEY) === '1';
+  });
   const navigate = useNavigate();
   const location = useLocation();
   const { items: breadcrumbItems, setItems } = useBreadcrumb();
@@ -613,6 +620,11 @@ export function DashboardLayout({
   const contentMode = resolveDashboardContentMode(location.pathname, contentModeProp);
   const isFillContent = contentMode === 'fill';
 
+  useEffect(() => {
+    if (!enableSidebarResize) return;
+    localStorage.setItem(SIDEBAR_COLLAPSED_KEY, collapsed ? '1' : '0');
+  }, [collapsed, enableSidebarResize]);
+
   // Sidebar resize handlers (admin only)
   const handleResizeMouseDown = useCallback((e: React.MouseEvent) => {
     e.preventDefault();
@@ -626,12 +638,16 @@ export function DashboardLayout({
       setSidebarWidth(newWidth);
     };
 
-    const handleMouseUp = () => {
+    const handleMouseUp = (ev: MouseEvent) => {
+      const finalWidth = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(MIN_SIDEBAR_WIDTH, startWidth + (ev.clientX - startX)),
+      );
+      setSidebarWidth(finalWidth);
+      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(finalWidth));
       setIsResizing(false);
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
-      // Persist after release
-      localStorage.setItem(SIDEBAR_STORAGE_KEY, String(sidebarWidth));
     };
 
     document.addEventListener('mousemove', handleMouseMove);
@@ -698,13 +714,20 @@ export function DashboardLayout({
         </div>
 
         {enableSidebarResize ? (
-          <AdminSidebarMenu
-            sidebarItems={sidebarItems}
-            onSidebarItemsChange={onSidebarItemsChange}
-            collapsed={collapsed}
-            activeKey={activeKey}
-            navigate={navigate}
-          />
+          <div className="relative flex min-h-0 flex-1 flex-col">
+            {sidebarMenuLoading ? (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-card/60 backdrop-blur-[1px]">
+                <Spin size="small" />
+              </div>
+            ) : null}
+            <AdminSidebarMenu
+              sidebarItems={sidebarItems}
+              onSidebarItemsChange={onSidebarItemsChange}
+              collapsed={collapsed}
+              activeKey={activeKey}
+              navigate={navigate}
+            />
+          </div>
         ) : (
           <Menu
             mode="inline"
