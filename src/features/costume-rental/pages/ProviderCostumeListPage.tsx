@@ -137,7 +137,7 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
                     </div>
                   )}
 
-                  <Descriptions bordered column={{ xs: 1, sm: 2 }} size="small">
+                  <Descriptions bordered column={{ xs: 1, sm: 2, md: 2, lg: 2, xl: 2, xxl: 2 }} size="small">
                     <Descriptions.Item label="Tên trang phục" span={2}>
                       {costume.name}
                     </Descriptions.Item>
