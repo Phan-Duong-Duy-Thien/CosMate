@@ -156,14 +156,18 @@ export default function ProviderServiceOrdersPage() {
 
   const handleConfirmAction = async () => {
     if (confirmModal.orderId !== null) {
-      if (confirmModal.type === 'startService') {
-        await startService(confirmModal.orderId);
-      } else if (confirmModal.type === 'completeService') {
-        await completeService(confirmModal.orderId);
-      } else {
-        await setWaitingStatus(confirmModal.orderId);
+      try {
+        if (confirmModal.type === 'startService') {
+          await startService(confirmModal.orderId);
+        } else if (confirmModal.type === 'completeService') {
+          await completeService(confirmModal.orderId);
+        } else {
+          await setWaitingStatus(confirmModal.orderId);
+        }
+        setConfirmModal({ open: false, orderId: null, type: 'setWaiting' });
+      } catch (err) {
+        console.error('[ProviderServiceOrdersPage] Action failed:', err);
       }
-      setConfirmModal({ open: false, orderId: null, type: 'setWaiting' });
     }
   };
 

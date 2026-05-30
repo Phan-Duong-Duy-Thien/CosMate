@@ -52,6 +52,14 @@ export interface UseProviderServiceOrdersResult {
   tabCounts: Record<ProviderServiceOrderTab, number>;
 }
 
+function translateBackendError(msg?: string): string | undefined {
+  if (!msg) return undefined;
+  if (msg.includes('Booking date is in the future')) {
+    return 'Chưa đến ngày hẹn đặt lịch, không thể bắt đầu thực hiện dịch vụ!';
+  }
+  return msg;
+}
+
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   const [allOrders, setAllOrders] = useState<ServiceOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<ServiceOrder[]>([]);
@@ -211,8 +219,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }
@@ -233,8 +244,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }
@@ -255,8 +269,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }

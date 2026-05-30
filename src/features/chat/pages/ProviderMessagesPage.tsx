@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { MessageCircle, Plus } from "lucide-react"
-import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
+import { Form, Select, DatePicker, InputNumber, message, Input, TimePicker } from "antd"
 import type { SearchUserResult } from "../services/user.service"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
@@ -256,11 +256,17 @@ export default function ProviderMessagesPage() {
     })
 
     if (result) {
+      if (currentUserId !== null) {
+        sendChatMessage({
+          roomId: activeRoom.roomId,
+          senderId: currentUserId,
+          content: `Đã tạo đơn dịch vụ #${result.id}.`,
+        })
+      }
       resetBookingDraft()
       setShowBookingModal(false)
-      message.success(VI.booking.create.success)
     }
-  }
+  };
 
   // Determine sidebar based on current path
   let sidebarItems: DashboardSidebarItem[]
@@ -478,17 +484,19 @@ export default function ProviderMessagesPage() {
                 value={bookingDate}
                 onChange={(date) => setBookingDate(date)}
                 format="DD/MM/YYYY"
-                disabledDate={(current) => current && current < dayjs().startOf('day')}
+                disabledDate={(current) => current && current < dayjs().add(1, 'day').startOf('day')}
                 placeholder="Chọn ngày đặt lịch"
               />
             </Form.Item>
 
             <Form.Item label={VI.booking.create.time} className="mb-0">
-              <Input
-                type="time"
-                value={timeSlot}
-                onChange={(e) => setTimeSlot(e.target.value)}
+              <TimePicker
+                className="w-full"
                 size="large"
+                format="HH:mm"
+                value={timeSlot ? dayjs('2000-01-01T' + timeSlot) : null}
+                onChange={(time) => setTimeSlot(time ? time.format('HH:mm') : '09:00')}
+                placeholder="Chọn giờ"
               />
             </Form.Item>
           </div>

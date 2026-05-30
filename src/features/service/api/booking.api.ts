@@ -6,12 +6,6 @@
  */
 import axiosInstance from '@/services/axiosInstance';
 
-interface ApiResponse<T> {
-  code: number;
-  message: string;
-  result: T;
-}
-
 /**
  * Service booking response
  */
@@ -243,6 +237,9 @@ export async function startServiceNow(orderId: number): Promise<{ id: number; st
     `/api/service-orders/${orderId}/start-service-now`
   );
   console.log('[booking.api] startServiceNow ← response:', response.data);
+  if (response.data.code !== 0) {
+    throw new Error(response.data.message || 'Error starting service');
+  }
   return response.data.result;
 }
 
@@ -256,6 +253,9 @@ export async function setWaitingServiceDate(orderId: number): Promise<void> {
     `/api/service-orders/${orderId}/provider-set-waiting`
   );
   console.log('[booking.api] setWaitingServiceDate ← response:', response.data);
+  if (response.data.code !== 0) {
+    throw new Error(response.data.message || 'Error setting waiting status');
+  }
   return response.data.result;
 }
 
@@ -271,6 +271,9 @@ export async function completeServiceByProvider(
     `/api/service-orders/${orderId}/provider-complete`
   );
   console.log('[booking.api] completeServiceByProvider ← response:', response.data);
+  if (response.data.code !== 0) {
+    throw new Error(response.data.message || 'Error completing service');
+  }
   return response.data.result;
 }
 
