@@ -3174,7 +3174,7 @@ export const VI = {
     pendingDesc: "Đơn hàng đang chờ thanh toán. Vui lòng hoàn tất thanh toán để xác nhận đơn.",
     unknownTitle: "Kết quả thanh toán",
     unknownDesc: "Không xác định được trạng thái thanh toán. Vui lòng liên hệ hỗ trợ nếu bạn đã thanh toán.",
-    orderIdLabel: "Mã đơn hàng",
+    orderIdLabel: "Mã giao dịch",
     transactionIdLabel: "Mã giao dịch",
     primarySuccessCta: "Xem đơn hàng",
     primaryFailedCta: "Quay lại thanh toán",
