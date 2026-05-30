@@ -290,7 +290,7 @@ export default function ProviderServiceOrdersPage() {
         </div>
       </div>
 
-      <div className="mb-4 -mx-1 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible">
+      <div className="mb-4 flex flex-wrap items-center gap-2 overflow-x-auto pt-1 px-1 pb-1 sm:overflow-visible">
         {STATUS_TABS.map((tab) => {
           const count = tabCounts[tab.key] ?? 0;
           const isActive = selectedStatus === tab.key;
