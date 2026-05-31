@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useUserProfile } from "../hooks/useUserProfile"
 import { useUserAddresses } from "../hooks/useUserAddresses"
 import { usePurchaseOrders } from "../hooks/usePurchaseOrders"
+import { useServiceOrders } from "../hooks/useServiceOrders"
 import { useWallet } from "../hooks/useWallet"
 import { Button } from "@/shared/components/Button"
 import { Card } from "@/shared/components/Card"
@@ -15,7 +16,7 @@ import { ProfileBioCard } from "../components/ProfileBioCard"
 import { ImageCropDialog } from "../components/ImageCropDialog"
 import { ProfileMetricBody, ProfileNeoCard } from "../components/ProfileNeoCard"
 import { PROFILE_CARD_UI } from "../constants/profileUi"
-import { CheckCheck, Coins, MapPin, PackageCheck, Star, Truck, User, Wallet } from "lucide-react"
+import { CalendarClock, CheckCheck, Coins, MapPin, PackageCheck, Star, Truck, User, Wallet } from "lucide-react"
 import { message } from "antd"
 
 const STATUS_BADGE_CLASS: Record<string, string> = {
@@ -41,7 +42,11 @@ export default function CosplayerProfilePage() {
   const { addresses, isLoading: addressesLoading, error: addressesError } =
     useUserAddresses(userId)
   const { counts } = usePurchaseOrders("all")
+  const { counts: serviceCounts } = useServiceOrders()
   const { walletInfo } = useWallet()
+
+  const servicePendingCount =
+    serviceCounts.UNCONFIRM + serviceCounts.UNPAID + serviceCounts.PAID
 
   const displayedAddresses = showAllAddresses ? addresses : addresses.slice(0, 1)
   const coverInputRef = useRef<HTMLInputElement | null>(null)
@@ -235,7 +240,7 @@ export default function CosplayerProfilePage() {
                     </button>
                   }
                 >
-                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-2 md:grid-cols-3">
                     {orderShortcuts.map((item) => {
                       const Icon = item.icon
                       const tabKey = shortcutToTabMap[item.key]
@@ -255,6 +260,21 @@ export default function CosplayerProfilePage() {
                         </button>
                       )
                     })}
+                    <button
+                      type="button"
+                      className="rounded-2xl border-[2px] border-indigo-950/15 bg-white px-3 py-3 text-left shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-indigo-950/40 hover:bg-pink-50 active:scale-[0.98]"
+                      onClick={() =>
+                        navigate("/profile/purchase-history?parent=service&tab=UNCONFIRM")
+                      }
+                    >
+                      <div className="flex items-center justify-between">
+                        <CalendarClock className="h-4 w-4 text-[#d61f91]" />
+                        <span className="text-xs font-bold text-slate-500">{servicePendingCount}</span>
+                      </div>
+                      <p className="mt-2 text-xs font-semibold text-slate-700">
+                        {VI.profile.serviceOrders.tabService}
+                      </p>
+                    </button>
                   </div>
                 </ProfileNeoCard>
 

@@ -2,7 +2,12 @@ import axiosInstance from '@/services/axiosInstance';
 
 export const getMenus = async () => {
   const res = await axiosInstance.get('/api/v1/menus');
-  return res.data?.content || res.data?.result || res.data;
+  const raw = res.data?.content ?? res.data?.result ?? res.data;
+  if (Array.isArray(raw)) return raw;
+  if (raw && typeof raw === 'object' && Array.isArray((raw as { content?: unknown }).content)) {
+    return (raw as { content: unknown[] }).content;
+  }
+  return [];
 };
 export const createMenu = async (data: any) => {
   const res = await axiosInstance.post('/api/v1/menus', data);

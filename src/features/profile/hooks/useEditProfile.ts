@@ -3,6 +3,7 @@ import type { AdminUserProfile } from "@/features/admin/types"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { useUserProfile as useHeaderUserProfile } from "@/app/providers/UserProfileProvider"
 import { VI } from "@/shared/i18n/vi"
+import { notifyProfileChanged } from "@/shared/sync/dataSync"
 import * as userProfileService from "../services/userProfile.service"
 import type { UpdateUserProfilePayload } from "../types"
 
@@ -72,6 +73,7 @@ export function useEditProfile({
       const updatedProfile = await userProfileService.updateProfile(userId, payload)
       onProfileUpdated?.(updatedProfile)
       setUserProfile({ fullName: updatedProfile.fullName })
+      notifyProfileChanged()
       setSuccess(VI.profile.editModal.updateSuccess)
       return true
     } catch (err) {
@@ -97,6 +99,7 @@ export function useEditProfile({
       const updatedProfile = await userProfileService.uploadAvatar(userId, file)
       onProfileUpdated?.(updatedProfile)
       setUserProfile({ avatarUrl: updatedProfile.avatarUrl })
+      notifyProfileChanged()
       setSuccess(VI.profile.editModal.uploadAvatarSuccess)
       return true
     } catch (err) {

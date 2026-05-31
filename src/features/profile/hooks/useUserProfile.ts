@@ -3,6 +3,9 @@ import type { AdminUserProfile } from "@/features/admin/types"
 import { getUserId } from "@/features/auth/services/tokenStorage"
 import { getUserProfile } from "@/features/admin/services/adminUsers.service"
 import { useUserProfile as useHeaderUserProfile } from "@/app/providers/UserProfileProvider"
+import { useDataSyncRefetch } from "@/shared/hooks/useDataSyncRefetch"
+import { useRefetchOnWindowFocus } from "@/shared/hooks/useRefetchOnWindowFocus"
+import { DATA_SYNC_EVENTS, notifyProfileChanged } from "@/shared/sync/dataSync"
 import { VI } from "@/shared/i18n/vi"
 import * as userProfileService from "../services/userProfile.service"
 
@@ -60,6 +63,11 @@ export function useUserProfile() {
     void fetchProfile()
   }, [fetchProfile])
 
+  useDataSyncRefetch(fetchProfile, DATA_SYNC_EVENTS.PROFILE_CHANGED, Boolean(userId))
+  useDataSyncRefetch(fetchProfile, DATA_SYNC_EVENTS.TOKEN_CHANGED, Boolean(userId))
+
+  useRefetchOnWindowFocus(fetchProfile, Boolean(userId))
+
   const uploadAvatar = useCallback(
     async (file: File): Promise<boolean> => {
       if (!userId) {
@@ -74,6 +82,7 @@ export function useUserProfile() {
         setProfile(updatedProfile)
         // Sync to header context
         setUserProfile({ avatarUrl: updatedProfile.avatarUrl })
+        notifyProfileChanged()
         return true
       } catch {
         setError(VI.profile.messages.uploadAvatarFailed)

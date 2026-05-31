@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { MessageCircle, Plus } from "lucide-react"
-import { Form, Select, DatePicker, InputNumber, message, Input } from "antd"
+import { Form, Select, DatePicker, InputNumber, message, Input, TimePicker } from "antd"
 import type { SearchUserResult } from "../services/user.service"
 import dayjs from "dayjs"
 import { DashboardLayout } from "@/app/layouts/DashboardLayout"
@@ -256,11 +256,17 @@ export default function ProviderMessagesPage() {
     })
 
     if (result) {
+      if (currentUserId !== null) {
+        sendChatMessage({
+          roomId: activeRoom.roomId,
+          senderId: currentUserId,
+          content: `Đã tạo đơn dịch vụ #${result.id}.`,
+        })
+      }
       resetBookingDraft()
       setShowBookingModal(false)
-      message.success(VI.booking.create.success)
     }
-  }
+  };
 
   // Determine sidebar based on current path
   let sidebarItems: DashboardSidebarItem[]
@@ -347,7 +353,7 @@ export default function ProviderMessagesPage() {
               <button
                 type="button"
                 onClick={handleOpenBookingModal}
-                className="inline-flex items-center gap-1.5 rounded-full bg-violet-600 px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-violet-700 disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 rounded-full bg-cosmate-pink px-3 py-1.5 text-xs font-semibold text-white shadow-sm transition-colors hover:bg-cosmate-pink/90 disabled:opacity-50"
               >
                 <Plus className="h-3.5 w-3.5" />
                 {VI.booking.create.title}
@@ -478,17 +484,19 @@ export default function ProviderMessagesPage() {
                 value={bookingDate}
                 onChange={(date) => setBookingDate(date)}
                 format="DD/MM/YYYY"
-                disabledDate={(current) => current && current < dayjs().startOf('day')}
+                disabledDate={(current) => current && current < dayjs().add(1, 'day').startOf('day')}
                 placeholder="Chọn ngày đặt lịch"
               />
             </Form.Item>
 
             <Form.Item label={VI.booking.create.time} className="mb-0">
-              <Input
-                type="time"
-                value={timeSlot}
-                onChange={(e) => setTimeSlot(e.target.value)}
+              <TimePicker
+                className="w-full"
                 size="large"
+                format="HH:mm"
+                value={timeSlot ? dayjs('2000-01-01T' + timeSlot) : null}
+                onChange={(time) => setTimeSlot(time ? time.format('HH:mm') : '09:00')}
+                placeholder="Chọn giờ"
               />
             </Form.Item>
           </div>
@@ -553,7 +561,7 @@ export default function ProviderMessagesPage() {
                 rentSlotAmount <= 0 ||
                 bookingLoading
               }
-              className="px-5 py-2 rounded-lg bg-violet-600 text-sm font-semibold text-white hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="px-5 py-2 rounded-lg bg-cosmate-pink text-sm font-semibold text-white hover:bg-cosmate-pink/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               {bookingLoading ? VI.booking.create.creating : VI.booking.create.create}
             </button>

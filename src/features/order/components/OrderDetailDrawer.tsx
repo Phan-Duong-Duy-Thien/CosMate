@@ -55,6 +55,8 @@ interface OrderDetailDrawerProps {
   onCreateDispute?: () => void;
   confirmDeliveryLoading?: boolean;
   disputeLoading?: boolean;
+  onRepay?: () => void;
+  repayLoading?: boolean;
 }
 
 // Format currency
@@ -186,6 +188,8 @@ export function OrderDetailDrawer({
   onCreateDispute,
   confirmDeliveryLoading = false,
   disputeLoading = false,
+  onRepay,
+  repayLoading = false,
 }: OrderDetailDrawerProps) {
   const { orderDetail, loading, error, refetch } = useOrderDetail(orderId);
 
@@ -201,7 +205,6 @@ export function OrderDetailDrawer({
 
   // Extend detail modal state
   const [extendDetailModalOpen, setExtendDetailModalOpen] = useState(false);
-  const [selectedExtendId, setSelectedExtendId] = useState<number | null>(null);
   const { detail: extendDetail, loading: extendDetailLoading, fetchDetail, reset: resetExtendDetail } = useExtendDetail();
 
   // Extend history hooks — only active when order is IN_USE
@@ -220,7 +223,6 @@ export function OrderDetailDrawer({
   };
 
   const handleViewExtend = async (extendId: number) => {
-    setSelectedExtendId(extendId);
     const detailId = orderDetail?.details?.[0]?.id;
     if (!orderId || !detailId) return;
     await fetchDetail(orderId, detailId, extendId);
@@ -229,7 +231,6 @@ export function OrderDetailDrawer({
 
   const handleCloseExtendDetail = () => {
     setExtendDetailModalOpen(false);
-    setSelectedExtendId(null);
     resetExtendDetail();
   };
 
@@ -551,6 +552,19 @@ export function OrderDetailDrawer({
           <h3 className="mb-2 text-sm font-semibold text-foreground">{VI.order.detail.basicInfo}</h3>
           {renderBasicInfo()}
         </div>
+
+        {orderDetail.status === 'UNPAID' && onRepay && (
+          <div className="flex flex-wrap items-center justify-end gap-2">
+            <Button
+              type="primary"
+              loading={repayLoading}
+              onClick={onRepay}
+              className="!h-auto !border-2 !border-[#d61f91] !bg-[#d61f91] !px-4 !py-1.5 !text-sm !font-bold !text-white hover:!bg-[#c21a80]"
+            >
+              {VI.profile.orders.actionRepay}
+            </Button>
+          </div>
+        )}
 
         {enableDeliveringOutActions && orderDetail.status === 'DELIVERING_OUT' && (
           <div className="flex flex-wrap items-center justify-end gap-2">

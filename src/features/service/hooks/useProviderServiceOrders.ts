@@ -14,6 +14,9 @@ import { setWaitingStatus, fetchProviderServiceOrders, startService } from '../s
 import { completeService } from '../services/serviceOrder.service';
 import type { ServiceOrder } from '../api/booking.api';
 import { getUserById } from '@/features/admin/api/adminUsers.api';
+import { searchUsers } from '@/features/chat/api/user.api';
+import { getOrCreateChatRoom, getChatPartner } from '@/features/chat/api/chat.api';
+import { getUserId } from '@/features/auth/services/tokenStorage';
 import { canFetchOtherUserProfiles } from '@/shared/utils/canFetchUserProfile';
 import { useDataSyncRefetch } from '@/shared/hooks/useDataSyncRefetch';
 import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
@@ -49,6 +52,14 @@ export interface UseProviderServiceOrdersResult {
   tabCounts: Record<ProviderServiceOrderTab, number>;
 }
 
+function translateBackendError(msg?: string): string | undefined {
+  if (!msg) return undefined;
+  if (msg.includes('Booking date is in the future')) {
+    return 'Chưa đến ngày hẹn đặt lịch, không thể bắt đầu thực hiện dịch vụ!';
+  }
+  return msg;
+}
+
 export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   const [allOrders, setAllOrders] = useState<ServiceOrder[]>([]);
   const [filteredOrders, setFilteredOrders] = useState<ServiceOrder[]>([]);
@@ -66,11 +77,33 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
   });
 
   const enrichOrders = useCallback(async (data: ServiceOrder[]) => {
-    if (!canFetchOtherUserProfiles()) return data;
     const ordersNeedingName = data.filter((o) => !o.cosplayerName?.trim());
     if (ordersNeedingName.length === 0) return data;
     const uniqueCosplayerIds = [...new Set(ordersNeedingName.map((o) => o.cosplayerId))];
-    const userResults = await Promise.all(uniqueCosplayerIds.map((id) => getUserById(id)));
+    const currentUserId = getUserId();
+    const userResults = await Promise.all(
+      uniqueCosplayerIds.map(async (id) => {
+        const direct = await getUserById(id);
+        if (direct) return direct;
+        if (currentUserId) {
+          try {
+            const room = await getOrCreateChatRoom(currentUserId, id);
+            const partner = await getChatPartner(room.id, currentUserId);
+            if (partner?.fullName) {
+              return { id, fullName: partner.fullName } as any;
+            }
+          } catch {}
+        }
+        try {
+          const list = await searchUsers(String(id));
+          const found = list.find((u) => u.id === id);
+          if (found) {
+            return { id, fullName: found.fullName, username: found.username } as any;
+          }
+        } catch {}
+        return null;
+      })
+    );
     const cosplayerMap = Object.fromEntries(
       userResults
         .filter((u): u is NonNullable<typeof u> => u !== null)
@@ -186,8 +219,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }
@@ -208,8 +244,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }
@@ -230,8 +269,11 @@ export function useProviderServiceOrders(): UseProviderServiceOrdersResult {
         const msg =
           err && typeof err === 'object' && 'response' in err
             ? (err as { response?: { data?: { message?: string } } }).response?.data?.message
+            : err instanceof Error
+            ? err.message
             : undefined;
-        message.error(msg || 'Có lỗi xảy ra');
+        message.error(translateBackendError(msg) || 'Có lỗi xảy ra');
+        throw err;
       } finally {
         setLoadingAction(null);
       }

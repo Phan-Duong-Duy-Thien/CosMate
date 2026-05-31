@@ -30,6 +30,8 @@ export const DATA_SYNC_EVENTS = {
   PROFILE_CHANGED: 'profile:refresh',
   /** AI token balance (numberOfToken) */
   TOKEN_CHANGED: 'cosmate:token-changed',
+  /** User saved addresses list */
+  ADDRESSES_CHANGED: 'cosmate:addresses-changed',
 } as const;
 
 export type DataSyncEventName = (typeof DATA_SYNC_EVENTS)[keyof typeof DATA_SYNC_EVENTS];
@@ -92,6 +94,14 @@ export function notifyProviderProfileChanged(detail?: { providerId?: number }): 
 
 export function notifyTokenChanged(): void {
   dispatch(DATA_SYNC_EVENTS.TOKEN_CHANGED);
+}
+
+export function notifyProfileChanged(): void {
+  dispatch(DATA_SYNC_EVENTS.PROFILE_CHANGED);
+}
+
+export function notifyAddressesChanged(): void {
+  dispatch(DATA_SYNC_EVENTS.ADDRESSES_CHANGED);
 }
 
 export function subscribeDataSync<T = unknown>(

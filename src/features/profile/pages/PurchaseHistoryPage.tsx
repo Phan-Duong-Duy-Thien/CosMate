@@ -16,7 +16,9 @@ import { getReviewByOrderId, type ReviewItem } from "@/features/costume-rental/a
 import { useCreateDispute } from "@/features/order/hooks/useCreateDispute"
 import { useExtendOrder } from "@/features/order/hooks/useExtendOrder"
 import { ServicePaymentModal } from "@/features/service/components/ServicePaymentModal"
-import type { PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
+import { getReturnUrl, type PaymentMethod } from "@/features/order/utils/paymentReturnUrls"
+import { payOrder } from "@/features/order/api/order.api"
+import { getUserId } from "@/features/auth/services/tokenStorage"
 import {
   PackageCheck, Package, PackageOpen, Clock, Truck, CheckCircle, XCircle, Star, Flag, Eye, RotateCcw,
   CalendarClock, WalletCards, Ban, RefreshCw
@@ -154,6 +156,7 @@ export default function PurchaseHistoryPage() {
   } = usePurchaseOrders(parentTab === 'costume' ? costumeTab : 'all')
 
   const {
+    serviceOrders: allServiceOrders,
     filteredOrders: serviceFilteredOrders,
     counts: serviceCounts,
     loading: serviceLoading,
@@ -260,9 +263,31 @@ export default function PurchaseHistoryPage() {
   const [serviceDetailModalOpen, setServiceDetailModalOpen] = useState(false)
   const [serviceDetailOrder, setServiceDetailOrder] = useState<ServiceOrder | null>(null)
 
+  // Keep service detail modal in sync with list after pay / background refetch
+  useEffect(() => {
+    if (!serviceDetailModalOpen || !serviceDetailOrder) return
+    const latest =
+      allServiceOrders.find((o) => o.id === serviceDetailOrder.id) ??
+      serviceFilteredOrders.find((o) => o.id === serviceDetailOrder.id)
+    if (!latest) return
+    if (
+      latest.status !== serviceDetailOrder.status ||
+      latest.totalAmount !== serviceDetailOrder.totalAmount
+    ) {
+      setServiceDetailOrder(latest)
+    }
+  }, [
+    serviceDetailModalOpen,
+    serviceDetailOrder,
+    allServiceOrders,
+    serviceFilteredOrders,
+  ])
+
   // ── Payment modal state ──────────────────────────────────────────────────────
   const [paymentModalOpen, setPaymentModalOpen] = useState(false)
   const [paymentOrderId, setPaymentOrderId] = useState<number | null>(null)
+  const [paymentOrderType, setPaymentOrderType] = useState<'RENT_COSTUME' | 'RENT_SERVICE' | null>(null)
+  const [payingCostumeOrderId, setPayingCostumeOrderId] = useState<number | null>(null)
   const [paymentModalAction, setPaymentModalAction] = useState<'confirm-pay' | 'pay-only'>('confirm-pay')
 
   // ── Dispute modal state ──────────────────────────────────────────────────────
@@ -290,7 +315,15 @@ export default function PurchaseHistoryPage() {
   // ── Service payment handlers ─────────────────────────────────────────────────
   const handleOpenPaymentModal = (orderId: number, action: 'confirm-pay' | 'pay-only') => {
     setPaymentOrderId(orderId)
+    setPaymentOrderType('RENT_SERVICE')
     setPaymentModalAction(action)
+    setPaymentModalOpen(true)
+  }
+
+  const handleOpenCostumePaymentModal = (orderId: number) => {
+    setPaymentOrderId(orderId)
+    setPaymentOrderType('RENT_COSTUME')
+    setPaymentModalAction('pay-only')
     setPaymentModalOpen(true)
   }
 
@@ -298,6 +331,36 @@ export default function PurchaseHistoryPage() {
     if (!paymentOrderId) return
 
     try {
+      if (paymentOrderType === 'RENT_COSTUME') {
+        const cosplayerId = getUserId()
+        if (!cosplayerId) {
+          message.error('Vui lòng đăng nhập để thực hiện thanh toán.')
+          return
+        }
+
+        setPayingCostumeOrderId(paymentOrderId)
+        const returnUrl = getReturnUrl(paymentMethod)
+
+        const outcome = await payOrder(paymentOrderId, cosplayerId, { paymentMethod, returnUrl })
+
+        setPaymentModalOpen(false)
+
+        if (paymentMethod === 'WALLET') {
+          message.success(VI.profile.serviceOrders.toastWalletPaySuccess)
+          costumeRefetch()
+        } else if (outcome.paymentUrl) {
+          message.info(VI.profile.serviceOrders.toastPaySuccess)
+          window.location.href = outcome.paymentUrl
+          return
+        } else {
+          message.error('Thanh toán thất bại, không nhận được link thanh toán.')
+        }
+
+        setPaymentOrderId(null)
+        setPaymentOrderType(null)
+        return
+      }
+
       const outcome =
         paymentModalAction === 'confirm-pay'
           ? await confirmAndPay(paymentOrderId, paymentMethod)
@@ -316,6 +379,8 @@ export default function PurchaseHistoryPage() {
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : VI.profile.serviceOrders.toastPayFailed
       message.error(msg)
+    } finally {
+      setPayingCostumeOrderId(null)
     }
   }
 
@@ -551,6 +616,18 @@ export default function PurchaseHistoryPage() {
               >
                 <Ban className="h-3.5 w-3.5" />
                 {cancellingOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionCancel}
+              </button>
+            )}
+
+            {order.status === 'UNPAID' && (
+              <button
+                type="button"
+                disabled={payingCostumeOrderId === order.id}
+                onClick={() => handleOpenCostumePaymentModal(order.id)}
+                className="flex items-center gap-1 rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:brightness-110 disabled:opacity-50"
+              >
+                <WalletCards className="h-3.5 w-3.5" />
+                {payingCostumeOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionRepay}
               </button>
             )}
 
@@ -1068,6 +1145,12 @@ export default function PurchaseHistoryPage() {
         }}
         confirmDeliveryLoading={confirmSubmittingOrderId === detailOrderId}
         disputeLoading={disputingOrderId === detailOrderId}
+        onRepay={() => {
+          if (detailOrderId != null) {
+            handleOpenCostumePaymentModal(detailOrderId)
+          }
+        }}
+        repayLoading={payingCostumeOrderId === detailOrderId}
         onClose={() => {
           setDetailDrawerOpen(false)
           setDetailOrderId(null)
@@ -1229,21 +1312,23 @@ export default function PurchaseHistoryPage() {
         open={paymentModalOpen}
         onClose={() => setPaymentModalOpen(false)}
         onConfirm={handlePaymentConfirm}
-        loading={confirmingOrderId !== null || payingOrderId !== null}
+        loading={confirmingOrderId !== null || payingOrderId !== null || payingCostumeOrderId !== null}
         loadingPhase={
           confirmingOrderId !== null
             ? 'confirm'
-            : payingOrderId !== null
+            : (payingOrderId !== null || payingCostumeOrderId !== null)
               ? 'pay'
               : null
         }
         totalAmount={
           paymentOrderId != null
-            ? (serviceFilteredOrders.find(
-                // Composite key lookup — guards against cross-type contamination
-                // even though serviceFilteredOrders already only contains RENT_SERVICE orders.
-                (o) => o.orderType === 'RENT_SERVICE' && o.id === paymentOrderId
-              )?.totalAmount)
+            ? paymentOrderType === 'RENT_COSTUME'
+              ? filteredOrders.find(
+                  (o) => o.orderType === 'RENT_COSTUME' && o.id === paymentOrderId
+                )?.totalAmount
+              : serviceFilteredOrders.find(
+                  (o) => o.orderType === 'RENT_SERVICE' && o.id === paymentOrderId
+                )?.totalAmount
             : undefined
         }
       />

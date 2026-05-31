@@ -9,6 +9,7 @@ import { message } from 'antd'
 import { submitServiceBooking, type CreateServiceBookingParams } from '../services/booking.service'
 import type { ServiceBookingResult } from '../api/booking.api'
 import { VI } from '@/shared/i18n/vi'
+import { notifyServiceOrdersChanged } from '@/shared/sync/dataSync'
 
 interface UseCreateServiceBookingResult {
   createBooking: (params: CreateServiceBookingParams) => Promise<ServiceBookingResult | null>
@@ -26,6 +27,7 @@ export function useCreateServiceBooking(): UseCreateServiceBookingResult {
       setError(null)
       try {
         const result = await submitServiceBooking(params)
+        notifyServiceOrdersChanged({ orderId: result.id })
         message.success(VI.booking.create.success)
         return result
       } catch (err) {

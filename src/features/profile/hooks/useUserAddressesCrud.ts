@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react"
 import { VI } from "@/shared/i18n/vi"
 import type { UpsertUserAddressPayload, UserAddress } from "../types"
 import * as userAddressService from "../services/userAddress.service"
+import { notifyAddressesChanged } from "@/shared/sync/dataSync"
 
 interface UseUserAddressesCrudResult {
   addresses: UserAddress[]
@@ -52,6 +53,7 @@ export function useUserAddressesCrud(
         setError(null)
         await userAddressService.addAddress(userId, payload)
         await refresh()
+        notifyAddressesChanged()
         return true
       } catch {
         setError(VI.profile.address.messages.saveError)
@@ -74,6 +76,7 @@ export function useUserAddressesCrud(
         setError(null)
         await userAddressService.editAddress(userId, addressId, payload)
         await refresh()
+        notifyAddressesChanged()
         return true
       } catch {
         setError(VI.profile.address.messages.saveError)
@@ -96,6 +99,7 @@ export function useUserAddressesCrud(
         setError(null)
         await userAddressService.deleteAddress(userId, addressId)
         await refresh()
+        notifyAddressesChanged()
         return true
       } catch {
         setError(VI.profile.address.messages.saveError)
