@@ -21,6 +21,7 @@ interface PurchasePanelProps {
   onStartDateChange: (date: string) => void
   onToggleOptionalAccessory: (id: number) => void
   onRentNow: () => void
+  onTryOn: () => void
 }
 
 export const PurchasePanel = ({
@@ -33,6 +34,7 @@ export const PurchasePanel = ({
   onStartDateChange,
   onToggleOptionalAccessory,
   onRentNow,
+  onTryOn,
 }: PurchasePanelProps) => {
   const [startDateError, setStartDateError] = useState<string | undefined>()
   const minDate = getMinRentStartDateString()
@@ -165,16 +167,28 @@ export const PurchasePanel = ({
 
       <PriceBreakdownCard quote={quote} days={days} />
 
-      <Button
-        type="button"
-        variant="default"
-        size="lg"
-        className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 font-extrabold text-white shadow-[7px_7px_0_0_#1e1b4b] transition hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b]"
-        disabled={isRented}
-        onClick={onRentNow}
-      >
-        {isRented ? VI.costumeRental.detail.rentedButton : VI.costumeRental.rentNow}
-      </Button>
+      <div className="flex flex-col gap-3">
+        <Button
+          type="button"
+          variant="outline"
+          size="lg"
+          className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-yellow-400 via-amber-400 to-orange-400 font-extrabold text-indigo-950 shadow-[7px_7px_0_0_#1e1b4b] transition hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b]"
+          onClick={onTryOn}
+        >
+          🪄 Thử đồ ảo (AI)
+        </Button>
+
+        <Button
+          type="button"
+          variant="default"
+          size="lg"
+          className="w-full rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 font-extrabold text-white shadow-[7px_7px_0_0_#1e1b4b] transition hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b]"
+          disabled={isRented}
+          onClick={onRentNow}
+        >
+          {isRented ? VI.costumeRental.detail.rentedButton : VI.costumeRental.rentNow}
+        </Button>
+      </div>
     </div>
   )
 }

@@ -8,6 +8,7 @@ import { MediaGallery } from "../components/detail/MediaGallery"
 import { PurchasePanel } from "../components/detail/PurchasePanel"
 import { ProviderShopCard } from "../components/detail/ProviderShopCard"
 import { ProductInfoSections } from "../components/detail/ProductInfoSections"
+import { VirtualTryOnModal } from "../components/detail/VirtualTryOnModal"
 import { ProductReviewsSection } from "../components/detail/ProductReviewsSection"
 import { MyReviewForm } from "../components/detail/MyReviewForm"
 import { MoreFromShop } from "../components/detail/MoreFromShop"
@@ -47,6 +48,7 @@ export default function CostumeDetailPage() {
 
   // Modal state for "no address" confirmation
   const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
+  const [showVtoModal, setShowVtoModal] = React.useState(false)
 
   // Validation error popup state
   const [validationError, setValidationError] = React.useState<string | null>(null)
@@ -287,6 +289,7 @@ export default function CostumeDetailPage() {
               onStartDateChange={setStartDate}
               onToggleOptionalAccessory={toggleOptionalAccessory}
               onRentNow={handleRentNow}
+              onTryOn={() => setShowVtoModal(true)}
             />
           </div>
         </div>
@@ -436,6 +439,15 @@ export default function CostumeDetailPage() {
             </div>
           </div>
         )}
+
+        {/* Virtual Try-On Modal */}
+        <VirtualTryOnModal
+          open={showVtoModal}
+          onOpenChange={setShowVtoModal}
+          costumeId={Number(costume.id)}
+          costumeName={costume.name}
+          costumeImageUrl={resolvedImages[0]?.imageUrl}
+        />
       </div>
     </section>
   )
