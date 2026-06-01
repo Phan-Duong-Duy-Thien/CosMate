@@ -256,7 +256,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         message.error('Chỉ hỗ trợ video định dạng .mp4 hoặc .mov')
         return Upload.LIST_IGNORE
       }
-      const maxSizeMb = 100
+      const maxSizeMb = 20
       if (file.size / 1024 / 1024 > maxSizeMb) {
         message.error(`Video không được vượt quá ${maxSizeMb}MB`)
         return Upload.LIST_IGNORE
@@ -567,7 +567,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
               <InboxOutlined />
             </p>
             <p className="ant-upload-text">Kéo thả hoặc nhấn để tải video lên</p>
-            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 100MB</p>
+            <p className="ant-upload-hint">Hỗ trợ .mp4, .mov — tối đa 20MB</p>
           </Upload.Dragger>
           {videoPreviewUrl && (
             <div style={{ marginTop: 12, border: '4px solid #000', borderRadius: 16, overflow: 'hidden', boxShadow: '6px 6px 0 0 #000' }}>

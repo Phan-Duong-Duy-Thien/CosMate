@@ -14,7 +14,7 @@ import {
   qrPayloadMatchesCurrentUser,
 } from "@/shared/utils/mobileQrUrl"
 
-const MAX_IMAGES = 10
+const MAX_IMAGES = 5
 const QR_REFRESH_COOLDOWN_MS = 15 * 60 * 1000
 const SESSION_TTL_MS = 10 * 60 * 1000
 
