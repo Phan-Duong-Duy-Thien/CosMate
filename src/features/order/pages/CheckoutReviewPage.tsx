@@ -10,6 +10,7 @@ import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { buildCheckoutFlowBreadcrumbs } from '../utils/checkoutNavigation';
 import { useCheckoutReview } from '../hooks/useCheckoutReview';
 import { CheckoutPolicyModal } from '../components/CheckoutPolicyModal';
+import { CheckoutForcePolicyModal } from '../components/CheckoutForcePolicyModal';
 import type { PaymentMethod } from '../types';
 import { message } from 'antd';
 import { CreditCard, MapPin, ShieldCheck } from 'lucide-react';
@@ -26,6 +27,7 @@ export default function CheckoutReviewPage() {
   const [searchParams] = useSearchParams();
   const { setItems } = useBreadcrumb();
   const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
+  const [isForceModalOpen, setIsForceModalOpen] = useState(false);
   const {
     addresses,
     draft,
@@ -55,6 +57,13 @@ export default function CheckoutReviewPage() {
       currency: 'VND',
     }).format(amount);
   };
+
+  useEffect(() => {
+    if (!isLoading && draft && !policyAccepted) {
+      setIsForceModalOpen(true);
+    }
+  }, [isLoading, draft, policyAccepted]);
+
 
   // Breadcrumb: link parent to costume detail (not costume list)
   useEffect(() => {
@@ -507,6 +516,15 @@ export default function CheckoutReviewPage() {
         open={isPolicyModalOpen}
         onClose={() => setIsPolicyModalOpen(false)}
       />
+      <CheckoutForcePolicyModal
+        open={isForceModalOpen}
+        providerId={costume?.providerId}
+        onAccept={() => {
+          setPolicyAccepted(true);
+          setIsForceModalOpen(false);
+        }}
+      />
     </section>
+
   );
 }

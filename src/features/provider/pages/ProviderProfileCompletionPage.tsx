@@ -7,7 +7,7 @@
  */
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Card, Button, Steps, Form, Input, Select, Spin, Alert, Row, Col, Typography, Radio } from 'antd';
+import { Card, Button, Steps, Form, Input, Select, Spin, Alert, Row, Col, Typography, Radio, InputNumber, Space, message } from 'antd';
 import { useNavigate } from 'react-router-dom';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -15,6 +15,8 @@ import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } 
 import { VI } from '@/shared/i18n/vi';
 import { useProviderProfileCompletion } from '../hooks/useProviderProfileCompletion';
 import { useProviderVerification } from '../hooks/useProviderVerification';
+import { createCancellationPolicy, type CancellationPolicy } from '../api/cancellationPolicy.api';
+import { Trash2, Plus } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -119,14 +121,44 @@ export default function ProviderProfileCompletionPage() {
     }
   };
 
-  const handleSubmit = async () => {
+  const [policies, setPolicies] = useState<CancellationPolicy[]>([
+    { minHour: 0, maxHour: 24, refundPercentage: 0 },
+    { minHour: 24, maxHour: 72, refundPercentage: 50 }
+  ]);
+  const [savingPolicies, setSavingPolicies] = useState(false);
+
+  const handlePhase2Submit = async () => {
     const addrId = selectedAddressId;
     if (!addrId) return;
     const success = await submit(addrId);
     if (success) {
-      // Refetch profile so the dashboard gets updated state
       await refetch();
+      setCurrentPhase(2);
+    }
+  };
+
+  const handlePoliciesSubmit = async () => {
+    if (!providerId) {
+      message.error('Không tìm thấy ID nhà cung cấp.');
+      return;
+    }
+    setSavingPolicies(true);
+    try {
+      for (const policy of policies) {
+        await createCancellationPolicy({
+          providerId,
+          minHour: Number(policy.minHour),
+          maxHour: Number(policy.maxHour),
+          refundPercentage: Number(policy.refundPercentage),
+        });
+      }
+      message.success('Thiết lập chính sách hủy hàng thành công!');
       navigate(homePath);
+    } catch (err) {
+      console.error(err);
+      message.error('Có lỗi xảy ra khi lưu chính sách hủy.');
+    } finally {
+      setSavingPolicies(false);
     }
   };
 
@@ -166,6 +198,10 @@ export default function ProviderProfileCompletionPage() {
             {
               title: VI.provider.profileCompletion.step2Title,
               subTitle: VI.provider.profileCompletion.step2SubTitle,
+            },
+            {
+              title: "Chính sách hủy",
+              subTitle: "Cài đặt hoàn tiền",
             },
           ]}
         />
@@ -633,7 +669,7 @@ export default function ProviderProfileCompletionPage() {
               <Button
                 type="primary"
                 loading={saving}
-                onClick={() => void handleSubmit()}
+                onClick={() => void handlePhase2Submit()}
                 disabled={!canSubmitProfile}
               >
                 {VI.common.actions.next}
@@ -641,6 +677,107 @@ export default function ProviderProfileCompletionPage() {
             </div>
           </div>
         )}
+
+        {/* Phase 3: Cancellation policies */}
+        {currentPhase === 2 && (
+          <div>
+            <Title level={4} style={{ marginBottom: 8 }}>
+              Thiết lập chính sách hủy đơn hàng
+            </Title>
+            <Paragraph type="secondary" style={{ marginBottom: 24 }}>
+              Xác định tỷ lệ hoàn trả tiền cọc/tiền thuê khi khách hàng hủy đơn hàng trong các khoảng thời gian khác nhau (tính bằng Giờ trước thời điểm bắt đầu thuê).
+            </Paragraph>
+
+            <div style={{ marginBottom: 20 }}>
+              {policies.map((policy, idx) => (
+                <Row key={idx} gutter={16} align="middle" style={{ marginBottom: 12 }}>
+                  <Col xs={7}>
+                    <Form.Item label={idx === 0 ? "Hủy từ (Giờ)" : ""} style={{ marginBottom: 0 }}>
+                      <InputNumber
+                        min={0}
+                        value={policy.minHour}
+                        placeholder="Từ (giờ)"
+                        style={{ width: '100%' }}
+                        onChange={(val) => {
+                          const next = [...policies];
+                          next[idx].minHour = val ?? 0;
+                          setPolicies(next);
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={7}>
+                    <Form.Item label={idx === 0 ? "Hủy đến (Giờ)" : ""} style={{ marginBottom: 0 }}>
+                      <InputNumber
+                        min={0}
+                        value={policy.maxHour}
+                        placeholder="Đến (giờ)"
+                        style={{ width: '100%' }}
+                        onChange={(val) => {
+                          const next = [...policies];
+                          next[idx].maxHour = val ?? 0;
+                          setPolicies(next);
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col xs={8}>
+                    <Form.Item label={idx === 0 ? "Hoàn trả (%)" : ""} style={{ marginBottom: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                        <InputNumber
+                          min={0}
+                          max={100}
+                          value={policy.refundPercentage}
+                          placeholder="Hoàn trả (%)"
+                          style={{ width: '70%' }}
+                          onChange={(val) => {
+                            const next = [...policies];
+                            next[idx].refundPercentage = val ?? 0;
+                            setPolicies(next);
+                          }}
+                        />
+                        {policies.length > 1 && (
+                          <Button
+                            type="text"
+                            danger
+                            icon={<Trash2 size={16} />}
+                            style={{ marginLeft: 8 }}
+                            onClick={() => {
+                              setPolicies(policies.filter((_, i) => i !== idx));
+                            }}
+                          />
+                        )}
+                      </div>
+                    </Form.Item>
+                  </Col>
+                </Row>
+              ))}
+
+              <Button
+                type="dashed"
+                onClick={() => setPolicies([...policies, { minHour: 0, maxHour: 24, refundPercentage: 0 }])}
+                icon={<Plus size={14} />}
+                style={{ width: '100%', marginTop: 12 }}
+              >
+                Thêm quy định hủy hàng
+              </Button>
+            </div>
+
+            <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
+              <Button onClick={() => setCurrentPhase(1)}>
+                {VI.common.actions.previous}
+              </Button>
+              <Button
+                type="primary"
+                loading={savingPolicies}
+                onClick={handlePoliciesSubmit}
+              >
+                Hoàn tất
+              </Button>
+            </div>
+          </div>
+        )}
+
       </Card>
     </DashboardLayout>
   );

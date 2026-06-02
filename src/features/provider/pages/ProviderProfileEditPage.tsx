@@ -5,9 +5,9 @@
  * Form is pre-filled with current data. Saves via PUT /api/providers/{id}.
  */
 import { useLocation } from 'react-router-dom';
-import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm, message } from 'antd';
+import { Card, Spin, Button, Form, Input, Select, Row, Col, Typography, Radio, Modal, Popconfirm, message, Tabs, InputNumber, Space } from 'antd';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, Plus } from 'lucide-react';
 import { useBreadcrumb } from '@/app/providers/BreadcrumbProvider';
 import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
@@ -20,6 +20,13 @@ import { ProvinceSelect, DistrictSelect } from '@/features/profile/components/Ad
 import { matchAdminUnitByName } from '@/shared/utils/vnLocationNormalize';
 import { VI } from '@/shared/i18n/vi';
 import { buildLegacyAddressPayload } from '@/features/profile/services/addressPayload.service';
+import {
+  getCancellationPolicies,
+  createCancellationPolicy,
+  updateCancellationPolicy,
+  deleteCancellationPolicy,
+  type CancellationPolicy
+} from '../api/cancellationPolicy.api';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -59,6 +66,55 @@ export default function ProviderProfileEditPage() {
     removeAddress,
   } =
     useProviderProfileEdit();
+
+  const [policies, setPolicies] = useState<CancellationPolicy[]>([]);
+  const [policiesLoading, setPoliciesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!profile?.id) return;
+    setPoliciesLoading(true);
+    getCancellationPolicies(profile.id)
+      .then(setPolicies)
+      .catch((err) => {
+        console.error(err);
+        message.error('Không thể tải chính sách hủy hàng.');
+      })
+      .finally(() => setPoliciesLoading(false));
+  }, [profile?.id]);
+
+  const handleSavePolicyRow = async (idx: number) => {
+    const policy = policies[idx];
+    if (!profile?.id) return;
+    try {
+      if (policy.id) {
+        await updateCancellationPolicy(policy.id, policy);
+        message.success('Cập nhật quy định thành công!');
+      } else {
+        const created = await createCancellationPolicy({ ...policy, providerId: profile.id });
+        const next = [...policies];
+        next[idx] = created;
+        setPolicies(next);
+        message.success('Tạo quy định mới thành công!');
+      }
+    } catch (err) {
+      console.error(err);
+      message.error('Không thể lưu quy định.');
+    }
+  };
+
+  const handleDeletePolicyRow = async (idx: number) => {
+    const policy = policies[idx];
+    try {
+      if (policy.id) {
+        await deleteCancellationPolicy(policy.id);
+        message.success('Xóa quy định thành công!');
+      }
+      setPolicies(policies.filter((_, i) => i !== idx));
+    } catch (err) {
+      console.error(err);
+      message.error('Không thể xóa quy định.');
+    }
+  };
 
   const isPhotograph = location.pathname.startsWith('/provider-photograph');
   const isEventStaff = location.pathname.startsWith('/provider-event-staff');
@@ -205,332 +261,451 @@ export default function ProviderProfileEditPage() {
         </Card>
       ) : (
         <Card style={{ borderRadius: 12 }}>
-          <Title level={4} style={{ marginBottom: 8 }}>
-            Thông tin cửa hàng
-          </Title>
-          <Paragraph type="secondary" style={{ marginBottom: 24 }}>
-            Cập nhật thông tin cửa hàng và thông tin thanh toán của bạn.
-          </Paragraph>
+          <Tabs defaultActiveKey="1" items={[
+            {
+              key: "1",
+              label: "Thông tin cửa hàng",
+              children: (
+                <div style={{ marginTop: 12 }}>
+                  <Title level={4} style={{ marginBottom: 8 }}>
+                    Thông tin cửa hàng
+                  </Title>
+                  <Paragraph type="secondary" style={{ marginBottom: 24 }}>
+                    Cập nhật thông tin cửa hàng và thông tin thanh toán của bạn.
+                  </Paragraph>
 
-          <Form layout="vertical" className="w-full">
-            {/* Shop Name */}
-            <Form.Item label="Tên cửa hàng" required>
-              <Input
-                value={formData.shopName}
-                onChange={(e) => updateField('shopName', e.target.value)}
-                placeholder="VD: Cosplay Store Dũng"
-              />
-            </Form.Item>
+                  <Form layout="vertical" className="w-full">
+                    {/* Shop Name */}
+                    <Form.Item label="Tên cửa hàng" required>
+                      <Input
+                        value={formData.shopName}
+                        onChange={(e) => updateField('shopName', e.target.value)}
+                        placeholder="VD: Cosplay Store Dũng"
+                      />
+                    </Form.Item>
 
-            {/* Bio */}
-            <Form.Item label="Giới thiệu">
-              <TextArea
-                value={formData.bio}
-                onChange={(e) => updateField('bio', e.target.value)}
-                placeholder="Mô tả ngắn về cửa hàng của bạn..."
-                rows={4}
-              />
-            </Form.Item>
+                    {/* Bio */}
+                    <Form.Item label="Giới thiệu">
+                      <TextArea
+                        value={formData.bio}
+                        onChange={(e) => updateField('bio', e.target.value)}
+                        placeholder="Mô tả ngắn về cửa hàng của bạn..."
+                        rows={4}
+                      />
+                    </Form.Item>
 
-            {/* Address */}
-            {addresses.length > 0 && (
-              <Form.Item label="Địa chỉ cửa hàng">
-                <Radio.Group
-                  value={formData.shopAddressId}
-                  onChange={(e) => updateField('shopAddressId', e.target.value as number)}
-                  style={{ width: '100%' }}
-                >
-                  <Row gutter={[12, 12]}>
-                    {addresses.map((addr) => (
-                      <Col xs={24} sm={12} key={addr.id}>
-                        <Card
-                          hoverable
-                          style={{
-                            borderRadius: 8,
-                            border:
-                              formData.shopAddressId === addr.id
-                                ? "2px solid var(--primary)"
-                                : "1px solid var(--border)",
-                            background:
-                              formData.shopAddressId === addr.id ? "var(--cosmate-lavender-surface)" : "var(--card)",
-                          }}
-                          onClick={() => updateField('shopAddressId', addr.id)}
+                    {/* Address */}
+                    {addresses.length > 0 && (
+                      <Form.Item label="Địa chỉ cửa hàng">
+                        <Radio.Group
+                          value={formData.shopAddressId}
+                          onChange={(e) => updateField('shopAddressId', e.target.value as number)}
+                          style={{ width: '100%' }}
                         >
-                          <Radio value={addr.id}>
-                            <div>
-                              <Text strong>{addr.name}</Text>
-                              <br />
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {addr.address}, {addr.district}, {addr.city}
-                              </Text>
-                              <br />
-                              <Text type="secondary" style={{ fontSize: 12 }}>
-                                {addr.phone}
-                              </Text>
-                              <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                                <Button size="small" onClick={() => handleOpenEditAddress(addr)}>
-                                  Sửa
-                                </Button>
-                                <Popconfirm
-                                  title="Xóa địa chỉ này?"
-                                  okText="Xóa"
-                                  cancelText="Hủy"
-                                  okButtonProps={{ danger: true }}
-                                  onConfirm={() => void handleDeleteAddress(addr.id)}
+                          <Row gutter={[12, 12]}>
+                            {addresses.map((addr) => (
+                              <Col xs={24} sm={12} key={addr.id}>
+                                <Card
+                                  hoverable
+                                  style={{
+                                    borderRadius: 8,
+                                    border:
+                                      formData.shopAddressId === addr.id
+                                        ? "2px solid var(--primary)"
+                                        : "1px solid var(--border)",
+                                    background:
+                                      formData.shopAddressId === addr.id ? "var(--cosmate-lavender-surface)" : "var(--card)",
+                                  }}
+                                  onClick={() => updateField('shopAddressId', addr.id)}
                                 >
-                                  <Button size="small" danger loading={addressSaving}>
-                                    Xóa
-                                  </Button>
-                                </Popconfirm>
-                              </div>
-                            </div>
-                          </Radio>
-                        </Card>
+                                  <Radio value={addr.id}>
+                                    <div>
+                                      <Text strong>{addr.name}</Text>
+                                      <br />
+                                      <Text type="secondary" style={{ fontSize: 12 }}>
+                                        {addr.address}, {addr.district}, {addr.city}
+                                      </Text>
+                                      <br />
+                                      <Text type="secondary" style={{ fontSize: 12 }}>
+                                        {addr.phone}
+                                      </Text>
+                                      <div style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                                        <Button size="small" onClick={() => handleOpenEditAddress(addr)}>
+                                          Sửa
+                                        </Button>
+                                        <Popconfirm
+                                          title="Xóa địa chỉ này?"
+                                          okText="Xóa"
+                                          cancelText="Hủy"
+                                          okButtonProps={{ danger: true }}
+                                          onConfirm={() => void handleDeleteAddress(addr.id)}
+                                        >
+                                          <Button size="small" danger loading={addressSaving}>
+                                            Xóa
+                                          </Button>
+                                        </Popconfirm>
+                                      </div>
+                                    </div>
+                                  </Radio>
+                                </Card>
+                              </Col>
+                            ))}
+                          </Row>
+                        </Radio.Group>
+                      </Form.Item>
+                    )}
+
+                    {/* Bank Info */}
+                    <Title level={5} style={{ marginTop: 24 }}>
+                      Thông tin thanh toán
+                    </Title>
+
+                    <Row gutter={12}>
+                      <Col xs={24} sm={12}>
+                        <Form.Item label="Số tài khoản">
+                          <Input
+                            value={formData.bankAccountNumber}
+                            onChange={(e) => updateField('bankAccountNumber', e.target.value)}
+                            placeholder="VD: 1234567890"
+                          />
+                        </Form.Item>
                       </Col>
-                    ))}
-                  </Row>
-                </Radio.Group>
-              </Form.Item>
-            )}
+                      <Col xs={24} sm={12}>
+                        <Form.Item label="Ngân hàng">
+                          <Select
+                            value={formData.bankName || undefined}
+                            onChange={(val) => updateField('bankName', val)}
+                            placeholder="Chọn ngân hàng"
+                            showSearch
+                            optionFilterProp="label"
+                          >
+                            {[
+                              'Vietcombank',
+                              'VietinBank',
+                              'BIDV',
+                              'Agribank',
+                              'TPBank',
+                              'MB Bank',
+                              'ACB',
+                              'Techcombank',
+                              'VPBank',
+                              'Sacombank',
+                              'Shinhan Bank',
+                              'Citibank',
+                            ].map((bank) => (
+                              <Select.Option key={bank} value={bank} label={bank}>
+                                {bank}
+                              </Select.Option>
+                            ))}
+                          </Select>
+                        </Form.Item>
+                      </Col>
+                    </Row>
+                  </Form>
 
-            {/* Bank Info */}
-            <Title level={5} style={{ marginTop: 24 }}>
-              Thông tin thanh toán
-            </Title>
+                  {/* Avatar & Cover Image Upload */}
+                  {profile && (
+                    <div style={{ marginTop: 32 }}>
+                      <Title level={5} style={{ marginBottom: 12 }}>
+                        Ảnh đại diện & Ảnh bìa
+                      </Title>
+                      <Row gutter={[16, 16]}>
+                        {/* Avatar */}
+                        <Col xs={24} md={12}>
+                          <Card
+                            style={{
+                              border: "1px solid var(--border)",
+                              borderRadius: 8,
+                              background: "var(--cosmate-page)",
+                            }}
+                            bodyStyle={{ padding: 16 }}
+                          >
+                            <div
+                              style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                textAlign: 'center',
+                              }}
+                            >
+                              {profile.avatarUrl ? (
+                                <img
+                                  src={profile.avatarUrl}
+                                  alt="Avatar"
+                                  style={{
+                                    width: 72,
+                                    height: 72,
+                                    borderRadius: '50%',
+                                    objectFit: 'cover',
+                                    border: "3px solid var(--border)",
+                                    marginBottom: 12,
+                                    display: 'block',
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: 72,
+                                    height: 72,
+                                    borderRadius: '50%',
+                                    background: "color-mix(in oklch, var(--primary) 30%, var(--background))",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: 24,
+                                    fontWeight: 700,
+                                    color: "var(--primary)",
+                                    marginBottom: 12,
+                                  }}
+                                >
+                                  {profile.shopName?.charAt(0)?.toUpperCase() ?? 'P'}
+                                </div>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  await uploadAvatar(file);
+                                  e.target.value = '';
+                                }}
+                                style={{ display: 'none' }}
+                                id="edit-avatar-upload"
+                              />
+                              <label
+                                htmlFor="edit-avatar-upload"
+                                style={{
+                                  display: 'inline-block',
+                                  borderRadius: 9999,
+                                  background: "color-mix(in oklch, var(--cosmate-pink) 14%, var(--background))",
+                                  color: "var(--cosmate-rose-tag-text)",
+                                  padding: '6px 14px',
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Đổi ảnh
+                              </label>
+                              <Text
+                                type="secondary"
+                                style={{ display: 'block', marginTop: 6, fontSize: 11 }}
+                              >
+                                Tối thiểu 200x200px
+                              </Text>
+                            </div>
+                          </Card>
+                        </Col>
 
-            <Row gutter={12}>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Số tài khoản">
-                  <Input
-                    value={formData.bankAccountNumber}
-                    onChange={(e) => updateField('bankAccountNumber', e.target.value)}
-                    placeholder="VD: 1234567890"
-                  />
-                </Form.Item>
-              </Col>
-              <Col xs={24} sm={12}>
-                <Form.Item label="Ngân hàng">
-                  <Select
-                    value={formData.bankName || undefined}
-                    onChange={(val) => updateField('bankName', val)}
-                    placeholder="Chọn ngân hàng"
-                    showSearch
-                    optionFilterProp="label"
-                  >
-                    {[
-                      'Vietcombank',
-                      'VietinBank',
-                      'BIDV',
-                      'Agribank',
-                      'TPBank',
-                      'MB Bank',
-                      'ACB',
-                      'Techcombank',
-                      'VPBank',
-                      'Sacombank',
-                      'Shinhan Bank',
-                      'Citibank',
-                    ].map((bank) => (
-                      <Select.Option key={bank} value={bank} label={bank}>
-                        {bank}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-              </Col>
-            </Row>
-          </Form>
+                        {/* Cover Image */}
+                        <Col xs={24} md={12}>
+                          <Card
+                            style={{
+                              border: "1px solid var(--border)",
+                              borderRadius: 8,
+                              background: "var(--cosmate-page)",
+                            }}
+                            bodyStyle={{ padding: 16 }}
+                          >
+                            <div style={{ textAlign: 'center' }}>
+                              {profile.coverImageUrl ? (
+                                <img
+                                  src={profile.coverImageUrl}
+                                  alt="Cover"
+                                  style={{
+                                    width: '100%',
+                                    height: 72,
+                                    objectFit: 'cover',
+                                    borderRadius: 6,
+                                    border: "2px solid var(--border)",
+                                    marginBottom: 12,
+                                  }}
+                                />
+                              ) : (
+                                <div
+                                  style={{
+                                    width: '100%',
+                                    height: 72,
+                                    borderRadius: 6,
+                                    background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: 12,
+                                    color: "var(--primary)",
+                                    marginBottom: 12,
+                                  }}
+                                >
+                                  Chưa có ảnh bìa
+                                </div>
+                              )}
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={async (e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  await uploadCoverImage(file);
+                                  e.target.value = '';
+                                }}
+                                style={{ display: 'none' }}
+                                id="edit-cover-upload"
+                              />
+                              <label
+                                htmlFor="edit-cover-upload"
+                                style={{
+                                  display: 'inline-block',
+                                  borderRadius: 9999,
+                                  background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
+                                  color: "var(--primary)",
+                                  padding: '6px 14px',
+                                  fontSize: 12,
+                                  fontWeight: 500,
+                                  cursor: 'pointer',
+                                }}
+                              >
+                                Đổi ảnh bìa
+                              </label>
+                              <Text
+                                type="secondary"
+                                style={{ display: 'block', marginTop: 6, fontSize: 11 }}
+                              >
+                                Tỷ lệ 16:6, tối thiểu 1200x450px
+                              </Text>
+                            </div>
+                          </Card>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
 
-          {/* Avatar & Cover Image Upload */}
-          {profile && (
-            <div style={{ marginTop: 32 }}>
-              <Title level={5} style={{ marginBottom: 12 }}>
-                Ảnh đại diện & Ảnh bìa
-              </Title>
-              <Row gutter={[16, 16]}>
-                {/* Avatar */}
-                <Col xs={24} md={12}>
-                  <Card
-                    style={{
-                      border: "1px solid var(--border)",
-                      borderRadius: 8,
-                      background: "var(--cosmate-page)",
-                    }}
-                    bodyStyle={{ padding: 16 }}
-                  >
-                    <div
-                      style={{
-                        display: 'flex',
-                        flexDirection: 'column',
-                        alignItems: 'center',
-                        textAlign: 'center',
-                      }}
+                  <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+                    <Button onClick={() => navigate(settingsPath)}>Hủy</Button>
+                    <Button
+                      type="primary"
+                      icon={<Save size={14} />}
+                      loading={saving}
+                      onClick={handleSave}
+                      disabled={!formData.shopName}
                     >
-                      {profile.avatarUrl ? (
-                        <img
-                          src={profile.avatarUrl}
-                          alt="Avatar"
-                          style={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: '50%',
-                            objectFit: 'cover',
-                            border: "3px solid var(--border)",
-                            marginBottom: 12,
-                            display: 'block',
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: 72,
-                            height: 72,
-                            borderRadius: '50%',
-                            background: "color-mix(in oklch, var(--primary) 30%, var(--background))",
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 24,
-                            fontWeight: 700,
-                            color: "var(--primary)",
-                            marginBottom: 12,
-                          }}
-                        >
-                          {profile.shopName?.charAt(0)?.toUpperCase() ?? 'P'}
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          await uploadAvatar(file);
-                          e.target.value = '';
-                        }}
-                        style={{ display: 'none' }}
-                        id="edit-avatar-upload"
-                      />
-                      <label
-                        htmlFor="edit-avatar-upload"
-                        style={{
-                          display: 'inline-block',
-                          borderRadius: 9999,
-                          background: "color-mix(in oklch, var(--cosmate-pink) 14%, var(--background))",
-                          color: "var(--cosmate-rose-tag-text)",
-                          padding: '6px 14px',
-                          fontSize: 12,
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Đổi ảnh
-                      </label>
-                      <Text
-                        type="secondary"
-                        style={{ display: 'block', marginTop: 6, fontSize: 11 }}
-                      >
-                        Tối thiểu 200x200px
-                      </Text>
-                    </div>
-                  </Card>
-                </Col>
+                      Lưu thay đổi
+                    </Button>
+                  </div>
+                </div>
+              )
+            },
+            {
+              key: "2",
+              label: "Chính sách hủy hàng",
+              children: (
+                <div style={{ marginTop: 12 }}>
+                  <Title level={4} style={{ marginBottom: 8 }}>
+                    Chính sách hủy đơn hàng
+                  </Title>
+                  <Paragraph type="secondary" style={{ marginBottom: 24 }}>
+                    Xác định tỷ lệ hoàn trả tiền cọc/tiền thuê khi khách hàng hủy đơn hàng trong các khoảng thời gian khác nhau (tính bằng Giờ trước thời điểm bắt đầu thuê).
+                  </Paragraph>
 
-                {/* Cover Image */}
-                <Col xs={24} md={12}>
-                  <Card
-                    style={{
-                      border: "1px solid var(--border)",
-                      borderRadius: 8,
-                      background: "var(--cosmate-page)",
-                    }}
-                    bodyStyle={{ padding: 16 }}
-                  >
-                    <div style={{ textAlign: 'center' }}>
-                      {profile.coverImageUrl ? (
-                        <img
-                          src={profile.coverImageUrl}
-                          alt="Cover"
-                          style={{
-                            width: '100%',
-                            height: 72,
-                            objectFit: 'cover',
-                            borderRadius: 6,
-                            border: "2px solid var(--border)",
-                            marginBottom: 12,
-                          }}
-                        />
-                      ) : (
-                        <div
-                          style={{
-                            width: '100%',
-                            height: 72,
-                            borderRadius: 6,
-                            background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            fontSize: 12,
-                            color: "var(--primary)",
-                            marginBottom: 12,
-                          }}
-                        >
-                          Chưa có ảnh bìa
-                        </div>
-                      )}
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-                          await uploadCoverImage(file);
-                          e.target.value = '';
-                        }}
-                        style={{ display: 'none' }}
-                        id="edit-cover-upload"
-                      />
-                      <label
-                        htmlFor="edit-cover-upload"
-                        style={{
-                          display: 'inline-block',
-                          borderRadius: 9999,
-                          background: "color-mix(in oklch, var(--primary) 16%, var(--background))",
-                          color: "var(--primary)",
-                          padding: '6px 14px',
-                          fontSize: 12,
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        Đổi ảnh bìa
-                      </label>
-                      <Text
-                        type="secondary"
-                        style={{ display: 'block', marginTop: 6, fontSize: 11 }}
-                      >
-                        Tỷ lệ 16:6, tối thiểu 1200x450px
-                      </Text>
+                  {policiesLoading ? (
+                    <div style={{ textAlign: 'center', padding: 24 }}>
+                      <Spin />
                     </div>
-                  </Card>
-                </Col>
-              </Row>
-            </div>
-          )}
+                  ) : (
+                    <div>
+                      {policies.map((policy, idx) => (
+                        <Row key={idx} gutter={16} align="middle" style={{ marginBottom: 12 }}>
+                          <Col xs={6}>
+                            <Form.Item label={idx === 0 ? "Hủy từ (Giờ)" : ""} style={{ marginBottom: 0 }}>
+                              <InputNumber
+                                min={0}
+                                value={policy.minHour}
+                                placeholder="Từ (giờ)"
+                                style={{ width: '100%' }}
+                                onChange={(val) => {
+                                  const next = [...policies];
+                                  next[idx].minHour = val ?? 0;
+                                  setPolicies(next);
+                                }}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={6}>
+                            <Form.Item label={idx === 0 ? "Hủy đến (Giờ)" : ""} style={{ marginBottom: 0 }}>
+                              <InputNumber
+                                min={0}
+                                value={policy.maxHour}
+                                placeholder="Đến (giờ)"
+                                style={{ width: '100%' }}
+                                onChange={(val) => {
+                                  const next = [...policies];
+                                  next[idx].maxHour = val ?? 0;
+                                  setPolicies(next);
+                                }}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={6}>
+                            <Form.Item label={idx === 0 ? "Hoàn trả (%)" : ""} style={{ marginBottom: 0 }}>
+                              <InputNumber
+                                min={0}
+                                max={100}
+                                value={policy.refundPercentage}
+                                placeholder="Hoàn trả (%)"
+                                style={{ width: '100%' }}
+                                onChange={(val) => {
+                                  const next = [...policies];
+                                  next[idx].refundPercentage = val ?? 0;
+                                  setPolicies(next);
+                                }}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={6} style={{ paddingTop: idx === 0 ? 30 : 6 }}>
+                            <Space>
+                              <Button
+                                type="primary"
+                                size="small"
+                                onClick={() => handleSavePolicyRow(idx)}
+                              >
+                                Lưu
+                              </Button>
+                              <Popconfirm
+                                title="Bạn chắc chắn muốn xóa quy định này?"
+                                onConfirm={() => handleDeletePolicyRow(idx)}
+                                okText="Xóa"
+                                cancelText="Hủy"
+                                okButtonProps={{ danger: true }}
+                              >
+                                <Button
+                                  type="primary"
+                                  danger
+                                  size="small"
+                                >
+                                  Xóa
+                                </Button>
+                              </Popconfirm>
+                            </Space>
+                          </Col>
+                        </Row>
+                      ))}
 
-          <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
-            <Button onClick={() => navigate(settingsPath)}>Hủy</Button>
-            <Button
-              type="primary"
-              icon={<Save size={14} />}
-              loading={saving}
-              onClick={handleSave}
-              disabled={!formData.shopName}
-            >
-              Lưu thay đổi
-            </Button>
-          </div>
+                      <Button
+                        type="dashed"
+                        onClick={() => setPolicies([...policies, { minHour: 0, maxHour: 24, refundPercentage: 0 }])}
+                        icon={<Plus size={14} />}
+                        style={{ width: '100%', marginTop: 12 }}
+                      >
+                        Thêm quy định hủy hàng
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              )
+            }
+          ]} />
         </Card>
+
       )}
 
       </div>
