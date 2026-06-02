@@ -20,6 +20,7 @@ export function QrLoginPanel({ active, onApproved }: QrLoginPanelProps) {
     refreshSession,
     isWaiting,
     showWaitHint,
+    cooldownSec,
   } = useQrLoginSession({ active, onApproved })
 
   const isExpired = status === "EXPIRED" || status === "CANCELLED"
@@ -91,10 +92,12 @@ export function QrLoginPanel({ active, onApproved }: QrLoginPanelProps) {
           size="small"
           icon={<RefreshCw className="h-3.5 w-3.5" />}
           onClick={refreshSession}
-          disabled={sessionLoading}
+          disabled={sessionLoading || cooldownSec > 0}
           className="!font-semibold !text-indigo-800"
         >
-          {VI.auth.qrLogin.refreshQr}
+          {cooldownSec > 0
+            ? `${VI.auth.qrLogin.refreshQr} (${cooldownSec}s)`
+            : VI.auth.qrLogin.refreshQr}
         </Button>
       </div>
     </div>

@@ -36,6 +36,7 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
   const [status, setStatus] = useState<QrLoginSessionStatus | "IDLE">("IDLE")
   const [expiresAtMs, setExpiresAtMs] = useState(0)
   const [countdownSec, setCountdownSec] = useState(0)
+  const [cooldownSec, setCooldownSec] = useState(0)
   const [sessionError, setSessionError] = useState("")
   const [sessionLoading, setSessionLoading] = useState(false)
   const [isListening, setIsListening] = useState(false)
@@ -86,6 +87,7 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
       setExpiresAtMs(expiresMs)
       setCountdownSec(Math.ceil(SESSION_TTL_MS / 1000))
       setStatus("PENDING")
+      setCooldownSec(60)
     } catch (err) {
       setSessionError(
         extractApiErrorMessage(err, VI.auth.qrLogin.messages.sessionFailed)
@@ -107,6 +109,7 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
       setQrValue("")
       setExpiresAtMs(0)
       setCountdownSec(0)
+      setCooldownSec(0)
       setStatus("IDLE")
       setSessionError("")
       setWsConnectFailed(false)
@@ -143,6 +146,16 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
     const id = setInterval(tick, 1000)
     return () => clearInterval(id)
   }, [active, expiresAtMs, status])
+
+  useEffect(() => {
+    if (cooldownSec <= 0) return
+
+    const timer = setInterval(() => {
+      setCooldownSec((prev) => Math.max(0, prev - 1))
+    }, 1000)
+
+    return () => clearInterval(timer)
+  }, [cooldownSec])
 
   useEffect(() => {
     if (!active || !sessionId || status !== "PENDING") {
@@ -193,5 +206,6 @@ export function useQrLoginSession({ active, onApproved }: UseQrLoginSessionOptio
     isListening,
     wsConnectFailed,
     showWaitHint,
+    cooldownSec,
   }
 }
