@@ -184,7 +184,7 @@ export default function ProviderServiceListPage() {
                 setViewModalOpen(true);
                 openView(record.id);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
             />
           </Tooltip>
           <Tooltip title={VI.common.actions.edit}>

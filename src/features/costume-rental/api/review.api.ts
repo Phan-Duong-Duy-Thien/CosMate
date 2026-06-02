@@ -68,6 +68,9 @@ export interface ReviewItem {
   providerReply?: string | null
   repliedAt?: string | null
   repliedByProviderId?: number | null
+  aiSentiment?: string | null
+  isSpamOrToxic?: boolean | null
+  aiSummary?: string | null
 }
 
 export interface ReplyToReviewPayload {

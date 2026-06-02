@@ -124,18 +124,18 @@ function normalizeProviderReviewDetail(
 }
 
 /**
- * Load full review for dashboard: order endpoint first, then by review id, then list row fallback.
+ * Load full review for dashboard: review id endpoint first, then order endpoint, then list row fallback.
  */
 export async function fetchProviderReviewDetailForDashboard(
   row: ProviderReview,
 ): Promise<ProviderReviewDetailNormalized> {
-  const byOrder = await getReviewByOrderId(row.orderId);
-  if (byOrder) {
-    return normalizeProviderReviewDetail(byOrder, row);
-  }
   const byId = await getProviderReviewByReviewId(row.id);
   if (byId) {
     return normalizeProviderReviewDetail(byId, row);
+  }
+  const byOrder = await getReviewByOrderId(row.orderId);
+  if (byOrder) {
+    return normalizeProviderReviewDetail(byOrder, row);
   }
   return normalizeProviderReviewDetail(row, row);
 }

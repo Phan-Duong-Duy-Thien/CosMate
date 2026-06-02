@@ -3,6 +3,7 @@ import { Input, Table, Tag, Tooltip, Modal, Descriptions, Select, message } from
 import type { TableProps } from 'antd';
 import { SearchOutlined, ReloadOutlined } from '@ant-design/icons';
 import { getCostumes } from '../api/adminCostumes.api';
+import { getPublicShopName } from '@/shared/api/publicDisplayNames.api';
 import { VI } from '@/shared/i18n/vi';
 import { COSTUME_STATUS_FILTER_VALUES, getCostumeStatusTagProps } from '../utils/costumeStatus';
 import { Button as UiButton } from '@/components/ui/button';
@@ -21,6 +22,8 @@ interface CostumeRow {
   category?: string;
   createdAt?: string;
 }
+
+const shopNameCache: Record<number, string> = {};
 
 export default function AdminCostumesPage() {
   const [searchText, setSearchText] = useState('');
@@ -42,7 +45,27 @@ export default function AdminCostumesPage() {
         search: searchText,
         status: statusFilter,
       });
-      setRows(content);
+
+      const resolvedContent = await Promise.all(
+        content.map(async (row: CostumeRow) => {
+          if (!row.providerName && row.providerId) {
+            const pId = row.providerId;
+            if (shopNameCache[pId]) {
+              return { ...row, providerName: shopNameCache[pId] };
+            }
+            try {
+              const shopName = await getPublicShopName(pId);
+              shopNameCache[pId] = shopName;
+              return { ...row, providerName: shopName };
+            } catch {
+              return { ...row, providerName: `Shop #${pId}` };
+            }
+          }
+          return row;
+        })
+      );
+
+      setRows(resolvedContent);
       setTotal(totalElements);
     } catch {
       message.error(VI.admin.costumes.messages.fetchError);

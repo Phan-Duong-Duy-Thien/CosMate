@@ -234,11 +234,11 @@ export function ServicePaymentModal({
               </div>
             )}
             {!isLoadingWallet && !isWalletInsufficient && walletBalance !== null && (
-              <div className="rounded-xl border-[3px] border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4">
-                <p className="text-sm text-green-700">
+              <div className="rounded-xl border-[3px] border-emerald-300 bg-linear-to-r from-emerald-50 to-teal-50/30 p-4">
+                <p className="text-sm text-emerald-600">
                   {VI.wallet.checkoutValidation.payWithWalletNote}
                 </p>
-                <p className="mt-1 text-lg font-bold text-green-700">
+                <p className="mt-1 text-lg font-bold text-emerald-600">
                   {formatCurrency(walletBalance)}
                 </p>
               </div>

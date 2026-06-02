@@ -13,6 +13,9 @@ interface ProviderShopCardProps {
     avatarUrl: string | null
     verified: boolean
     bio?: string | null
+    completedOrders?: number
+    totalRating?: number
+    totalReviews?: number
   }
   onViewShop: () => void
 }
@@ -21,9 +24,9 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
   const { startChat, loading: chatLoading } = useStartChat()
   const shopNameSafe = provider.shopName ?? "Shop"
   const stats = getMockRentalCount(String(provider.id))
-  const rating = stats.rating
-  const totalReviews = stats.totalReviews
-  const totalRentals = stats.totalRentals
+  const rating = provider.totalRating ?? stats.rating
+  const totalReviews = provider.totalReviews ?? stats.totalReviews
+  const totalRentals = provider.completedOrders ?? stats.totalRentals
 
   return (
     <Card className="flex flex-col gap-4 rounded-2xl border-[4px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] to-[#fce7f3] p-4 shadow-[9px_9px_0_0_rgba(30,27,75,0.6)] sm:flex-row sm:items-center">
@@ -50,7 +53,7 @@ export function ProviderShopCard({ provider, onViewShop }: ProviderShopCardProps
           <p className="label-caps text-xs text-indigo-900/65">{VI.costumeRental.detail.ratingLabel}</p>
           <p className="flex items-center gap-1 font-bold text-indigo-950">
             <Star className="h-3 w-3 text-amber-400 fill-amber-400" />
-            {rating.toFixed(1)}/10 <span className="font-normal text-indigo-900/70">({totalReviews} {VI.costumeRental.detail.totalReviews})</span>
+            {rating.toFixed(1)}/5 <span className="font-normal text-indigo-900/70">({totalReviews} {VI.costumeRental.detail.totalReviews})</span>
           </p>
         </div>
       </div>

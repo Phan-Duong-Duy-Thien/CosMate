@@ -3,6 +3,7 @@ import { Star } from 'lucide-react'
 import { Card } from '@/shared/components/Card'
 import { ProviderReplyBlock } from '@/shared/components/ProviderReplyBlock'
 import {
+  getPublicReviewCommentText,
   getReviewReviewerInitial,
   getReviewReviewerName,
   resolveReviewAvatarUrl,
@@ -29,7 +30,7 @@ function formatDate(dateString: string): string {
 }
 
 export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) {
-  const rating10 = (stats.averageRating * 2).toFixed(1)
+  const rating5 = stats.averageRating.toFixed(1)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   const sortedReviews = useMemo(
@@ -53,9 +54,11 @@ export function ShopReviewsSection({ reviews, stats }: ShopReviewsSectionProps) 
       <Card className="rounded-2xl border-[4px] border-indigo-950 bg-[#fffbeb] p-5 shadow-[8px_8px_0_0_rgba(30,27,75,0.5)]">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
           <div className="flex items-center gap-4">
-            <div className="text-center">
-              <p className="text-4xl font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">{rating10}</p>
-              <p className="text-sm font-semibold text-indigo-900/60">/ 10</p>
+            <div className="flex flex-col items-center justify-center">
+              <div className="flex items-baseline gap-0.5 font-extrabold">
+                <span className="text-4xl bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text text-transparent">{rating5}</span>
+                <span className="text-sm text-indigo-900/60">/5</span>
+              </div>
             </div>
             <div>
               <div className="flex text-amber-400">
@@ -166,6 +169,8 @@ function ReviewCard({ review }: { review: ProviderReview }) {
   const displayName = getReviewReviewerName(review, VI.provider.reviews.detailReviewerFallback)
   const avatarUrl = resolveReviewAvatarUrl(review.avatarUrl)
   const initial = getReviewReviewerInitial(displayName)
+  const reviewComment = getPublicReviewCommentText(review)
+  const isHiddenByModeration = review.isSpamOrToxic === true
 
   return (
     <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
@@ -197,7 +202,11 @@ function ReviewCard({ review }: { review: ProviderReview }) {
               />
             ))}
           </div>
-          <p className="mt-2 text-sm font-semibold text-indigo-900/85">{review.comment}</p>
+          <p
+            className={`mt-2 text-sm font-semibold ${isHiddenByModeration ? 'text-rose-700/90 italic' : 'text-indigo-900/85'}`}
+          >
+            {reviewComment}
+          </p>
           {review.images && review.images.length > 0 && (
             <div className="mt-2 flex gap-2">
               {review.images.map((img, idx) => (

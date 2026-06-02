@@ -46,20 +46,21 @@ const { Text } = Typography
 
 function getStatusTagClassName(status: CostumeStatus): string {
   if (status === 'AVAILABLE') {
-    return 'border-cosmate-success/35 bg-cosmate-success/15 text-cosmate-success'
+    return '!border-cosmate-success/35 !bg-cosmate-success/15 !text-cosmate-success'
   }
   if (status === 'RENTED') {
-    return 'border-cosmate-warning/40 bg-cosmate-warning/15 text-cosmate-warning'
+    return '!border-cosmate-warning/40 !bg-cosmate-warning/15 !text-cosmate-warning'
   }
   if (status === 'MAINTENANCE') {
-    return 'border-cosmate-info/35 bg-cosmate-info/15 text-cosmate-info'
+    return '!border-cosmate-info/35 !bg-cosmate-info/15 !text-cosmate-info'
   }
-  return 'border-border bg-muted text-muted-foreground'
+  return '!border-border !bg-muted !text-muted-foreground'
 }
 
 function getStatusLabel(status: CostumeStatus): string {
   if (status === 'AVAILABLE') return 'Có sẵn'
   if (status === 'RENTED') return 'Đang được thuê'
+  if (status === 'MAINTENANCE') return 'Bảo trì'
   return status
 }
 
@@ -345,7 +346,7 @@ export default function ProviderCostumeListPage() {
           <Tooltip title="Xem chi tiết">
             <EyeOutlined
               onClick={() => openDetail(record.id)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
             />
           </Tooltip>
           <Tooltip title="Sửa trang phục">

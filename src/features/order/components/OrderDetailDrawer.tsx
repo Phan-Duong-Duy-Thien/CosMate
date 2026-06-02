@@ -325,7 +325,7 @@ export function OrderDetailDrawer({
           </Tag>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.totalAmount} span={2}>
-          <Text strong type="success">{formatCurrency(orderDetail.totalAmount)}</Text>
+          <Text strong className="text-emerald-600">{formatCurrency(orderDetail.totalAmount)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.createdAt} span={2}>
           {formatDate(orderDetail.createdAt)}
@@ -366,21 +366,21 @@ export function OrderDetailDrawer({
           <Text strong>{formatDate(detail.rentEnd)}</Text>
         </Descriptions.Item>
         <Descriptions.Item label={VI.order.detail.rentAmount} span={2}>
-          <Text strong type="success">{formatCurrency(detail.rentAmount || 0)}</Text>
+          <Text strong className="text-emerald-600">{formatCurrency(detail.rentAmount || 0)}</Text>
         </Descriptions.Item>
         {detail.surchargeAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.surchargeAmount} span={2}>
-            <Text strong type="success">{formatCurrency(detail.surchargeAmount)}</Text>
+            <Text strong className="text-emerald-600">{formatCurrency(detail.surchargeAmount)}</Text>
           </Descriptions.Item>
         )}
         {detail.accessoriesAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.accessoriesAmount} span={2}>
-            <Text strong type="success">{formatCurrency(detail.accessoriesAmount)}</Text>
+            <Text strong className="text-emerald-600">{formatCurrency(detail.accessoriesAmount)}</Text>
           </Descriptions.Item>
         )}
         {!hideRentalOptions && detail.rentOptionAmount > 0 && (
           <Descriptions.Item label={VI.order.detail.rentOptionAmount} span={2}>
-            <Text strong type="success">{formatCurrency(detail.rentOptionAmount)}</Text>
+            <Text strong className="text-emerald-600">{formatCurrency(detail.rentOptionAmount)}</Text>
           </Descriptions.Item>
         )}
       </Descriptions>
@@ -805,7 +805,7 @@ export function OrderDetailDrawer({
               {extendDetail.extendDays} {VI.order.extend.daysSuffix}
             </Descriptions.Item>
             <Descriptions.Item label={VI.order.extend.extendPrice}>
-              <Typography.Text type="success">{formatCurrency(extendDetail.extendPrice)}</Typography.Text>
+              <Typography.Text className="text-emerald-600 font-semibold">{formatCurrency(extendDetail.extendPrice)}</Typography.Text>
             </Descriptions.Item>
             <Descriptions.Item label={VI.order.extend.paymentStatus}>
               <Tag color={getExtendPaymentColor(extendDetail.paymentStatus)}>

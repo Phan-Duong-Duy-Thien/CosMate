@@ -65,8 +65,13 @@ export default function ShopProfilePage() {
   return (
     <section className={shellClass}>
       <div className="space-y-6">
-        {/* Shop Hero */}
-        <ShopProfileHero shop={shop} onChat={handleChat} chatLoading={chatLoading} />
+        <ShopProfileHero
+          shop={shop}
+          onChat={handleChat}
+          chatLoading={chatLoading}
+          averageRating={stats.averageRating}
+          totalReviews={stats.totalReviews}
+        />
 
         {/* Policies Section */}
         <ShopPoliciesSection providerId={providerIdNum} />

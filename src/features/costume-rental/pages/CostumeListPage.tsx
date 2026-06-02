@@ -1,5 +1,5 @@
 import * as React from "react"
-import { useNavigate }from "react-router-dom"
+import { useNavigate, useSearchParams } from "react-router-dom"
 
 import type { CostumeItem, FilterState, RegionKey, SortKey } from "../types"
 import { usePublicCostumes } from "../hooks/usePublicCostumes"
@@ -38,13 +38,40 @@ const initialFilters: FilterState = {
 
 export default function CostumeListPage() {
   const tokenGate = useAiTokenGate({ feature: "cosplayer.searchImage" })
-  const [filters, setFilters] = React.useState<FilterState>(initialFilters)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const urlKeyword = searchParams.get("keyword") || ""
+
+  const [filters, setFilters] = React.useState<FilterState>(() => ({
+    ...initialFilters,
+    keyword: urlKeyword,
+  }))
   const [sortKey, setSortKey] = React.useState<SortKey>("relevance")
   const [currentPage, setCurrentPage] = React.useState(1)
   const [heroVisible, setHeroVisible] = React.useState(false)
   const [aiResults, setAiResults] = React.useState<AISearchResultItem[] | null>(null)
   const [wishlistTogglingId, setWishlistTogglingId] = React.useState<number | null>(null)
   const navigate = useNavigate()
+
+  // Sync URL query param to filters keyword state
+  React.useEffect(() => {
+    if (urlKeyword !== filters.keyword) {
+      setFilters((prev) => ({ ...prev, keyword: urlKeyword }))
+    }
+  }, [urlKeyword])
+
+  // Sync filters keyword state back to URL query param
+  React.useEffect(() => {
+    const currentParam = searchParams.get("keyword") || ""
+    if (filters.keyword !== currentParam) {
+      const nextParams = new URLSearchParams(searchParams)
+      if (filters.keyword) {
+        nextParams.set("keyword", filters.keyword)
+      } else {
+        nextParams.delete("keyword")
+      }
+      setSearchParams(nextParams, { replace: true })
+    }
+  }, [filters.keyword, searchParams, setSearchParams])
 
   const { items: allItems, isLoading, error, refetch }= usePublicCostumes()
   const { isInWishlist, addToWishlist, removeFromWishlist, wishlistItems } = useWishlist()

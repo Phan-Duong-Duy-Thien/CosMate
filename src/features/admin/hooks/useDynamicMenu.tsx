@@ -10,6 +10,7 @@ import {
   CreditCard,
   Coins,
   Settings,
+  Star,
 } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
@@ -56,6 +57,7 @@ const getIconComponent = (iconName?: string): LucideIcon => {
 
 const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
   { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} />, type: 'core' },
+  { key: '/admin/reviews', label: 'Duyệt đánh giá', path: '/admin/reviews', icon: <Star size={16} />, type: 'core' },
   { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} />, type: 'core' },
 ];
 

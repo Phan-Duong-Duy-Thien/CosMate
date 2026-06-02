@@ -281,9 +281,50 @@ export const VI = {
       dashboard: "Bảng điều khiển",
       users: "Quản lý người dùng",
       bookings: "Đơn đặt / Đơn hàng",
+      reviews: "Duyệt đánh giá",
       costumes: "Trang phục / Cho thuê",
       reports: "Báo cáo",
       settings: "Cài đặt",
+    },
+
+    reviews: {
+      title: "Kiểm duyệt đánh giá",
+      filters: {
+        searchPlaceholder: "Tìm theo ID, đơn hàng, người đánh giá, nội dung, tóm tắt AI...",
+        all: "Tất cả",
+        toxic: "Vi phạm",
+        safe: "An toàn",
+      },
+      columns: {
+        id: "ID",
+        orderId: "Đơn hàng",
+        reviewer: "Người đánh giá",
+        rating: "Sao",
+        comment: "Nội dung",
+        aiSummary: "Tóm tắt AI",
+        sentiment: "Cảm xúc",
+        status: "Trạng thái",
+        createdAt: "Thời gian",
+        actions: "Thao tác",
+      },
+      status: {
+        toxic: "Vi phạm",
+        safe: "An toàn",
+      },
+      actions: {
+        hide: "Ẩn",
+        restore: "Khôi phục",
+        processing: "Đang xử lý...",
+        refresh: "Làm mới",
+      },
+      messages: {
+        hideSuccess: "Đã ẩn đánh giá",
+        restoreSuccess: "Đã khôi phục đánh giá",
+        toggleError: "Không thể cập nhật trạng thái kiểm duyệt",
+      },
+      pagination: {
+        total: "đánh giá",
+      },
     },
 
     users: {
@@ -2937,6 +2978,7 @@ export const VI = {
       aiTokenPlans: "Gói AI Token",
       aiTokenPurchases: "Lịch sử mua token",
       orders: "Đơn hàng",
+      reviews: "Duyệt đánh giá",
       customers: "Khách hàng",
       reports: "Báo cáo",
       messages: "Tin nhắn",

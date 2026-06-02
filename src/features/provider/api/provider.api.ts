@@ -105,6 +105,9 @@ export interface ProviderReview {
   providerReply?: string | null;
   repliedAt?: string | null;
   repliedByProviderId?: number | null;
+  aiSentiment?: string | null;
+  isSpamOrToxic?: boolean | null;
+  aiSummary?: string | null;
 }
 
 /** Detail payload (GET by id) — may include reviewer fields from backend */
