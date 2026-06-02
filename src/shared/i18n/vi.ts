@@ -1785,6 +1785,7 @@ export const VI = {
       invalidRentStart: "Ngày bắt đầu thuê không hợp lệ",
       rentStartTooSoon:
         "Ngày thuê phải cách ngày hiện tại tối thiểu 3 ngày để shop chuẩn bị và đơn vị vận chuyển giao hàng.",
+      rentStartTooFar: "Ngày bắt đầu thuê không được vượt quá 60 ngày kể từ ngày hiện tại.",
       invalidRentDay: "Số ngày thuê phải lớn hơn 0",
     },
 

@@ -484,7 +484,12 @@ export default function ProviderMessagesPage() {
                 value={bookingDate}
                 onChange={(date) => setBookingDate(date)}
                 format="DD/MM/YYYY"
-                disabledDate={(current) => current && current < dayjs().add(1, 'day').startOf('day')}
+                disabledDate={(current) => {
+                  return current && (
+                    current < dayjs().add(1, 'day').startOf('day') ||
+                    current > dayjs().add(60, 'day').endOf('day')
+                  );
+                }}
                 placeholder="Chọn ngày đặt lịch"
               />
             </Form.Item>

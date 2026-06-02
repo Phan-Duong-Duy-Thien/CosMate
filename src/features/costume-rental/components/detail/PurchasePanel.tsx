@@ -8,6 +8,7 @@ import { PriceBreakdownCard } from "./PriceBreakdownCard"
 import { VI } from "@/shared/i18n/vi"
 import {
   getMinRentStartDateString,
+  getMaxRentStartDateString,
   getRentStartDateValidationError,
 } from "../../utils/rentDateValidation"
 
@@ -36,6 +37,7 @@ export const PurchasePanel = ({
 }: PurchasePanelProps) => {
   const [startDateError, setStartDateError] = useState<string | undefined>()
   const minDate = getMinRentStartDateString()
+  const maxDate = getMaxRentStartDateString()
   const hasAccessories = (costume.accessories ?? []).length > 0
   const hasSurcharges = (costume.surcharges ?? []).length > 0
   const isRented = costume.status === 'RENTED'
@@ -73,6 +75,7 @@ export const PurchasePanel = ({
               type="date"
               value={startDate}
               min={minDate}
+              max={maxDate}
               disabled={isRented}
               onChange={(e) => {
                 const next = e.target.value
