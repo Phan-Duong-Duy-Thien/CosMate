@@ -3,9 +3,11 @@ import axiosInstance from '@/services/axiosInstance';
 export interface CancellationPolicy {
   id?: number;
   providerId?: number;
-  minHour: number;
-  maxHour: number;
-  refundPercentage: number;
+  minHoursBefore: number;
+  maxHoursBefore: number;
+  penaltyType: string; // "PERCENT" | "FIXED" | "NONE"
+  penaltyValue: number;
+  description: string;
 }
 
 interface ApiResponse<T> {
@@ -29,7 +31,7 @@ export async function createCancellationPolicy(payload: CancellationPolicy): Pro
   return response.data.result;
 }
 
-export async function updateCancellationPolicy(id: number, payload: CancellationPolicy): Promise<CancellationPolicy> {
+export async function updateCancellationPolicy(id: number, payload: Partial<CancellationPolicy>): Promise<CancellationPolicy> {
   const response = await axiosInstance.put<ApiResponse<CancellationPolicy>>(
     `/api/providers/cancellation-policies/${id}`,
     payload

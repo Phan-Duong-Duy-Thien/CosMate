@@ -15,7 +15,7 @@ import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } 
 import { VI } from '@/shared/i18n/vi';
 import { useProviderProfileCompletion } from '../hooks/useProviderProfileCompletion';
 import { useProviderVerification } from '../hooks/useProviderVerification';
-import { createCancellationPolicy, type CancellationPolicy } from '../api/cancellationPolicy.api';
+import { getCancellationPolicies, deleteCancellationPolicy, createCancellationPolicy, type CancellationPolicy } from '../api/cancellationPolicy.api';
 import { Trash2, Plus } from 'lucide-react';
 
 const { Title, Paragraph, Text } = Typography;
@@ -25,6 +25,7 @@ export default function ProviderProfileCompletionPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const { profile, refetch, loading: profileLoading } = useProviderVerification();
+  const providerId = profile?.id;
 
   // Determine which home page to navigate to based on current route
   const homePath = location.pathname.startsWith('/provider-photograph')
@@ -122,8 +123,8 @@ export default function ProviderProfileCompletionPage() {
   };
 
   const [policies, setPolicies] = useState<CancellationPolicy[]>([
-    { minHour: 0, maxHour: 24, refundPercentage: 0 },
-    { minHour: 24, maxHour: 72, refundPercentage: 50 }
+    { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 100, description: '' },
+    { minHoursBefore: 24, maxHoursBefore: 72, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }
   ]);
   const [savingPolicies, setSavingPolicies] = useState(false);
 
@@ -144,12 +145,29 @@ export default function ProviderProfileCompletionPage() {
     }
     setSavingPolicies(true);
     try {
+      // 1. Fetch any existing policies for this provider and clean them up
+      try {
+        const existing = await getCancellationPolicies(providerId);
+        if (existing && existing.length > 0) {
+          for (const p of existing) {
+            if (p.id) {
+              await deleteCancellationPolicy(p.id);
+            }
+          }
+        }
+      } catch (err) {
+        console.warn('Failed to clean up existing policies:', err);
+      }
+
+      // 2. Create the new policies
       for (const policy of policies) {
         await createCancellationPolicy({
           providerId,
-          minHour: Number(policy.minHour),
-          maxHour: Number(policy.maxHour),
-          refundPercentage: Number(policy.refundPercentage),
+          minHoursBefore: Number(policy.minHoursBefore),
+          maxHoursBefore: Number(policy.maxHoursBefore),
+          penaltyType: 'PERCENT',
+          penaltyValue: Number(policy.penaltyValue),
+          description: `Hủy trước từ ${policy.minHoursBefore}h đến ${policy.maxHoursBefore}h: Phạt ${policy.penaltyValue}%`,
         });
       }
       message.success('Thiết lập chính sách hủy hàng thành công!');
@@ -695,12 +713,12 @@ export default function ProviderProfileCompletionPage() {
                     <Form.Item label={idx === 0 ? "Hủy từ (Giờ)" : ""} style={{ marginBottom: 0 }}>
                       <InputNumber
                         min={0}
-                        value={policy.minHour}
+                        value={policy.minHoursBefore}
                         placeholder="Từ (giờ)"
                         style={{ width: '100%' }}
                         onChange={(val) => {
                           const next = [...policies];
-                          next[idx].minHour = val ?? 0;
+                          next[idx].minHoursBefore = val ?? 0;
                           setPolicies(next);
                         }}
                       />
@@ -710,29 +728,29 @@ export default function ProviderProfileCompletionPage() {
                     <Form.Item label={idx === 0 ? "Hủy đến (Giờ)" : ""} style={{ marginBottom: 0 }}>
                       <InputNumber
                         min={0}
-                        value={policy.maxHour}
+                        value={policy.maxHoursBefore}
                         placeholder="Đến (giờ)"
                         style={{ width: '100%' }}
                         onChange={(val) => {
                           const next = [...policies];
-                          next[idx].maxHour = val ?? 0;
+                          next[idx].maxHoursBefore = val ?? 0;
                           setPolicies(next);
                         }}
                       />
                     </Form.Item>
                   </Col>
                   <Col xs={8}>
-                    <Form.Item label={idx === 0 ? "Hoàn trả (%)" : ""} style={{ marginBottom: 0 }}>
+                    <Form.Item label={idx === 0 ? "Phạt (%)" : ""} style={{ marginBottom: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
                         <InputNumber
                           min={0}
                           max={100}
-                          value={policy.refundPercentage}
-                          placeholder="Hoàn trả (%)"
+                          value={policy.penaltyValue}
+                          placeholder="Phạt (%)"
                           style={{ width: '70%' }}
                           onChange={(val) => {
                             const next = [...policies];
-                            next[idx].refundPercentage = val ?? 0;
+                            next[idx].penaltyValue = val ?? 0;
                             setPolicies(next);
                           }}
                         />
@@ -755,13 +773,14 @@ export default function ProviderProfileCompletionPage() {
 
               <Button
                 type="dashed"
-                onClick={() => setPolicies([...policies, { minHour: 0, maxHour: 24, refundPercentage: 0 }])}
+                onClick={() => setPolicies([...policies, { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }])}
                 icon={<Plus size={14} />}
                 style={{ width: '100%', marginTop: 12 }}
               >
                 Thêm quy định hủy hàng
               </Button>
             </div>
+
 
             <div style={{ marginTop: 24, display: 'flex', gap: 8, justifyContent: 'space-between' }}>
               <Button onClick={() => setCurrentPhase(1)}>

@@ -110,10 +110,10 @@ export function ShopPoliciesSection({ providerId }: ShopPoliciesSectionProps) {
                     className="rounded-xl border-[3px] border-indigo-950 bg-white p-4 shadow-[4px_4px_0_0_rgba(30,27,75,0.25)]"
                   >
                     <h4 className="mb-2 font-extrabold text-indigo-950">
-                      Hủy trước từ {p.minHour}h đến {p.maxHour}h
+                      Hủy trước từ {p.minHoursBefore}h đến {p.maxHoursBefore}h
                     </h4>
                     <p className="text-sm font-bold text-pink-600">
-                      Hoàn trả {p.refundPercentage}% số tiền
+                      Hoàn trả {100 - p.penaltyValue}% số tiền
                     </p>
                   </div>
                 ))}

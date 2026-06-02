@@ -85,12 +85,25 @@ export default function ProviderProfileEditPage() {
   const handleSavePolicyRow = async (idx: number) => {
     const policy = policies[idx];
     if (!profile?.id) return;
+    const payload = {
+      providerId: profile.id,
+      minHoursBefore: Number(policy.minHoursBefore),
+      maxHoursBefore: Number(policy.maxHoursBefore),
+      penaltyType: 'PERCENT',
+      penaltyValue: Number(policy.penaltyValue),
+      description: `Hủy trước từ ${policy.minHoursBefore}h đến ${policy.maxHoursBefore}h: Phạt ${policy.penaltyValue}%`,
+    };
     try {
       if (policy.id) {
-        await updateCancellationPolicy(policy.id, policy);
+        // Delete old and create new to allow editing hour ranges
+        await deleteCancellationPolicy(policy.id);
+        const created = await createCancellationPolicy(payload);
+        const next = [...policies];
+        next[idx] = created;
+        setPolicies(next);
         message.success('Cập nhật quy định thành công!');
       } else {
-        const created = await createCancellationPolicy({ ...policy, providerId: profile.id });
+        const created = await createCancellationPolicy(payload);
         const next = [...policies];
         next[idx] = created;
         setPolicies(next);
@@ -619,12 +632,12 @@ export default function ProviderProfileEditPage() {
                             <Form.Item label={idx === 0 ? "Hủy từ (Giờ)" : ""} style={{ marginBottom: 0 }}>
                               <InputNumber
                                 min={0}
-                                value={policy.minHour}
+                                value={policy.minHoursBefore}
                                 placeholder="Từ (giờ)"
                                 style={{ width: '100%' }}
                                 onChange={(val) => {
                                   const next = [...policies];
-                                  next[idx].minHour = val ?? 0;
+                                  next[idx].minHoursBefore = val ?? 0;
                                   setPolicies(next);
                                 }}
                               />
@@ -634,28 +647,28 @@ export default function ProviderProfileEditPage() {
                             <Form.Item label={idx === 0 ? "Hủy đến (Giờ)" : ""} style={{ marginBottom: 0 }}>
                               <InputNumber
                                 min={0}
-                                value={policy.maxHour}
+                                value={policy.maxHoursBefore}
                                 placeholder="Đến (giờ)"
                                 style={{ width: '100%' }}
                                 onChange={(val) => {
                                   const next = [...policies];
-                                  next[idx].maxHour = val ?? 0;
+                                  next[idx].maxHoursBefore = val ?? 0;
                                   setPolicies(next);
                                 }}
                               />
                             </Form.Item>
                           </Col>
                           <Col xs={6}>
-                            <Form.Item label={idx === 0 ? "Hoàn trả (%)" : ""} style={{ marginBottom: 0 }}>
+                            <Form.Item label={idx === 0 ? "Phạt (%)" : ""} style={{ marginBottom: 0 }}>
                               <InputNumber
                                 min={0}
                                 max={100}
-                                value={policy.refundPercentage}
-                                placeholder="Hoàn trả (%)"
+                                value={policy.penaltyValue}
+                                placeholder="Phạt (%)"
                                 style={{ width: '100%' }}
                                 onChange={(val) => {
                                   const next = [...policies];
-                                  next[idx].refundPercentage = val ?? 0;
+                                  next[idx].penaltyValue = val ?? 0;
                                   setPolicies(next);
                                 }}
                               />
@@ -692,7 +705,7 @@ export default function ProviderProfileEditPage() {
 
                       <Button
                         type="dashed"
-                        onClick={() => setPolicies([...policies, { minHour: 0, maxHour: 24, refundPercentage: 0 }])}
+                        onClick={() => setPolicies([...policies, { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }])}
                         icon={<Plus size={14} />}
                         style={{ width: '100%', marginTop: 12 }}
                       >

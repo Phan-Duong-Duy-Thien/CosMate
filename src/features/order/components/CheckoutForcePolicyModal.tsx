@@ -114,10 +114,10 @@ export function CheckoutForcePolicyModal({ open, providerId, onAccept }: Checkou
                   {shopPolicies.map((p, idx) => (
                     <div key={idx} className="bg-white p-3 rounded-xl border-2 border-indigo-950/10 shadow-[3px_3px_0_0_rgba(30,27,75,0.05)]">
                       <p className="text-xs font-bold text-indigo-950">
-                        Hủy trước từ {p.minHour}h đến {p.maxHour}h
+                        Hủy trước từ {p.minHoursBefore}h đến {p.maxHoursBefore}h
                       </p>
                       <p className="text-xs font-extrabold text-pink-600 mt-0.5">
-                        Hoàn trả {p.refundPercentage}% số tiền
+                        Hoàn trả {100 - p.penaltyValue}% số tiền
                       </p>
                     </div>
                   ))}
