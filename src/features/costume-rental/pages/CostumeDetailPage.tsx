@@ -49,6 +49,7 @@ export default function CostumeDetailPage() {
   // Modal state for "no address" confirmation
   const [showNoAddressModal, setShowNoAddressModal] = React.useState(false)
   const [showVtoModal, setShowVtoModal] = React.useState(false)
+  const [activeImageUrl, setActiveImageUrl] = React.useState<string>("")
 
   // Validation error popup state
   const [validationError, setValidationError] = React.useState<string | null>(null)
@@ -277,6 +278,7 @@ export default function CostumeDetailPage() {
             isWishlisted={isCostumeWishlisted}
             onToggleWishlist={handleToggleWishlist}
             wishlistLoading={wishlistToggling}
+            onActiveImageChange={setActiveImageUrl}
           />
           <div className="lg:sticky lg:top-[84px] lg:self-start">
             <PurchasePanel
@@ -446,7 +448,8 @@ export default function CostumeDetailPage() {
           onOpenChange={setShowVtoModal}
           costumeId={Number(costume.id)}
           costumeName={costume.name}
-          costumeImageUrl={resolvedImages[0]?.imageUrl}
+          costumeImages={resolvedImages.map((url, idx) => ({ id: idx, imageUrl: url }))}
+          garmentImageUrl={activeImageUrl || resolvedImages[0] || ""}
         />
       </div>
     </section>

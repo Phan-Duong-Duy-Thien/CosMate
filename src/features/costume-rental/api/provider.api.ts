@@ -15,9 +15,18 @@ export type ProviderDto = ProviderProfile & {
   bankName: string | null
 }
 
+const providerCache: Record<number, ProviderDto> = {}
+
 export async function getProviderById(providerId: number): Promise<ProviderDto> {
+  if (providerCache[providerId]) {
+    return providerCache[providerId]
+  }
   const res = await axiosInstance.get<ApiResponse<ProviderDto>>(
     `/api/providers/id/${providerId}`
   )
-  return res.data.result
+  const provider = res.data.result
+  if (provider) {
+    providerCache[providerId] = provider
+  }
+  return provider
 }

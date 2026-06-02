@@ -22,6 +22,7 @@ interface MediaGalleryProps {
   isWishlisted?: boolean
   onToggleWishlist?: () => void
   wishlistLoading?: boolean
+  onActiveImageChange?: (url: string) => void
 }
 
 export const MediaGallery = ({
@@ -35,6 +36,7 @@ export const MediaGallery = ({
   isWishlisted = false,
   onToggleWishlist,
   wishlistLoading = false,
+  onActiveImageChange,
 }: MediaGalleryProps) => {
   const mediaItems = React.useMemo<MediaItem[]>(() => {
     const items = images.map((url, index) => ({
@@ -54,6 +56,12 @@ export const MediaGallery = ({
   React.useEffect(() => {
     if (mediaItems[0]?.id) setActiveId(mediaItems[0].id)
   }, [mediaItems])
+
+  React.useEffect(() => {
+    if (activeItem && activeItem.type === "image" && onActiveImageChange) {
+      onActiveImageChange(activeItem.url)
+    }
+  }, [activeItem, onActiveImageChange])
 
   return (
     <div className="space-y-4">

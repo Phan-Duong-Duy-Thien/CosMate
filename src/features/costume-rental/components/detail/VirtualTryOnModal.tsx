@@ -1,15 +1,17 @@
 import * as React from "react"
 import { Loader2, Sparkles, UploadCloud, X, Download, Image, Camera, AlertCircle } from "lucide-react"
-import { notification } from "antd"
+import { App } from "antd"
 import axiosInstance from "@/services/axiosInstance"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
+import { useUserProfile } from "@/features/profile/hooks/useUserProfile"
 
 interface VirtualTryOnModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   costumeId: number
   costumeName: string
-  costumeImageUrl?: string
+  costumeImages?: { id: number; imageUrl: string }[]
+  garmentImageUrl: string
 }
 
 export function VirtualTryOnModal({
@@ -17,12 +19,23 @@ export function VirtualTryOnModal({
   onOpenChange,
   costumeId,
   costumeName,
-  costumeImageUrl,
+  costumeImages = [],
+  garmentImageUrl,
 }: VirtualTryOnModalProps) {
+  const { notification } = App.useApp()
+  const { profile } = useUserProfile()
+  const userTokens = profile?.numberOfToken ?? 0
+
+  const [selectedGarmentUrl, setSelectedGarmentUrl] = React.useState(garmentImageUrl)
   const [personImage, setPersonImage] = React.useState<File | null>(null)
   const [imagePreview, setImagePreview] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(false)
   const [resultUrl, setResultUrl] = React.useState<string | null>(null)
+
+  // Reset selected image on prop change
+  React.useEffect(() => {
+    setSelectedGarmentUrl(garmentImageUrl)
+  }, [garmentImageUrl])
   const fileInputRef = React.useRef<HTMLInputElement>(null)
   const cameraInputRef = React.useRef<HTMLInputElement>(null)
 
@@ -57,7 +70,7 @@ export function VirtualTryOnModal({
         setImagePreview(URL.createObjectURL(file))
       } else {
         notification.error({
-          message: "Sai định dạng file",
+          title: "Sai định dạng file",
           description: "Vui lòng chỉ chọn hình ảnh chụp người dùng!",
           placement: "topRight",
         })
@@ -76,7 +89,7 @@ export function VirtualTryOnModal({
   const handleStartVTO = async () => {
     if (!personImage) {
       notification.warning({
-        message: "Chưa chọn ảnh",
+        title: "Chưa chọn ảnh",
         description: "Vui lòng chọn hoặc chụp ảnh cá nhân của bạn trước!",
         placement: "topRight",
       })
@@ -88,6 +101,7 @@ export function VirtualTryOnModal({
     const formData = new FormData()
     formData.append("costumeId", costumeId.toString())
     formData.append("personImage", personImage)
+    formData.append("garmentImageUrl", selectedGarmentUrl)
 
     try {
       const response = await axiosInstance.post("/api/search/vto", formData, {
@@ -101,18 +115,19 @@ export function VirtualTryOnModal({
       if (result) {
         setResultUrl(result)
         notification.success({
-          message: "Thành công!",
+          title: "Thành công!",
           description: "Bé Mèo đã hoàn thành việc ghép trang phục cho bạn!",
           placement: "topRight",
         })
       } else {
         throw new Error("Không lấy được kết quả từ Backend")
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("VTO error:", error)
+      const errorMsg = error.response?.data?.message || error.message || "AI đang bận hoặc quá tải, vui lòng thử lại sau!"
       notification.error({
-        message: "Thử đồ thất bại",
-        description: "AI đang bận hoặc quá tải, vui lòng thử lại sau!",
+        title: "Thử đồ thất bại",
+        description: errorMsg,
         placement: "topRight",
       })
     } finally {
@@ -125,7 +140,7 @@ export function VirtualTryOnModal({
 
     try {
       notification.info({
-        message: "Đang tải ảnh",
+        title: "Đang tải ảnh",
         description: "Vui lòng đợi giây lát...",
         placement: "topRight",
         duration: 2,
@@ -242,15 +257,42 @@ export function VirtualTryOnModal({
                 {/* Costume display */}
                 <div className="flex flex-col items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-white p-3 shadow-[5px_5px_0_0_rgba(30,27,75,0.25)]">
                   <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-950/60 mb-2">Trang phục thử</span>
-                  <div className="h-44 w-36 overflow-hidden rounded-xl border-2 border-indigo-950/20 bg-slate-50">
-                    {costumeImageUrl ? (
-                      <img src={costumeImageUrl} alt={costumeName} className="h-full w-full object-cover" />
+                  <div className="h-44 w-36 overflow-hidden rounded-xl border-2 border-indigo-950/20 bg-slate-50 flex items-center justify-center">
+                    {selectedGarmentUrl ? (
+                      <img src={selectedGarmentUrl} alt={costumeName} className="h-full w-full object-contain rounded-lg" />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center text-slate-400">
                         <Image className="h-10 w-10" />
                       </div>
                     )}
                   </div>
+                  
+                  {/* Thumbnail list */}
+                  {costumeImages && costumeImages.length > 0 && (
+                    <div className="mt-2.5 flex flex-wrap gap-1.5 justify-center max-w-[170px] overflow-y-auto py-0.5 max-h-[85px]">
+                      {costumeImages.map((img) => {
+                        const isSelected = img.imageUrl === selectedGarmentUrl;
+                        return (
+                          <button
+                            key={img.id}
+                            type="button"
+                            onClick={() => setSelectedGarmentUrl(img.imageUrl)}
+                            className={`h-9 w-9 overflow-hidden rounded-lg border-2 bg-slate-100 p-0.5 transition ${
+                              isSelected
+                                ? "border-pink-500 scale-105 ring-2 ring-pink-300"
+                                : "border-indigo-950/20 hover:border-indigo-950/60"
+                            }`}
+                          >
+                            <img
+                              src={img.imageUrl}
+                              alt={`garment-${img.id}`}
+                              className="h-full w-full object-cover rounded-md"
+                            />
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                   <span className="mt-2 text-center text-xs font-bold text-indigo-950 line-clamp-1 px-2">{costumeName}</span>
                 </div>
 
@@ -337,19 +379,26 @@ export function VirtualTryOnModal({
               </div>
 
               {/* Start Button */}
-              <button
-                type="button"
-                disabled={!personImage}
-                onClick={handleStartVTO}
-                className={`mt-4 flex w-full items-center justify-center gap-2 rounded-2xl border-[3.5px] border-indigo-950 py-3 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition ${
-                  personImage
-                    ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b]"
-                    : "bg-slate-400 border-slate-500 text-slate-200 cursor-not-allowed shadow-none"
-                }`}
-              >
-                <Sparkles className="h-4 w-4" />
-                <span>Bắt đầu thử đồ</span>
-              </button>
+              <div className="flex flex-col items-center gap-2 mt-4">
+                <button
+                  type="button"
+                  disabled={!personImage}
+                  onClick={handleStartVTO}
+                  className={`flex w-full items-center justify-center gap-2 rounded-2xl border-[3.5px] border-indigo-950 py-3 text-sm font-extrabold text-white shadow-[6px_6px_0_0_#1e1b4b] transition ${
+                    personImage
+                      ? "bg-gradient-to-r from-pink-500 via-fuchsia-500 to-violet-600 hover:brightness-110 active:translate-x-[2px] active:translate-y-[2px] active:shadow-[4px_4px_0_0_#1e1b4b]"
+                      : "bg-slate-400 border-slate-500 text-slate-200 cursor-not-allowed shadow-none"
+                  }`}
+                >
+                  <Sparkles className="h-4 w-4" />
+                  <span>🪄 Bắt đầu thử đồ (-50 Token)</span>
+                </button>
+                {profile !== null && (
+                  <span className="text-[11px] font-bold text-indigo-900/60">
+                    Bạn đang có {userTokens} Token
+                  </span>
+                )}
+              </div>
             </div>
           )}
         </div>

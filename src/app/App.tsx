@@ -3,7 +3,7 @@ import { ChatPopupProvider } from "@/features/chat/components/ChatPopupContext"
 import { ChatPopup } from "@/features/chat/components/ChatPopup"
 import { ScrollToTopFab } from "@/shared/components/ScrollToTopFab"
 import { StyleProvider } from "@ant-design/cssinjs"
-import { ConfigProvider } from "antd"
+import { ConfigProvider, App as AntdApp } from "antd"
 import type { FormProps } from "antd"
 
 /** Dấu * bắt buộc hiển thị sau nhãn, thống nhất toàn app (antd Form). */
@@ -30,9 +30,11 @@ export default function App() {
         }}
       >
         <ChatPopupProvider>
-          <AppRoutes />
-          <ChatPopup />
-          <ScrollToTopFab />
+          <AntdApp>
+            <AppRoutes />
+            <ChatPopup />
+            <ScrollToTopFab />
+          </AntdApp>
         </ChatPopupProvider>
       </ConfigProvider>
     </StyleProvider>
