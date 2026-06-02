@@ -27,6 +27,7 @@ export function VirtualTryOnModal({
   const userTokens = profile?.numberOfToken ?? 0
 
   const [selectedGarmentUrl, setSelectedGarmentUrl] = React.useState(garmentImageUrl)
+  const [aiProvider, setAiProvider] = React.useState("FAL")
   const [personImage, setPersonImage] = React.useState<File | null>(null)
   const [imagePreview, setImagePreview] = React.useState<string | null>(null)
   const [loading, setLoading] = React.useState(false)
@@ -46,6 +47,7 @@ export function VirtualTryOnModal({
       setImagePreview(null)
       setResultUrl(null)
       setLoading(false)
+      setAiProvider("FAL")
     }
   }, [open])
 
@@ -102,12 +104,14 @@ export function VirtualTryOnModal({
     formData.append("costumeId", costumeId.toString())
     formData.append("personImage", personImage)
     formData.append("garmentImageUrl", selectedGarmentUrl)
+    formData.append("provider", aiProvider)
 
     try {
       const response = await axiosInstance.post("/api/search/vto", formData, {
         headers: {
           "Content-Type": "multipart/form-data",
         },
+        timeout: 300000, // 5 minutes timeout for AI VTO generation
       })
 
       // Assuming API returns standard ApiResponse structure with result field
@@ -184,15 +188,22 @@ export function VirtualTryOnModal({
         <div className="mt-6">
           {/* STEP 2: Loading State */}
           {loading && (
-            <div className="flex flex-col items-center justify-center py-10 text-center">
-              <div className="relative flex h-24 w-24 items-center justify-center rounded-3xl border-[4px] border-indigo-950 bg-gradient-to-tr from-pink-300 via-fuchsia-200 to-indigo-300 shadow-[6px_6px_0_0_#1e1b4b] animate-bounce">
-                <Loader2 className="h-12 w-12 animate-spin text-indigo-950" />
+            <div className="flex flex-col items-center justify-center py-6 text-center">
+              <div className="w-full max-w-[360px] overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-white shadow-[6px_6px_0_0_#1e1b4b] aspect-[1760/990] mb-6">
+                <video
+                  src={new URL("../../../../assets/video-mascot-virtual.mp4", import.meta.url).href}
+                  autoPlay
+                  loop
+                  muted
+                  playsInline
+                  className="block h-full w-full rounded-[inherit] object-cover"
+                />
               </div>
-              <h3 className="mt-8 text-base font-extrabold text-indigo-950 px-4">
+              <h3 className="text-base font-extrabold text-indigo-950 px-4">
                 Bé Mèo đang cắt may trang phục cho bạn...
               </h3>
               <p className="mt-2 text-xs font-bold text-indigo-900/75 max-w-md px-6 leading-relaxed">
-                Quá trình này mất khoảng 5 - 10 giây, vui lòng chờ nhé!
+                Quá trình này sử dụng AI hiệu năng cao nên cần một chút thời gian, vui lòng chờ trong giây lát nhé! ฅ^•ﻌ•^ฅ
               </p>
               
               {/* Retro progress indicator */}
@@ -375,6 +386,50 @@ export function VirtualTryOnModal({
                     capture="user"
                     className="hidden"
                   />
+                </div>
+              </div>
+
+              {/* AI Model Selector */}
+              <div className="rounded-2xl border-[3px] border-indigo-950 bg-white p-3.5 shadow-[4px_4px_0_0_rgba(30,27,75,0.25)]">
+                <span className="text-[11px] font-extrabold uppercase tracking-wider text-indigo-950/60 block mb-2.5">
+                  🤖 Chọn AI Model ghép đồ:
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <button
+                    key="fal-provider"
+                    type="button"
+                    onClick={() => setAiProvider("FAL")}
+                    className={`flex flex-col items-start gap-1 rounded-xl border-2 p-2.5 text-left transition ${
+                      aiProvider === "FAL"
+                        ? "border-pink-500 bg-pink-50/50 ring-2 ring-pink-300"
+                        : "border-indigo-950/20 bg-slate-50 hover:border-indigo-950/50"
+                    }`}
+                  >
+                    <span className="text-xs font-extrabold text-indigo-950">
+                      Fal.ai IDM-VTON
+                    </span>
+                    <span className="text-[10px] font-bold text-pink-600">
+                      Chất lượng cao - 50 Token
+                    </span>
+                  </button>
+
+                  <button
+                    key="tryon-provider"
+                    type="button"
+                    onClick={() => setAiProvider("TRYON")}
+                    className={`flex flex-col items-start gap-1 rounded-xl border-2 p-2.5 text-left transition ${
+                      aiProvider === "TRYON"
+                        ? "border-fuchsia-500 bg-fuchsia-50/50 ring-2 ring-fuchsia-300"
+                        : "border-indigo-950/20 bg-slate-50 hover:border-indigo-950/50"
+                    }`}
+                  >
+                    <span className="text-xs font-extrabold text-indigo-950">
+                      TryOn Labs
+                    </span>
+                    <span className="text-[10px] font-bold text-fuchsia-600">
+                      Tốc độ cao - 50 Token
+                    </span>
+                  </button>
                 </div>
               </div>
 
