@@ -43,8 +43,8 @@ interface FormValues {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
-  cost: number
-  gender: string
+  cost?: number
+  gender?: string
   videoFiles?: { fileList: UploadFile[] }
 }
 
@@ -95,6 +95,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   } = useProviderMediaQrSession(true, localImageFileList.length)
 
   const watchedName = Form.useWatch('name', form)
+  const watchedDescription = Form.useWatch('description', form) ?? ''
 
   const totalImageCount = qrImageItems.length + localImageFileList.length
   const remainingImageSlots = Math.max(0, maxImages - totalImageCount)
@@ -595,8 +596,14 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </div>
           )}
 
-          <Form.Item label="Mô tả" name="description" style={{ marginBottom: 16 }}>
-            <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" disabled={isAiGenerating} />
+          <Form.Item
+            label="Mô tả"
+            name="description"
+            style={{ marginBottom: 16 }}
+            extra={<div style={{ textAlign: 'right', fontSize: '12px', color: '#8c8c8c' }}>{watchedDescription.length}/2000</div>}
+            rules={[{ max: 2000, message: 'Mô tả không được vượt quá 2000 ký tự' }]}
+          >
+            <TextArea rows={4} autoSize={{ minRows: 4, maxRows: 10 }} placeholder="Mô tả trang phục" disabled={isAiGenerating} maxLength={2000} />
           </Form.Item>
 
           <Form.Item label="Chọn phong cách mô tả" style={{ marginBottom: 16 }}>
@@ -678,15 +685,34 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
         </Form.Item>
 
-        <Form.Item label="Giá gốc (VNĐ)" name="cost" rules={[{ required: true, message: 'Vui lòng nhập chi phí gốc' }]}>
-          <InputNumber min={0} style={{ width: '100%' }} placeholder="Nhập giá gốc của trang phục" />
+        <Form.Item
+          label="Giá trị bộ đồ (VNĐ)"
+          name="cost"
+          rules={[
+            { required: true, message: 'Vui lòng nhập giá trị bộ đồ' },
+            ({ getFieldValue }) => ({
+              validator(_, value) {
+                const deposit = getFieldValue('depositAmount')
+                if (value !== undefined && deposit !== undefined && value < deposit) {
+                  return Promise.reject(new Error('Giá trị bộ đồ phải lớn hơn hoặc bằng tiền đặt cọc'))
+                }
+                return Promise.resolve()
+              },
+            })
+          ]}
+        >
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="Giá trị thực tế của bộ đồ" />
         </Form.Item>
 
-        <Form.Item label="Giới tính phù hợp" name="gender" rules={[{ required: true, message: 'Vui lòng chọn giới tính' }]}>
+        <Form.Item
+          label="Giới tính trang phục"
+          name="gender"
+          rules={[{ required: true, message: 'Vui lòng chọn giới tính trang phục' }]}
+        >
           <Select placeholder="Chọn giới tính">
             <Select.Option value="MALE">Nam (MALE)</Select.Option>
             <Select.Option value="FEMALE">Nữ (FEMALE)</Select.Option>
-            <Select.Option value="UNISEX">Unisex (UNISEX)</Select.Option>
+            <Select.Option value="UNISEX">Cả hai (UNISEX)</Select.Option>
             <Select.Option value="GENDERLESS">Không phân biệt giới tính (GENDERLESS)</Select.Option>
           </Select>
         </Form.Item>

@@ -206,6 +206,8 @@ export interface Costume {
   bestSeller?: boolean
   /** Optional; when present, list UI shows first entry; detail shows full list */
   characters?: CostumeCharacter[]
+  cost?: number
+  gender?: string
 }
 
 /**

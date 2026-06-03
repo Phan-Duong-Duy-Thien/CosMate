@@ -96,8 +96,12 @@ export function MyReviewForm({ canReview, orderId, cosplayerId, onSubmit, loadin
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           placeholder={VI.costumeRental.detail.writeReviewPlaceholder}
+          maxLength={1000}
           className="min-h-[100px] w-full rounded-xl border-[3px] border-indigo-950 bg-white p-3 text-sm font-semibold text-indigo-950 placeholder:text-indigo-900/50 focus:border-pink-500 focus:outline-none focus:ring-4 focus:ring-pink-300"
         />
+        <div className="mt-1 text-right text-xs font-semibold text-indigo-900/50">
+          {comment.length}/1000
+        </div>
       </div>
 
       {/* Image Upload */}

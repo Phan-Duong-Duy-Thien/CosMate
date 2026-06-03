@@ -105,7 +105,7 @@ export function buildUpdateCostumeFormData(
   if (input.imageFiles && input.imageFiles.length > 0) {
     input.imageFiles.forEach((file) => form.append('imageFiles', file))
   }
-  return form
+  return form;
 }
 
 export async function updateCostumeBasic(

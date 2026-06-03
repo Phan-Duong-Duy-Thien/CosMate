@@ -37,6 +37,8 @@ interface FormValues {
   rentDiscount: number
   depositAmount: number
   imageFiles?: { fileList: UploadFile[] }
+  cost?: number
+  gender?: string
 }
 
 interface Props {
@@ -56,6 +58,7 @@ export default function EditBasicInfoForm({
 }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [moderationError, setModerationError] = useState<string | null>(null)
+  const watchedDescription = Form.useWatch('description', form) ?? ''
 
   // Prefill whenever the detail changes (e.g. after a successful save)
   useEffect(() => {
@@ -67,6 +70,8 @@ export default function EditBasicInfoForm({
       pricePerDay: initialValues.pricePerDay,
       rentDiscount: initialValues.rentDiscount ?? 0,
       depositAmount: initialValues.depositAmount,
+      cost: initialValues.cost,
+      gender: initialValues.gender,
     })
   }, [form, initialValues])
 
@@ -100,6 +105,8 @@ export default function EditBasicInfoForm({
         pricePerDay: values.pricePerDay,
         rentDiscount: values.rentDiscount,
         depositAmount: values.depositAmount,
+        cost: values.cost,
+        gender: values.gender,
         imageFiles: rawFiles.length > 0 ? (rawFiles as unknown as File[]) : undefined,
         rentalOptions: null,
       }
@@ -161,8 +168,13 @@ export default function EditBasicInfoForm({
         <Input placeholder="Nhập tên trang phục" maxLength={120} />
       </Form.Item>
 
-      <Form.Item label="Mô tả" name="description">
-        <TextArea rows={3} placeholder="Mô tả trang phục" />
+      <Form.Item
+        label="Mô tả"
+        name="description"
+        extra={<div style={{ textAlign: 'right', fontSize: '12px', color: '#8c8c8c' }}>{watchedDescription.length}/2000</div>}
+        rules={[{ max: 2000, message: 'Mô tả không được vượt quá 2000 ký tự' }]}
+      >
+        <TextArea rows={3} placeholder="Mô tả trang phục" maxLength={2000} />
       </Form.Item>
 
       <Form.Item
@@ -247,6 +259,39 @@ export default function EditBasicInfoForm({
         ]}
       >
         <InputNumber min={0}style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
+      </Form.Item>
+
+      <Form.Item
+        label="Giá trị bộ đồ (VNĐ)"
+        name="cost"
+        rules={[
+          { required: true, message: 'Vui lòng nhập giá trị bộ đồ' },
+          { type: 'number', min: 0, message: 'Giá trị bộ đồ không được âm' },
+          ({ getFieldValue }) => ({
+            validator(_, value) {
+              const deposit = getFieldValue('depositAmount')
+              if (value !== undefined && deposit !== undefined && value < deposit) {
+                return Promise.reject(new Error('Giá trị bộ đồ phải lớn hơn hoặc bằng tiền đặt cọc'))
+              }
+              return Promise.resolve()
+            },
+          })
+        ]}
+      >
+        <InputNumber min={0} style={{ width: '100%' }} placeholder="Giá trị thực tế của bộ đồ" />
+      </Form.Item>
+
+      <Form.Item
+        label="Giới tính trang phục"
+        name="gender"
+        rules={[{ required: true, message: 'Vui lòng chọn giới tính trang phục' }]}
+      >
+        <Select placeholder="Chọn giới tính">
+          <Select.Option value="MALE">Nam (MALE)</Select.Option>
+          <Select.Option value="FEMALE">Nữ (FEMALE)</Select.Option>
+          <Select.Option value="UNISEX">Cả hai (UNISEX)</Select.Option>
+          <Select.Option value="GENDERLESS">Không phân biệt giới tính (GENDERLESS)</Select.Option>
+        </Select>
       </Form.Item>
 
       <Form.Item
