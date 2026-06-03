@@ -1,11 +1,12 @@
-import { useMemo } from 'react';
-import { Input, Select, Table, Tag, Tooltip, message } from 'antd';
+import { useMemo, useState } from 'react';
+import { Input, Select, Table, Tag, Tooltip, message, Button, Empty, Modal, Image } from 'antd';
 import type { TableProps } from 'antd';
 import { ReloadOutlined, SearchOutlined, CheckCircleOutlined, StopOutlined, LoadingOutlined } from '@ant-design/icons';
 import { Button as UiButton } from '@/components/ui/button';
 import { VI } from '@/shared/i18n/vi';
 import { useAdminReviews } from '../hooks/useAdminReviews';
 import type { AdminReviewItem } from '../api/adminReviews.api';
+import { AdminDetailEyeIcon } from '../components/AdminDetailEyeIcon';
 
 function getToxicTag(review: AdminReviewItem) {
   if (review.isSpamOrToxic === true) {
@@ -51,6 +52,8 @@ export default function AdminReviewsPage() {
     toggleToxic,
     refetch,
   } = useAdminReviews();
+
+  const [selectedReview, setSelectedReview] = useState<AdminReviewItem | null>(null);
 
   const toxicFilterOptions = useMemo(
     () => [
@@ -142,7 +145,7 @@ export default function AdminReviewsPage() {
     {
       title: VI.admin.reviews.columns.actions,
       key: 'actions',
-      width: 80,
+      width: 120,
       align: 'center',
       fixed: 'right',
       render: (_: unknown, review: AdminReviewItem) => {
@@ -154,8 +157,11 @@ export default function AdminReviewsPage() {
             role="presentation"
             onClick={(e) => e.stopPropagation()}
           >
+            <Tooltip title="Xem chi tiết">
+              <AdminDetailEyeIcon onClick={() => setSelectedReview(review)} />
+            </Tooltip>
             {loadingToggle ? (
-              <LoadingOutlined className="text-base" style={{ color: 'var(--muted-foreground)' }} />
+              <LoadingOutlined className="text-base animate-spin" style={{ color: 'var(--muted-foreground)' }} />
             ) : isToxic ? (
               <Tooltip title={VI.admin.reviews.actions.restore}>
                 <CheckCircleOutlined
@@ -202,52 +208,139 @@ export default function AdminReviewsPage() {
   ];
 
   return (
-    <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <Input
-          allowClear
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-          prefix={<SearchOutlined />}
-          placeholder={VI.admin.reviews.filters.searchPlaceholder}
-          className="w-full min-w-[280px] max-w-[420px]"
-        />
+    <>
+      <div className="space-y-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Input
+            allowClear
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            prefix={<SearchOutlined />}
+            placeholder={VI.admin.reviews.filters.searchPlaceholder}
+            className="w-full min-w-[280px] max-w-[420px]"
+          />
 
-        <Select
-          value={toxicFilter}
-          onChange={(value) => setToxicFilter(value)}
-          options={toxicFilterOptions}
-          className="w-full min-w-[180px] max-w-[220px]"
-        />
+          <Select
+            value={toxicFilter}
+            onChange={(value) => setToxicFilter(value)}
+            options={toxicFilterOptions}
+            className="w-full min-w-[180px] max-w-[220px]"
+          />
 
-        <UiButton
-          className="h-10 gap-2"
-          onClick={() => void refetch()}
-        >
-          <ReloadOutlined />
-          {VI.admin.reviews.actions.refresh}
-        </UiButton>
+          <UiButton
+            className="h-10 gap-2"
+            onClick={() => void refetch()}
+          >
+            <ReloadOutlined />
+            {VI.admin.reviews.actions.refresh}
+          </UiButton>
+        </div>
+
+        <Table<AdminReviewItem>
+          rowKey="id"
+          columns={columns}
+          dataSource={paginatedRows}
+          loading={loading}
+          scroll={{ x: 1400 }}
+          pagination={{
+            current: page,
+            pageSize,
+            total: filteredRows.length,
+            showSizeChanger: true,
+            pageSizeOptions: ['10', '20', '50'],
+            showTotal: (total) => `${total} ${VI.admin.reviews.pagination.total}`,
+            onChange: (nextPage, nextPageSize) => {
+              setPage(nextPage);
+              setPageSize(nextPageSize);
+            },
+          }}
+        />
       </div>
 
-      <Table<AdminReviewItem>
-        rowKey="id"
-        columns={columns}
-        dataSource={paginatedRows}
-        loading={loading}
-        scroll={{ x: 1400 }}
-        pagination={{
-          current: page,
-          pageSize,
-          total: filteredRows.length,
-          showSizeChanger: true,
-          pageSizeOptions: ['10', '20', '50'],
-          showTotal: (total) => `${total} ${VI.admin.reviews.pagination.total}`,
-          onChange: (nextPage, nextPageSize) => {
-            setPage(nextPage);
-            setPageSize(nextPageSize);
-          },
-        }}
-      />
-    </div>
+      {/* Detail Modal */}
+      <Modal
+        title={
+          <span className="text-base font-extrabold text-indigo-950">
+            Chi tiết đánh giá #{selectedReview?.id}
+          </span>
+        }
+        open={selectedReview !== null}
+        onCancel={() => setSelectedReview(null)}
+        footer={[
+          <Button key="close" onClick={() => setSelectedReview(null)} className="rounded-lg font-semibold">
+            Đóng
+          </Button>
+        ]}
+        width={600}
+        destroyOnClose
+      >
+        {selectedReview && (
+          <div className="space-y-4 pt-3 text-indigo-950 font-semibold">
+            {/* Header info */}
+            <div className="grid grid-cols-2 gap-4 rounded-xl border-[2px] border-indigo-950/10 bg-slate-50 p-4 text-xs">
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Người đánh giá</span>
+                <span className="text-sm font-extrabold text-indigo-950">
+                  {selectedReview.username ?? selectedReview.userName ?? '—'}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Đơn hàng</span>
+                <span className="text-sm font-extrabold text-indigo-950">#{selectedReview.orderId}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Điểm số</span>
+                <span className="text-sm font-extrabold text-indigo-950">{selectedReview.rating}/5 sao</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Ngày tạo</span>
+                <span className="text-sm font-extrabold text-indigo-950">{formatDate(selectedReview.createdAt)}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Cảm xúc (AI)</span>
+                <div>{getSentimentTag(selectedReview.aiSentiment)}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Trạng thái</span>
+                <div>{getToxicTag(selectedReview)}</div>
+              </div>
+            </div>
+
+            {/* Comment content */}
+            <div className="space-y-1">
+              <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px]">Nội dung bình luận</span>
+              <p className="rounded-xl border-[2px] border-indigo-950/15 bg-white p-3 text-sm font-medium leading-relaxed text-indigo-950/90 whitespace-pre-wrap">
+                {selectedReview.comment || <span className="italic text-muted-foreground">Không có nội dung bình luận</span>}
+              </p>
+            </div>
+
+            {/* AI Summary */}
+            <div className="space-y-1">
+              <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px]">Tóm tắt của AI</span>
+              <p className="rounded-xl border-[2px] border-indigo-950/15 bg-pink-50/50 p-3 text-sm font-medium leading-relaxed text-pink-950/90">
+                {selectedReview.aiSummary || <span className="italic text-muted-foreground">Chưa có tóm tắt tự động</span>}
+              </p>
+            </div>
+
+            {/* Images */}
+            {selectedReview.images && selectedReview.images.length > 0 && (
+              <div className="space-y-2">
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px]">Hình ảnh đính kèm</span>
+                <div className="flex flex-wrap gap-2">
+                  {selectedReview.images.map((img, idx) => {
+                    const url = img.url ? (img.url.startsWith('http') ? img.url : `${import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site'}${img.url}`) : '';
+                    return (
+                      <div key={idx} className="h-20 w-20 overflow-hidden rounded-xl border-[2px] border-indigo-950 shadow-sm">
+                        <Image src={url} alt="" className="h-full w-full object-cover" />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Modal>
+    </>
   );
 }

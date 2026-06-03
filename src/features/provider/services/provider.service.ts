@@ -51,6 +51,7 @@ export interface ProviderReviewDetailNormalized {
   imageUrls: string[];
   providerReply: string | null;
   repliedAt: string | null;
+  isSpamOrToxic?: boolean | null;
 }
 
 function imageUrlsFromUnknown(images: unknown): string[] {
@@ -108,6 +109,11 @@ function normalizeProviderReviewDetail(
     'repliedAt' in primary && primary.repliedAt != null ? String(primary.repliedAt) : null;
   const repliedAt = primaryRepliedAt ?? fallback.repliedAt ?? null;
 
+  const isSpamOrToxic =
+    ('isSpamOrToxic' in primary ? primary.isSpamOrToxic : null) ??
+    fallback.isSpamOrToxic ??
+    null;
+
   return {
     id: primary.id ?? fallback.id,
     orderId: primary.orderId ?? fallback.orderId,
@@ -120,6 +126,7 @@ function normalizeProviderReviewDetail(
     imageUrls: urls,
     providerReply,
     repliedAt,
+    isSpamOrToxic,
   };
 }
 

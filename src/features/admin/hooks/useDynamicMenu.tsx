@@ -43,6 +43,9 @@ const getIconComponent = (iconName?: string): LucideIcon => {
     case 'costumes': return Shirt;
     case 'reports': return BarChart3;
     case 'menu': return MenuIcon;
+    case 'star':
+    case 'reviews':
+    case 'review': return Star;
     case 'subscription':
     case 'credit-card':
     case 'creditcard': return CreditCard;
@@ -57,7 +60,6 @@ const getIconComponent = (iconName?: string): LucideIcon => {
 
 const ADMIN_CORE_MENUS: DashboardSidebarItem[] = [
   { key: '/admin', label: 'Trang chủ', path: '/admin', icon: <LayoutDashboard size={16} />, type: 'core' },
-  { key: '/admin/reviews', label: 'Duyệt đánh giá', path: '/admin/reviews', icon: <Star size={16} />, type: 'core' },
   { key: '/admin/menus', label: 'Quản lý menu', path: '/admin/menus', icon: <MenuIcon size={16} />, type: 'core' },
 ];
 

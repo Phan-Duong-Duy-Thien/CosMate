@@ -44,6 +44,8 @@ export async function createCostumeMultipart(payload: CreateCostumeBasicPayload)
   form.append('rentDiscount', String(safeNumber(payload.rentDiscount, 0)))
   form.append('depositAmount', String(safeNumber(payload.depositAmount, 0)))
   form.append('providerId', String(safeNumber(payload.providerId, 0)))
+  if (payload.cost !== undefined) form.append('cost', String(safeNumber(payload.cost, 0)))
+  if (payload.gender) form.append('gender', String(payload.gender))
   ;(payload.characterIds ?? []).forEach((id) => {
     const safeId = safeNumber(id, 0)
     if (safeId > 0) form.append('characterIds', String(safeId))
