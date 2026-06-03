@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Card } from '@/shared/components/Card';
-import { RotateCw, XCircle, CheckCircle } from 'lucide-react';
+import { RotateCw } from 'lucide-react';
 import { Modal, Input, Tooltip } from 'antd';
+import { CheckCircleOutlined, CloseCircleOutlined, LoadingOutlined } from '@ant-design/icons';
 import { VI } from '@/shared/i18n/vi';
 import { useWithdrawRequests } from '../hooks/useWithdrawRequests';
 import { useRejectWithdraw } from '../hooks/useRejectWithdraw';
@@ -124,13 +125,13 @@ export default function StaffWithdrawPage() {
                     <tr key={request.id} className="hover:bg-slate-50">
                       <td className="px-4 py-3 text-sm font-medium text-slate-900">#{request.id}</td>
                       <td className="px-4 py-3 text-sm text-slate-700">{request.userId}</td>
-                      <td className="px-4 py-3 text-sm font-semibold text-slate-900">{formatCurrency(request.amount)}</td>
+                      <td className="px-4 py-3 text-sm font-extrabold text-cosmate-pink">{formatCurrency(request.amount)}</td>
                       <td className="px-4 py-3 text-sm text-slate-700">{request.bankAccountNumber}</td>
                       <td className="px-4 py-3 text-sm text-slate-700">{request.bankName}</td>
                       <td className="px-4 py-3">{getStatusBadge(request.status)}</td>
                       <td className="px-4 py-3 text-sm text-slate-500">{formatDate(request.requestedAt)}</td>
                       <td className="px-4 py-3">
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
                           {/* Approve button */}
                           <Tooltip title={isPending ? (isApproving ? VI.staff.withdraw.approving : VI.staff.withdraw.approve) : VI.staff.withdraw.onlyPendingCanApprove}>
                             <button
@@ -139,8 +140,12 @@ export default function StaffWithdrawPage() {
                               disabled={!isPending || isApproving}
                               className="inline-flex items-center rounded-lg bg-green-50 px-2.5 py-2 text-green-600 hover:bg-green-100 hover:text-green-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-green-50 disabled:hover:text-green-600"
                             >
-                              <CheckCircle size={18} className={isApproving ? 'animate-spin' : ''} />
-                              <span className="ml-1.5 text-xs font-medium">{VI.staff.withdraw.approve}</span>
+                              {isApproving ? (
+                                <LoadingOutlined className="mr-1.5" />
+                              ) : (
+                                <CheckCircleOutlined className="mr-1.5" />
+                              )}
+                              <span className="text-xs font-medium">{VI.staff.withdraw.approve}</span>
                             </button>
                           </Tooltip>
 
@@ -152,8 +157,12 @@ export default function StaffWithdrawPage() {
                               disabled={!isPending || isRejecting}
                               className="inline-flex items-center rounded-lg bg-red-50 px-2.5 py-2 text-red-600 hover:bg-red-100 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-red-50 disabled:hover:text-red-600"
                             >
-                              <XCircle size={18} className={isRejecting ? 'animate-spin' : ''} />
-                              <span className="ml-1.5 text-xs font-medium">{VI.staff.withdraw.reject}</span>
+                              {isRejecting ? (
+                                <LoadingOutlined className="mr-1.5" />
+                              ) : (
+                                <CloseCircleOutlined className="mr-1.5" />
+                              )}
+                              <span className="text-xs font-medium">{VI.staff.withdraw.reject}</span>
                             </button>
                           </Tooltip>
                         </div>

@@ -123,6 +123,8 @@ export interface CreateCostumeBasicPayload {
   providerId: number
   characterIds: number[]
   imageFiles: File[]
+  cost?: number
+  gender?: string
 }
 
 export interface SurchargeInput {
@@ -229,6 +231,8 @@ export interface UpdateCostumeBasicInput {
   rentDiscount: number
   depositAmount: number
   imageFiles?: File[]
+  cost?: number
+  gender?: string
 }
 
 /** Body for PUT /api/surcharges/{id} */

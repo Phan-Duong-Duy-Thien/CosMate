@@ -7,16 +7,140 @@ import { ListingPagination } from "@/features/photographer-booking/components/Li
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useProvidersByRole, PROVIDER_ROLE } from "@/features/photographer-booking/hooks/useProvidersByRole"
+import { usePublicServices } from "@/features/service/hooks/usePublicServices"
 
 const PAGE_SIZE = 8
+
+function normalizeCity(name: string): string {
+  if (!name) return ""
+  let clean = name.toLowerCase().trim()
+  clean = clean.replace(/^(thành phố|tp\.|tỉnh)\s+/g, "")
+  if (clean === "hcm" || clean === "hồ chí minh" || clean === "tp.hcm" || clean === "tphcm") {
+    return "hồ chí minh"
+  }
+  if (clean === "hn" || clean === "hà nội") {
+    return "hà nội"
+  }
+  if (clean === "đn" || clean === "đà nẵng") {
+    return "đà nẵng"
+  }
+  return clean
+}
 
 export default function PhotographersListingPage() {
   const { providers, loading, error } = useProvidersByRole(PROVIDER_ROLE.PHOTOGRAPHER, {
     verifiedOnly: true,
   })
+  const { filteredServices: photographerServices } = usePublicServices("Photographer")
   const [currentPage, setCurrentPage] = useState(1)
 
-  const totalPages = Math.max(1, Math.ceil(providers.length / PAGE_SIZE))
+  // Filter states
+  const [search, setSearch] = useState("")
+  const [selectedCity, setSelectedCity] = useState("")
+  const [selectedSort, setSelectedSort] = useState("Đề xuất")
+
+  // Map providers with public services to get locations & price ranges
+  const providersWithServiceInfo = useMemo(() => {
+    return providers.map((provider) => {
+      const services = photographerServices.filter((s) => s.providerId === provider.id)
+
+      const locations = new Set<string>()
+      services.forEach((s) => {
+        if (s.areas) {
+          s.areas.forEach((a) => {
+            if (typeof a === "string") {
+              locations.add(a)
+            } else if (a && a.city) {
+              locations.add(a.city)
+            }
+          })
+        }
+      })
+
+      let minPrice = Infinity
+      let maxPrice = -Infinity
+      services.forEach((s) => {
+        const prices = [s.pricePerSlot, s.minPrice, s.maxPrice].filter((p) => p != null && p > 0) as number[]
+        if (prices.length > 0) {
+          minPrice = Math.min(minPrice, ...prices)
+          maxPrice = Math.max(maxPrice, ...prices)
+        }
+      })
+
+      // Fallback locations & prices if provider has no services yet
+      if (locations.size === 0) {
+        const defaultCities = ["Thành phố Hà Nội", "Thành phố Hồ Chí Minh", "Thành phố Đà Nẵng"]
+        locations.add(defaultCities[provider.id % 3])
+      }
+
+      if (minPrice === Infinity) {
+        const defaultRanges = [
+          { min: 350000, max: 900000 },
+          { min: 700000, max: 1500000 },
+          { min: 1800000, max: 3000000 },
+        ][provider.id % 3]
+        minPrice = defaultRanges.min
+        maxPrice = defaultRanges.max
+      }
+
+      return {
+        ...provider,
+        services,
+        locations: Array.from(locations),
+        minPrice,
+        maxPrice,
+      }
+    })
+  }, [providers, photographerServices])
+
+  // Filter and sort providers list
+  const filteredProviders = useMemo(() => {
+    let list = [...providersWithServiceInfo]
+
+    // 1. Search filter
+    if (search.trim()) {
+      const q = search.toLowerCase().trim()
+      list = list.filter((p) => {
+        const matchShopName = (p.shopName ?? "").toLowerCase().includes(q)
+        const matchBio = (p.bio ?? "").toLowerCase().includes(q)
+        const matchDescription = (p.description ?? "").toLowerCase().includes(q)
+        const matchServices = p.services.some(
+          (s) =>
+            (s.serviceName ?? "").toLowerCase().includes(q) ||
+            (s.description ?? "").toLowerCase().includes(q)
+        )
+        return matchShopName || matchBio || matchDescription || matchServices
+      })
+    }
+
+    // 2. City/Area filter
+    if (selectedCity) {
+      const normSelected = normalizeCity(selectedCity)
+      list = list.filter((p) =>
+        p.locations.some((loc) => normalizeCity(loc).includes(normSelected))
+      )
+    }
+
+    // 5. Sorting
+    if (selectedSort === "Đánh giá cao nhất") {
+      list.sort((a, b) => {
+        const rateA = a.totalReviews > 0 ? a.totalRating / a.totalReviews : 0
+        const rateB = b.totalReviews > 0 ? b.totalRating / b.totalReviews : 0
+        return rateB - rateA
+      })
+    } else if (selectedSort === "Giá: thấp → cao") {
+      list.sort((a, b) => a.minPrice - b.minPrice)
+    } else if (selectedSort === "Giá: cao → thấp") {
+      list.sort((a, b) => b.minPrice - a.minPrice)
+    } else {
+      // Default: sort by completedOrders descending
+      list.sort((a, b) => b.completedOrders - a.completedOrders)
+    }
+
+    return list
+  }, [providersWithServiceInfo, search, selectedCity, selectedSort])
+
+  const totalPages = Math.max(1, Math.ceil(filteredProviders.length / PAGE_SIZE))
 
   useEffect(() => {
     if (currentPage > totalPages) setCurrentPage(1)
@@ -24,8 +148,8 @@ export default function PhotographersListingPage() {
 
   const pagedProviders = useMemo(() => {
     const start = (currentPage - 1) * PAGE_SIZE
-    return providers.slice(start, start + PAGE_SIZE)
-  }, [providers, currentPage])
+    return filteredProviders.slice(start, start + PAGE_SIZE)
+  }, [filteredProviders, currentPage])
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page)
@@ -67,17 +191,24 @@ export default function PhotographersListingPage() {
               <span className="inline-flex items-center gap-1.5 rounded-xl border-[3px] border-indigo-950 bg-white px-3 py-2 text-xs font-extrabold uppercase tracking-wide text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b]">
                 <Sparkles className="h-3.5 w-3.5 text-pink-500" aria-hidden />
                 Tổng{" "}
-                <span className="tabular-nums text-pink-600">{loading ? "…" : providers.length}</span>{" "}
+                <span className="tabular-nums text-pink-600">{loading ? "…" : filteredProviders.length}</span>{" "}
                 nhiếp ảnh gia
               </span>
             </div>
           </div>
 
-          <ListingFilterBar />
+          <ListingFilterBar
+            search={search}
+            onSearchChange={setSearch}
+            selectedCity={selectedCity}
+            onCityChange={setSelectedCity}
+            selectedSort={selectedSort}
+            onSortChange={setSelectedSort}
+          />
         </header>
 
         <section className="mb-12 grid grid-cols-1 gap-5 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
-          {loading && providers.length === 0 ? (
+          {loading && filteredProviders.length === 0 ? (
             <div className="col-span-full flex flex-col items-center justify-center rounded-[1.25rem] border-[4px] border-indigo-950 bg-[#fffbeb] py-16 shadow-[8px_8px_0_0_rgba(30,27,75,0.25)]">
               <div className="h-10 w-10 animate-spin rounded-full border-[3px] border-indigo-950 border-t-pink-500" />
               <p className="mt-4 text-sm font-extrabold text-indigo-950">Đang tải dữ liệu...</p>
@@ -86,7 +217,7 @@ export default function PhotographersListingPage() {
             <div className="col-span-full rounded-[1.25rem] border-[4px] border-red-700/40 bg-red-50 px-6 py-12 text-center text-sm font-semibold text-red-800 shadow-[6px_6px_0_0_rgba(127,29,29,0.2)]">
               {error}
             </div>
-          ) : providers.length === 0 ? (
+          ) : filteredProviders.length === 0 ? (
             <div className="col-span-full rounded-[1.25rem] border-[4px] border-dashed border-indigo-950/35 bg-white/70 px-6 py-14 text-center shadow-[6px_6px_0_0_rgba(30,27,75,0.12)]">
               <p className="text-base font-extrabold text-indigo-950">Chưa có photographer nào.</p>
               <p className="mt-2 text-sm font-semibold text-slate-600">Quay lại sau hoặc đổi bộ lọc.</p>
@@ -96,7 +227,7 @@ export default function PhotographersListingPage() {
           )}
         </section>
 
-        {!loading && !error && providers.length > 0 && (
+        {!loading && !error && filteredProviders.length > 0 && (
           <div className="flex flex-col items-center gap-5 pb-8">
             <ListingPagination
               currentPage={currentPage}

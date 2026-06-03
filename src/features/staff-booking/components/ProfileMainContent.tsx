@@ -10,6 +10,7 @@ import type { ServiceItem } from '@/features/service/types';
 import { useProviderPublicReviews } from '@/features/provider/hooks/useProviderPublicReviews';
 import { ProviderReplyBlock } from '@/shared/components/ProviderReplyBlock';
 import {
+  getPublicReviewCommentText,
   getReviewReviewerInitial,
   getReviewReviewerName,
   resolveReviewAvatarUrl,
@@ -230,7 +231,10 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                     </div>
                   </div>
 
-                  {providerReviews.map((review) => (
+                  {providerReviews.map((review) => {
+                    const reviewComment = getPublicReviewCommentText(review);
+                    const isHiddenByModeration = review.isSpamOrToxic === true;
+                    return (
                     <div key={review.id} className="bg-white border border-cosmate-lavender-border rounded-3xl p-6">
                       <div className="flex justify-between items-start mb-4">
                         <div>
@@ -250,7 +254,7 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                           {formatReviewDate(review.createdAt)}
                         </span>
                       </div>
-                      <p className="text-cosmate-mauve text-sm leading-relaxed whitespace-pre-wrap">{review.comment}</p>
+                      <p className={`text-sm leading-relaxed whitespace-pre-wrap ${isHiddenByModeration ? 'text-rose-700/90 italic' : 'text-cosmate-mauve'}`}>{reviewComment}</p>
                       {review.images && review.images.length > 0 ? (
                         <div className="mt-4 flex flex-wrap gap-2">
                           {review.images.map((img) => (
@@ -269,7 +273,8 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
                         variant="lavender"
                       />
                     </div>
-                  ))}
+                    );
+                  })}
                 </>
               )}
             </div>

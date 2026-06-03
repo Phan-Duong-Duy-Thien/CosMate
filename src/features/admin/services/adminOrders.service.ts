@@ -3,7 +3,7 @@
  */
 
 import * as adminOrdersApi from '../api/adminOrders.api';
-import { getUserById } from '../api/adminUsers.api';
+import { getPublicUserName, getPublicShopName } from '@/shared/api/publicDisplayNames.api';
 import {
   normalizeOrderListRow,
   type OrderListRow,
@@ -17,6 +17,9 @@ export interface AdminOrderRow extends OrderListRow {
   /** @deprecated use totalAmount */
   total?: number;
 }
+
+const publicUserNameCache: Record<number, string> = {};
+const providerNameCache: Record<number, string> = {};
 
 export async function fetchAdminOrdersEnriched(): Promise<{
   content: AdminOrderRow[];
@@ -33,21 +36,56 @@ export async function fetchAdminOrdersEnriched(): Promise<{
     };
   });
 
-  const rowsNeedingName = content.filter((r) => !r.cosplayerName && r.cosplayerId != null);
-  if (rowsNeedingName.length > 0) {
-    const uniqueIds = [...new Set(rowsNeedingName.map((r) => r.cosplayerId).filter((id): id is number => id != null))];
-    const userResults = await Promise.all(uniqueIds.map((id) => getUserById(id).catch(() => null)));
-    const cosplayerMap = Object.fromEntries(
-      userResults
-        .filter((u): u is NonNullable<typeof u> => u !== null)
-        .map((u) => [u.id, u.fullName ?? '—'])
+  // 1. Resolve Cosplayer / Customer Name using public API
+  const uniqueCosplayerIds = [...new Set(content.map((r) => r.cosplayerId).filter((id): id is number => id != null))];
+  if (uniqueCosplayerIds.length > 0) {
+    const cosplayerResults = await Promise.all(
+      uniqueCosplayerIds.map(async (id) => {
+        if (publicUserNameCache[id]) {
+          return { id, name: publicUserNameCache[id] };
+        }
+        try {
+          const name = await getPublicUserName(id);
+          publicUserNameCache[id] = name;
+          return { id, name };
+        } catch {
+          return { id, name: `User #${id}` };
+        }
+      })
     );
+    const cosplayerMap = Object.fromEntries(cosplayerResults.map((c) => [c.id, c.name]));
     content = content.map((r) => {
-      if (!r.cosplayerName && r.cosplayerId != null) {
-        return { ...r, cosplayerName: cosplayerMap[r.cosplayerId] ?? r.cosplayerName };
-      }
-      return r;
+      const name = cosplayerMap[r.cosplayerId] || `User #${r.cosplayerId}`;
+      return {
+        ...r,
+        userName: r.userName || name,
+        cosplayerName: r.cosplayerName || name,
+      };
     });
+  }
+
+  // 2. Resolve Provider Name
+  const uniqueProviderIds = [...new Set(content.map((r) => r.providerId).filter((id): id is number => id != null))];
+  if (uniqueProviderIds.length > 0) {
+    const providerResults = await Promise.all(
+      uniqueProviderIds.map(async (id) => {
+        if (providerNameCache[id]) {
+          return { id, shopName: providerNameCache[id] };
+        }
+        try {
+          const shopName = await getPublicShopName(id);
+          providerNameCache[id] = shopName;
+          return { id, shopName };
+        } catch {
+          return { id, shopName: `Shop #${id}` };
+        }
+      })
+    );
+    const providerMap = Object.fromEntries(providerResults.map((p) => [p.id, p.shopName]));
+    content = content.map((r) => ({
+      ...r,
+      providerName: r.providerName || providerMap[r.providerId] || `Shop #${r.providerId}`,
+    }));
   }
 
   return {

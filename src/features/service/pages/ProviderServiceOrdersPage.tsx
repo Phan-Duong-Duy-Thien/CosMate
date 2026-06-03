@@ -233,7 +233,7 @@ export default function ProviderServiceOrdersPage() {
             <Tooltip title={VI.order.actions.viewDetail}>
               <EyeOutlined
                 onClick={() => setDetailModal({ open: true, order: record })}
-                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
               />
             </Tooltip>
             {canSetWaiting && (

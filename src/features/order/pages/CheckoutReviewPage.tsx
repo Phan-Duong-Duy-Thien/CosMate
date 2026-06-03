@@ -436,12 +436,12 @@ export default function CheckoutReviewPage() {
                     </div>
                   )}
                   {!isLoadingWallet && !isWalletInsufficient && walletBalance !== null && (
-                    <div className="rounded-xl border-[3px] border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4">
+                    <div className="rounded-xl border-[3px] border-emerald-300 bg-linear-to-r from-emerald-50 to-teal-50/30 p-4">
                       <div className="flex items-center gap-3">
-                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100 text-lg">👛</div>
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-lg">👛</div>
                         <div className="flex-1">
                           <p className="text-xs text-slate-500">{VI.wallet.checkoutValidation.payWithWalletNote}</p>
-                          <p className="text-lg font-bold text-green-700">{formatCurrency(walletBalance)}</p>
+                          <p className="text-lg font-bold text-emerald-600">{formatCurrency(walletBalance)}</p>
                         </div>
                       </div>
                     </div>

@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { useParams } from "react-router-dom"
 import { Loader2 } from "lucide-react"
 
@@ -5,12 +6,20 @@ import { ProfileSidebar } from "@/features/photographer-booking/components/Profi
 import { ProfileMainContent } from "@/features/photographer-booking/components/ProfileMainContent"
 import { useProviderProfile } from "@/features/provider/hooks/useProviderProfile"
 import { useStartChat } from "@/features/chat/hooks/useStartChat"
+import { useProviderPublicReviews } from "@/features/provider/hooks/useProviderPublicReviews"
 
 export default function StaffProfilePage() {
   const { staffId } = useParams()
   const providerId = staffId ? Number(staffId) : undefined
   const { provider, loading, error } = useProviderProfile(providerId!)
   const { startChat, loading: chatLoading } = useStartChat()
+
+  const { reviews } = useProviderPublicReviews(providerId)
+  const stats = useMemo(() => {
+    const total = reviews.length
+    const avg = total > 0 ? reviews.reduce((acc, r) => acc + r.rating, 0) / total : null
+    return { averageRating: avg, totalReviews: total }
+  }, [reviews])
 
   if (loading) {
     return (
@@ -38,20 +47,14 @@ export default function StaffProfilePage() {
     startChat(provider.userId, provider.shopName ?? undefined)
   }
 
-  const reviewCount = provider.totalReviews ?? 0
-  const avgRating =
-    reviewCount > 0 && provider.totalRating != null
-      ? provider.totalRating / reviewCount
-      : null
-
   const staffData = {
     name: provider.shopName ?? "Nhân sự sự kiện",
     title: "Nhân sự hỗ trợ Cosplay",
     avatar: provider.avatarUrl ?? "",
     bio: provider.bio ?? "",
     jobs: provider.completedOrders ?? 0,
-    rating: avgRating,
-    reviewsCount: reviewCount,
+    rating: stats.averageRating,
+    reviewsCount: stats.totalReviews,
     responseRate: "95%",
     skills: [] as string[],
     verified: provider.verified,

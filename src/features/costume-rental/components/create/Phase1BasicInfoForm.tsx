@@ -43,6 +43,8 @@ interface FormValues {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
+  cost: number
+  gender: string
   videoFiles?: { fileList: UploadFile[] }
 }
 
@@ -336,6 +338,8 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         pricePerDay: values.pricePerDay,
         rentDiscount: values.rentDiscount,
         depositAmount: values.depositAmount,
+        cost: values.cost,
+        gender: values.gender,
         imageFiles,
         rentalOptions: null,
         videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
@@ -509,33 +513,33 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
                 <AntImage.PreviewGroup>
                   <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {localImageFileList.map((file) => (
-                        <li
-                          key={file.uid}
-                          className="group relative aspect-square overflow-hidden rounded-md border border-border"
-                        >
-                          <Button
-                            danger
-                            type="primary"
-                            size="small"
-                            shape="circle"
-                            icon={<CloseOutlined />}
-                            className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
-                            onClick={(event) => {
-                              event.preventDefault()
-                              event.stopPropagation()
-                              removeLocalImage(file.uid)
-                            }}
+                      <li
+                        key={file.uid}
+                        className="group relative aspect-square overflow-hidden rounded-md border border-border"
+                      >
+                        <Button
+                          danger
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon={<CloseOutlined />}
+                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeLocalImage(file.uid)
+                          }}
+                        />
+                        {file.thumbUrl ? (
+                          <AntImage
+                            src={file.thumbUrl}
+                            alt=""
+                            className="!h-full !w-full !object-cover"
+                            rootClassName="!h-full !w-full"
                           />
-                          {file.thumbUrl ? (
-                            <AntImage
-                              src={file.thumbUrl}
-                              alt=""
-                              className="!h-full !w-full !object-cover"
-                              rootClassName="!h-full !w-full"
-                            />
-                          ) : null}
-                        </li>
-                      ))}
+                        ) : null}
+                      </li>
+                    ))}
                     {qrImageItems.map((item) => (
                       <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
                         <Button
@@ -672,6 +676,19 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Form.Item label="Tiền đặt cọc (VNĐ)" name="depositAmount">
           <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
+        </Form.Item>
+
+        <Form.Item label="Giá gốc (VNĐ)" name="cost" rules={[{ required: true, message: 'Vui lòng nhập chi phí gốc' }]}>
+          <InputNumber min={0} style={{ width: '100%' }} placeholder="Nhập giá gốc của trang phục" />
+        </Form.Item>
+
+        <Form.Item label="Giới tính phù hợp" name="gender" rules={[{ required: true, message: 'Vui lòng chọn giới tính' }]}>
+          <Select placeholder="Chọn giới tính">
+            <Select.Option value="MALE">Nam (MALE)</Select.Option>
+            <Select.Option value="FEMALE">Nữ (FEMALE)</Select.Option>
+            <Select.Option value="UNISEX">Unisex (UNISEX)</Select.Option>
+            <Select.Option value="GENDERLESS">Không phân biệt giới tính (GENDERLESS)</Select.Option>
+          </Select>
         </Form.Item>
 
         <Form.Item>

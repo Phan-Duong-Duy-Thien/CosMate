@@ -46,6 +46,7 @@ import AdminMenusPage from "@/features/admin/pages/AdminMenusPage"
 import AdminProvidersPage from "@/features/admin/pages/AdminProvidersPage"
 import AdminCostumesPage from "@/features/admin/pages/AdminCostumesPage"
 import AdminOrdersPage from "@/features/admin/pages/AdminOrdersPage"
+import AdminReviewsPage from "@/features/admin/pages/AdminReviewsPage"
 import AdminReportsPage from "@/features/admin/pages/AdminReportsPage"
 import AdminAuditLogsPage from "@/features/admin/pages/AdminAuditLogsPage"
 import AdminCharactersPage from "@/features/admin/pages/AdminCharactersPage"
@@ -91,6 +92,8 @@ import StaffAiTokenPurchasesPage from "@/features/staff-token/pages/StaffAiToken
 import StaffOrdersPage from "@/features/staff/pages/StaffOrdersPage"
 import DashboardProfilePage from "@/features/profile/pages/DashboardProfilePage"
 import DisputeManagementPage from "@/features/dispute/pages/DisputeManagementPage"
+import StaffReviewsPage from "@/features/staff/pages/StaffReviewsPage"
+
 
 export default function AppRoutes() {
   return (
@@ -139,6 +142,7 @@ export default function AppRoutes() {
           <Route path="/admin/providers" element={<AdminProvidersPage />} />
           <Route path="/admin/costumes" element={<AdminCostumesPage />} />
           <Route path="/admin/orders" element={<AdminOrdersPage />} />
+          <Route path="/admin/reviews" element={<AdminReviewsPage />} />
           <Route path="/admin/reports" element={<AdminReportsPage />} />
           <Route path="/admin/characters" element={<AdminCharactersPage />} />
           <Route path="/admin/character-requests" element={<CharacterRequestManagementPage />} />
@@ -230,6 +234,7 @@ export default function AppRoutes() {
           <Route path="/staff/ai-token-plans" element={<StaffAiTokenPlansPage />} />
           <Route path="/staff/ai-token-purchases" element={<StaffAiTokenPurchasesPage />} />
           <Route path="/staff/orders" element={<StaffOrdersPage />} />
+          <Route path="/staff/reviews" element={<StaffReviewsPage />} />
           <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
           <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
           <Route path="/staff/reports" element={<AdminReportsPage />} />

@@ -18,6 +18,7 @@ import type { ServiceItem } from "@/features/service/types"
 import { usePhotographerPublicReviews } from "../hooks/usePhotographerPublicReviews"
 import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
 import {
+  getPublicReviewCommentText,
   getReviewReviewerInitial,
   getReviewReviewerName,
   resolveReviewAvatarUrl,
@@ -331,8 +332,11 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                   </div>
                 </div>
 
-                {providerReviews.map((review) => (
-                  <div
+                {providerReviews.map((review) => {
+                  const reviewComment = getPublicReviewCommentText(review)
+                  const isHiddenByModeration = review.isSpamOrToxic === true
+                  return (
+                    <div
                     key={review.id}
                     className="rounded-[1.05rem] border-[3px] border-indigo-950 bg-white p-5 shadow-[5px_5px_0_0_rgba(30,27,75,0.22)] md:p-6"
                   >
@@ -366,8 +370,13 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                         {formatReviewDate(review.createdAt)}
                       </span>
                     </div>
-                    <p className="text-sm font-medium leading-relaxed text-indigo-950/90 whitespace-pre-wrap">
-                      {review.comment}
+                    <p
+                      className={cn(
+                        "text-sm font-medium leading-relaxed whitespace-pre-wrap",
+                        isHiddenByModeration ? "text-rose-700/90 italic" : "text-indigo-950/90"
+                      )}
+                    >
+                      {reviewComment}
                     </p>
                     {review.images && review.images.length > 0 ? (
                       <div className="mt-4 flex flex-wrap gap-2">
@@ -387,7 +396,8 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({
                       variant="indigo"
                     />
                   </div>
-                ))}
+                  )
+                })}
               </>
             )}
           </div>

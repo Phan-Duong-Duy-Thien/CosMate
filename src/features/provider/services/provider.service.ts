@@ -51,6 +51,7 @@ export interface ProviderReviewDetailNormalized {
   imageUrls: string[];
   providerReply: string | null;
   repliedAt: string | null;
+  isSpamOrToxic?: boolean | null;
 }
 
 function imageUrlsFromUnknown(images: unknown): string[] {
@@ -108,6 +109,11 @@ function normalizeProviderReviewDetail(
     'repliedAt' in primary && primary.repliedAt != null ? String(primary.repliedAt) : null;
   const repliedAt = primaryRepliedAt ?? fallback.repliedAt ?? null;
 
+  const isSpamOrToxic =
+    ('isSpamOrToxic' in primary ? primary.isSpamOrToxic : null) ??
+    fallback.isSpamOrToxic ??
+    null;
+
   return {
     id: primary.id ?? fallback.id,
     orderId: primary.orderId ?? fallback.orderId,
@@ -120,22 +126,23 @@ function normalizeProviderReviewDetail(
     imageUrls: urls,
     providerReply,
     repliedAt,
+    isSpamOrToxic,
   };
 }
 
 /**
- * Load full review for dashboard: order endpoint first, then by review id, then list row fallback.
+ * Load full review for dashboard: review id endpoint first, then order endpoint, then list row fallback.
  */
 export async function fetchProviderReviewDetailForDashboard(
   row: ProviderReview,
 ): Promise<ProviderReviewDetailNormalized> {
-  const byOrder = await getReviewByOrderId(row.orderId);
-  if (byOrder) {
-    return normalizeProviderReviewDetail(byOrder, row);
-  }
   const byId = await getProviderReviewByReviewId(row.id);
   if (byId) {
     return normalizeProviderReviewDetail(byId, row);
+  }
+  const byOrder = await getReviewByOrderId(row.orderId);
+  if (byOrder) {
+    return normalizeProviderReviewDetail(byOrder, row);
   }
   return normalizeProviderReviewDetail(row, row);
 }

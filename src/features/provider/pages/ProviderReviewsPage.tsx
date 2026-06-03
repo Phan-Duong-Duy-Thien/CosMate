@@ -7,7 +7,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Table, Tooltip, message } from 'antd';
+import { Table, Tooltip, message, Tag } from 'antd';
 import type { TableProps } from 'antd';
 import { Eye, Star } from 'lucide-react';
 import { Button } from '@/shared/components/Button';
@@ -209,10 +209,19 @@ export default function ProviderReviewsPage() {
       title: VI.provider.reviews.columns.comment,
       dataIndex: 'comment',
       key: 'comment',
-      render: (comment: string) => (
-        <span className="text-sm text-muted-foreground">
-          {comment || <span className="text-muted-foreground/70">-</span>}
-        </span>
+      render: (comment: string, record: ProviderReview) => (
+        <div className="flex flex-col gap-1.5">
+          <span className="text-sm text-muted-foreground">
+            {comment || <span className="text-muted-foreground/70">-</span>}
+          </span>
+          {record.isSpamOrToxic === true && (
+            <div>
+              <Tag color="red" className="m-0 border font-semibold !text-xs !px-1.5 !py-0.5">
+                Bị ẩn do vi phạm tiêu chuẩn
+              </Tag>
+            </div>
+          )}
+        </div>
       ),
     },
     {
@@ -247,11 +256,11 @@ export default function ProviderReviewsPage() {
             <Button
               type="button"
               variant="ghost"
-              className="h-9 w-9 shrink-0 p-0 text-cosmate-info hover:bg-accent [&_svg]:text-cosmate-info"
+              className="h-9 w-9 shrink-0 p-0 text-cosmate-pink hover:bg-accent [&_svg]:text-cosmate-pink"
               aria-label={VI.provider.reviews.viewDetail}
               onClick={() => void openDetail(record)}
             >
-              <Eye className="h-4 w-4 shrink-0 text-cosmate-info" strokeWidth={2} aria-hidden />
+              <Eye className="h-4 w-4 shrink-0 text-cosmate-pink" strokeWidth={2} aria-hidden />
             </Button>
           </Tooltip>
         </div>

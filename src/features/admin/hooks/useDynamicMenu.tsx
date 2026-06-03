@@ -10,6 +10,7 @@ import {
   CreditCard,
   Coins,
   Settings,
+  Star,
 } from 'lucide-react';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import type { LucideIcon } from 'lucide-react';
@@ -42,6 +43,9 @@ const getIconComponent = (iconName?: string): LucideIcon => {
     case 'costumes': return Shirt;
     case 'reports': return BarChart3;
     case 'menu': return MenuIcon;
+    case 'star':
+    case 'reviews':
+    case 'review': return Star;
     case 'subscription':
     case 'credit-card':
     case 'creditcard': return CreditCard;
