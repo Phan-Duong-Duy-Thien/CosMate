@@ -11,7 +11,7 @@ import { clearAuth, getAccessTokenForRequest } from '@/features/auth/services/to
  */
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site',
-  timeout: 120000, // tạm tăng lên 120s để loại trừ timeout
+  timeout: 300000, // Tăng lên 300s (5 phút) cho các tác vụ AI VTO nặng
 });
 
 /**

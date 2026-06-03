@@ -4,6 +4,7 @@ import { App } from "antd"
 import axiosInstance from "@/services/axiosInstance"
 import { Dialog, DialogContent } from "@/shared/components/Dialog"
 import { useUserProfile } from "@/features/profile/hooks/useUserProfile"
+import mascotVideo from "@/assets/video-mascot-virtual.mp4"
 
 interface VirtualTryOnModalProps {
   open: boolean
@@ -191,7 +192,7 @@ export function VirtualTryOnModal({
             <div className="flex flex-col items-center justify-center py-6 text-center">
               <div className="w-full max-w-[360px] overflow-hidden rounded-3xl border-[4px] border-indigo-950 bg-white shadow-[6px_6px_0_0_#1e1b4b] aspect-[1760/990] mb-6">
                 <video
-                  src={new URL("../../../../assets/video-mascot-virtual.mp4", import.meta.url).href}
+                  src={mascotVideo}
                   autoPlay
                   loop
                   muted

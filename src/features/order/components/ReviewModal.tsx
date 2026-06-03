@@ -161,6 +161,7 @@ export function ReviewModal({
             onChange={(e) => !isReadOnly && setComment(e.target.value)}
             placeholder={VI.profile.orders.reviewModal.commentPlaceholder}
             readOnly={isReadOnly}
+            maxLength={1000}
             className={cn(
               "min-h-[108px] w-full resize-y rounded-xl border-[3px] border-indigo-950 bg-white p-3 text-sm font-semibold text-indigo-950 placeholder:text-indigo-900/45",
               !isReadOnly &&
@@ -168,6 +169,11 @@ export function ReviewModal({
               isReadOnly && "cursor-default bg-indigo-50/40"
             )}
           />
+          {!isReadOnly && (
+            <div className="mt-1 text-right text-xs font-semibold text-indigo-900/50">
+              {comment.length}/1000
+            </div>
+          )}
         </section>
 
         {/* Images */}

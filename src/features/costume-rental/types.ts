@@ -123,6 +123,8 @@ export interface CreateCostumeBasicPayload {
   providerId: number
   characterIds: number[]
   imageFiles: File[]
+  cost?: number
+  gender?: string
 }
 
 export interface SurchargeInput {
@@ -204,6 +206,8 @@ export interface Costume {
   bestSeller?: boolean
   /** Optional; when present, list UI shows first entry; detail shows full list */
   characters?: CostumeCharacter[]
+  cost?: number
+  gender?: string
 }
 
 /**
@@ -229,6 +233,8 @@ export interface UpdateCostumeBasicInput {
   rentDiscount: number
   depositAmount: number
   imageFiles?: File[]
+  cost?: number
+  gender?: string
 }
 
 /** Body for PUT /api/surcharges/{id} */
