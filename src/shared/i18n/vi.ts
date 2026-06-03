@@ -566,7 +566,7 @@ export const VI = {
       expired: "Mã QR đã hết hạn. Bấm tạo mã mới để thử lại.",
       refreshQr: "Tạo mã QR mới",
       waitHint: "Chưa được xác nhận trên app. Hãy quét lại hoặc tạo mã QR mới.",
-      
+
       messages: {
         sessionFailed: "Không tạo được mã QR. Vui lòng thử lại.",
         approvedNoToken: "Đã xác nhận nhưng không nhận được token từ máy chủ.",
@@ -779,7 +779,7 @@ export const VI = {
       messenger: "Messenger",
       website: "Website",
       policies: {
-        title: "Chính sách shop",
+        title: "Chính sách của shop",
         rental: "Điều kiện thuê",
         deposit: "Tiền cọc",
         damage: "Chính sách hư hỏng",
@@ -1226,7 +1226,7 @@ export const VI = {
     fullName: "Họ tên",
     phone: "Số điện thoại",
     avatar: "Ảnh đại diện",
-    
+
     validation: {
       usernameRequired: "Tên người dùng là bắt buộc",
       fullNameRequired: "Họ tên là bắt buộc.",
@@ -1960,9 +1960,9 @@ export const VI = {
         equipmentDepreciationCost: "Chi phí khấu hao thiết bị",
         depositAmount: "Tiền cọc",
         minPrice: "Giá tối thiểu",
-       
+
         maxPrice: "Giá tối đa",
-      
+
         albumFiles: "Hình ảnh portfolio",
         uploadButton: "Tải lên",
       },
