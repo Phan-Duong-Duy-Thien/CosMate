@@ -8,6 +8,7 @@ import {
   MessageSquare,
   Banknote,
   AlertTriangle,
+  Star,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 import { VI } from '@/shared/i18n/vi';
@@ -49,6 +50,12 @@ export const staffSidebarItems: StaffSidebarItem[] = [
     label: VI.staff.sidebar.orders,
     icon: CalendarDays,
     path: '/staff/orders',
+  },
+  {
+    key: 'reviews',
+    label: VI.staff.sidebar.reviews,
+    icon: Star,
+    path: '/staff/reviews',
   },
   {
     key: 'customers',

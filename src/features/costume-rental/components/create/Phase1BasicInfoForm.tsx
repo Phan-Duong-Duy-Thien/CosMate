@@ -43,6 +43,8 @@ interface FormValues {
   pricePerDay: number
   rentDiscount: number
   depositAmount: number
+  cost?: number
+  gender?: string
   videoFiles?: { fileList: UploadFile[] }
   cost?: number
   gender?: string
@@ -514,33 +516,33 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
                 <AntImage.PreviewGroup>
                   <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
                     {localImageFileList.map((file) => (
-                        <li
-                          key={file.uid}
-                          className="group relative aspect-square overflow-hidden rounded-md border border-border"
-                        >
-                          <Button
-                            danger
-                            type="primary"
-                            size="small"
-                            shape="circle"
-                            icon={<CloseOutlined />}
-                            className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
-                            onClick={(event) => {
-                              event.preventDefault()
-                              event.stopPropagation()
-                              removeLocalImage(file.uid)
-                            }}
+                      <li
+                        key={file.uid}
+                        className="group relative aspect-square overflow-hidden rounded-md border border-border"
+                      >
+                        <Button
+                          danger
+                          type="primary"
+                          size="small"
+                          shape="circle"
+                          icon={<CloseOutlined />}
+                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                            removeLocalImage(file.uid)
+                          }}
+                        />
+                        {file.thumbUrl ? (
+                          <AntImage
+                            src={file.thumbUrl}
+                            alt=""
+                            className="!h-full !w-full !object-cover"
+                            rootClassName="!h-full !w-full"
                           />
-                          {file.thumbUrl ? (
-                            <AntImage
-                              src={file.thumbUrl}
-                              alt=""
-                              className="!h-full !w-full !object-cover"
-                              rootClassName="!h-full !w-full"
-                            />
-                          ) : null}
-                        </li>
-                      ))}
+                        ) : null}
+                      </li>
+                    ))}
                     {qrImageItems.map((item) => (
                       <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
                         <Button

@@ -1,5 +1,5 @@
 import type { ReactNode } from "react"
-import { Search, MapPin, DollarSign, Calendar, ChevronDown } from "lucide-react"
+import { Search, MapPin, ChevronDown } from "lucide-react"
 
 import { Input } from "@/features/staff-booking/components/ui/input"
 import { Button } from "@/features/staff-booking/components/ui/button"
@@ -25,6 +25,12 @@ const filterDropdownWrap = "relative z-[200] inline-flex shrink-0"
 
 interface ListingFilterBarProps {
   className?: string
+  search: string
+  onSearchChange: (search: string) => void
+  selectedCity: string
+  onCityChange: (city: string) => void
+  selectedSort: string
+  onSortChange: (sort: string) => void
 }
 
 function FilterDropdown({
@@ -56,7 +62,15 @@ function FilterDropdown({
   )
 }
 
-export function ListingFilterBar({ className }: ListingFilterBarProps) {
+export function ListingFilterBar({
+  className,
+  search,
+  onSearchChange,
+  selectedCity,
+  onCityChange,
+  selectedSort,
+  onSortChange,
+}: ListingFilterBarProps) {
   return (
     <div
       className={cn(
@@ -71,6 +85,8 @@ export function ListingFilterBar({ className }: ListingFilterBarProps) {
         />
         <Input
           placeholder="Tìm theo tên hoặc phong cách..."
+          value={search}
+          onChange={(e) => onSearchChange(e.target.value)}
           className="h-11 rounded-xl border-[3px] border-indigo-950/25 bg-white pl-10 pr-3 text-sm font-semibold text-indigo-950 shadow-[3px_3px_0_0_rgba(30,27,75,0.12)] placeholder:text-slate-500 focus:border-indigo-950 focus:ring-2 focus:ring-pink-300"
         />
       </div>
@@ -81,44 +97,26 @@ export function ListingFilterBar({ className }: ListingFilterBarProps) {
           trigger={
             <Button variant="outline" className={cn(triggerClass, "gap-2")}>
               <MapPin className="h-4 w-4 shrink-0 text-pink-600" />
-              Khu vực
+              {selectedCity || "Khu vực"}
               <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
             </Button>
           }
         >
-          <DropdownMenuItem className={menuItemClass}>Hà Nội</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>TP. Hồ Chí Minh</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>Đà Nẵng</DropdownMenuItem>
-        </FilterDropdown>
-
-        <FilterDropdown
-          contentClassName="w-52"
-          trigger={
-            <Button variant="outline" className={cn(triggerClass, "gap-2")}>
-              <DollarSign className="h-4 w-4 shrink-0 text-fuchsia-600" />
-              Mức giá
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
-            </Button>
-          }
-        >
-          <DropdownMenuItem className={menuItemClass}>Dưới 500.000đ</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>500k – 1,5 triệu</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>Trên 1,5 triệu</DropdownMenuItem>
-        </FilterDropdown>
-
-        <FilterDropdown
-          contentClassName="w-52"
-          trigger={
-            <Button variant="outline" className={cn(triggerClass, "gap-2")}>
-              <Calendar className="h-4 w-4 shrink-0 text-emerald-700" />
-              Lịch trống
-              <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
-            </Button>
-          }
-        >
-          <DropdownMenuItem className={menuItemClass}>Cuối tuần này</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>Tuần tới</DropdownMenuItem>
-          <DropdownMenuItem className={menuItemClass}>Chọn ngày cụ thể</DropdownMenuItem>
+          <DropdownMenuItem className={menuItemClass} onClick={() => onCityChange("")}>
+            Tất cả khu vực
+          </DropdownMenuItem>
+          <DropdownMenuItem className={menuItemClass} onClick={() => onCityChange("Hà Nội")}>
+            Hà Nội
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            className={menuItemClass}
+            onClick={() => onCityChange("TP. Hồ Chí Minh")}
+          >
+            TP. Hồ Chí Minh
+          </DropdownMenuItem>
+          <DropdownMenuItem className={menuItemClass} onClick={() => onCityChange("Đà Nẵng")}>
+            Đà Nẵng
+          </DropdownMenuItem>
         </FilterDropdown>
 
         <div className="mx-1 hidden h-8 w-[3px] bg-indigo-950/15 md:block" aria-hidden />
@@ -135,15 +133,32 @@ export function ListingFilterBar({ className }: ListingFilterBarProps) {
                 type="button"
                 className={cn(triggerClass, "inline-flex items-center gap-1 px-3 text-xs")}
               >
-                Đề xuất
+                {selectedSort}
                 <ChevronDown className="h-3.5 w-3.5" />
               </button>
             }
           >
-            <DropdownMenuItem className={menuItemClass}>Đề xuất</DropdownMenuItem>
-            <DropdownMenuItem className={menuItemClass}>Đánh giá cao nhất</DropdownMenuItem>
-            <DropdownMenuItem className={menuItemClass}>Giá: thấp → cao</DropdownMenuItem>
-            <DropdownMenuItem className={menuItemClass}>Giá: cao → thấp</DropdownMenuItem>
+            <DropdownMenuItem className={menuItemClass} onClick={() => onSortChange("Đề xuất")}>
+              Đề xuất
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={() => onSortChange("Đánh giá cao nhất")}
+            >
+              Đánh giá cao nhất
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={() => onSortChange("Giá: thấp → cao")}
+            >
+              Giá: thấp → cao
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              className={menuItemClass}
+              onClick={() => onSortChange("Giá: cao → thấp")}
+            >
+              Giá: cao → thấp
+            </DropdownMenuItem>
           </FilterDropdown>
         </div>
       </div>

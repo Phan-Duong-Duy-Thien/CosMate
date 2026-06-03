@@ -216,16 +216,16 @@ export function BuyTokenPlansSection(props?: BuyTokenPlansSectionProps) {
                 <div className="mx-auto h-4 w-4 animate-spin rounded-full border-2 border-pink-300 border-t-pink-500" />
               </div>
             ) : walletBalance !== null && walletBalance >= 0 ? (
-              <div className="rounded-xl border-[2px] border-green-300 bg-linear-to-r from-green-50 to-emerald-50 p-4">
+              <div className="rounded-xl border-[2px] border-emerald-300 bg-linear-to-r from-emerald-50 to-teal-50/30 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-green-100">
-                    <Wallet className="h-5 w-5 text-green-700" aria-hidden />
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-emerald-100">
+                    <Wallet className="h-5 w-5 text-emerald-600" aria-hidden />
                   </div>
                   <div className="flex-1">
                     <p className="text-xs text-slate-500">
                       {VI.wallet.checkoutValidation.payWithWalletNote}
                     </p>
-                    <p className="text-lg font-bold text-green-700">{formatVnd(walletBalance)}</p>
+                    <p className="text-lg font-bold text-emerald-600">{formatVnd(walletBalance)}</p>
                   </div>
                 </div>
               </div>

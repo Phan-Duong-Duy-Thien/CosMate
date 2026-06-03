@@ -29,3 +29,16 @@ export function resolveReviewAvatarUrl(url: string | null | undefined): string {
   const base = import.meta.env.VITE_API_BASE_URL || 'https://api.cosmate.site';
   return `${base}${trimmed}`;
 }
+
+export const TOXIC_REVIEW_HIDDEN_MESSAGE =
+  'Đánh giá này đã bị ẩn do chứa ngôn từ vi phạm tiêu chuẩn cộng đồng';
+
+export type ReviewModerationFields = {
+  comment?: string | null;
+  isSpamOrToxic?: boolean | null;
+};
+
+export function getPublicReviewCommentText(review: ReviewModerationFields): string {
+  if (review.isSpamOrToxic === true) return TOXIC_REVIEW_HIDDEN_MESSAGE;
+  return review.comment?.trim() ?? '';
+}

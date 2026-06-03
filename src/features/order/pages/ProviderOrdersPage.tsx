@@ -244,7 +244,7 @@ export default function ProviderOrdersPage() {
                 setSelectedOrderId(record.id);
                 setDetailModalOpen(true);
               }}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-info)' }}
+              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
             />
           </Tooltip>
           {record.status === 'PAID' && (

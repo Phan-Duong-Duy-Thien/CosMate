@@ -1,11 +1,22 @@
 import { VI } from "@/shared/i18n/vi"
 
 const RENT_LEAD_DAYS = 3
+const RENT_MAX_DAYS = 60
 
 export function getMinRentStartDateString(): string {
   const d = new Date()
   d.setHours(0, 0, 0, 0)
   d.setDate(d.getDate() + RENT_LEAD_DAYS)
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, "0")
+  const day = String(d.getDate()).padStart(2, "0")
+  return `${y}-${m}-${day}`
+}
+
+export function getMaxRentStartDateString(): string {
+  const d = new Date()
+  d.setHours(0, 0, 0, 0)
+  d.setDate(d.getDate() + RENT_MAX_DAYS)
   const y = d.getFullYear()
   const m = String(d.getMonth() + 1).padStart(2, "0")
   const day = String(d.getDate()).padStart(2, "0")
@@ -32,6 +43,13 @@ export function getRentStartDateValidationError(dateString: string): string | un
 
   if (selected < minDate) {
     return VI.costumeRental.validation.rentStartTooSoon
+  }
+
+  const maxDate = new Date(today)
+  maxDate.setDate(maxDate.getDate() + RENT_MAX_DAYS)
+
+  if (selected > maxDate) {
+    return VI.costumeRental.validation.rentStartTooFar
   }
 
   return undefined

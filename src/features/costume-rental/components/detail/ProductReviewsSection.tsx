@@ -2,6 +2,7 @@ import { Star } from "lucide-react"
 import { Card } from "@/shared/components/Card"
 import { ProviderReplyBlock } from "@/shared/components/ProviderReplyBlock"
 import {
+  getPublicReviewCommentText,
   getReviewReviewerInitial,
   getReviewReviewerName,
   resolveReviewAvatarUrl,
@@ -107,6 +108,8 @@ function ReviewCard({ review }: { review: ReviewItem }) {
   const displayName = getReviewReviewerName(review, VI.costumeRental.detail.reviewer)
   const avatarUrl = resolveReviewAvatarUrl(review.avatarUrl)
   const initial = getReviewReviewerInitial(displayName)
+  const reviewComment = getPublicReviewCommentText(review)
+  const isHiddenByModeration = review.isSpamOrToxic === true
 
   return (
     <Card className="rounded-2xl border-[3px] border-indigo-950 bg-white p-4 shadow-[6px_6px_0_0_rgba(30,27,75,0.45)]">
@@ -137,7 +140,11 @@ function ReviewCard({ review }: { review: ReviewItem }) {
         </div>
         <span className="text-xs font-semibold text-indigo-900/65">{formatDate(review.createdAt)}</span>
       </div>
-      <p className="mt-3 text-sm font-semibold text-indigo-900/85">{review.comment}</p>
+      <p
+        className={`mt-3 text-sm font-semibold ${isHiddenByModeration ? "text-rose-700/90 italic" : "text-indigo-900/85"}`}
+      >
+        {reviewComment}
+      </p>
       {review.images && review.images.length > 0 && (
         <div className="mt-3 flex gap-2">
           {review.images.map((img, idx) => (

@@ -83,11 +83,6 @@ export function ShopProductCard({ product, onClick, onWishlist }: ShopProductCar
               {product.brandName}
             </span>
           )}
-          {product.brandType === 'non_brand' && (
-            <span className="rounded-lg border-[2px] border-indigo-950 bg-slate-100 px-1.5 py-0.5 text-[10px] font-extrabold text-indigo-950">
-              Non-brand
-            </span>
-          )}
           {product.brandType === 'design' && (
             <span className="rounded-lg border-[2px] border-indigo-950 bg-violet-100 px-1.5 py-0.5 text-[10px] font-extrabold text-indigo-950">
               Design

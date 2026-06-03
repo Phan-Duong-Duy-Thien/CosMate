@@ -115,7 +115,11 @@ export function SearchBar({ className }: SearchBarProps) {
                           <p className="line-clamp-1 text-sm font-medium text-slate-800">{costume.name}</p>
                           <p className="truncate text-xs text-slate-500">{costume.description}</p>
                           <p className="mt-0.5 text-sm font-semibold text-pink-600">
-                            {costume.priceMin}k–{costume.priceMax}k<span className="text-xs font-normal text-slate-400">/day</span>
+                            {costume.priceMin === costume.priceMax
+                              ? `${costume.priceMin.toLocaleString('vi-VN')} VND`
+                              : `${costume.priceMin.toLocaleString('vi-VN')}–${costume.priceMax.toLocaleString('vi-VN')} VND`
+                            }
+                            <span className="text-xs font-normal text-slate-400">/ngày</span>
                           </p>
                         </div>
                       </button>

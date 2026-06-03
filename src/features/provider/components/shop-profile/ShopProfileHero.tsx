@@ -8,9 +8,17 @@ interface ShopProfileHeroProps {
   shop: ProviderShop
   onChat?: () => void
   chatLoading?: boolean
+  averageRating?: number
+  totalReviews?: number
 }
 
-export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroProps) {
+export function ShopProfileHero({
+  shop,
+  onChat,
+  chatLoading,
+  averageRating,
+  totalReviews,
+}: ShopProfileHeroProps) {
   const avatarUrl = shop.avatarUrl || 'https://via.placeholder.com/150'
   const coverUrl = shop.coverImageUrl || 'https://via.placeholder.com/1200x300'
 
@@ -88,11 +96,11 @@ export function ShopProfileHero({ shop, onChat, chatLoading }: ShopProfileHeroPr
         <div className="mt-4 flex flex-wrap gap-4 text-sm font-semibold text-indigo-900/75">
           <div className="flex items-center gap-1">
             <Star className="h-4 w-4 text-amber-400" />
-            <span className="font-extrabold text-indigo-950">{shop.rating?.toFixed(1) || '0'}/10</span>
-            <span className="text-indigo-900/55">({shop.totalReviews || 0} {VI.provider.shop.stats.reviews})</span>
+            <span className="font-extrabold text-indigo-950">{(averageRating !== undefined ? averageRating : (shop.totalRating ?? shop.rating ?? 0)).toFixed(1)}/5</span>
+            <span className="text-indigo-900/55">({totalReviews !== undefined ? totalReviews : (shop.totalReviews || 0)} {VI.provider.shop.stats.reviews})</span>
           </div>
           <div className="flex items-center gap-1">
-            <span className="font-extrabold text-indigo-950">{(shop.totalRentals || 0).toLocaleString()}</span>
+            <span className="font-extrabold text-indigo-950">{(shop.completedOrders ?? shop.totalRentals ?? 0).toLocaleString()}</span>
             <span className="text-indigo-900/55">{VI.provider.shop.stats.rentals}</span>
           </div>
         </div>

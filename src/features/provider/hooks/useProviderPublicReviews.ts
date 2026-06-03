@@ -30,7 +30,8 @@ export function useProviderPublicReviews(
     setError(null);
     try {
       const data = await fetchProviderReviews(providerId);
-      setReviews(data);
+      const safeData = data.filter((r) => r.isSpamOrToxic !== true);
+      setReviews(safeData);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Không thể tải đánh giá';
       setError(message);

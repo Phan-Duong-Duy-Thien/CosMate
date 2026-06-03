@@ -1,7 +1,7 @@
 /**
  * Presentational: provider review detail with gallery and reply form (Ant Modal + Image preview).
  */
-import { Modal, Spin, Avatar, Image, Divider, Input, Button as AntButton } from 'antd';
+import { Modal, Spin, Avatar, Image, Divider, Input, Button as AntButton, Tag } from 'antd';
 import { Star } from 'lucide-react';
 
 import type { ProviderReviewDetailNormalized } from '../services/provider.service';
@@ -109,6 +109,13 @@ export function ProviderReviewDetailModal({
               {subtitleHandle ? (
                 <p className="mt-1 text-muted-foreground text-sm">{subtitleHandle}</p>
               ) : null}
+              {detail.isSpamOrToxic === true && (
+                <div className="mt-2">
+                  <Tag color="red" className="m-0 border font-semibold !text-xs !px-1.5 !py-0.5">
+                    Đã bị ẩn (Vi phạm tiêu chuẩn cộng đồng)
+                  </Tag>
+                </div>
+              )}
             </div>
           </div>
 
