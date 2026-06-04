@@ -341,34 +341,55 @@ export default function ProviderCostumeListPage() {
       key: 'actions',
       width: 120,
       align: 'center',
-      render: (_, record) => (
-        <Space size={10} onClick={(e) => e.stopPropagation()}>
-          <Tooltip title="Xem chi tiết">
-            <EyeOutlined
-              onClick={() => openDetail(record.id)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
-            />
-          </Tooltip>
-          <Tooltip title="Sửa trang phục">
-            <EditOutlined
-              onClick={() => editModal.openModal(record.id)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-warning)' }}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Xóa trang phục này?"
-            description="Hành động này không thể hoàn tác."
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true, loading: deletingId === record.id }}
-            onConfirm={() => void removeCostume(record.id)}
-          >
-            <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
-              <DeleteOutlined />
-            </span>
-          </Popconfirm>
-        </Space>
-    ),
+      render: (_, record) => {
+        const isRented = record.status === 'RENTED';
+        return (
+          <Space size={10} onClick={(e) => e.stopPropagation()}>
+            <Tooltip title="Xem chi tiết">
+              <EyeOutlined
+                onClick={() => openDetail(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
+              />
+            </Tooltip>
+            <Tooltip title={isRented ? "Trang phục đang được thuê, không thể chỉnh sửa" : "Sửa trang phục"}>
+              <EditOutlined
+                onClick={() => !isRented && editModal.openModal(record.id)}
+                style={{
+                  cursor: isRented ? 'not-allowed' : 'pointer',
+                  fontSize: 16,
+                  color: isRented ? 'var(--muted-foreground)' : 'var(--cosmate-warning)',
+                  opacity: isRented ? 0.5 : 1,
+                }}
+              />
+            </Tooltip>
+            {isRented ? (
+              <Tooltip title="Trang phục đang được thuê, không thể xóa">
+                <DeleteOutlined
+                  style={{
+                    cursor: 'not-allowed',
+                    fontSize: 16,
+                    color: 'var(--muted-foreground)',
+                    opacity: 0.5,
+                  }}
+                />
+              </Tooltip>
+            ) : (
+              <Popconfirm
+                title="Xóa trang phục này?"
+                description="Hành động này không thể hoàn tác."
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true, loading: deletingId === record.id }}
+                onConfirm={() => void removeCostume(record.id)}
+              >
+                <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
+                  <DeleteOutlined />
+                </span>
+              </Popconfirm>
+            )}
+          </Space>
+        )
+      },
   },
 ]
 
@@ -490,6 +511,9 @@ export default function ProviderCostumeListPage() {
         onSubmitBasicInfo={editModal.submitBasicInfo}
         onUpdateSurcharge={editModal.submitSurchargeUpdate}
         onUpdateRentalOption={editModal.submitRentalOptionUpdate}
+        onDeleteSurcharge={editModal.handleDeleteSurcharge}
+        onDeleteRentalOption={editModal.handleDeleteRentalOption}
+        onDeleteAccessory={editModal.handleDeleteAccessory}
         createSurchargeModalOpen={editModal.createSurchargeModalOpen}
         setCreateSurchargeModalOpen={editModal.setCreateSurchargeModalOpen}
         createRentalOptionModalOpen={editModal.createRentalOptionModalOpen}

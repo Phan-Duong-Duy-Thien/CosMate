@@ -191,6 +191,9 @@ export function ShipOrderModal({ open, orderId, loading, onCancel, onSubmit }: S
                 {VI.provider.orders.shipModal.shippingFeeApproximateHint}
               </p>
             )}
+            <p className="mt-1 text-xs text-slate-500">
+              * {VI.provider.orders.shipModal.shippingFeeSourceNote}
+            </p>
           </div>
         )}
 

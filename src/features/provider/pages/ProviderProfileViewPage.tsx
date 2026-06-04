@@ -4,6 +4,7 @@
  * Public view of provider's own profile — fetched from GET /api/providers/id/{providerId}.
  * Shows shop info, stats, and an Edit button to navigate to the completion page.
  */
+import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Card, Spin, Button, Avatar, Row, Col, Statistic, Descriptions, Typography } from 'antd';
 import { useNavigate } from 'react-router-dom';
@@ -12,6 +13,9 @@ import { DashboardLayout } from '@/app/layouts/DashboardLayout';
 import type { DashboardSidebarItem } from '@/app/layouts/DashboardLayout';
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from '../constants/sidebar';
 import { useCurrentProviderProfile } from '../hooks/useCurrentProviderProfile';
+import { getUserId } from '@/features/auth/services/tokenStorage';
+import { getProviderShopAddress } from '../services/provider.service';
+import type { UserAddress } from '@/features/profile/types';
 import { VI } from '@/shared/i18n/vi';
 
 const { Title, Paragraph, Text } = Typography;
@@ -24,6 +28,29 @@ export default function ProviderProfileViewPage() {
   const isPhotograph = location.pathname.startsWith('/provider-photograph');
   const isEventStaff = location.pathname.startsWith('/provider-event-staff');
   const isRental = !isPhotograph && !isEventStaff;
+
+  const [shopAddress, setShopAddress] = useState<UserAddress | null>(null);
+  const [addressLoading, setAddressLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchAddress = async () => {
+      const userId = getUserId();
+      if (userId && provider?.shopAddressId) {
+        setAddressLoading(true);
+        try {
+          const addr = await getProviderShopAddress(userId, provider.shopAddressId);
+          setShopAddress(addr);
+        } catch (err) {
+          console.error('[ProviderProfileViewPage] fetch address error:', err);
+        } finally {
+          setAddressLoading(false);
+        }
+      } else {
+        setShopAddress(null);
+      }
+    };
+    fetchAddress();
+  }, [provider?.shopAddressId]);
 
   const rawSidebarItems = isPhotograph
     ? photographSidebarItems
@@ -169,6 +196,30 @@ export default function ProviderProfileViewPage() {
               </Paragraph>
             </Card>
           )}
+
+          {/* Shop Address */}
+          <Card 
+            title={isRental ? "Địa chỉ cửa hàng" : "Địa chỉ hoạt động"} 
+            style={{ borderRadius: 12, marginBottom: 16 }}
+            loading={addressLoading}
+          >
+            {shopAddress ? (
+              <Descriptions column={1} size="small">
+                {shopAddress.addressName && (
+                  <Descriptions.Item label="Tên địa chỉ">{shopAddress.addressName}</Descriptions.Item>
+                )}
+                <Descriptions.Item label="Người nhận">{shopAddress.name}</Descriptions.Item>
+                <Descriptions.Item label="Số điện thoại">{shopAddress.phone}</Descriptions.Item>
+                <Descriptions.Item label="Địa chỉ chi tiết">
+                  {`${shopAddress.address}, ${shopAddress.district}, ${shopAddress.city}`}
+                </Descriptions.Item>
+              </Descriptions>
+            ) : (
+              <Text type="secondary">
+                {isRental ? "Chưa cập nhật địa chỉ cửa hàng" : "Chưa cập nhật địa chỉ hoạt động"}
+              </Text>
+            )}
+          </Card>
 
           {/* Bank Info */}
           <Card title="Thông tin thanh toán" style={{ borderRadius: 12, marginBottom: 16 }}>

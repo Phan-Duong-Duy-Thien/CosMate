@@ -33,6 +33,9 @@ interface Props {
   setCreateAccessoryModalOpen: (open: boolean) => void
   onCreateAccessory: (values: AccessoryInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
+  onDeleteSurcharge?: (id: number) => Promise<void>
+  onDeleteRentalOption?: (id: number) => Promise<void>
+  onDeleteAccessory?: (id: number) => Promise<void>
   onGenerateDescription: () => void
   aiTokenGate: AiTokenGateState
   isGeneratingDescription: boolean
@@ -74,11 +77,15 @@ export default function EditCostumeModal({
   setCreateAccessoryModalOpen,
   onCreateAccessory,
   onUpdateAccessory,
-  onGenerateDescription,
-  aiTokenGate,
-  isGeneratingDescription,
-  descriptionPrompt,
-  setDescriptionPrompt,
+  onDeleteSurcharge,
+  onDeleteRentalOption,
+  onDeleteAccessory,
+  // AI props unused in render but kept in signature/Props to avoid breaking parent components:
+  // onGenerateDescription,
+  // aiTokenGate,
+  // isGeneratingDescription,
+  // descriptionPrompt,
+  // setDescriptionPrompt,
   mainImages,
   detailImages,
   imagesLoading,
@@ -104,42 +111,6 @@ export default function EditCostumeModal({
                 loading={basicSubmitting}
                 providerIdMissing={providerId === null}
               />
-              <div className="rounded-xl border border-pink-100 bg-pink-50/40 p-4 space-y-3">
-                {(aiTokenGate.blocked || (!aiTokenGate.loading && !aiTokenGate.canUse)) && (
-                  <AiTokenEmptyState
-                    cost={aiTokenGate.cost}
-                    balance={aiTokenGate.balance}
-                    tokenHubPath={aiTokenGate.tokenHubPath}
-                    featureLabel={aiTokenGate.featureLabel}
-                    message={aiTokenGate.blockedMessage}
-                    compact
-                  />
-                )}
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-sm font-semibold text-slate-700">AI tạo mô tả cho trang phục</p>
-                    <p className="text-xs text-slate-500">
-                      {VI.profile.token.costPerUse(aiTokenGate.featureLabel, aiTokenGate.cost)}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={onGenerateDescription}
-                    disabled={
-                      isGeneratingDescription || aiTokenGate.loading || !aiTokenGate.canUse
-                    }
-                    className="rounded-xl bg-pink-500 px-4 py-2 text-sm font-medium text-white transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    {isGeneratingDescription ? 'Đang tạo...' : 'AI tự viết mô tả'}
-                  </button>
-                </div>
-                <Input.TextArea
-                  rows={3}
-                  value={descriptionPrompt}
-                  onChange={(e) => setDescriptionPrompt(e.target.value)}
-                  placeholder="Ví dụ: viết ngắn gọn, sang trọng, nhấn mạnh chất liệu, vibe anime, phù hợp thuê cosplay..."
-                />
-              </div>
             </div>
           ),
         },
@@ -156,6 +127,9 @@ export default function EditCostumeModal({
               onUpdateSurcharge={onUpdateSurcharge}
               onUpdateRentalOption={onUpdateRentalOption}
               onUpdateAccessory={onUpdateAccessory}
+              onDeleteSurcharge={onDeleteSurcharge}
+              onDeleteRentalOption={onDeleteRentalOption}
+              onDeleteAccessory={onDeleteAccessory}
               surchargeSubmitting={surchargeSubmitting}
               rentalOptionSubmitting={rentalOptionSubmitting}
               accessorySubmitting={accessorySubmitting}

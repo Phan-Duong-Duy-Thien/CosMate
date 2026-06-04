@@ -8,7 +8,18 @@
 import { useState } from 'react'
 import { message } from 'antd'
 import axios from 'axios'
-import { submitPhase1, submitPhase2Batch } from '../services/costumeRental.service'
+import {
+  submitPhase1,
+  createSurchargeService,
+  createAccessoryService,
+  updateAccessoryService,
+} from '../services/costumeRental.service'
+import {
+  getCostumeById,
+  updateSurcharge as updateSurchargeApi,
+  deleteSurcharge,
+  deleteAccessory,
+} from '../api/costumeRental.api'
 import { validateAccessories } from '../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
 import { getUserId } from '@/features/auth/services/tokenStorage'
@@ -18,6 +29,8 @@ import type {
   SurchargeInput,
   AccessoryInput,
   RentalOptionInput,
+  CostumeSurcharge,
+  CostumeAccessory,
 } from '../types'
 
 async function resolveProviderIdForCurrentUser(): Promise<number | null> {
@@ -39,18 +52,18 @@ export interface UseCreateCostumeWizardReturn {
   isPhase2Loading: boolean
   phase1Error: string | null
   phase2Error: string | null
-  surcharges: SurchargeInput[]
-  accessories: AccessoryInput[]
+  surcharges: CostumeSurcharge[]
+  accessories: CostumeAccessory[]
   rentalOptions: RentalOptionInput[]
   handlePhase1Submit: (
     values: Omit<CreateCostumeBasicPayload, 'providerId'> & { imageFiles: File[] },
   ) => Promise<void>
-  addSurcharge: (item: SurchargeInput) => void
-  updateSurcharge: (index: number, item: SurchargeInput) => void
-  removeSurcharge: (index: number) => void
-  addAccessory: (item: AccessoryInput) => void
-  updateAccessory: (index: number, item: AccessoryInput) => void
-  removeAccessory: (index: number) => void
+  addSurcharge: (item: SurchargeInput) => Promise<void>
+  updateSurcharge: (id: number, item: SurchargeInput) => Promise<void>
+  removeSurcharge: (id: number) => Promise<void>
+  addAccessory: (item: AccessoryInput) => Promise<void>
+  updateAccessory: (id: number, item: AccessoryInput) => Promise<void>
+  removeAccessory: (id: number) => Promise<void>
   addRentalOption: (item: RentalOptionInput) => void
   updateRentalOption: (index: number, item: RentalOptionInput) => void
   removeRentalOption: (index: number) => void
@@ -66,9 +79,19 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   const [phase1Error, setPhase1Error] = useState<string | null>(null)
   const [phase2Error, setPhase2Error] = useState<string | null>(null)
 
-  const [surcharges, setSurcharges] = useState<SurchargeInput[]>([])
-  const [accessories, setAccessories] = useState<AccessoryInput[]>([])
+  const [surcharges, setSurcharges] = useState<CostumeSurcharge[]>([])
+  const [accessories, setAccessories] = useState<CostumeAccessory[]>([])
   const [rentalOptions, setRentalOptions] = useState<RentalOptionInput[]>([])
+
+  const syncCostumeState = async (id: number) => {
+    try {
+      const res = await getCostumeById(id)
+      setSurcharges(res.result.surcharges ?? [])
+      setAccessories(res.result.accessories ?? [])
+    } catch (err) {
+      console.error('Failed to sync costume supplementary data:', err)
+    }
+  }
 
   const handlePhase1Submit = async (
     values: Omit<CreateCostumeBasicPayload, 'providerId'> & { imageFiles: File[] },
@@ -76,7 +99,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     setPhase1Error(null)
     const providerId = await resolveProviderIdForCurrentUser()
     if (providerId === null) {
-      setPhase1Error('Khong tim thay provider profile. Vui long dang nhap lai.')
+      setPhase1Error('Không tìm thấy provider profile. Vui lòng đăng nhập lại.')
       return
     }
     setIsPhase1Loading(true)
@@ -90,7 +113,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
       setNumberOfItems(values.numberOfItems)
       setPhase(2)
     } catch (err: unknown) {
-      const rawMessage = err instanceof Error ? err.message : 'Tao trang phuc that bai.'
+      const rawMessage = err instanceof Error ? err.message : 'Tạo trang phục thất bại.'
       const responseMessage = axios.isAxiosError(err)
         ? ((err.response?.data as { message?: string } | undefined)?.message ?? '')
         : ''
@@ -110,7 +133,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
 
   const handlePhase2Submit = async () => {
     if (costumeId === null || typeof costumeId !== 'number') {
-      const errMsg = 'Thieu costumeId. Vui long hoan thanh buoc 1 truoc.'
+      const errMsg = 'Thiếu costumeId. Vui lòng hoàn thành bước 1 trước.'
       setPhase2Error(errMsg)
       message.error(errMsg)
       throw new Error(errMsg)
@@ -130,9 +153,8 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         message.error(msg)
         throw new Error(msg)
       }
-      await submitPhase2Batch(costumeId, { surcharges, accessories, rentalOptions: [] })
-    }catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Luu thong tin bo sung that bai.'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Lưu thông tin bổ sung thất bại.'
       setPhase2Error(msg)
       throw err
     } finally {
@@ -140,17 +162,89 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     }
   }
 
-  const addSurcharge = (item: SurchargeInput) => setSurcharges((p) => [...p, item])
-  const updateSurcharge = (i: number, item: SurchargeInput) =>
-    setSurcharges((p) => p.map((x, idx) => (idx === i ? item : x)))
-  const removeSurcharge = (i: number) =>
-    setSurcharges((p) => p.filter((_, idx) => idx !== i))
+  const addSurcharge = async (item: SurchargeInput) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      const updatedCostume = await createSurchargeService(costumeId, item)
+      setSurcharges(updatedCostume.surcharges ?? [])
+      message.success('Thêm phụ phí thành công!')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Thêm phụ phí thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
 
-  const addAccessory = (item: AccessoryInput) => setAccessories((p) => [...p, item])
-  const updateAccessory = (i: number, item: AccessoryInput) =>
-    setAccessories((p) => p.map((x, idx) => (idx === i ? item : x)))
-  const removeAccessory = (i: number) =>
-    setAccessories((p) => p.filter((_, idx) => idx !== i))
+  const updateSurcharge = async (id: number, item: SurchargeInput) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      await updateSurchargeApi(id, item)
+      message.success('Cập nhật phụ phí thành công!')
+      await syncCostumeState(costumeId)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Cập nhật phụ phí thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
+
+  const removeSurcharge = async (id: number) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      await deleteSurcharge(id)
+      message.success('Xóa phụ phí thành công!')
+      await syncCostumeState(costumeId)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Xóa phụ phí thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
+
+  const addAccessory = async (item: AccessoryInput) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      const updatedCostume = await createAccessoryService(costumeId, item)
+      setAccessories(updatedCostume.accessories ?? [])
+      message.success('Thêm phụ kiện thành công!')
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Thêm phụ kiện thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
+
+  const updateAccessory = async (id: number, item: AccessoryInput) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      await updateAccessoryService(id, item, costumeId)
+      message.success('Cập nhật phụ kiện thành công!')
+      await syncCostumeState(costumeId)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Cập nhật phụ kiện thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
+
+  const removeAccessory = async (id: number) => {
+    if (!costumeId) return
+    setIsPhase2Loading(true)
+    try {
+      await deleteAccessory(id)
+      message.success('Xóa phụ kiện thành công!')
+      await syncCostumeState(costumeId)
+    } catch (err) {
+      message.error(err instanceof Error ? err.message : 'Xóa phụ kiện thất bại.')
+    } finally {
+      setIsPhase2Loading(false)
+    }
+  }
 
   const addRentalOption = (item: RentalOptionInput) => setRentalOptions((p) => [...p, item])
   const updateRentalOption = (i: number, item: RentalOptionInput) =>

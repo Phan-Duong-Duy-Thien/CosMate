@@ -640,26 +640,108 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Row gutter={12}>
           <Col span={12}>
-            <Form.Item label="Chiều cao tối thiểu (cm)" name="heightMin">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
+            <Form.Item
+              label="Chiều cao tối thiểu (cm)"
+              name="heightMin"
+              tooltip="Chiều cao hợp lệ: lớn hơn 100cm và nhỏ hơn 200cm."
+              rules={[
+                {
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value <= 100) {
+                      return Promise.reject(new Error('Chiều cao tối thiểu phải lớn hơn 100cm'));
+                    }
+                    if (value >= 200) {
+                      return Promise.reject(new Error('Chiều cao tối thiểu phải nhỏ hơn 200cm'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <InputNumber min={101} max={199} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Chiều cao tối đa (cm)" name="heightMax">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
+            <Form.Item
+              label="Chiều cao tối đa (cm)"
+              name="heightMax"
+              tooltip="Chiều cao hợp lệ: lớn hơn 100cm và nhỏ hơn 200cm."
+              dependencies={['heightMin']}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value >= 200) {
+                      return Promise.reject(new Error('Chiều cao tối đa phải nhỏ hơn 200cm'));
+                    }
+                    if (value <= 100) {
+                      return Promise.reject(new Error('Chiều cao tối đa phải lớn hơn 100cm'));
+                    }
+                    const minHeight = getFieldValue('heightMin');
+                    if (minHeight !== undefined && minHeight !== null && minHeight !== '' && value < minHeight) {
+                      return Promise.reject(new Error('Chiều cao tối đa không được nhỏ hơn chiều cao tối thiểu'));
+                    }
+                    return Promise.resolve();
+                  }
+                })
+              ]}
+            >
+              <InputNumber min={101} max={199} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={12}>
           <Col span={12}>
-            <Form.Item label="Cân nặng tối thiểu (kg)" name="weightMin">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
+            <Form.Item
+              label="Cân nặng tối thiểu (kg)"
+              name="weightMin"
+              tooltip="Cân nặng hợp lệ: từ 35kg đến 120kg."
+              rules={[
+                {
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value < 35) {
+                      return Promise.reject(new Error('Cân nặng tối thiểu phải từ 35kg trở lên'));
+                    }
+                    if (value > 120) {
+                      return Promise.reject(new Error('Cân nặng tối thiểu phải nhỏ hơn hoặc bằng 120kg'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <InputNumber min={35} max={120} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Cân nặng tối đa (kg)" name="weightMax">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
+            <Form.Item
+              label="Cân nặng tối đa (kg)"
+              name="weightMax"
+              tooltip="Cân nặng hợp lệ: từ 35kg đến 120kg."
+              dependencies={['weightMin']}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value > 120) {
+                      return Promise.reject(new Error('Cân nặng tối đa phải nhỏ hơn hoặc bằng 120kg'));
+                    }
+                    if (value < 35) {
+                      return Promise.reject(new Error('Cân nặng tối đa phải từ 35kg trở lên'));
+                    }
+                    const minWeight = getFieldValue('weightMin');
+                    if (minWeight !== undefined && minWeight !== null && minWeight !== '' && value < minWeight) {
+                      return Promise.reject(new Error('Cân nặng tối đa không được nhỏ hơn cân nặng tối thiểu'));
+                    }
+                    return Promise.resolve();
+                  }
+                })
+              ]}
+            >
+              <InputNumber min={35} max={120} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
             </Form.Item>
           </Col>
         </Row>
@@ -677,8 +759,18 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           name="rentDiscount"
           tooltip="Phần trăm giảm giá áp dụng cho các ngày thuê tiếp theo (từ ngày thứ 2 trở đi). Ví dụ: 20% nghĩa là từ ngày 2, khách chỉ trả 80% giá gốc/ngày."
           extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
+          rules={[
+            {
+              validator(_, value) {
+                if (value !== undefined && value !== null && value >= 75) {
+                  return Promise.reject(new Error('Giảm giá thuê phải nhỏ hơn 75%'))
+                }
+                return Promise.resolve()
+              }
+            }
+          ]}
         >
-          <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
+          <InputNumber min={0} max={74} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
         </Form.Item>
 
         <Form.Item label="Tiền đặt cọc (VNĐ)" name="depositAmount">

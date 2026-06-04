@@ -156,6 +156,9 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
                 {VI.provider.orders.shipModal.shippingFeeApproximateHint}
               </p>
             )}
+            <p className="mt-1 text-xs text-slate-500">
+              * {VI.profile.orders.returnShippingFeeSourceNote}
+            </p>
           </div>
         )}
 
