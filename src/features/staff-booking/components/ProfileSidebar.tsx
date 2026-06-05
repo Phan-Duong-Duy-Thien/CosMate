@@ -94,7 +94,7 @@ export const ProfileSidebar: React.FC<ProfileSidebarProps> = ({
         {/* About Section */}
         <div className="mb-8">
           <h3 className="text-sm font-bold text-cosmate-ink uppercase tracking-widest mb-3">Bio</h3>
-          <p className="text-cosmate-mauve text-sm leading-relaxed mb-4 italic">
+          <p className="text-cosmate-mauve text-sm leading-relaxed mb-4 italic whitespace-pre-line">
             "{bio}"
           </p>
           <div className="flex flex-wrap gap-2">

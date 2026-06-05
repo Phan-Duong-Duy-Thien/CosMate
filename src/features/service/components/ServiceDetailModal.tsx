@@ -151,7 +151,7 @@ export function ServiceDetailModal({
               {VI.service.list.detail.description}
             </Text>
             {service.description ? (
-              <Paragraph style={{ margin: 0 }}>{service.description}</Paragraph>
+              <Paragraph style={{ margin: 0, whiteSpace: 'pre-wrap' }}>{service.description}</Paragraph>
             ) : (
               <Text type="secondary">{VI.service.list.detail.descriptionEmpty}</Text>
             )}

@@ -113,7 +113,7 @@ export function ProfileSidebar({
           </h3>
           <p
             className={cn(
-              "mt-3 rounded-xl border-[2px] border-dashed border-indigo-950/25 bg-white/80 p-3 text-sm font-semibold leading-relaxed text-indigo-950/90 shadow-[3px_3px_0_0_rgba(30,27,75,0.08)]",
+              "mt-3 rounded-xl border-[2px] border-dashed border-indigo-950/25 bg-white/80 p-3 text-sm font-semibold leading-relaxed text-indigo-950/90 shadow-[3px_3px_0_0_rgba(30,27,75,0.08)] whitespace-pre-line",
               !hasBio && "italic text-indigo-900/50"
             )}
           >
