@@ -63,6 +63,14 @@ export function useAISearch(): UseAISearchResult {
       const result = response.data?.result ?? []
       setData(result)
       notifyTokenChanged()
+
+      const message = response.data?.message
+      if (message && (message.includes("Hệ thống AI đang bảo trì") || message.includes("tìm kiếm thông thường"))) {
+        setFallbackUsed(true)
+        setError(message)
+        notification.warning({ message })
+      }
+
       return result
     } catch (err) {
       if (axios.isAxiosError(err) && err.response?.status && [429, 503].includes(err.response.status)) {
