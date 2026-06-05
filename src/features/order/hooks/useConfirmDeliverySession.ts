@@ -3,7 +3,7 @@ import { message } from "antd"
 
 import { generateQrSession } from "@/features/auth/api/auth.api"
 import { getUserId } from "@/features/auth/services/tokenStorage"
-import { fetchWsImageBlobWithRetry, parseImageIdFromWsBody } from "../api/wsImage.api"
+import { fetchWsImageBlobWithRetry, parseImageIdFromWsBody, isVideoFile } from "../api/wsImage.api"
 import { buildConfirmDeliveryQrUrl } from "../constants/confirmDeliveryQr"
 import { confirmDeliveryOrder } from "../services/order.service"
 import { subscribeWsImageSession } from "../services/wsImageSession.service"
@@ -75,6 +75,7 @@ function revokePreviewUrls(images: ConfirmDeliveryPreviewImage[]): void {
 export type ConfirmDeliveryPreviewImage = {
   id: string
   url: string
+  mimeType?: string
 }
 
 type UseConfirmDeliverySessionOptions = {
@@ -187,7 +188,29 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
     }
 
     try {
-      const blob = await fetchWsImageBlobWithRetry(imageId)
+      let blob = await fetchWsImageBlobWithRetry(imageId)
+      const isVideo = await isVideoFile(blob, imageId)
+      if (isVideo) {
+        if (!blob.type.startsWith("video/")) {
+          let type = "video/mp4"
+          if (imageId.toLowerCase().endsWith(".mov") || imageId.toLowerCase().endsWith(".quicktime")) {
+            type = "video/quicktime"
+          }
+          blob = new Blob([blob], { type })
+        }
+      } else {
+        if (!blob.type.startsWith("image/")) {
+          let type = "image/jpeg"
+          if (imageId.toLowerCase().endsWith(".png")) {
+            type = "image/png"
+          } else if (imageId.toLowerCase().endsWith(".gif")) {
+            type = "image/gif"
+          } else if (imageId.toLowerCase().endsWith(".webp")) {
+            type = "image/webp"
+          }
+          blob = new Blob([blob], { type })
+        }
+      }
       const url = URL.createObjectURL(blob)
 
       setPreviewImages((prev) => {
@@ -199,7 +222,7 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
           URL.revokeObjectURL(url)
           return prev
         }
-        return [...prev, { id: imageId, url }]
+        return [...prev, { id: imageId, url, mimeType: blob.type }]
       })
     } catch (err) {
       const detail = err instanceof Error ? err.message : ""
@@ -334,10 +357,16 @@ export function useConfirmDeliverySession({ orderId, open }: UseConfirmDeliveryS
       for (const preview of previewImages) {
         const blobRes = await fetch(preview.url)
         const blob = await blobRes.blob()
-        const ext = blob.type.includes("png") ? "png" : "jpg"
+        const isVideo = blob.type.startsWith("video/")
+        let ext = "jpg"
+        if (isVideo) {
+          ext = blob.type.includes("quicktime") || blob.type.includes("mov") ? "mov" : "mp4"
+        } else if (blob.type.includes("png")) {
+          ext = "png"
+        }
         images.push(
           new File([blob], `confirm-${preview.id}.${ext}`, {
-            type: blob.type || "image/jpeg",
+            type: blob.type || (isVideo ? "video/mp4" : "image/jpeg"),
           })
         )
         notes.push("")

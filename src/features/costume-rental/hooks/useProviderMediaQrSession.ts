@@ -6,6 +6,7 @@ import { getUserId } from "@/features/auth/services/tokenStorage"
 import {
   fetchWsImageBlobWithRetry,
   parseImageIdFromWsBody,
+  isVideoFile,
 } from "@/features/order/api/wsImage.api"
 import { subscribeWsImageSession } from "@/features/order/services/wsImageSession.service"
 import {
@@ -173,12 +174,30 @@ export function useProviderMediaQrSession(active: boolean, externalImageCount = 
     }
 
     try {
-      const blob = await fetchWsImageBlobWithRetry(mediaId)
-      const mimeType = blob.type || ""
-      if (mimeType.startsWith("video/")) {
-        message.warning("QR hiện chỉ hỗ trợ gửi ảnh. Vui lòng tải video từ máy tính.")
-        return
+      let blob = await fetchWsImageBlobWithRetry(mediaId)
+      const isVideo = await isVideoFile(blob, mediaId)
+      if (isVideo) {
+        if (!blob.type.startsWith("video/")) {
+          let type = "video/mp4"
+          if (mediaId.toLowerCase().endsWith(".mov") || mediaId.toLowerCase().endsWith(".quicktime")) {
+            type = "video/quicktime"
+          }
+          blob = new Blob([blob], { type })
+        }
+      } else {
+        if (!blob.type.startsWith("image/")) {
+          let type = "image/jpeg"
+          if (mediaId.toLowerCase().endsWith(".png")) {
+            type = "image/png"
+          } else if (mediaId.toLowerCase().endsWith(".gif")) {
+            type = "image/gif"
+          } else if (mediaId.toLowerCase().endsWith(".webp")) {
+            type = "image/webp"
+          }
+          blob = new Blob([blob], { type })
+        }
       }
+      const mimeType = blob.type || ""
       const url = URL.createObjectURL(blob)
 
       setImageItems((prev) => {

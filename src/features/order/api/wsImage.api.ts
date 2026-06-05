@@ -95,3 +95,37 @@ export async function fetchWsImageBlobWithRetry(
   }
   throw lastError
 }
+
+export async function isVideoFile(blob: Blob, filename: string): Promise<boolean> {
+  if (blob.type.startsWith("video/")) return true
+  if (/\.(mp4|mov|m4v|3gp|avi|quicktime)$/i.test(filename)) return true
+  try {
+    const buffer = await blob.slice(0, 12).arrayBuffer()
+    const view = new DataView(buffer)
+    if (view.byteLength >= 12) {
+      const magic = view.getUint32(4, false)
+      if (magic === 0x66747970) { // ftyp
+        const brand = view.getUint32(8, false)
+        const brandStr = String.fromCharCode(
+          (brand >> 24) & 0xff,
+          (brand >> 16) & 0xff,
+          (brand >> 8) & 0xff,
+          brand & 0xff
+        ).trim().toLowerCase()
+        
+        // Differentiate HEIC/HEIF/AVIF image brands using the same ISOBMFF container
+        if (["heic", "heix", "mif1", "msf1", "hevc", "hevx", "avif", "avis"].includes(brandStr)) {
+          return false
+        }
+        return true // It's an MP4/MOV video
+      }
+    }
+    if (view.byteLength >= 4) {
+      const magic = view.getUint32(0, false)
+      if (magic === 0x1A45DFA3) return true // EBML (MKV/WebM)
+    }
+  } catch {
+    // ignore
+  }
+  return false
+}

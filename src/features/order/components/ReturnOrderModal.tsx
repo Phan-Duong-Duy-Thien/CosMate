@@ -31,6 +31,7 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
   const [selectedCarrier, setSelectedCarrier] = useState<string | null>(null);
   const [customCarrier, setCustomCarrier] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [previewMedia, setPreviewMedia] = useState<{ url: string; isVideo: boolean } | null>(null);
 
   const {
     qrValue,
@@ -77,10 +78,16 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
     for (const preview of previewImages) {
       const blobRes = await fetch(preview.url);
       const blob = await blobRes.blob();
-      const ext = blob.type.includes('png') ? 'png' : 'jpg';
+      const isVideo = blob.type.startsWith('video/');
+      let ext = 'jpg';
+      if (isVideo) {
+        ext = blob.type.includes('quicktime') || blob.type.includes('mov') ? 'mov' : 'mp4';
+      } else if (blob.type.includes('png')) {
+        ext = 'png';
+      }
       images.push(
         new File([blob], `return-${preview.id}.${ext}`, {
-          type: blob.type || 'image/jpeg',
+          type: blob.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
         }),
       );
       notes.push('');
@@ -230,23 +237,39 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
               </p>
             </div>
           ) : (
-            <AntImage.PreviewGroup>
-              <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                {previewImages.map((img) => (
+            <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+              {previewImages.map((img) => {
+                const isVideo = !!img.mimeType?.startsWith('video/');
+                return (
                   <li
                     key={img.id}
-                    className="aspect-square overflow-hidden rounded-xl border-[2px] border-indigo-950/30 bg-slate-100"
+                    onClick={() => setPreviewMedia({ url: img.url, isVideo })}
+                    className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-xl border-[2px] border-indigo-950/30 bg-slate-100 transition-all hover:scale-[1.03]"
                   >
-                    <AntImage
-                      src={img.url}
-                      alt=""
-                      className="!h-full !w-full !object-cover"
-                      rootClassName="!h-full !w-full"
-                    />
+                    {isVideo ? (
+                      <video
+                        src={img.url}
+                        className="h-full w-full object-cover"
+                        muted
+                        controls={false}
+                        playsInline
+                      />
+                    ) : (
+                      <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    )}
+                    {isVideo && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-md">
+                          <svg className="ml-0.5 h-4 w-4 fill-indigo-950 text-indigo-950" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
                   </li>
-                ))}
-              </ul>
-            </AntImage.PreviewGroup>
+                );
+              })}
+            </ul>
           )}
         </div>
 
@@ -254,6 +277,30 @@ export function ReturnOrderModal({ open, orderId, loading, onCancel, onSubmit }:
           {VI.profile.orders.returnImages}: vui lòng quét QR bằng mobile để tải ảnh xác nhận tình trạng trang phục.
         </p>
       </div>
+
+      <Modal
+        open={!!previewMedia}
+        footer={null}
+        onCancel={() => setPreviewMedia(null)}
+        centered
+        destroyOnClose
+        styles={{ body: { padding: 0, overflow: "hidden" } }}
+      >
+        {previewMedia?.isVideo ? (
+          <video
+            src={previewMedia.url}
+            controls
+            autoPlay
+            style={{ width: "100%", maxHeight: "80vh", display: "block", background: "#000" }}
+          />
+        ) : (
+          <img
+            src={previewMedia?.url}
+            alt="Preview"
+            style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", display: "block" }}
+          />
+        )}
+      </Modal>
     </Modal>
   );
 }
