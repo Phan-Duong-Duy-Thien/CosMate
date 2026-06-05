@@ -199,6 +199,7 @@ interface Phase2BuilderTabsProps {
   onAddRentalOption: (item: RentalOptionInput) => void
   onUpdateRentalOption: (i: number, item: RentalOptionInput) => void
   onFinish: () => Promise<void>
+  onBack?: () => void
   loading: boolean
   error: string | null
 }
@@ -214,6 +215,7 @@ export default function Phase2BuilderTabs({
   onUpdateAccessory,
   onRemoveAccessory,
   onFinish,
+  onBack,
   loading,
   error,
 }: Phase2BuilderTabsProps) {
@@ -238,11 +240,18 @@ export default function Phase2BuilderTabs({
 
   return (
     <div>
-      <Tabs items={tabItems} />
+      <Tabs items={tabItems} destroyInactiveTabPane={false} />
       {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-      <Button type="primary" size="large" loading={loading} onClick={onFinish} block>
-        {VI.costumeRental.common.save}
-      </Button>
+      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+        {onBack && (
+          <Button size="large" onClick={onBack}>
+            ← Quay lại
+          </Button>
+        )}
+        <Button type="primary" size="large" loading={loading} onClick={onFinish} block>
+          {VI.costumeRental.common.save}
+        </Button>
+      </div>
     </div>
   )
 }

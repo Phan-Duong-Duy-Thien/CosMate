@@ -5,7 +5,7 @@
  * Delegates API orchestration to costumeRental.service.
  */
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { message } from 'antd'
 import axios from 'axios'
 import {
@@ -32,6 +32,35 @@ import type {
   CostumeSurcharge,
   CostumeAccessory,
 } from '../types'
+
+// ── Session Storage helpers (draft persistence) ───────────────────────────────
+
+const WIZARD_STORAGE_KEY = 'cosmate_create_wizard_state'
+export const WIZARD_FORM_STORAGE_KEY = 'cosmate_create_wizard_form'
+
+interface WizardPersistedState {
+  phase: 1 | 2
+  costumeId: number | null
+  numberOfItems: number
+}
+
+function loadWizardState(): WizardPersistedState | null {
+  try {
+    const raw = sessionStorage.getItem(WIZARD_STORAGE_KEY)
+    if (!raw) return null
+    return JSON.parse(raw) as WizardPersistedState
+  } catch {
+    return null
+  }
+}
+
+function saveWizardState(state: WizardPersistedState): void {
+  try {
+    sessionStorage.setItem(WIZARD_STORAGE_KEY, JSON.stringify(state))
+  } catch { /* ignore quota errors */ }
+}
+
+// ── Provider ID resolver ──────────────────────────────────────────────────────
 
 async function resolveProviderIdForCurrentUser(): Promise<number | null> {
   const userId = getUserId()
@@ -68,12 +97,16 @@ export interface UseCreateCostumeWizardReturn {
   updateRentalOption: (index: number, item: RentalOptionInput) => void
   removeRentalOption: (index: number) => void
   handlePhase2Submit: () => Promise<void>
+  goBackToPhase1: () => void
+  clearDraft: () => void
 }
 
 export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
-  const [phase, setPhase] = useState<1 | 2>(1)
-  const [costumeId, setCostumeId] = useState<number | null>(null)
-  const [numberOfItems, setNumberOfItems] = useState<number>(1)
+  const [restoredState] = useState(() => loadWizardState())
+
+  const [phase, setPhase] = useState<1 | 2>(restoredState?.phase ?? 1)
+  const [costumeId, setCostumeId] = useState<number | null>(restoredState?.costumeId ?? null)
+  const [numberOfItems, setNumberOfItems] = useState<number>(restoredState?.numberOfItems ?? 1)
   const [isPhase1Loading, setIsPhase1Loading] = useState(false)
   const [isPhase2Loading, setIsPhase2Loading] = useState(false)
   const [phase1Error, setPhase1Error] = useState<string | null>(null)
@@ -93,9 +126,28 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     }
   }
 
+  // Persist wizard state to sessionStorage on every relevant change
+  useEffect(() => {
+    saveWizardState({ phase, costumeId, numberOfItems })
+  }, [phase, costumeId, numberOfItems])
+
+  // On mount: if resuming at Phase 2, re-fetch surcharges & accessories from API
+  useEffect(() => {
+    if (restoredState?.phase === 2 && restoredState?.costumeId) {
+      void syncCostumeState(restoredState.costumeId)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   const handlePhase1Submit = async (
     values: Omit<CreateCostumeBasicPayload, 'providerId'> & { imageFiles: File[] },
   ) => {
+    // If Phase 1 was already submitted (costume exists), just advance to Phase 2
+    if (costumeId !== null) {
+      setPhase(2)
+      return
+    }
+
     setPhase1Error(null)
     const providerId = await resolveProviderIdForCurrentUser()
     if (providerId === null) {
@@ -252,6 +304,15 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
   const removeRentalOption = (i: number) =>
     setRentalOptions((p) => p.filter((_, idx) => idx !== i))
 
+  const goBackToPhase1 = useCallback(() => {
+    setPhase(1)
+  }, [])
+
+  const clearDraft = useCallback(() => {
+    sessionStorage.removeItem(WIZARD_STORAGE_KEY)
+    sessionStorage.removeItem(WIZARD_FORM_STORAGE_KEY)
+  }, [])
+
   return {
     phase,
     costumeId,
@@ -274,5 +335,7 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
     updateRentalOption,
     removeRentalOption,
     handlePhase2Submit,
+    goBackToPhase1,
+    clearDraft,
   }
 }

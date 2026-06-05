@@ -24,6 +24,7 @@ import { VI } from '@/shared/i18n/vi'
 import { notifyTokenChanged } from '@/shared/sync/dataSync'
 import { mapGenerateDescriptionError } from '../../utils/costumeAiErrors'
 import { useProviderMediaQrSession } from '../../hooks/useProviderMediaQrSession'
+import { WIZARD_FORM_STORAGE_KEY } from '../../hooks/useCreateCostumeWizard'
 
 const { TextArea } = Input
 
@@ -93,6 +94,17 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     removeImageItem,
     maxImages,
   } = useProviderMediaQrSession(true, localImageFileList.length)
+
+  // Restore Phase 1 form values from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(WIZARD_FORM_STORAGE_KEY)
+      if (raw) {
+        const saved = JSON.parse(raw)
+        form.setFieldsValue(saved)
+      }
+    } catch { /* ignore parse errors */ }
+  }, [form])
 
   const watchedName = Form.useWatch('name', form)
   const watchedDescription = Form.useWatch('description', form) ?? ''
@@ -368,6 +380,13 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         layout="vertical"
         initialValues={{ characterIds: [] }}
         onFinish={handleFinish}
+        onValuesChange={(_, allValues) => {
+          try {
+            // Exclude non-serializable fields (File objects)
+            const { videoFiles, ...serializable } = allValues
+            sessionStorage.setItem(WIZARD_FORM_STORAGE_KEY, JSON.stringify(serializable))
+          } catch { /* ignore quota errors */ }
+        }}
         disabled={disabled || loading}
         style={{ maxWidth: 640, margin: '0 auto' }}
       >

@@ -133,6 +133,9 @@ export default function ServiceDetailPage() {
       s.minPrice > 0 &&
       s.maxPrice > 0
     ) {
+      if (s.minPrice === s.maxPrice) {
+        return `${s.minPrice.toLocaleString("vi-VN")}đ`
+      }
       return `${s.minPrice.toLocaleString("vi-VN")} – ${s.maxPrice.toLocaleString("vi-VN")}đ`
     }
     if (s.pricePerSlot > 0) {
