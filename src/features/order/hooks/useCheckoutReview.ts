@@ -8,9 +8,10 @@ import { loadDraft, saveDraft, loadCheckoutSelections, saveCheckoutSelections, c
 import { buildAddressCreateFromCheckoutUrl, buildWalletTopUpFromCheckoutUrl } from '../utils/checkoutNavigation';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume } from '@/features/costume-rental/types';
-import type { PaymentMethod } from '../types';
+import type { PaymentMethod, RentalDraft, CreateOrderParams } from '../types';
 import { getReturnUrl } from '../utils/paymentReturnUrls';
 import { getUserId } from '@/features/auth/services/tokenStorage';
+import type { UserAddress } from '@/features/profile/types';
 
 interface CheckoutState {
   addresses: UserAddress[];
@@ -39,7 +40,20 @@ interface CheckoutActions {
   navigateToAddAddress: () => void;
 }
 
-export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
+export type CheckoutComputed = {
+  requiredAccessoryIds: number[];
+  finalAccessoryIds: number[];
+  selectedAccessories: Costume['accessories'];
+  baseRent: number;
+  accessoriesTotal: number;
+  surchargesTotal: number;
+  deposit: number;
+  totalToPay: number;
+} | null;
+
+export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions & {
+  computed: CheckoutComputed;
+};
 
 export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReviewReturn {
   const [state, setState] = useState<CheckoutState>({
