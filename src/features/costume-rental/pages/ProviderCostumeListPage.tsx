@@ -341,34 +341,40 @@ export default function ProviderCostumeListPage() {
       key: 'actions',
       width: 120,
       align: 'center',
-      render: (_, record) => (
-        <Space size={10} onClick={(e) => e.stopPropagation()}>
-          <Tooltip title="Xem chi tiết">
-            <EyeOutlined
-              onClick={() => openDetail(record.id)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
-            />
-          </Tooltip>
-          <Tooltip title="Sửa trang phục">
-            <EditOutlined
-              onClick={() => editModal.openModal(record.id)}
-              style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-warning)' }}
-            />
-          </Tooltip>
-          <Popconfirm
-            title="Xóa trang phục này?"
-            description="Hành động này không thể hoàn tác."
-            okText="Xóa"
-            cancelText="Hủy"
-            okButtonProps={{ danger: true, loading: deletingId === record.id }}
-            onConfirm={() => void removeCostume(record.id)}
-          >
-            <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
-              <DeleteOutlined />
-            </span>
-          </Popconfirm>
-        </Space>
-    ),
+      render: (_, record) => {
+        return (
+          <Space size={10} onClick={(e) => e.stopPropagation()}>
+            <Tooltip title="Xem chi tiết">
+              <EyeOutlined
+                onClick={() => openDetail(record.id)}
+                style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
+              />
+            </Tooltip>
+            <Tooltip title="Sửa trang phục">
+              <EditOutlined
+                onClick={() => editModal.openModal(record.id)}
+                style={{
+                  cursor: 'pointer',
+                  fontSize: 16,
+                  color: 'var(--cosmate-warning)',
+                }}
+              />
+            </Tooltip>
+            <Popconfirm
+              title="Xóa trang phục này?"
+              description="Hành động này không thể hoàn tác."
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true, loading: deletingId === record.id }}
+              onConfirm={() => void removeCostume(record.id)}
+            >
+              <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
+                <DeleteOutlined />
+              </span>
+            </Popconfirm>
+          </Space>
+        )
+      },
   },
 ]
 
@@ -490,6 +496,9 @@ export default function ProviderCostumeListPage() {
         onSubmitBasicInfo={editModal.submitBasicInfo}
         onUpdateSurcharge={editModal.submitSurchargeUpdate}
         onUpdateRentalOption={editModal.submitRentalOptionUpdate}
+        onDeleteSurcharge={editModal.handleDeleteSurcharge}
+        onDeleteRentalOption={editModal.handleDeleteRentalOption}
+        onDeleteAccessory={editModal.handleDeleteAccessory}
         createSurchargeModalOpen={editModal.createSurchargeModalOpen}
         setCreateSurchargeModalOpen={editModal.setCreateSurchargeModalOpen}
         createRentalOptionModalOpen={editModal.createRentalOptionModalOpen}

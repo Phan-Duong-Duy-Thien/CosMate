@@ -18,7 +18,13 @@ import { message } from 'antd'
 import { useAiTokenGate } from '@/features/profile/hooks/useAiTokenGate'
 import { notifyTokenChanged } from '@/shared/sync/dataSync'
 import { mapGenerateDescriptionError } from '../utils/costumeAiErrors'
-import { generateCostumeDescriptionByAI, getCostumeById } from '../api/costumeRental.api'
+import {
+  generateCostumeDescriptionByAI,
+  getCostumeById,
+  deleteSurcharge,
+  deleteRentalOption,
+  deleteAccessory,
+} from '../api/costumeRental.api'
 import {
   updateCostumeBasic,
   updateSurcharge,
@@ -333,6 +339,69 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     [editingId, onSuccess],
   )
 
+  const handleDeleteSurcharge = useCallback(
+    async (surchargeId: number) => {
+      if (!editingId) return
+      setSurchargeSubmitting(true)
+      try {
+        await deleteSurcharge(surchargeId)
+        message.success('Xóa phụ phí thành công!')
+        const res = await getCostumeById(editingId)
+        setDetail(res.result)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : 'Xóa phụ phí thất bại.',
+        )
+      } finally {
+        setSurchargeSubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
+  const handleDeleteRentalOption = useCallback(
+    async (rentalOptionId: number) => {
+      if (!editingId) return
+      setRentalOptionSubmitting(true)
+      try {
+        await deleteRentalOption(rentalOptionId)
+        message.success('Xóa gói thuê thành công!')
+        const res = await getCostumeById(editingId)
+        setDetail(res.result)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : 'Xóa gói thuê thất bại.',
+        )
+      } finally {
+        setRentalOptionSubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
+  const handleDeleteAccessory = useCallback(
+    async (accessoryId: number) => {
+      if (!editingId) return
+      setAccessorySubmitting(true)
+      try {
+        await deleteAccessory(accessoryId)
+        message.success('Xóa phụ kiện thành công!')
+        const res = await getCostumeById(editingId)
+        setDetail(res.result)
+        onSuccess?.()
+      } catch (err) {
+        message.error(
+          err instanceof Error ? err.message : 'Xóa phụ kiện thất bại.',
+        )
+      } finally {
+        setAccessorySubmitting(false)
+      }
+    },
+    [editingId, onSuccess],
+  )
+
   // ── Image hooks ───────────────────────────────────────────────────────────
   const {
     mainImages,
@@ -425,6 +494,9 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
     setCreateAccessoryModalOpen,
     handleCreateAccessory,
     handleUpdateAccessory,
+    handleDeleteSurcharge,
+    handleDeleteRentalOption,
+    handleDeleteAccessory,
 
     // AI description (EditCostumeModal)
     descriptionPrompt,

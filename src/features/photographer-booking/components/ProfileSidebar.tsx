@@ -77,15 +77,15 @@ export function ProfileSidebar({
 
         <div className="mb-8 grid grid-cols-2 gap-3">
           <div className="rounded-xl border-[3px] border-indigo-950 bg-white p-3 text-center shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
-            <div className="text-xl font-extrabold text-indigo-950 tabular-nums">{jobs}+</div>
+            <div className="text-xl font-extrabold text-indigo-950 tabular-nums">{jobs} đơn</div>
             <p className="mt-1 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800/70">
-              Khách hàng
+              Hoàn thành
             </p>
           </div>
           <div className="rounded-xl border-[3px] border-indigo-950 bg-gradient-to-br from-violet-100 to-pink-100 p-3 text-center shadow-[4px_4px_0_0_rgba(30,27,75,0.2)]">
             <div className="text-xl font-extrabold text-indigo-950">{responseRate}</div>
             <p className="mt-1 text-[10px] font-extrabold uppercase tracking-wide text-indigo-800/75">
-              Phản hồi
+              Tích cực
             </p>
           </div>
         </div>

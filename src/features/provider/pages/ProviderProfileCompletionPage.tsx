@@ -17,6 +17,7 @@ import { useProviderProfileCompletion } from '../hooks/useProviderProfileComplet
 import { useProviderVerification } from '../hooks/useProviderVerification';
 import { getCancellationPolicies, deleteCancellationPolicy, createCancellationPolicy, type CancellationPolicy } from '../api/cancellationPolicy.api';
 import { Trash2, Plus } from 'lucide-react';
+import { ImageCropDialog } from '@/features/profile/components/ImageCropDialog';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -26,6 +27,10 @@ export default function ProviderProfileCompletionPage() {
   const location = useLocation();
   const { profile, refetch, loading: profileLoading } = useProviderVerification();
   const providerId = profile?.id;
+
+  // Image cropping states
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropMode, setCropMode] = useState<'avatar' | 'cover' | null>(null);
 
   // Determine which home page to navigate to based on current route
   const homePath = location.pathname.startsWith('/provider-photograph')
@@ -540,11 +545,11 @@ export default function ProviderProfileCompletionPage() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            await uploadAvatar(file);
-                            await refetch();
+                            setCropFile(file);
+                            setCropMode('avatar');
                             e.target.value = '';
                           }}
                           style={{ display: 'none' }}
@@ -629,11 +634,11 @@ export default function ProviderProfileCompletionPage() {
                         <input
                           type="file"
                           accept="image/*"
-                          onChange={async (e) => {
+                          onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (!file) return;
-                            await uploadCoverImage(file);
-                            await refetch();
+                            setCropFile(file);
+                            setCropMode('cover');
                             e.target.value = '';
                           }}
                           style={{ display: 'none' }}
@@ -798,6 +803,30 @@ export default function ProviderProfileCompletionPage() {
         )}
 
       </Card>
+
+      <ImageCropDialog
+        open={cropMode !== null}
+        file={cropFile}
+        title={cropMode === 'avatar' ? 'Chỉnh sửa ảnh đại diện' : 'Chỉnh sửa ảnh bìa'}
+        aspect={cropMode === 'avatar' ? 1 : 16 / 6}
+        cropShape={cropMode === 'avatar' ? 'round' : 'rect'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCropFile(null);
+            setCropMode(null);
+          }
+        }}
+        onConfirm={async (result) => {
+          if (cropMode === 'avatar') {
+            await uploadAvatar(result.file);
+          } else if (cropMode === 'cover') {
+            await uploadCoverImage(result.file);
+          }
+          await refetch();
+          setCropFile(null);
+          setCropMode(null);
+        }}
+      />
     </DashboardLayout>
   );
 }

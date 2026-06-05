@@ -23,6 +23,7 @@ import {
   Divider,
   Switch,
   Alert,
+  Popconfirm,
 } from 'antd'
 import { EditOutlined, PlusOutlined } from '@ant-design/icons'
 import type {
@@ -49,10 +50,11 @@ const RENTAL_OPTION_NAMES: RentalOptionName[] = ['FEST', 'SHOOT', 'TEST', 'EVENT
 interface SurchargeEditProps {
   item: CostumeSurcharge
   onSave: (id: number, values: SurchargeUpdateInput) => Promise<void>
+  onDelete?: (id: number) => Promise<void>
   saving: boolean
 }
 
-function SurchargeCard({ item, onSave, saving }: SurchargeEditProps) {
+function SurchargeCard({ item, onSave, onDelete, saving }: SurchargeEditProps) {
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm<SurchargeUpdateInput>()
 
@@ -72,9 +74,25 @@ function SurchargeCard({ item, onSave, saving }: SurchargeEditProps) {
       <Card
         size="small"
         extra={
-          <Button size="small" icon={<EditOutlined />} onClick={handleOpen}>
-            {VI.costumeRental.common.edit}
-          </Button>
+          <Space>
+            <Button size="small" icon={<EditOutlined />} onClick={handleOpen}>
+              {VI.costumeRental.common.edit}
+            </Button>
+            {onDelete && (
+              <Popconfirm
+                title="Xác nhận xóa"
+                description="Bạn có chắc chắn muốn xóa phụ phí này?"
+                onConfirm={() => onDelete(item.id)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true, loading: saving }}
+              >
+                <Button size="small" danger>
+                  Xóa
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
         }
         style={{ marginBottom: 8 }}
       >
@@ -178,6 +196,7 @@ interface RentalOptionEditProps {
   items: CostumeRentalOption[]
   onSave: (id: number, values: RentalOptionUpdateInput) => Promise<void>
   onCreate: (values: RentalOptionInput) => Promise<void>
+  onDelete?: (id: number) => Promise<void>
   saving: boolean
 }
 
@@ -188,7 +207,7 @@ const RENTAL_OPTION_LABELS: Record<RentalOptionName, string> = {
   EVENT: 'Sự kiện',
 }
 
-function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEditProps) {
+function RentalOptionSection({ items, onSave, onCreate, onDelete, saving }: RentalOptionEditProps) {
   // Build a map from current items for easy lookup
   const itemsMap = new Map<RentalOptionName, CostumeRentalOption>()
   items.forEach((item) => {
@@ -290,9 +309,25 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
               }
               extra={
                 item ? (
-                  <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(name)}>
-                    {VI.costumeRental.common.edit}
-                  </Button>
+                  <Space>
+                    <Button size="small" icon={<EditOutlined />} onClick={() => handleEdit(name)}>
+                      {VI.costumeRental.common.edit}
+                    </Button>
+                    {onDelete && (
+                      <Popconfirm
+                        title="Xác nhận xóa"
+                        description="Bạn có chắc chắn muốn xóa gói thuê này?"
+                        onConfirm={() => onDelete(item.id)}
+                        okText="Xóa"
+                        cancelText="Hủy"
+                        okButtonProps={{ danger: true, loading: saving }}
+                      >
+                        <Button size="small" danger>
+                          Xóa
+                        </Button>
+                      </Popconfirm>
+                    )}
+                  </Space>
                 ) : (
                   <Button size="small" type="primary" onClick={() => openCreateModal(name)}>
                     Thêm mới
@@ -351,10 +386,11 @@ function RentalOptionSection({ items, onSave, onCreate, saving }: RentalOptionEd
 interface AccessoryCardProps {
   item: CostumeAccessory
   onSave: (id: number, values: AccessoryUpdateInput) => Promise<void>
+  onDelete?: (id: number) => Promise<void>
   saving: boolean
 }
 
-function AccessoryCard({ item, onSave, saving }: AccessoryCardProps) {
+function AccessoryCard({ item, onSave, onDelete, saving }: AccessoryCardProps) {
   const [open, setOpen] = useState(false)
   const [form] = Form.useForm<AccessoryUpdateInput>()
 
@@ -374,9 +410,25 @@ function AccessoryCard({ item, onSave, saving }: AccessoryCardProps) {
       <Card
         size="small"
         extra={
-          <Button size="small" icon={<EditOutlined />} onClick={handleOpen}>
-            {VI.costumeRental.common.edit}
-          </Button>
+          <Space>
+            <Button size="small" icon={<EditOutlined />} onClick={handleOpen}>
+              {VI.costumeRental.common.edit}
+            </Button>
+            {onDelete && (
+              <Popconfirm
+                title="Xác nhận xóa"
+                description="Bạn có chắc chắn muốn xóa phụ kiện này?"
+                onConfirm={() => onDelete(item.id)}
+                okText="Xóa"
+                cancelText="Hủy"
+                okButtonProps={{ danger: true, loading: saving }}
+              >
+                <Button size="small" danger>
+                  Xóa
+                </Button>
+              </Popconfirm>
+            )}
+          </Space>
         }
         style={{ marginBottom: 8 }}
       >
@@ -505,6 +557,9 @@ interface FeesTabProps {
   onUpdateSurcharge: (id: number, values: SurchargeUpdateInput) => Promise<void>
   onUpdateRentalOption: (id: number, values: RentalOptionUpdateInput) => Promise<void>
   onUpdateAccessory: (id: number, values: AccessoryUpdateInput) => Promise<void>
+  onDeleteSurcharge?: (id: number) => Promise<void>
+  onDeleteRentalOption?: (id: number) => Promise<void>
+  onDeleteAccessory?: (id: number) => Promise<void>
   surchargeSubmitting: boolean
   rentalOptionSubmitting: boolean
   accessorySubmitting: boolean
@@ -529,6 +584,9 @@ export default function FeesTab({
   onUpdateSurcharge,
   onUpdateRentalOption,
   onUpdateAccessory,
+  onDeleteSurcharge,
+  onDeleteRentalOption,
+  onDeleteAccessory,
   surchargeSubmitting,
   rentalOptionSubmitting,
   accessorySubmitting,
@@ -566,6 +624,7 @@ export default function FeesTab({
               key={s.id}
               item={s}
               onSave={onUpdateSurcharge}
+              onDelete={onDeleteSurcharge}
               saving={surchargeSubmitting}
             />
           ))}
@@ -600,6 +659,7 @@ export default function FeesTab({
               key={a.id}
               item={a}
               onSave={onUpdateAccessory}
+              onDelete={onDeleteAccessory}
               saving={accessorySubmitting}
             />
           ))}
@@ -615,6 +675,7 @@ export default function FeesTab({
             items={rentalOptions}
             onSave={onUpdateRentalOption}
             onCreate={onCreateRentalOption}
+            onDelete={onDeleteRentalOption}
             saving={rentalOptionSubmitting}
           />
         </>

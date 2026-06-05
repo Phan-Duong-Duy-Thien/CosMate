@@ -266,7 +266,7 @@ export const VI = {
         totalUsers: "Tổng người dùng",
         activeBookings: "Đơn đặt đang hoạt động",
         totalCostumes: "Tổng trang phục",
-        revenue: "Doanh thu (VND)",
+        revenue: "Doanh thu tháng (VND)",
       },
 
       sections: {
@@ -1103,6 +1103,8 @@ export const VI = {
           "Proxy GHN chưa được cấu hình trên môi trường triển khai. Cần thiết lập VITE_GHN_API_BASE hoặc reverse proxy /ghn-proxy.",
         shippingFeeApproximateHint:
           "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
+        shippingFeeSourceNote:
+          "Địa chỉ gửi hàng được lấy từ địa chỉ mặc định của shop.",
         shippingFeeResolveFailedHint:
           "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",
@@ -1454,6 +1456,8 @@ export const VI = {
       returnSelectCarrier: "Chọn đơn vị vận chuyển",
       returnAutoTrackingHint:
         "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi trả hàng.",
+      returnShippingFeeSourceNote:
+        "Địa chỉ gửi hàng được lấy từ địa chỉ nhận hàng của đơn hàng.",
       returnImages: "Hình ảnh xác nhận",
       // Validation
       validation: {

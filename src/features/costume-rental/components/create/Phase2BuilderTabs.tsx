@@ -26,6 +26,8 @@ import type {
   SurchargeInput,
   AccessoryInput,
   RentalOptionInput,
+  CostumeSurcharge,
+  CostumeAccessory,
 } from '../../types'
 import { canAddAccessory } from '../../services/validateCostumeConstraints'
 import { VI } from '@/shared/i18n/vi'
@@ -35,22 +37,26 @@ const { Text } = Typography
 // ─── Surcharge Tab ────────────────────────────────────────────────────────────
 
 interface SurchargeTabProps {
-  items: SurchargeInput[]
+  items: CostumeSurcharge[]
   onAdd: (item: SurchargeInput) => void
-  onUpdate: (index: number, item: SurchargeInput) => void
-  onRemove: (index: number) => void
+  onUpdate: (id: number, item: SurchargeInput) => void
+  onRemove: (id: number) => void
 }
 
 function SurchargeTab({ items, onAdd, onUpdate, onRemove }: SurchargeTabProps) {
   const [open, setOpen] = useState(false)
-  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [editingItem, setEditingItem] = useState<CostumeSurcharge | null>(null)
   const [form] = Form.useForm<SurchargeInput>()
 
-  const openAdd = () => { form.resetFields(); setEditIndex(null); setOpen(true) }
-  const openEdit = (index: number) => { form.setFieldsValue(items[index]); setEditIndex(index); setOpen(true) }
+  const openAdd = () => { form.resetFields(); setEditingItem(null); setOpen(true) }
+  const openEdit = (item: CostumeSurcharge) => {
+    form.setFieldsValue({ name: item.name, description: item.description, price: item.price })
+    setEditingItem(item)
+    setOpen(true)
+  }
   const handleOk = async () => {
     const values = await form.validateFields()
-    editIndex !== null ? onUpdate(editIndex, values) : onAdd(values)
+    editingItem !== null ? onUpdate(editingItem.id, values) : onAdd(values)
     setOpen(false)
   }
 
@@ -60,11 +66,11 @@ function SurchargeTab({ items, onAdd, onUpdate, onRemove }: SurchargeTabProps) {
         {VI.costumeRental.surcharges.add}
       </Button>
       <Space direction="vertical" style={{ width: '100%' }}>
-        {items.map((item, i) => (
-          <Card key={i} size="small" extra={
+        {items.map((item) => (
+          <Card key={item.id} size="small" extra={
             <Space>
-              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(i)} />
-              <Popconfirm title={VI.costumeRental.surcharges.form.name} onConfirm={() => onRemove(i)}>
+              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(item)} />
+              <Popconfirm title="Bạn chắc chắn muốn xóa phụ phí này?" onConfirm={() => onRemove(item.id)}>
                 <Button size="small" danger icon={<DeleteOutlined />} />
               </Popconfirm>
             </Space>
@@ -75,7 +81,7 @@ function SurchargeTab({ items, onAdd, onUpdate, onRemove }: SurchargeTabProps) {
           </Card>
         ))}
       </Space>
-      <Modal title={editIndex !== null ? VI.costumeRental.surcharges.edit : VI.costumeRental.surcharges.add}
+      <Modal title={editingItem !== null ? VI.costumeRental.surcharges.edit : VI.costumeRental.surcharges.add}
         open={open} onOk={handleOk} onCancel={() => setOpen(false)}
         okText={VI.costumeRental.common.save} cancelText={VI.costumeRental.common.cancel}>
         <Form form={form} layout="vertical">
@@ -98,24 +104,28 @@ function SurchargeTab({ items, onAdd, onUpdate, onRemove }: SurchargeTabProps) {
 // ─── Accessory Tab ────────────────────────────────────────────────────────────
 
 interface AccessoryTabProps {
-  items: AccessoryInput[]
+  items: CostumeAccessory[]
   numberOfItems: number
   onAdd: (item: AccessoryInput) => void
-  onUpdate: (index: number, item: AccessoryInput) => void
-  onRemove: (index: number) => void
+  onUpdate: (id: number, item: AccessoryInput) => void
+  onRemove: (id: number) => void
 }
 
 function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: AccessoryTabProps) {
   const [open, setOpen] = useState(false)
-  const [editIndex, setEditIndex] = useState<number | null>(null)
+  const [editingItem, setEditingItem] = useState<CostumeAccessory | null>(null)
   const [form] = Form.useForm<AccessoryInput>()
   const addDisabled = !canAddAccessory(items.length, numberOfItems)
 
-  const openAdd = () => { form.resetFields(); setEditIndex(null); setOpen(true) }
-  const openEdit = (index: number) => { form.setFieldsValue(items[index]); setEditIndex(index); setOpen(true) }
+  const openAdd = () => { form.resetFields(); setEditingItem(null); setOpen(true) }
+  const openEdit = (item: CostumeAccessory) => {
+    form.setFieldsValue({ name: item.name, description: item.description, price: item.price, isRequired: item.isRequired })
+    setEditingItem(item)
+    setOpen(true)
+  }
   const handleOk = async () => {
     const values = await form.validateFields()
-    editIndex !== null ? onUpdate(editIndex, values) : onAdd(values)
+    editingItem !== null ? onUpdate(editingItem.id, values) : onAdd(values)
     setOpen(false)
   }
 
@@ -131,11 +141,11 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
           showIcon style={{ marginBottom: 12 }} />
       )}
       <Space direction="vertical" style={{ width: '100%' }}>
-        {items.map((item, i) => (
-          <Card key={i} size="small" extra={
+        {items.map((item) => (
+          <Card key={item.id} size="small" extra={
             <Space>
-              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(i)} />
-              <Popconfirm title={VI.costumeRental.accessories.form.name} onConfirm={() => onRemove(i)}>
+              <Button size="small" icon={<EditOutlined />} onClick={() => openEdit(item)} />
+              <Popconfirm title="Bạn chắc chắn muốn xóa phụ kiện này?" onConfirm={() => onRemove(item.id)}>
                 <Button size="small" danger icon={<DeleteOutlined />} />
               </Popconfirm>
             </Space>
@@ -148,7 +158,7 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
           </Card>
         ))}
       </Space>
-      <Modal title={editIndex !== null ? VI.costumeRental.accessories.edit : VI.costumeRental.accessories.add}
+      <Modal title={editingItem !== null ? VI.costumeRental.accessories.edit : VI.costumeRental.accessories.add}
         open={open} onOk={handleOk} onCancel={() => setOpen(false)}
         okText={VI.costumeRental.common.save} cancelText={VI.costumeRental.common.cancel}>
         <Form form={form} layout="vertical">
@@ -176,19 +186,20 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
 interface Phase2BuilderTabsProps {
-  surcharges: SurchargeInput[]
-  accessories: AccessoryInput[]
+  surcharges: CostumeSurcharge[]
+  accessories: CostumeAccessory[]
   rentalOptions: RentalOptionInput[]
   numberOfItems: number
   onAddSurcharge: (item: SurchargeInput) => void
-  onUpdateSurcharge: (i: number, item: SurchargeInput) => void
-  onRemoveSurcharge: (i: number) => void
+  onUpdateSurcharge: (id: number, item: SurchargeInput) => void
+  onRemoveSurcharge: (id: number) => void
   onAddAccessory: (item: AccessoryInput) => void
-  onUpdateAccessory: (i: number, item: AccessoryInput) => void
-  onRemoveAccessory: (i: number) => void
+  onUpdateAccessory: (id: number, item: AccessoryInput) => void
+  onRemoveAccessory: (id: number) => void
   onAddRentalOption: (item: RentalOptionInput) => void
   onUpdateRentalOption: (i: number, item: RentalOptionInput) => void
   onFinish: () => Promise<void>
+  onBack?: () => void
   loading: boolean
   error: string | null
 }
@@ -204,6 +215,7 @@ export default function Phase2BuilderTabs({
   onUpdateAccessory,
   onRemoveAccessory,
   onFinish,
+  onBack,
   loading,
   error,
 }: Phase2BuilderTabsProps) {
@@ -228,11 +240,18 @@ export default function Phase2BuilderTabs({
 
   return (
     <div>
-      <Tabs items={tabItems} />
+      <Tabs items={tabItems} destroyInactiveTabPane={false} />
       {error && <Alert type="error" message={error} showIcon style={{ marginBottom: 16 }} />}
-      <Button type="primary" size="large" loading={loading} onClick={onFinish} block>
-        {VI.costumeRental.common.save}
-      </Button>
+      <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+        {onBack && (
+          <Button size="large" onClick={onBack}>
+            ← Quay lại
+          </Button>
+        )}
+        <Button type="primary" size="large" loading={loading} onClick={onFinish} block>
+          {VI.costumeRental.common.save}
+        </Button>
+      </div>
     </div>
   )
 }

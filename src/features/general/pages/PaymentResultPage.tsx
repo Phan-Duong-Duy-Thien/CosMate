@@ -9,7 +9,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, buttonVariants } from '@/components/ui/button';
 import { VI } from '@/shared/i18n/vi';
 import { cn } from '@/lib/utils';
-import { getRoles } from '@/features/auth/services/tokenStorage';
+import { getRoles, clearAuth } from '@/features/auth/services/tokenStorage';
 import { getRedirectPath } from '@/features/auth/utils/roleRedirect';
 import { getTokenHubPathForCurrentUser } from '@/features/profile/utils/tokenRoutes';
 import { usePaymentVerification } from '@/features/order/hooks/usePaymentVerification';
@@ -97,6 +97,13 @@ export default function PaymentResultPage() {
   const isSuccess = finalStatus === 'success';
   const error = (serviceVerification.error || costumeVerification.error) ?? null;
 
+  const isProviderSubscription =
+    isSuccess &&
+    !isWalletContext &&
+    !isTokenContext &&
+    !costumeResolved &&
+    !serviceResolved;
+
   React.useEffect(() => {
     if (rawOrderId) {
       const key = `cosmate:payment:processed:${rawOrderId}`;
@@ -105,7 +112,17 @@ export default function PaymentResultPage() {
     }
   }, [rawOrderId]);
 
+  React.useEffect(() => {
+    return () => {
+      // Clean up intended path when leaving the page
+      sessionStorage.removeItem('cosmate:provider:intended_path');
+    };
+  }, []);
+
   const getTitle = () => {
+    if (isProviderSubscription) {
+      return "Kích hoạt gói thành công!";
+    }
     if (isWalletContext && finalStatus === 'success') {
       return VI.paymentResult.walletSuccessTitle;
     }
@@ -129,6 +146,9 @@ export default function PaymentResultPage() {
   const getDescription = () => {
     if (isLoading) return VI.paymentResult.verifying;
     if (error && !isSuccess) return error;
+    if (isProviderSubscription) {
+      return "Chúc mừng! Tài khoản của bạn đã được nâng cấp thành công. Vui lòng đăng nhập lại để cập nhật vai trò mới của bạn và bắt đầu sử dụng các tính năng.";
+    }
     if (isWalletContext && finalStatus === 'success') {
       return VI.paymentResult.walletSuccessDesc;
     }
@@ -169,6 +189,11 @@ export default function PaymentResultPage() {
   }, [isSuccess, isTokenContext, isWalletContext, serviceResolved]);
 
   const handlePrimaryAction = () => {
+    if (isProviderSubscription) {
+      clearAuth();
+      navigate('/login');
+      return;
+    }
     if (redirectUrl) {
       const separator = redirectUrl.includes('?') ? '&' : '?';
       const resumeParam = isWalletContext || redirectUrl.startsWith(CHECKOUT_PATH) ? 'topup=success' : '';
@@ -184,6 +209,12 @@ export default function PaymentResultPage() {
       return;
     }
     if (isSuccess) {
+      const roles = getRoles();
+      const redirectPath = getRedirectPath(roles);
+      if (redirectPath && redirectPath !== '/' && redirectPath !== '/login') {
+        navigate(redirectPath);
+        return;
+      }
       navigate('/profile/purchase-history');
       return;
     }
@@ -199,14 +230,33 @@ export default function PaymentResultPage() {
   };
 
   const getPrimaryCtaLabel = () => {
+    if (isProviderSubscription) {
+      return "Đăng nhập lại";
+    }
     if (isWalletContext && isSuccess) return VI.paymentResult.walletPrimarySuccessCta;
     if (isTokenContext && isSuccess) return VI.paymentResult.tokenPrimarySuccessCta;
     if (isWalletContext) return VI.paymentResult.walletPrimaryFailedCta;
-    if (isSuccess) return VI.paymentResult.primarySuccessCta;
+    if (isSuccess) {
+      const roles = getRoles();
+      const hasProviderRole = roles.some(r => {
+        const nr = String(r).toUpperCase();
+        return nr === 'PROVIDER' || nr === 'PROVIDER_RENTAL' || nr === 'PROVIDER_PHOTOGRAPH' || nr === 'PROVIDER_EVENT_STAFF' || nr === '4' || nr === '5' || nr === '6' || nr === '7';
+      });
+      if (hasProviderRole) {
+        return "Đến trang quản lý";
+      }
+      return VI.paymentResult.primarySuccessCta;
+    }
     return VI.paymentResult.primaryFailedCta;
   };
 
   const getHomeRedirectPath = () => {
+    if (isProviderSubscription) {
+      const intendedPath = sessionStorage.getItem('cosmate:provider:intended_path');
+      if (intendedPath) {
+        return intendedPath;
+      }
+    }
     const roles = getRoles() as UserRole[];
     return getRedirectPath(roles);
   };
