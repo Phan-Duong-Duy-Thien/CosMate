@@ -342,7 +342,6 @@ export default function ProviderCostumeListPage() {
       width: 120,
       align: 'center',
       render: (_, record) => {
-        const isRented = record.status === 'RENTED';
         return (
           <Space size={10} onClick={(e) => e.stopPropagation()}>
             <Tooltip title="Xem chi tiết">
@@ -351,42 +350,28 @@ export default function ProviderCostumeListPage() {
                 style={{ cursor: 'pointer', fontSize: 16, color: 'var(--cosmate-pink)' }}
               />
             </Tooltip>
-            <Tooltip title={isRented ? "Trang phục đang được thuê, không thể chỉnh sửa" : "Sửa trang phục"}>
+            <Tooltip title="Sửa trang phục">
               <EditOutlined
-                onClick={() => !isRented && editModal.openModal(record.id)}
+                onClick={() => editModal.openModal(record.id)}
                 style={{
-                  cursor: isRented ? 'not-allowed' : 'pointer',
+                  cursor: 'pointer',
                   fontSize: 16,
-                  color: isRented ? 'var(--muted-foreground)' : 'var(--cosmate-warning)',
-                  opacity: isRented ? 0.5 : 1,
+                  color: 'var(--cosmate-warning)',
                 }}
               />
             </Tooltip>
-            {isRented ? (
-              <Tooltip title="Trang phục đang được thuê, không thể xóa">
-                <DeleteOutlined
-                  style={{
-                    cursor: 'not-allowed',
-                    fontSize: 16,
-                    color: 'var(--muted-foreground)',
-                    opacity: 0.5,
-                  }}
-                />
-              </Tooltip>
-            ) : (
-              <Popconfirm
-                title="Xóa trang phục này?"
-                description="Hành động này không thể hoàn tác."
-                okText="Xóa"
-                cancelText="Hủy"
-                okButtonProps={{ danger: true, loading: deletingId === record.id }}
-                onConfirm={() => void removeCostume(record.id)}
-              >
-                <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
-                  <DeleteOutlined />
-                </span>
-              </Popconfirm>
-            )}
+            <Popconfirm
+              title="Xóa trang phục này?"
+              description="Hành động này không thể hoàn tác."
+              okText="Xóa"
+              cancelText="Hủy"
+              okButtonProps={{ danger: true, loading: deletingId === record.id }}
+              onConfirm={() => void removeCostume(record.id)}
+            >
+              <span style={{ cursor: 'pointer', fontSize: 16, color: 'var(--destructive)' }}>
+                <DeleteOutlined />
+              </span>
+            </Popconfirm>
           </Space>
         )
       },
