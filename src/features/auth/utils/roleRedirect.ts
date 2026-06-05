@@ -31,10 +31,11 @@ export function getRedirectPath(roles: any[]): string {
     return '/admin';
   }
 
-  // Priority 2: Provider Rental
+  // Priority 2: Provider Rental / Generic Provider
   if (
     normalizedRoles.includes(ROLE.PROVIDER_RENTAL) ||
-    normalizedRoles.includes('PROVIDER_RENTAL')
+    normalizedRoles.includes('PROVIDER_RENTAL') ||
+    normalizedRoles.includes('PROVIDER')
   ) {
     return '/provider-rental';
   }

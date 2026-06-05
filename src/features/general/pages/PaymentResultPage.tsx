@@ -184,6 +184,12 @@ export default function PaymentResultPage() {
       return;
     }
     if (isSuccess) {
+      const roles = getRoles();
+      const redirectPath = getRedirectPath(roles);
+      if (redirectPath && redirectPath !== '/' && redirectPath !== '/onboarding/role') {
+        navigate(redirectPath);
+        return;
+      }
       navigate('/profile/purchase-history');
       return;
     }
@@ -202,7 +208,17 @@ export default function PaymentResultPage() {
     if (isWalletContext && isSuccess) return VI.paymentResult.walletPrimarySuccessCta;
     if (isTokenContext && isSuccess) return VI.paymentResult.tokenPrimarySuccessCta;
     if (isWalletContext) return VI.paymentResult.walletPrimaryFailedCta;
-    if (isSuccess) return VI.paymentResult.primarySuccessCta;
+    if (isSuccess) {
+      const roles = getRoles();
+      const hasProviderRole = roles.some(r => {
+        const nr = String(r).toUpperCase();
+        return nr === 'PROVIDER' || nr === 'PROVIDER_RENTAL' || nr === 'PROVIDER_PHOTOGRAPH' || nr === 'PROVIDER_EVENT_STAFF' || nr === '4' || nr === '5' || nr === '6' || nr === '7';
+      });
+      if (hasProviderRole) {
+        return "Đến trang quản lý";
+      }
+      return VI.paymentResult.primarySuccessCta;
+    }
     return VI.paymentResult.primaryFailedCta;
   };
 

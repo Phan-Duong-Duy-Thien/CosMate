@@ -156,7 +156,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Provider Rental Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}> 
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL, 'PROVIDER']} />}> 
         <Route path="/provider-rental" element={<ProviderHomePage />} />
         <Route element={<ProviderWalletLayout />}>
           <Route path="/provider-rental/wallet" element={<ProviderWalletPage />} />
