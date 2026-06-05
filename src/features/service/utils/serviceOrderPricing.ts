@@ -59,6 +59,16 @@ export function normalizeServiceOrder(raw: RawRecord): ServiceOrder {
           ? String(raw.cosplayer_name)
           : undefined,
     providerId: readNumber(raw.providerId, raw.provider_id),
+    providerName:
+      raw.providerName != null
+        ? String(raw.providerName)
+        : raw.provider_name != null
+          ? String(raw.provider_name)
+          : raw.shopName != null
+            ? String(raw.shopName)
+            : raw.shop_name != null
+              ? String(raw.shop_name)
+              : undefined,
     orderType: String(raw.orderType ?? raw.order_type ?? ''),
     status: String(raw.status ?? ''),
     totalAmount: readNumber(raw.totalAmount, raw.total_amount),

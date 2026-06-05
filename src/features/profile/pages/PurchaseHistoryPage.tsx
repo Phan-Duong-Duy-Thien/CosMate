@@ -1183,6 +1183,14 @@ export default function PurchaseHistoryPage() {
                 </div>
                 <div className="space-y-1">
                   <dt className="text-xs font-medium text-muted-foreground">
+                    Tên nhà cung cấp
+                  </dt>
+                  <dd className="text-sm font-semibold text-foreground">
+                    {serviceDetailOrder.providerName ?? `ID: ${serviceDetailOrder.providerId}`}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-xs font-medium text-muted-foreground">
                     {VI.profile.orders.cardTotal}
                   </dt>
                   <dd className="text-base font-semibold text-foreground">
@@ -1262,6 +1270,42 @@ export default function PurchaseHistoryPage() {
                   ]}
                 />
               )}
+            </div>
+
+            {/* Price Breakdown */}
+            <div className="rounded-xl border border-border bg-muted/20 p-4 space-y-2 text-sm">
+              <h4 className="font-semibold text-foreground">Chi tiết thanh toán</h4>
+              <div className="space-y-1.5 text-muted-foreground">
+                <div className="flex justify-between">
+                  <span>Tiền thuê slot:</span>
+                  <span className="text-foreground font-medium">
+                    {formatVnd(serviceDetailOrder.bookings.reduce((sum, b) => sum + (b.rentSlotAmount || 0), 0))}
+                  </span>
+                </div>
+                {(serviceDetailOrder.totalDepositAmount ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span>Tiền đặt cọc:</span>
+                    <span className="text-foreground font-medium">
+                      {formatVnd(serviceDetailOrder.totalDepositAmount)}
+                    </span>
+                  </div>
+                )}
+                {(serviceDetailOrder.totalEquipmentDepreciationAmount ?? 0) > 0 && (
+                  <div className="flex justify-between">
+                    <span>Khấu hao thiết bị:</span>
+                    <span className="text-foreground font-medium">
+                      {formatVnd(serviceDetailOrder.totalEquipmentDepreciationAmount)}
+                    </span>
+                  </div>
+                )}
+                <div className="h-px bg-border my-1" />
+                <div className="flex justify-between font-bold text-foreground text-base">
+                  <span>Tổng cộng:</span>
+                  <span className="text-cosmate-pink font-semibold">
+                    {formatVnd(serviceDetailOrder.totalAmount)}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
         )}
