@@ -241,6 +241,7 @@ export default function PurchaseHistoryPage() {
   // ── Extend modal state ───────────────────────────────────────────────────────
   const [extendModalOpen, setExtendModalOpen] = useState(false)
   const [extendOrderId, setExtendOrderId] = useState<number | null>(null)
+  const [extendCostumeId, setExtendCostumeId] = useState<number | null>(null)
 
   // ── Cancel modal state ───────────────────────────────────────────────────────
   const [cancelModalOpen, setCancelModalOpen] = useState(false)
@@ -667,6 +668,7 @@ export default function PurchaseHistoryPage() {
                   type="button"
                   onClick={() => {
                     setExtendOrderId(order.id)
+                    setExtendCostumeId(order.costumeId)
                     setExtendModalOpen(true)
                   }}
                   disabled={isExtending}
@@ -1337,7 +1339,9 @@ export default function PurchaseHistoryPage() {
         onClose={() => {
           setExtendModalOpen(false)
           setExtendOrderId(null)
+          setExtendCostumeId(null)
         }}
+        costumeId={extendCostumeId}
         onConfirm={async (extendDays: number, paymentMethod: PaymentMethod) => {
           if (!extendOrderId) return
           const detailId = await getDetailIdFromOrder(extendOrderId)
@@ -1348,6 +1352,7 @@ export default function PurchaseHistoryPage() {
           await extendOrder(extendOrderId, detailId, { extendDays, paymentMethod, payNow: true })
           setExtendModalOpen(false)
           setExtendOrderId(null)
+          setExtendCostumeId(null)
           costumeRefetch()
         }}
         loading={isExtending}

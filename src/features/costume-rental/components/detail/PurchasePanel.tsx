@@ -46,6 +46,19 @@ export const PurchasePanel = ({
     <div className="space-y-4 rounded-3xl border-[5px] border-indigo-950 bg-gradient-to-br from-[#fffbeb] via-[#fce7f3] to-[#dbeafe] p-4 shadow-[12px_12px_0_0_rgba(30,27,75,0.65)] md:p-5">
       <div className="space-y-2 border-b-[3px] border-dashed border-indigo-950/35 pb-4">
         <h1 className="text-xl font-extrabold tracking-tight text-indigo-950">{costume.name}</h1>
+        
+        {costume.characters && costume.characters.length > 0 && (
+          <div className="text-xs font-extrabold text-pink-700 bg-pink-50 border-[2px] border-indigo-950 rounded-lg px-2 py-1 inline-flex flex-wrap gap-1 items-center shadow-[3px_3px_0_0_#1e1b4b]">
+            <span>🎭 Nhân vật:</span>
+            {costume.characters.map((c, i) => (
+              <span key={c.id} className="underline decoration-pink-300 decoration-[1.5px] underline-offset-1">
+                {c.name} {c.anime ? `(${c.anime})` : ""}
+                {i < costume.characters!.length - 1 ? ", " : ""}
+              </span>
+            ))}
+          </div>
+        )}
+
         <div className="flex flex-wrap items-center gap-3 text-sm font-semibold text-indigo-900/85">
           <span className="inline-flex items-center gap-1 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-400 to-orange-300 px-2 py-0.5 text-xs font-extrabold text-indigo-950 shadow-[3px_3px_0_0_#1e1b4b]">
             <Star className="h-3.5 w-3.5 text-indigo-950" />
@@ -56,6 +69,14 @@ export const PurchasePanel = ({
             {costume.pricePerDay.toLocaleString("vi-VN")} VNĐ/ngày
           </span>
         </div>
+
+        {costume.rentDiscount > 0 && (
+          <div className="pt-1">
+            <span className="inline-flex items-center gap-1 rounded-lg border-[2px] border-indigo-950 bg-emerald-50 px-2 py-0.5 text-xs font-extrabold text-emerald-800 shadow-[2.5px_2.5px_0_0_#1e1b4b]">
+              🔥 Giảm {costume.rentDiscount}% từ ngày thứ 2 trở đi
+            </span>
+          </div>
+        )}
       </div>
 
       {isRented && (

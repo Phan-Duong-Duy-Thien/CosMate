@@ -75,10 +75,10 @@ export function DisputeCard({ dispute, onClick }: DisputeCardProps) {
             {VI.staff.disputes.orderId}: <span className="font-medium text-slate-700">#{dispute.order.id}</span>
           </p>
           <p className="text-xs text-slate-500">
-            {VI.staff.disputes.cosplayerId}: <span className="font-medium text-slate-700">{dispute.order.cosplayerId}</span>
+            {VI.staff.disputes.cosplayerId}: <span className="font-semibold text-slate-700">{dispute.order.cosplayerName || dispute.order.cosplayerId}</span>
           </p>
           <p className="text-xs text-slate-500">
-            {VI.staff.disputes.providerId}: <span className="font-medium text-slate-700">{dispute.order.providerId}</span>
+            {VI.staff.disputes.providerId}: <span className="font-semibold text-slate-700">{dispute.order.providerName || dispute.order.providerId}</span>
           </p>
           <p className="text-xs font-semibold text-slate-900">
             {VI.staff.disputes.totalAmount}: {formatCurrency(dispute.order.totalAmount)}

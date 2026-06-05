@@ -170,7 +170,13 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     const selectedAccessories = costume.accessories.filter(a => finalAccessoryIds.includes(a.id));
 
     // Calculate prices (gói thuê không áp dụng — không cộng vào tổng)
-    const baseRent = costume.pricePerDay * draft.rentDay;
+    const rentDiscount = costume.rentDiscount ?? 0;
+    const originalBaseRent = costume.pricePerDay * draft.rentDay;
+    let baseRent = originalBaseRent;
+    if (rentDiscount > 0 && draft.rentDay > 1) {
+      const discountAmount = (draft.rentDay - 1) * costume.pricePerDay * (rentDiscount / 100);
+      baseRent = originalBaseRent - discountAmount;
+    }
     const accessoriesTotal = selectedAccessories.reduce((sum, a) => sum + a.price, 0);
     const surchargesTotal = costume.surcharges.reduce((sum, s) => sum + s.price, 0);
     const deposit = costume.depositAmount;

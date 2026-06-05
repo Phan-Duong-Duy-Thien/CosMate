@@ -15,8 +15,16 @@ export const PriceBreakdownCard = ({ quote, days }: PriceBreakdownCardProps) => 
     <div className="mt-2 space-y-1.5 text-sm font-semibold text-indigo-900/85">
       <div className="flex items-center justify-between">
         <span>Giá thuê ({days} ngày)</span>
-        <span className="font-bold text-indigo-950">{formatVnd(quote.rentalPrice)}</span>
+        <span className="font-bold text-indigo-950">
+          {quote.originalRentalPrice ? formatVnd(quote.originalRentalPrice) : formatVnd(quote.rentalPrice)}
+        </span>
       </div>
+      {quote.discountAmount && quote.discountAmount > 0 && (
+        <div className="flex items-center justify-between text-pink-600">
+          <span>Giảm giá thuê (-{quote.rentDiscount}%)</span>
+          <span className="font-bold">- {formatVnd(quote.discountAmount)}</span>
+        </div>
+      )}
       {quote.accessoryTotal > 0 && (
         <div className="flex items-center justify-between">
           <span>Phụ kiện</span>

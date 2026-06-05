@@ -12,11 +12,15 @@ import type { PaymentMethod } from '@/features/order/utils/paymentReturnUrls';
 import { VI } from '@/shared/i18n/vi';
 import { cn } from '@/lib/utils';
 
+import { useCostumeBasicInfo } from '@/features/order/hooks/useCostumeBasicInfo';
+
 export interface ExtendRentalModalProps {
   open: boolean;
   onClose: () => void;
   onConfirm: (extendDays: number, paymentMethod: PaymentMethod) => void;
   loading?: boolean;
+  pricePerDay?: number;
+  costumeId?: number | null;
 }
 
 const PAYMENT_OPTIONS: {
@@ -66,9 +70,18 @@ export function ExtendRentalModal({
   onClose,
   onConfirm,
   loading = false,
+  pricePerDay,
+  costumeId,
 }: ExtendRentalModalProps) {
   const [extendDays, setExtendDays] = useState<number>(1);
   const [selectedPayment, setSelectedPayment] = useState<PaymentMethod | null>(null);
+
+  const { costume: costumeInfo } = useCostumeBasicInfo(costumeId);
+  const activePricePerDay = pricePerDay ?? costumeInfo?.pricePerDay;
+
+  const formatVnd = (amount: number) => {
+    return `${amount.toLocaleString('vi-VN')} ₫`;
+  };
 
   // Reset state when modal closes
   useEffect(() => {
@@ -117,6 +130,20 @@ export function ExtendRentalModal({
             </p>
           )}
         </div>
+
+        {/* Cost breakdown */}
+        {activePricePerDay !== undefined && (
+          <div className="mt-4 rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 shadow-sm">
+            <div className="flex items-center justify-between text-sm">
+              <span className="font-semibold text-slate-600">Đơn giá thuê gốc:</span>
+              <span className="font-bold text-slate-800">{formatVnd(activePricePerDay)}/ngày</span>
+            </div>
+            <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
+              <span>Phí gia hạn tạm tính:</span>
+              <span>{formatVnd(activePricePerDay * extendDays)}</span>
+            </div>
+          </div>
+        )}
 
         {/* Payment method selection */}
         <div className="mt-4 space-y-2">

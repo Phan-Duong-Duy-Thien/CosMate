@@ -2,6 +2,7 @@ import { useEffect, useRef, useMemo } from "react"
 import { MessageCircle } from "lucide-react"
 import { ChatMessageBubble } from "./ChatMessageBubble"
 import type { ChatMessage } from "../types"
+import { toUtcSafeDate } from "@/lib/datetime"
 
 interface ChatMessageListProps {
   messages: ChatMessage[];
@@ -29,7 +30,7 @@ export function ChatMessageList({ messages, currentUserId, theme = "user" }: Cha
     let lastDateKey = ""
 
     for (const msg of messages) {
-      const date = new Date(msg.createdAt)
+      const date = toUtcSafeDate(msg.createdAt)
       const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
       const isFirstOfDay = dateKey !== lastDateKey
       if (isFirstOfDay) lastDateKey = dateKey
