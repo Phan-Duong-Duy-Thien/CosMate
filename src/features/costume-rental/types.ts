@@ -238,6 +238,7 @@ export interface UpdateCostumeBasicInput {
   imageFiles?: File[]
   cost?: number
   gender?: string
+  characterIds?: number[]
 }
 
 /** Body for PUT /api/surcharges/{id} */

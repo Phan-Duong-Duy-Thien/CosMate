@@ -110,6 +110,7 @@ export default function EditCostumeModal({
                 onSubmit={onSubmitBasicInfo}
                 loading={basicSubmitting}
                 providerIdMissing={providerId === null}
+                providerId={providerId}
               />
             </div>
           ),

@@ -142,6 +142,19 @@ function CostumeDetailModal({ open, costume, loading, onClose }: DetailModalProp
                     <Descriptions.Item label="Tên trang phục" span={2}>
                       {costume.name}
                     </Descriptions.Item>
+                    <Descriptions.Item label="Nhân vật" span={2}>
+                      {costume.characters && costume.characters.length > 0 ? (
+                        <Space wrap>
+                          {costume.characters.map((char) => (
+                            <Tag key={char.id} color="blue">
+                              {char.name} ({char.anime})
+                            </Tag>
+                          ))}
+                        </Space>
+                      ) : (
+                        '—'
+                      )}
+                    </Descriptions.Item>
                     <Descriptions.Item label="Mô tả" span={2}>
                       {costume.description || '—'}
                     </Descriptions.Item>
