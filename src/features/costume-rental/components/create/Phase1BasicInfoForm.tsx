@@ -238,7 +238,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       }
 
       void (async () => {
-        let processedFile = file
+        let processedFile: any = file
         const isHeic = file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic'
         
         if (isHeic) {

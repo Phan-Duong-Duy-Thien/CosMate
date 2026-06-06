@@ -337,6 +337,10 @@ export default function CostumeDetailPage() {
               { label: VI.costumeRental.size, value: costume.size },
               { label: VI.costumeRental.numberOfItems, value: String(costume.numberOfItems) },
               { label: VI.costumeRental.pricePerDay, value: `${costume.pricePerDay.toLocaleString("vi-VN")} VNĐ` },
+              {
+                label: VI.costumeRental.rentDiscount,
+                value: costume.rentDiscount > 0 ? `${costume.rentDiscount}% (từ ngày thứ 2 trở lên)` : "0%",
+              },
               { label: VI.costumeRental.depositAmount, value: `${costume.depositAmount.toLocaleString("vi-VN")} VNĐ` },
               { label: "Ưu đãi thuê dài ngày", value: costume.rentDiscount > 0 ? `Giảm ${costume.rentDiscount}% từ ngày thứ 2 trở đi` : "Không có" },
             ]}

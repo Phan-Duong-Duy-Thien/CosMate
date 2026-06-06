@@ -520,6 +520,7 @@ export default function PurchaseHistoryPage() {
       CANCELLED: VI.profile.orders.tabCancelled,
       DISPUTE: VI.profile.orders.tabDispute,
       EXTENDING: VI.provider.orders.tabs.extending,
+      OVERDUE: VI.overdueLock.statusOverdue,
     }[order.status] || order.status
 
     const statusBadgeColor: Record<string, string> = {
@@ -536,11 +537,12 @@ export default function PurchaseHistoryPage() {
       COMPLETED: 'bg-green-100 text-green-700',
       CANCELLED: 'bg-slate-200 text-slate-600',
       DISPUTE: 'bg-red-100 text-red-700',
+      OVERDUE: 'bg-red-200 text-red-800 ring-2 ring-red-300',
     }
     const badgeColorClass = statusBadgeColor[order.status] || 'bg-blue-100 text-blue-700'
 
     const isDeliveringOut = order.status === 'DELIVERING_OUT'
-    const isInUse = order.status === 'IN_USE'
+    const isInUse = order.status === 'IN_USE' || order.status === 'OVERDUE'
     const isCancellable = order.status === 'UNPAID' || order.status === 'PAID'
 
     const isCompleted = order.status === 'RETURNED' || order.status === 'COMPLETED'
@@ -664,6 +666,7 @@ export default function PurchaseHistoryPage() {
                 >
                   {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
                 </button>
+<<<<<<< Updated upstream
                 <button
                   type="button"
                   onClick={() => {
@@ -677,6 +680,22 @@ export default function PurchaseHistoryPage() {
                   <RotateCcw className="h-3.5 w-3.5" />
                   {VI.provider.orders.tabs.extending}
                 </button>
+=======
+                {order.status !== 'OVERDUE' && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setExtendOrderId(order.id)
+                      setExtendModalOpen(true)
+                    }}
+                    disabled={isExtending}
+                    className="flex items-center gap-1 rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:brightness-110 disabled:opacity-50"
+                  >
+                    <RotateCcw className="h-3.5 w-3.5" />
+                    {VI.provider.orders.tabs.extending}
+                  </button>
+                )}
+>>>>>>> Stashed changes
               </>
             )}
             {isCompleted && (

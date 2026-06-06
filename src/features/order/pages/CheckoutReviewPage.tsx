@@ -353,6 +353,12 @@ export default function CheckoutReviewPage() {
                     <span>{VI.checkout.summary.baseRent} ({draft?.rentDay} ngày)</span>
                     <span className="font-semibold text-slate-900">{formatVnd(computed.baseRent)}</span>
                   </div>
+                  {computed.discount !== undefined && computed.discount > 0 && (
+                    <div className="flex items-center justify-between text-pink-600">
+                      <span>Giảm giá thuê ({computed.discountPercent}%)</span>
+                      <span className="font-semibold">-{formatVnd(computed.discount)}</span>
+                    </div>
+                  )}
                   {computed.accessoriesTotal > 0 && (
                     <div className="flex items-center justify-between">
                       <span>{VI.checkout.summary.accessoriesTotal}</span>

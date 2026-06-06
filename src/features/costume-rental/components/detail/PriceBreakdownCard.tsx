@@ -19,10 +19,17 @@ export const PriceBreakdownCard = ({ quote, days }: PriceBreakdownCardProps) => 
           {quote.originalRentalPrice ? formatVnd(quote.originalRentalPrice) : formatVnd(quote.rentalPrice)}
         </span>
       </div>
+<<<<<<< Updated upstream
       {quote.discountAmount && quote.discountAmount > 0 && (
         <div className="flex items-center justify-between text-pink-600">
           <span>Giảm giá thuê (-{quote.rentDiscount}%)</span>
           <span className="font-bold">- {formatVnd(quote.discountAmount)}</span>
+=======
+      {quote.discount !== undefined && quote.discount > 0 && (
+        <div className="flex items-center justify-between text-pink-600">
+          <span>Giảm giá thuê ({quote.discountPercent}%)</span>
+          <span className="font-bold">-{formatVnd(quote.discount)}</span>
+>>>>>>> Stashed changes
         </div>
       )}
       {quote.accessoryTotal > 0 && (

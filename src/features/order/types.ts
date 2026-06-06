@@ -76,7 +76,8 @@ export type OrderStatus =
   | 'COMPLETED'
   | 'CANCELLED'
   | 'DISPUTE'
-  | 'EXTENDING';
+  | 'EXTENDING'
+  | 'OVERDUE';
 
 export interface OrderItem {
   id: number;

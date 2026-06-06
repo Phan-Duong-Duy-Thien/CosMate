@@ -27,7 +27,7 @@ const TAB_STATUS_MAP: Record<string, OrderStatus[]> = {
   wait_shipping: ['PREPARING'],
   shipping_out: ['SHIPPING_OUT'],
   delivering_out: ['DELIVERING_OUT'],
-  in_use: ['IN_USE'],
+  in_use: ['IN_USE', 'OVERDUE'],
   shipping_back: ['SHIPPING_BACK'],
   completed: ['RETURNED', 'COMPLETED'],
   cancelled: ['CANCELLED'],

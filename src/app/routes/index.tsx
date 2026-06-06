@@ -1,9 +1,11 @@
 import { Navigate, Route, Routes } from "react-router-dom"
 
 import { ProtectedRoute }from "@/app/routes/ProtectedRoute"
+import { OverdueLockGuard } from "@/app/routes/OverdueLockGuard"
 import NoPermissionPage from "@/app/pages/NoPermissionPage"
 import { BreadcrumbProvider } from "@/app/providers/BreadcrumbProvider"
 import { UserProfileProvider } from "@/app/providers/UserProfileProvider"
+import { OverdueOrderProvider } from "@/app/providers/OverdueOrderProvider"
 import { ChatPopupRoot } from "@/app/providers/ChatPopupRoot"
 import { ROLE } from "@/types/auth"
 import { VI } from "@/shared/i18n/vi"
@@ -98,9 +100,11 @@ export default function AppRoutes() {
   return (
     <BreadcrumbProvider>
       <UserProfileProvider>
+        <OverdueOrderProvider>
         <Routes>
       {/* Public + Cosplayer Site Routes */}
       <Route path="/" element={<ChatPopupRoot />}>
+        <Route element={<OverdueLockGuard />}>
         <Route index element={<HomePage />}/>
         <Route path="costumes" element={<CostumeListPage />} />
         <Route path="notifications" element={<NotificationsPage />} />
@@ -130,6 +134,7 @@ export default function AppRoutes() {
         <Route path="register/provider" element={<ProviderRegPage />} />
         <Route path="register/staff" element={<StaffRegPage />} />
         <Route path="register/photographer" element={<PhotographerRegPage />} />
+        </Route>
       </Route>
 
       {/* Admin Routes (Protected) */}
@@ -253,7 +258,8 @@ export default function AppRoutes() {
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />
-    </Routes>     
+    </Routes>
+    </OverdueOrderProvider>
     </UserProfileProvider>
     </BreadcrumbProvider>
   )

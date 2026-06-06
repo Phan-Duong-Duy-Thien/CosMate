@@ -199,7 +199,7 @@ export default function EditBasicInfoForm({
   const handleFinish = async (values: FormValues) => {
     const rawFiles = (values.imageFiles?.fileList ?? [])
       .map((f: UploadFile) => f.originFileObj)
-      .filter((f): f is File => f !== undefined)
+      .filter((f): f is NonNullable<typeof f> => f !== undefined)
     const rangeValues = values as FormValues & {
       heightMin?: number
       heightMax?: number
@@ -489,7 +489,7 @@ export default function EditBasicInfoForm({
           { type: 'number', min: 1, message: 'Giá thuê phải lớn hơn 0' },
         ]}
       >
-        <InputNumber min={1}style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
+        <InputNumber min={1} style={{ width: '100%' }} placeholder="Giá thuê mỗi ngày" />
       </Form.Item>
 
       <Form.Item
@@ -499,6 +499,7 @@ export default function EditBasicInfoForm({
         extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
         rules={[
           { required: true, message: 'Vui lòng nhập giảm giá thuê' },
+<<<<<<< Updated upstream
           { type: 'number', min: 0, message: 'Giảm giá thuê không được âm' },
           {
             validator(_, value) {
@@ -511,6 +512,12 @@ export default function EditBasicInfoForm({
         ]}
       >
         <InputNumber min={0} max={74} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
+=======
+          { type: 'number', min: 0, max: 100, message: 'Giảm giá thuê từ 0% đến 100%' },
+        ]}
+      >
+        <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
+>>>>>>> Stashed changes
       </Form.Item>
 
       <Form.Item
@@ -521,7 +528,7 @@ export default function EditBasicInfoForm({
           { type: 'number', min: 0, message: 'Tiền đặt cọc không được âm' },
         ]}
       >
-        <InputNumber min={0}style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
+        <InputNumber min={0} style={{ width: '100%' }} placeholder="Tiền đặt cọc" />
       </Form.Item>
 
       <Form.Item

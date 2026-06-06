@@ -49,6 +49,8 @@ export type CheckoutComputed = {
   surchargesTotal: number;
   deposit: number;
   totalToPay: number;
+  discount: number;
+  discountPercent: number;
 } | null;
 
 export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions & {
@@ -180,7 +182,13 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     const accessoriesTotal = selectedAccessories.reduce((sum, a) => sum + a.price, 0);
     const surchargesTotal = costume.surcharges.reduce((sum, s) => sum + s.price, 0);
     const deposit = costume.depositAmount;
-    const totalToPay = baseRent + accessoriesTotal + surchargesTotal + deposit;
+
+    const discountPercent = costume.rentDiscount ?? 0;
+    const discount = (draft.rentDay >= 2 && discountPercent > 0)
+      ? Math.round(costume.pricePerDay * (discountPercent / 100) * (draft.rentDay - 1))
+      : 0;
+
+    const totalToPay = baseRent - discount + accessoriesTotal + surchargesTotal + deposit;
 
     return {
       requiredAccessoryIds,
@@ -191,6 +199,8 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
       surchargesTotal,
       deposit,
       totalToPay,
+      discount,
+      discountPercent,
     };
   }, [state.draft, state.costume]);
 
