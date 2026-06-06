@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Descriptions, Input, Modal, Result, Select, Table, Tag, Tooltip } from 'antd';
+import { Descriptions, Input, Modal, Result, Select, Table, Tag, Tooltip, Button } from 'antd';
 import type { TableProps } from 'antd';
 import { ReloadOutlined, SearchOutlined } from '@ant-design/icons';
 import { Button as UiButton } from '@/components/ui/button';
@@ -23,6 +23,13 @@ function getOrderStatusTagColor(status: string): string {
   if (['DISPUTE', 'SHIPPING_BACK'].includes(normalized)) return 'red';
   if (normalized === 'CANCELLED') return 'default';
   return 'default';
+}
+
+function getOrderTypeLabel(type: string): string {
+  if (type === 'RENTAL') return 'Thuê trang phục';
+  if (type === 'PHOTOGRAPHY') return 'Đặt Photographer';
+  if (type === 'STAFF') return 'Thuê Event Staff';
+  return type;
 }
 
 export default function AdminOrdersPage() {
@@ -63,6 +70,15 @@ export default function AdminOrdersPage() {
       key: 'code',
       render: (v: string | undefined) => (
         <span className="font-semibold text-foreground">{v ?? '—'}</span>
+      ),
+    },
+    {
+      title: 'Loại đơn',
+      dataIndex: 'orderType',
+      key: 'orderType',
+      width: 140,
+      render: (v: string | undefined) => (
+        <span className="text-foreground">{v ? getOrderTypeLabel(v) : '—'}</span>
       ),
     },
     {
@@ -109,6 +125,15 @@ export default function AdminOrdersPage() {
         const { label } = getCostumeOrderStatusProps(v);
         return <Tag color={getOrderStatusTagColor(v)} style={{ margin: 0 }}>{label}</Tag>;
       },
+    },
+    {
+      title: 'Ngày tạo',
+      dataIndex: 'createdAt',
+      key: 'createdAt',
+      width: 160,
+      render: (v: string | undefined) => (
+        <span className="text-muted-foreground">{v ? new Date(v).toLocaleString('vi-VN') : '—'}</span>
+      ),
     },
     {
       title: 'Hành động',
@@ -212,32 +237,101 @@ export default function AdminOrdersPage() {
         )}
 
         <Modal
-          title="Chi tiết đơn hàng"
+          title={
+            <span className="text-base font-extrabold text-indigo-950">
+              Chi tiết đơn hàng #{selected?.id}
+            </span>
+          }
           open={open}
           onCancel={() => setOpen(false)}
-          footer={null}
+          footer={[
+            <Button
+              key="close"
+              onClick={() => setOpen(false)}
+              className="h-10 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border-0 transition-all"
+            >
+              Đóng
+            </Button>
+          ]}
           centered
-          width={560}
+          width={600}
           destroyOnClose
         >
           {selected && (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
-              <Descriptions.Item label="Mã đơn">{selected.code ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Khách">{selected.userName ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Cosplayer">{selected.cosplayerName ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Provider">{selected.providerName ?? '—'}</Descriptions.Item>
-              <Descriptions.Item label="Tổng">{formatCurrency(selected.total)}</Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                {selected.status ? (
-                  <Tag color={getOrderStatusTagColor(selected.status)} style={{ margin: 0 }}>
-                    {getCostumeOrderStatusProps(selected.status).label}
-                  </Tag>
-                ) : (
-                  '—'
+            <div className="space-y-4 pt-3 text-indigo-950 font-semibold">
+              {/* Main details grid */}
+              <div className="grid grid-cols-2 gap-4 rounded-xl border-[2px] border-indigo-950/10 bg-slate-50 p-4 text-xs">
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Mã đơn hàng</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{selected.code ?? '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Loại đơn hàng</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{selected.orderType ? getOrderTypeLabel(selected.orderType) : '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Khách hàng</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{selected.userName ?? '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Cosplayer</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{selected.cosplayerName ?? '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Provider</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{selected.providerName ?? '—'}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Ngày tạo đơn</span>
+                  <span className="text-sm font-extrabold text-indigo-950">
+                    {selected.createdAt ? new Date(selected.createdAt).toLocaleString('vi-VN') : '—'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Price Details Card */}
+              <div className="rounded-xl border-[2px] border-indigo-950/10 bg-slate-50 p-4 text-xs space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Tiền thuê/dịch vụ</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{formatCurrency(selected.totalAmount)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Tiền đặt cọc</span>
+                  <span className="text-sm font-extrabold text-indigo-950">{formatCurrency(selected.totalDepositAmount)}</span>
+                </div>
+                <div className="border-t border-indigo-950/10 pt-2 flex justify-between items-center">
+                  <span className="text-muted-foreground font-bold uppercase tracking-wider text-[10px]">Tổng thanh toán</span>
+                  <span className="text-sm font-extrabold text-primary">{formatCurrency(selected.total)}</span>
+                </div>
+              </div>
+
+              {/* Status and Time Rent details */}
+              <div className="grid grid-cols-2 gap-4 rounded-xl border-[2px] border-indigo-950/10 bg-slate-50 p-4 text-xs">
+                <div>
+                  <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Trạng thái</span>
+                  <div>
+                    {selected.status ? (
+                      <Tag color={getOrderStatusTagColor(selected.status)} style={{ margin: 0 }}>
+                        {getCostumeOrderStatusProps(selected.status).label}
+                      </Tag>
+                    ) : (
+                      '—'
+                    )}
+                  </div>
+                </div>
+                {selected.orderType === 'RENTAL' && (
+                  <div>
+                    <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Thời hạn thuê</span>
+                    <span className="text-sm font-extrabold text-indigo-950 block">
+                      Bắt đầu: {selected.rentStart ? new Date(selected.rentStart).toLocaleDateString('vi-VN') : '—'}
+                    </span>
+                    <span className="text-sm font-extrabold text-indigo-950 block">
+                      Kết thúc: {selected.rentEnd ? new Date(selected.rentEnd).toLocaleDateString('vi-VN') : '—'}
+                    </span>
+                  </div>
                 )}
-              </Descriptions.Item>
-            </Descriptions>
+              </div>
+            </div>
           )}
         </Modal>
       </div>

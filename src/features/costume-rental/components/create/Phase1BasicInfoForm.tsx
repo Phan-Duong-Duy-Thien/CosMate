@@ -8,7 +8,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { Alert, Avatar, Button, Card, Col, Form, Input, InputNumber, Modal, Radio, Row, Select, Space, Upload, message, QRCode, Spin } from 'antd'
-import { CloseOutlined, InboxOutlined, PlusOutlined, RobotOutlined } from '@ant-design/icons'
+import { CloseOutlined, InboxOutlined, PlusOutlined, RobotOutlined, UploadOutlined } from '@ant-design/icons'
 import { Image as AntImage } from 'antd'
 import { ImageIcon, Monitor, RefreshCw, Smartphone } from 'lucide-react'
 import type { SelectProps, UploadFile, UploadProps } from 'antd'
@@ -58,6 +58,7 @@ interface CharacterOption {
 interface CharacterRequestFormValues {
   characterName: string
   animeName: string
+  imageUrl?: string
 }
 
 interface Props {
@@ -77,6 +78,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [personaId, setPersonaId] = useState<number>(1)
   const [isCharacterRequestModalOpen, setIsCharacterRequestModalOpen] = useState(false)
   const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
+  const [charImageFile, setCharImageFile] = useState<File | null>(null)
   const [videoPreviewUrl, setVideoPreviewUrl] = useState<string | null>(null)
   const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
   const [localImageFileList, setLocalImageFileList] = useState<UploadFile[]>([])
@@ -293,10 +295,13 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         characterName: values.characterName.trim(),
         animeName: values.animeName.trim(),
         providerId: pid,
+        imageUrl: values.imageUrl?.trim() || undefined,
+        file: charImageFile || undefined,
       })
       message.success('Đã gửi yêu cầu thêm nhân vật mới.')
       setIsCharacterRequestModalOpen(false)
       characterRequestForm.resetFields()
+      setCharImageFile(null)
     } catch (err) {
       if (err instanceof Error && err.name === 'ValidationError') return
       if (err instanceof Error) {
@@ -748,7 +753,10 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       <Modal
         title="Yêu cầu thêm nhân vật mới"
         open={isCharacterRequestModalOpen}
-        onCancel={() => setIsCharacterRequestModalOpen(false)}
+        onCancel={() => {
+          setIsCharacterRequestModalOpen(false)
+          setCharImageFile(null)
+        }}
         onOk={handleCharacterRequestSubmit}
         okText="Gửi Yêu Cầu"
         cancelText="Hủy"
@@ -760,6 +768,23 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           </Form.Item>
           <Form.Item name="animeName" label="Tên Anime/Game" rules={[{ required: true, message: 'Vui lòng nhập tên Anime/Game' }]}>
             <Input placeholder="Ví dụ: Naruto" />
+          </Form.Item>
+          <Form.Item name="imageUrl" label="Link ảnh nhân vật (URL)">
+            <Input placeholder="Ví dụ: https://example.com/character.jpg" />
+          </Form.Item>
+          <Form.Item label="Hoặc tải ảnh từ máy tính">
+            <Upload
+              accept="image/*"
+              maxCount={1}
+              beforeUpload={(file) => {
+                setCharImageFile(file)
+                return false
+              }}
+              onRemove={() => setCharImageFile(null)}
+              listType="picture"
+            >
+              <Button icon={<UploadOutlined />}>Chọn file ảnh</Button>
+            </Upload>
           </Form.Item>
         </Form>
       </Modal>

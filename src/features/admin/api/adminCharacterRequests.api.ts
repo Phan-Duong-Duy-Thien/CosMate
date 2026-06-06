@@ -7,6 +7,7 @@ export interface CharacterRequestItem {
   providerId: number
   status: 'PENDING' | 'APPROVED' | 'REJECTED'
   createdAt: string
+  imageUrl?: string
 }
 
 export interface CreateCharacterPayload {

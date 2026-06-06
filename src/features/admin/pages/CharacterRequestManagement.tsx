@@ -59,7 +59,7 @@ export default function CharacterRequestManagement() {
     setActionLoadingId(item.id)
     try {
       await updateCharacterRequestStatus(item.id, 'APPROVED')
-      await createCharacter({ name: item.characterName, anime: item.animeName })
+      await createCharacter({ name: item.characterName, anime: item.animeName, imageUrl: item.imageUrl })
       message.success('Đã duyệt và tạo nhân vật thành công')
       await fetchItems()
     } catch (error) {
@@ -115,6 +115,11 @@ export default function CharacterRequestManagement() {
                   </div>
                   <div><b>Nhân vật:</b> {item.characterName}</div>
                   <div><b>Anime/Game:</b> {item.animeName}</div>
+                  {item.imageUrl && (
+                    <div className="mt-2 aspect-video w-full overflow-hidden rounded border-2 border-black bg-slate-50">
+                      <img src={item.imageUrl} alt={item.characterName} className="h-full w-full object-contain" />
+                    </div>
+                  )}
                   <div><b>Provider ID:</b> {item.providerId}</div>
                   <div><b>Ngày gửi:</b> {new Date(item.createdAt).toLocaleString('vi-VN')}</div>
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Table, Descriptions, Select, Tag, Empty, Modal, Tooltip, Input } from 'antd';
+import { Table, Descriptions, Select, Tag, Empty, Modal, Tooltip, Input, Button } from 'antd';
 import type { TableProps } from 'antd';
 import { ReloadOutlined, SearchOutlined, CheckCircleOutlined, StopOutlined } from '@ant-design/icons';
 import { cn } from '@/lib/utils';
@@ -55,8 +55,17 @@ export default function AdminProvidersPage() {
       title: 'Shop',
       dataIndex: 'shopName',
       key: 'shopName',
-      render: (v: string | undefined) => (
-        <span className="font-semibold text-foreground">{v ?? '—'}</span>
+      render: (v: string | undefined, record) => (
+        <div className="flex items-center gap-2">
+          <div className="h-8 w-8 rounded-full overflow-hidden border border-border bg-slate-100 flex-shrink-0 flex items-center justify-center">
+            {record.avatarUrl ? (
+              <img src={record.avatarUrl} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <span className="text-xs font-bold text-muted-foreground">{(v || 'P')[0].toUpperCase()}</span>
+            )}
+          </div>
+          <span className="font-semibold text-foreground">{v ?? '—'}</span>
+        </div>
       ),
     },
     {
@@ -76,7 +85,7 @@ export default function AdminProvidersPage() {
       width: 120,
       align: 'center',
       render: (value: boolean | undefined) =>
-        value !== undefined ? (
+         value !== undefined ? (
           <Tag color={value ? 'green' : 'gold'} style={{ margin: 0 }}>
             {value ? 'Đã duyệt' : 'Chưa duyệt'}
           </Tag>
@@ -200,29 +209,85 @@ export default function AdminProvidersPage() {
       </div>
 
       <Modal
-        title="Chi tiết provider"
+        title={
+          <span className="text-base font-extrabold text-indigo-950">
+            Chi tiết provider #{selected?.id}
+          </span>
+        }
         open={open}
         onCancel={() => setOpen(false)}
-        footer={null}
+        footer={[
+          <Button
+            key="close"
+            onClick={() => setOpen(false)}
+            className="h-10 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border-0 transition-all"
+          >
+            Đóng
+          </Button>
+        ]}
         centered
-        width={620}
+        width={600}
         destroyOnClose
       >
         {selected && (
-          <Descriptions bordered column={1}>
-            <Descriptions.Item label="ID">{selected.id}</Descriptions.Item>
-            <Descriptions.Item label="User ID">{selected.userId ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Shop">{selected.shopName ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Xác minh">
-              <Tag color={selected.verified ? 'green' : 'gold'} style={{ margin: 0 }}>
-                {selected.verified ? 'Đã duyệt' : 'Chưa duyệt'}
-              </Tag>
-            </Descriptions.Item>
-            <Descriptions.Item label="Completed orders">{selected.completedOrders ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Rating">{selected.totalRating ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Reviews">{selected.totalReviews ?? '—'}</Descriptions.Item>
-            <Descriptions.Item label="Bio">{selected.bio ?? '—'}</Descriptions.Item>
-          </Descriptions>
+          <div className="space-y-4 pt-3 text-indigo-950 font-semibold">
+            {/* Cover and Avatar header banner */}
+            <div className="relative rounded-xl overflow-hidden border-[2px] border-indigo-950/15 h-36 bg-slate-100 flex items-end">
+              {selected.coverImageUrl ? (
+                <img src={selected.coverImageUrl} alt="Cover" className="absolute inset-0 h-full w-full object-cover" />
+              ) : (
+                <div className="absolute inset-0 bg-gradient-to-r from-purple-100 to-pink-100" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+              <div className="relative z-10 p-4 flex items-center gap-3 w-full">
+                <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-white bg-white flex-shrink-0 flex items-center justify-center">
+                  {selected.avatarUrl ? (
+                    <img src={selected.avatarUrl} alt="Avatar" className="h-full w-full object-cover" />
+                  ) : (
+                    <div className="h-full w-full bg-indigo-950 text-white flex items-center justify-center font-extrabold text-lg">
+                      {(selected.shopName || 'P')[0].toUpperCase()}
+                    </div>
+                  )}
+                </div>
+                <div className="text-white">
+                  <h3 className="text-lg font-extrabold m-0 leading-tight drop-shadow-md text-white">{selected.shopName || '—'}</h3>
+                  <span className="text-xs opacity-90 drop-shadow-md">User ID: #{selected.userId}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Provider specs grid */}
+            <div className="grid grid-cols-2 gap-4 rounded-xl border-[2px] border-indigo-950/10 bg-slate-50 p-4 text-xs">
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Xác minh</span>
+                <div>
+                  <Tag color={selected.verified ? 'green' : 'gold'} style={{ margin: 0 }}>
+                    {selected.verified ? 'Đã duyệt' : 'Chưa duyệt'}
+                  </Tag>
+                </div>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Đơn hoàn thành</span>
+                <span className="text-sm font-extrabold text-indigo-950">{selected.completedOrders ?? 0} đơn</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Đánh giá trung bình</span>
+                <span className="text-sm font-extrabold text-indigo-950">{selected.totalRating ? `${selected.totalRating}/5 sao` : '—'}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Số lượng đánh giá</span>
+                <span className="text-sm font-extrabold text-indigo-950">{selected.totalReviews ?? 0} reviews</span>
+              </div>
+            </div>
+
+            {/* Bio */}
+            <div className="space-y-1">
+              <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px]">Tiểu sử (Bio)</span>
+              <p className="rounded-xl border-[2px] border-indigo-950/15 bg-white p-3 text-sm font-medium leading-relaxed text-indigo-950/90 whitespace-pre-wrap">
+                {selected.bio || <span className="italic text-muted-foreground">Không có thông tin tiểu sử</span>}
+              </p>
+            </div>
+          </div>
         )}
       </Modal>
     </>

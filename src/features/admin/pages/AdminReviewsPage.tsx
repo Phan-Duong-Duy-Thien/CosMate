@@ -136,6 +136,19 @@ export default function AdminReviewsPage() {
       render: (_: unknown, review: AdminReviewItem) => getToxicTag(review),
     },
     {
+      title: 'Mâu thuẫn (AI)',
+      dataIndex: 'isConflicting',
+      key: 'isConflicting',
+      width: 120,
+      align: 'center',
+      render: (isConflicting: boolean | null | undefined) => {
+        if (isConflicting === true) {
+          return <Tag color="error">Mâu thuẫn</Tag>;
+        }
+        return <Tag color="cyan">Khớp</Tag>;
+      },
+    },
+    {
       title: VI.admin.reviews.columns.createdAt,
       dataIndex: 'createdAt',
       key: 'createdAt',
@@ -267,11 +280,16 @@ export default function AdminReviewsPage() {
         open={selectedReview !== null}
         onCancel={() => setSelectedReview(null)}
         footer={[
-          <Button key="close" onClick={() => setSelectedReview(null)} className="rounded-lg font-semibold">
+          <Button
+            key="close"
+            onClick={() => setSelectedReview(null)}
+            className="h-10 px-4 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold border-0 transition-all"
+          >
             Đóng
           </Button>
         ]}
         width={600}
+        centered
         destroyOnClose
       >
         {selectedReview && (
@@ -303,6 +321,16 @@ export default function AdminReviewsPage() {
               <div>
                 <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Trạng thái</span>
                 <div>{getToxicTag(selectedReview)}</div>
+              </div>
+              <div>
+                <span className="text-muted-foreground block font-bold uppercase tracking-wider text-[10px] mb-0.5">Mâu thuẫn (AI)</span>
+                <div>
+                  {selectedReview.isConflicting === true ? (
+                    <Tag color="red">Mâu thuẫn</Tag>
+                  ) : (
+                    <Tag color="green">Khớp</Tag>
+                  )}
+                </div>
               </div>
             </div>
 

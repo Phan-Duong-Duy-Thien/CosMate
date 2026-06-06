@@ -24,6 +24,7 @@ export interface AdminReviewItem {
   aiSentiment?: string | null;
   isSpamOrToxic?: boolean | null;
   aiSummary?: string | null;
+  isConflicting?: boolean | null;
 }
 
 export async function getAdminReviews(): Promise<AdminReviewItem[]> {
