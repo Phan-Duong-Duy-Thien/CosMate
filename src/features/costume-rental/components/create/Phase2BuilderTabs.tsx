@@ -16,6 +16,7 @@ import {
   Input,
   InputNumber,
   Select,
+  Switch,
   Space,
   Typography,
   Alert,
@@ -161,7 +162,7 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
       <Modal title={editingItem !== null ? VI.costumeRental.accessories.edit : VI.costumeRental.accessories.add}
         open={open} onOk={handleOk} onCancel={() => setOpen(false)}
         okText={VI.costumeRental.common.save} cancelText={VI.costumeRental.common.cancel}>
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical" initialValues={{ isRequired: false }}>
           <Form.Item name="name" label={VI.costumeRental.accessories.form.name} rules={[{ required: true }]}>
             <Input />
           </Form.Item>
@@ -171,11 +172,8 @@ function AccessoryTab({ items, numberOfItems, onAdd, onUpdate, onRemove }: Acces
           <Form.Item name="price" label={VI.costumeRental.accessories.form.price} rules={[{ required: true }]}>
             <InputNumber min={0} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="isRequired" label={VI.costumeRental.accessories.form.isRequired} rules={[{ required: true }]}>
-            <Select>
-              <Select.Option value={true}>{VI.costumeRental.accessories.required}</Select.Option>
-              <Select.Option value={false}>{VI.costumeRental.accessories.optional}</Select.Option>
-            </Select>
+          <Form.Item name="isRequired" label={VI.costumeRental.accessories.form.isRequired} valuePropName="checked">
+            <Switch />
           </Form.Item>
         </Form>
       </Modal>

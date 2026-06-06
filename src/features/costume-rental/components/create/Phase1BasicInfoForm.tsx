@@ -172,20 +172,20 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
       .map(([label, options]) => ({ label, options }))
   }, [characters, isCharacterSelectionFull, selectedCharacterIds])
 
-  useEffect(() => {
-    const fetchCharacters = async () => {
-      setIsCharactersLoading(true)
-      try {
-        const data = await getCharacters()
-        setCharacters(Array.isArray(data) ? data : [])
-      } catch (err) {
-        console.error('Failed to fetch characters', err)
-        message.error('Không thể tải danh sách nhân vật.')
-      } finally {
-        setIsCharactersLoading(false)
-      }
+  const fetchCharacters = async () => {
+    setIsCharactersLoading(true)
+    try {
+      const data = await getCharacters()
+      setCharacters(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to fetch characters', err)
+      message.error('Không thể tải danh sách nhân vật.')
+    } finally {
+      setIsCharactersLoading(false)
     }
+  }
 
+  useEffect(() => {
     void fetchCharacters()
   }, [])
 
@@ -473,6 +473,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
               allowClear
               placeholder="Chọn nhân vật"
               loading={isCharactersLoading}
+              onFocus={fetchCharacters}
               optionFilterProp="title"
               onDeselect={() => undefined}
               maxTagCount="responsive"

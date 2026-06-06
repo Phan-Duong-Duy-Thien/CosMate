@@ -10,12 +10,14 @@
  * Never calls API directly.
  */
 
-import { useEffect, useState } from 'react'
-import { Alert, Button, Col, Form, Input, InputNumber, Row, Select, Upload, message } from 'antd'
-import { InboxOutlined } from '@ant-design/icons'
-import type { UploadFile } from 'antd'
+import { useEffect, useMemo, useState } from 'react'
+import { Alert, Avatar, Button, Col, Form, Input, InputNumber, Modal, Row, Select, Space, Upload, message } from 'antd'
+import { InboxOutlined, PlusOutlined } from '@ant-design/icons'
+import type { UploadFile, SelectProps } from 'antd'
 import type { UpdateCostumeBasicInput, CostumeSizeOption, Costume } from '../../types'
 import { applyFormValidationErrors } from '@/shared/utils/formValidation'
+import { getCharacters } from '@/features/admin/api/adminCharacters.api'
+import { createCharacterRequest } from '../../api/characterRequests.api'
 import { VI } from '@/shared/i18n/vi'
 
 const { Dragger } = Upload
@@ -24,9 +26,22 @@ const { TextArea } = Input
 const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
 const MODERATION_ERROR_MESSAGE = 'Ảnh của bạn vi phạm tiêu chuẩn cộng đồng, xin hãy dùng ảnh khác'
 
+interface CharacterOption {
+  id: number
+  name: string
+  anime: string
+  imageUrl?: string
+}
+
+interface CharacterRequestFormValues {
+  characterName: string
+  animeName: string
+}
+
 interface FormValues {
   name: string
   description?: string
+  characterIds: number[]
   size: CostumeSizeOption
   heightMin?: number
   heightMax?: number
@@ -47,6 +62,7 @@ interface Props {
   loading: boolean
   /** Set when providerId is missing from JWT */
   providerIdMissing?: boolean
+  providerId?: number | null
 }
 
 
@@ -55,10 +71,88 @@ export default function EditBasicInfoForm({
   onSubmit,
   loading,
   providerIdMissing,
+  providerId,
 }: Props) {
   const [form] = Form.useForm<FormValues>()
   const [moderationError, setModerationError] = useState<string | null>(null)
   const watchedDescription = Form.useWatch('description', form) ?? ''
+
+  const [characters, setCharacters] = useState<CharacterOption[]>([])
+  const [isCharactersLoading, setIsCharactersLoading] = useState(false)
+  const [isCharacterRequestModalOpen, setIsCharacterRequestModalOpen] = useState(false)
+  const [characterRequestForm] = Form.useForm<CharacterRequestFormValues>()
+
+  const fetchCharacters = async () => {
+    setIsCharactersLoading(true)
+    try {
+      const data = await getCharacters()
+      setCharacters(Array.isArray(data) ? data : [])
+    } catch (err) {
+      console.error('Failed to fetch characters', err)
+      message.error('Không thể tải danh sách nhân vật.')
+    } finally {
+      setIsCharactersLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    void fetchCharacters()
+  }, [])
+
+  const selectedCharacterIds = Form.useWatch('characterIds', form) ?? []
+  const isCharacterSelectionFull = selectedCharacterIds.length >= 3
+
+  const characterOptions = useMemo(() => {
+    const grouped = characters.reduce<Record<string, SelectProps['options']>>((acc, character) => {
+      const anime = character.anime?.trim() || 'Khác'
+      if (!acc[anime]) acc[anime] = []
+      acc[anime].push({
+        value: character.id,
+        title: `${character.name} ${character.anime}`.trim(),
+        disabled: isCharacterSelectionFull && !selectedCharacterIds.includes(character.id),
+        label: (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <Avatar shape="square" size={36} src={character.imageUrl} alt={character.name} style={{ objectFit: 'cover', flexShrink: 0 }}>
+              {character.name?.slice(0, 1)}
+            </Avatar>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, lineHeight: 1.3 }}>{character.name}</div>
+              <div style={{ fontSize: 12, color: 'rgba(0, 0, 0, 0.45)' }}>{character.anime}</div>
+            </div>
+          </div>
+        ),
+      })
+      return acc
+    }, {})
+
+    return Object.entries(grouped)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, options]) => ({ label, options }))
+  }, [characters, isCharacterSelectionFull, selectedCharacterIds])
+
+  const handleCharacterRequestSubmit = async () => {
+    try {
+      const values = await characterRequestForm.validateFields()
+      const pid = providerId ?? initialValues.providerId ?? 0
+      if (!pid) {
+        message.error('Không xác định được Provider ID. Vui lòng thử lại.')
+        return
+      }
+      await createCharacterRequest({
+        characterName: values.characterName.trim(),
+        animeName: values.animeName.trim(),
+        providerId: pid,
+      })
+      message.success('Đã gửi yêu cầu thêm nhân vật mới.')
+      setIsCharacterRequestModalOpen(false)
+      characterRequestForm.resetFields()
+    } catch (err) {
+      if (err instanceof Error && err.name === 'ValidationError') return
+      if (err instanceof Error) {
+        message.error(err.message)
+      }
+    }
+  }
 
   // Prefill whenever the detail changes (e.g. after a successful save)
   useEffect(() => {
@@ -82,9 +176,12 @@ export default function EditBasicInfoForm({
       }
     }
 
+    const initialCharacterIds = initialValues.characters?.map((c) => c.id) ?? []
+
     form.setFieldsValue({
       name: initialValues.name,
       description: initialValues.description,
+      characterIds: initialCharacterIds,
       size: sizeVal,
       heightMin,
       heightMax,
@@ -124,6 +221,7 @@ export default function EditBasicInfoForm({
       const submitPayload = {
         name: values.name,
         description: values.description,
+        characterIds: values.characterIds ?? [],
         size: sizeString as UpdateCostumeBasicInput['size'],
         numberOfItems: values.numberOfItems,
         pricePerDay: values.pricePerDay,
@@ -153,13 +251,14 @@ export default function EditBasicInfoForm({
   }
 
   return (
-    <Form
-      form={form}
-      layout="vertical"
-      onFinish={handleFinish}
-      disabled={loading || providerIdMissing}
-      style={{ maxWidth: 640 }}
-    >
+    <>
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleFinish}
+        disabled={loading || providerIdMissing}
+        style={{ maxWidth: 640 }}
+      >
       {providerIdMissing && (
         <Form.Item>
           <Alert
@@ -190,6 +289,54 @@ export default function EditBasicInfoForm({
         rules={[{ required: true, message: 'Vui lòng nhập tên trang phục' }, { max: 120, message: 'Tên trang phục không vượt quá 120 ký tự' }]}
       >
         <Input placeholder="Nhập tên trang phục" maxLength={120} />
+      </Form.Item>
+
+      <Form.Item
+        label="Nhân vật Anime / Game"
+        extra={isCharacterSelectionFull ? 'Tối đa 3 nhân vật' : undefined}
+        style={{ marginBottom: 24 }}
+      >
+        <Form.Item name="characterIds" noStyle>
+          <Select
+            mode="multiple"
+            showSearch
+            allowClear
+            placeholder="Chọn nhân vật"
+            loading={isCharactersLoading}
+            onFocus={fetchCharacters}
+            optionFilterProp="title"
+            onDeselect={() => undefined}
+            maxTagCount="responsive"
+            notFoundContent={
+              <div style={{ padding: 12, textAlign: 'center', color: '#999' }}>
+                Không tìm thấy nhân vật phù hợp.
+              </div>
+            }
+            filterOption={(input, option) => {
+              const keyword = input.toLowerCase().trim()
+              if (!keyword) return true
+              return String((option as any)?.title ?? '').toLowerCase().includes(keyword)
+            }}
+            options={characterOptions}
+            onChange={(nextValue) => {
+              if ((nextValue?.length ?? 0) > 3) {
+                message.warning('Tối đa 3 nhân vật')
+                form.setFieldValue('characterIds', (nextValue as number[]).slice(0, 3))
+              }
+            }}
+          />
+        </Form.Item>
+        <div style={{ marginTop: 8 }}>
+          <Button
+            type="dashed"
+            size="small"
+            icon={<PlusOutlined />}
+            onClick={() => setIsCharacterRequestModalOpen(true)}
+            style={{ borderRadius: 6 }}
+          >
+            Nhân vật bạn tìm không có? Yêu cầu thêm mới
+          </Button>
+        </div>
       </Form.Item>
 
       <Form.Item
@@ -440,6 +587,37 @@ export default function EditBasicInfoForm({
           Cập nhật thông tin cơ bản
         </Button>
       </Form.Item>
-    </Form>
+      </Form>
+
+      <Modal
+        title="Yêu cầu thêm nhân vật mới"
+        open={isCharacterRequestModalOpen}
+        onOk={handleCharacterRequestSubmit}
+        onCancel={() => {
+          setIsCharacterRequestModalOpen(false)
+          characterRequestForm.resetFields()
+        }}
+        okText="Gửi yêu cầu"
+        cancelText="Hủy"
+        destroyOnClose
+      >
+        <Form form={characterRequestForm} layout="vertical">
+          <Form.Item
+            name="characterName"
+            label="Tên nhân vật"
+            rules={[{ required: true, message: 'Vui lòng nhập tên nhân vật' }]}
+          >
+            <Input placeholder="Ví dụ: Hatsune Miku" />
+          </Form.Item>
+          <Form.Item
+            name="animeName"
+            label="Tên tác phẩm (Anime / Game / Manga /...)"
+            rules={[{ required: true, message: 'Vui lòng nhập tên tác phẩm' }]}
+          >
+            <Input placeholder="Ví dụ: Vocaloid" />
+          </Form.Item>
+        </Form>
+      </Modal>
+    </>
   )
 }

@@ -102,6 +102,12 @@ export function buildUpdateCostumeFormData(
   form.append('providerId', String(safeNumber(providerId, 0)))
   if (input.cost !== undefined) form.append('cost', String(safeNumber(input.cost, 0)))
   if (input.gender) form.append('gender', String(input.gender))
+  if (input.characterIds && input.characterIds.length > 0) {
+    input.characterIds.forEach((id) => {
+      const safeId = safeNumber(id, 0)
+      if (safeId > 0) form.append('characterIds', String(safeId))
+    })
+  }
   if (input.imageFiles && input.imageFiles.length > 0) {
     input.imageFiles.forEach((file) => form.append('imageFiles', file))
   }
