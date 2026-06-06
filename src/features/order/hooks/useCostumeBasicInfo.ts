@@ -20,6 +20,7 @@ interface CostumeBasicInfo {
   depositAmount: number;
   size: string;
   status: string;
+  rentDiscount: number;
 }
 
 export function useCostumeBasicInfo(costumeId: number | null | undefined) {
@@ -41,6 +42,7 @@ export function useCostumeBasicInfo(costumeId: number | null | undefined) {
         depositAmount: data.depositAmount ?? 0,
         size: data.size ?? '-',
         status: data.status ?? '-',
+        rentDiscount: data.rentDiscount ?? 0,
       });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Không thể tải thông tin trang phục.');
