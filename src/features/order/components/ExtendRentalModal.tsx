@@ -132,18 +132,46 @@ export function ExtendRentalModal({
         </div>
 
         {/* Cost breakdown */}
-        {activePricePerDay !== undefined && (
-          <div className="mt-4 rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 shadow-sm">
-            <div className="flex items-center justify-between text-sm">
-              <span className="font-semibold text-slate-600">Đơn giá thuê gốc:</span>
-              <span className="font-bold text-slate-800">{formatVnd(activePricePerDay)}/ngày</span>
+        {activePricePerDay !== undefined && (() => {
+          const rentDiscount = costumeInfo?.rentDiscount ?? 0;
+          const discountedPrice = activePricePerDay * (1 - rentDiscount / 100);
+          const totalExtendPrice = extendDays > 0 
+            ? activePricePerDay + (extendDays - 1) * discountedPrice 
+            : 0;
+
+          return (
+            <div className="mt-4 rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 shadow-sm space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-semibold text-slate-600">Đơn giá thuê gốc:</span>
+                <span className="font-bold text-slate-800">{formatVnd(activePricePerDay)}/ngày</span>
+              </div>
+              {rentDiscount > 0 && (
+                <>
+                  <div className="flex items-center justify-between text-sm text-green-600">
+                    <span className="font-semibold">Ưu đãi giảm giá thuê:</span>
+                    <span className="font-bold">Giảm {rentDiscount}% từ ngày thứ 2</span>
+                  </div>
+                  {extendDays > 1 && (
+                    <div className="flex items-center justify-between text-xs text-slate-500 pl-4">
+                      <span>• Ngày 1:</span>
+                      <span>{formatVnd(activePricePerDay)}</span>
+                    </div>
+                  )}
+                  {extendDays > 1 && (
+                    <div className="flex items-center justify-between text-xs text-slate-500 pl-4">
+                      <span>• Từ ngày thứ 2 ({extendDays - 1} ngày):</span>
+                      <span>{formatVnd(discountedPrice)}/ngày</span>
+                    </div>
+                  )}
+                </>
+              )}
+              <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
+                <span>Phí gia hạn tạm tính:</span>
+                <span>{formatVnd(totalExtendPrice)}</span>
+              </div>
             </div>
-            <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
-              <span>Phí gia hạn tạm tính:</span>
-              <span>{formatVnd(activePricePerDay * extendDays)}</span>
-            </div>
-          </div>
-        )}
+          );
+        })()}
 
         {/* Payment method selection */}
         <div className="mt-4 space-y-2">

@@ -409,6 +409,32 @@ export default function PurchaseHistoryPage() {
   }
 
   const handleReturnOrder = (orderId: number) => {
+    const order = filteredOrders.find((o) => o.id === orderId)
+    if (order && order.rentEnd) {
+      const rentEndDate = new Date(order.rentEnd)
+      if (!isNaN(rentEndDate.getTime())) {
+        const today = new Date()
+        const todayMidnight = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+        const rentEndMidnight = new Date(rentEndDate.getFullYear(), rentEndDate.getMonth(), rentEndDate.getDate())
+        const diffTime = rentEndMidnight.getTime() - todayMidnight.getTime()
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+
+        if (diffDays > 0) {
+          Modal.confirm({
+            title: 'Xác nhận trả hàng sớm',
+            content: `Bạn còn ${diffDays} ngày trước khi tới ngày trả hàng, bạn vẫn tiếp tục thủ tục trả hàng chứ?`,
+            okText: 'Tiếp tục',
+            cancelText: 'Hủy',
+            onOk: () => {
+              setReturnOrderId(orderId)
+              setReturnModalOpen(true)
+            }
+          })
+          return
+        }
+      }
+    }
+
     setReturnOrderId(orderId)
     setReturnModalOpen(true)
   }
