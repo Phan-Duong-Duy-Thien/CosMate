@@ -101,8 +101,9 @@ export async function deleteCostume(id: number): Promise<void> {
   }
 }
 
-export async function updateCostumeBasic(id: number, formData: FormData): Promise<void> {
-  await axiosInstance.put('/api/costumes/' + id, formData)
+export async function updateCostumeBasic(id: number, formData: FormData): Promise<ApiWrapper<CostumeCreatedResponse>> {
+  const response = await axiosInstance.put<ApiWrapper<CostumeCreatedResponse>>('/api/costumes/' + id, formData)
+  return response.data
 }
 
 export async function updateSurcharge(id: number, payload: SurchargeUpdateInput): Promise<void> {

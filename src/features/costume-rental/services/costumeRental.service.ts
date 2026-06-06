@@ -118,9 +118,10 @@ export async function updateCostumeBasic(
   id: number,
   input: UpdateCostumeBasicInput,
   providerId: number,
-): Promise<void> {
+): Promise<CostumeCreatedResponse> {
   const formData = buildUpdateCostumeFormData(input, providerId)
-  await apiUpdateCostumeBasic(id, formData)
+  const res = await apiUpdateCostumeBasic(id, formData)
+  return res.result
 }
 
 export async function updateSurcharge(

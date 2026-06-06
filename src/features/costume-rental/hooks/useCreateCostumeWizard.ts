@@ -161,6 +161,10 @@ export function useCreateCostumeWizard(): UseCreateCostumeWizardReturn {
         console.log('[useCreateCostumeWizard] Phase 1 done. costumeId =', result.id)
       }
 
+      if (result.hasIrrelevantImage) {
+        message.warning('Cảnh báo: AI phát hiện một số hình ảnh không liên quan đến cosplay. Bạn có thể kiểm tra lại, nhưng trang phục vẫn được đăng ký thành công!', 6)
+      }
+
       setCostumeId(result.id)
       setNumberOfItems(values.numberOfItems)
       setPhase(2)

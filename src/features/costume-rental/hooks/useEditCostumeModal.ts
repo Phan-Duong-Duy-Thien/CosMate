@@ -165,8 +165,12 @@ export function useEditCostumeModal({ onSuccess }: UseEditCostumeModalOptions = 
       }
       setBasicSubmitting(true)
       try {
-        await updateCostumeBasic(editingId, values, providerId)
-        message.success('Cập nhật thông tin cơ bản thành công!')
+        const result = await updateCostumeBasic(editingId, values, providerId)
+        if (result && result.hasIrrelevantImage) {
+          message.warning('Cảnh báo: AI phát hiện một số hình ảnh không liên quan đến cosplay. Bạn có thể kiểm tra lại, nhưng thông tin trang phục của bạn đã được cập nhật thành công!', 6)
+        } else {
+          message.success('Cập nhật thông tin cơ bản thành công!')
+        }
         // Refresh detail so the form reflects the saved state
         const res = await getCostumeById(editingId)
         setDetail(res.result)
