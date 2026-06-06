@@ -119,8 +119,6 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
       .reduce((sum, a) => sum + (a.price ?? 0), 0)
     const accessoryTotal = requiredSum + optionalSum
     const surchargesTotal = (costume.surcharges ?? []).reduce((sum, s) => sum + (s.price ?? 0), 0)
-<<<<<<< Updated upstream
-    
     // Rent Discount calculation: if renting from the 2nd day onwards, apply discount to days 2+
     const originalRentalPrice = baseDaily * days
     const rentDiscount = costume.rentDiscount ?? 0
@@ -133,16 +131,6 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
     }
 
     const total = rentalPrice + deposit + accessoryTotal + surchargesTotal
-=======
-    const rentalPrice = baseDaily * days
-
-    const discountPercent = costume.rentDiscount ?? 0
-    const discount = (days >= 2 && discountPercent > 0)
-      ? Math.round(baseDaily * (discountPercent / 100) * (days - 1))
-      : 0
-
-    const total = rentalPrice - discount + deposit + accessoryTotal + surchargesTotal
->>>>>>> Stashed changes
 
     return {
       rentalPrice,
@@ -152,14 +140,11 @@ export function usePublicCostumeDetail(costumeId: string | undefined) {
       deposit,
       laundryFee: 0,
       total,
-<<<<<<< Updated upstream
       originalRentalPrice,
       discountAmount,
       rentDiscount,
-=======
-      discount,
-      discountPercent,
->>>>>>> Stashed changes
+      discount: discountAmount,
+      discountPercent: rentDiscount,
     }
   }, [costume, days, checkedOptionalIds])
 

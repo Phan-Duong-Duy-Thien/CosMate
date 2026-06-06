@@ -499,7 +499,6 @@ export default function EditBasicInfoForm({
         extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
         rules={[
           { required: true, message: 'Vui lòng nhập giảm giá thuê' },
-<<<<<<< Updated upstream
           { type: 'number', min: 0, message: 'Giảm giá thuê không được âm' },
           {
             validator(_, value) {
@@ -512,12 +511,6 @@ export default function EditBasicInfoForm({
         ]}
       >
         <InputNumber min={0} max={74} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
-=======
-          { type: 'number', min: 0, max: 100, message: 'Giảm giá thuê từ 0% đến 100%' },
-        ]}
-      >
-        <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
->>>>>>> Stashed changes
       </Form.Item>
 
       <Form.Item

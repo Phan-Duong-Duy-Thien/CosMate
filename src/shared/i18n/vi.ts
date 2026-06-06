@@ -1714,9 +1714,9 @@ export const VI = {
       },
       /** Mã API `stage` → hiển thị tiếng Việt */
       trackingStageLabels: {
-        SHIPPING_OUT: "Đang giao đến khách",
-        SHIPPING_BACK: "Đang hoàn trả về cửa hàng",
-        DELIVERING_OUT: "Chờ khách xác nhận nhận hàng",
+        SHIPPING_OUT: "Ảnh gửi hàng",
+        SHIPPING_BACK: "Ảnh trả hàng",
+        DELIVERING_OUT: "Xác nhận nhận hàng",
         RETURNED: "Đã trả hàng",
         PREPARING: "Đang chuẩn bị",
         IN_TRANSIT: "Đang vận chuyển",
@@ -2115,7 +2115,7 @@ export const VI = {
         topPhotographers: "Nhiếp ảnh gia hàng đầu",
         recentEvents: "Sự kiện gần đây",
       },
-      browseByTheme: "Khám phá theo chủ đề",
+      
       trustedShopsTitle: "Shop cho thuê uy tín",
       trustedShopsHint:
         "Cửa hàng được đánh giá cao, minh bạch và được nhiều khách tin chọn.",
@@ -3234,25 +3234,6 @@ export const VI = {
     walletPrimarySuccessCta: "Tiếp tục thanh toán",
     walletPrimaryFailedCta: "Quay lại nạp tiền",
     verifying: "Đang xác minh trạng thái thanh toán...",
-  },
-
-  /**
-   * Overdue Order Lock
-   * Shown when cosplayer has overdue rental orders
-   */
-  overdueLock: {
-    title: "Tài khoản tạm khoá",
-    subtitle: "Bạn có đơn hàng quá hạn chưa trả",
-    message:
-      "Vui lòng trả hàng cho tất cả đơn quá hạn bên dưới để tiếp tục sử dụng CosMate. Sau khi trả hàng thành công, các chức năng sẽ được mở lại.",
-    ctaButton: "Đi đến trả hàng",
-    orderLabel: "Đơn quá hạn",
-    orderCode: "Mã đơn",
-    rentPeriod: "Thời gian thuê",
-    daysOverdue: "ngày quá hạn",
-    statusOverdue: "Quá hạn",
-    warningNote:
-      "Lưu ý: Nếu không trả hàng sau 7 ngày quá hạn, tài khoản sẽ bị khoá vĩnh viễn.",
   },
 };
 

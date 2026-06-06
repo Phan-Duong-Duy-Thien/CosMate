@@ -91,14 +91,11 @@ export interface QuoteBreakdown {
   /** @deprecated kept for backward compat; always 0 in new flow */
   laundryFee: number
   total: number
-<<<<<<< Updated upstream
   originalRentalPrice?: number
   discountAmount?: number
   rentDiscount?: number
-=======
   discount?: number
   discountPercent?: number
->>>>>>> Stashed changes
 }
 
 export interface FilterState {
