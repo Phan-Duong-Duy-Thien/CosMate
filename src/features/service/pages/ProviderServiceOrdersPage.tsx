@@ -189,12 +189,6 @@ export default function ProviderServiceOrdersPage() {
       render: (_, record) => record.cosplayerName ?? `ID: ${record.cosplayerId}`,
     },
     {
-      title: VI.profile.serviceOrders.cardBookings,
-      key: 'bookings',
-      render: (_, record) => record.bookings.length,
-      width: 110,
-    },
-    {
       title: VI.provider.orders.table.total,
       dataIndex: 'totalAmount',
       key: 'totalAmount',
@@ -411,9 +405,27 @@ export default function ProviderServiceOrdersPage() {
                       <Descriptions.Item label={VI.provider.orders.table.cosplayer} span={2}>
                         {detailModal.order.cosplayerName ?? `ID: ${detailModal.order.cosplayerId}`}
                       </Descriptions.Item>
-                      <Descriptions.Item label={VI.provider.orders.table.total}>
-                        {formatCurrency(detailModal.order.totalAmount)}
+                      <Descriptions.Item label="Nhà cung cấp" span={2}>
+                        {detailModal.order.providerName ?? `ID: ${detailModal.order.providerId}`}
                       </Descriptions.Item>
+                      <Descriptions.Item label="Tiền thuê slot">
+                        {formatCurrency(detailModal.order.bookings.reduce((sum, b) => sum + (b.rentSlotAmount || 0), 0))}
+                      </Descriptions.Item>
+                      <Descriptions.Item label={VI.provider.orders.table.total}>
+                        <span className="font-semibold text-cosmate-pink">
+                          {formatCurrency(detailModal.order.totalAmount)}
+                        </span>
+                      </Descriptions.Item>
+                      {(detailModal.order.totalDepositAmount ?? 0) > 0 && (
+                        <Descriptions.Item label="Tiền đặt cọc">
+                          {formatCurrency(detailModal.order.totalDepositAmount!)}
+                        </Descriptions.Item>
+                      )}
+                      {(detailModal.order.totalEquipmentDepreciationAmount ?? 0) > 0 && (
+                        <Descriptions.Item label="Khấu hao thiết bị">
+                          {formatCurrency(detailModal.order.totalEquipmentDepreciationAmount!)}
+                        </Descriptions.Item>
+                      )}
                       <Descriptions.Item label={VI.provider.orders.table.createdAt}>
                         {formatDate(detailModal.order.createdAt)}
                       </Descriptions.Item>

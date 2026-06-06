@@ -148,3 +148,15 @@ export async function searchCostumes(keyword: string): Promise<CostumeApiRespons
   })
   return response.data
 }
+
+export async function deleteSurcharge(id: number): Promise<void> {
+  await axiosInstance.delete('/api/surcharges/' + id)
+}
+
+export async function deleteRentalOption(id: number): Promise<void> {
+  await axiosInstance.delete('/api/rental-options/' + id)
+}
+
+export async function deleteAccessory(id: number): Promise<void> {
+  await axiosInstance.delete('/api/accessories/' + id)
+}

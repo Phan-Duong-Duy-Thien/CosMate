@@ -8,9 +8,10 @@ import { loadDraft, saveDraft, loadCheckoutSelections, saveCheckoutSelections, c
 import { buildAddressCreateFromCheckoutUrl, buildWalletTopUpFromCheckoutUrl } from '../utils/checkoutNavigation';
 import { getCostumeById } from '@/features/costume-rental/api/costumeRental.api';
 import type { Costume } from '@/features/costume-rental/types';
-import type { PaymentMethod } from '../types';
+import type { PaymentMethod, RentalDraft, CreateOrderParams } from '../types';
 import { getReturnUrl } from '../utils/paymentReturnUrls';
 import { getUserId } from '@/features/auth/services/tokenStorage';
+import type { UserAddress } from '@/features/profile/types';
 
 interface CheckoutState {
   addresses: UserAddress[];
@@ -39,7 +40,20 @@ interface CheckoutActions {
   navigateToAddAddress: () => void;
 }
 
-export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions;
+export type CheckoutComputed = {
+  requiredAccessoryIds: number[];
+  finalAccessoryIds: number[];
+  selectedAccessories: Costume['accessories'];
+  baseRent: number;
+  accessoriesTotal: number;
+  surchargesTotal: number;
+  deposit: number;
+  totalToPay: number;
+} | null;
+
+export type UseCheckoutReviewReturn = CheckoutState & CheckoutActions & {
+  computed: CheckoutComputed;
+};
 
 export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReviewReturn {
   const [state, setState] = useState<CheckoutState>({
@@ -156,7 +170,13 @@ export function useCheckoutReview(navigate: NavigateFunction): UseCheckoutReview
     const selectedAccessories = costume.accessories.filter(a => finalAccessoryIds.includes(a.id));
 
     // Calculate prices (gói thuê không áp dụng — không cộng vào tổng)
-    const baseRent = costume.pricePerDay * draft.rentDay;
+    const rentDiscount = costume.rentDiscount ?? 0;
+    const originalBaseRent = costume.pricePerDay * draft.rentDay;
+    let baseRent = originalBaseRent;
+    if (rentDiscount > 0 && draft.rentDay > 1) {
+      const discountAmount = (draft.rentDay - 1) * costume.pricePerDay * (rentDiscount / 100);
+      baseRent = originalBaseRent - discountAmount;
+    }
     const accessoriesTotal = selectedAccessories.reduce((sum, a) => sum + a.price, 0);
     const surchargesTotal = costume.surcharges.reduce((sum, s) => sum + s.price, 0);
     const deposit = costume.depositAmount;

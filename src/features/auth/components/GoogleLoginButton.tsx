@@ -1,8 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Chrome } from "lucide-react"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/shared/components/Button"
 import { VI } from "@/shared/i18n/vi"
 
 type GoogleLoginButtonProps = {
@@ -69,7 +68,7 @@ function loadGoogleIdentityScript(): Promise<void> {
 }
 
 export function GoogleLoginButton({ clientId, disabled, onCredential }: GoogleLoginButtonProps) {
-  const hiddenButtonRef = useRef<HTMLDivElement | null>(null)
+  const googleButtonRef = useRef<HTMLDivElement | null>(null)
   const [scriptError, setScriptError] = useState(false)
   const [isReady, setIsReady] = useState(false)
 
@@ -82,11 +81,11 @@ export function GoogleLoginButton({ clientId, disabled, onCredential }: GoogleLo
 
     void loadGoogleIdentityScript()
       .then(() => {
-        if (cancelled || !hiddenButtonRef.current || !window.google?.accounts?.id) {
+        if (cancelled || !googleButtonRef.current || !window.google?.accounts?.id) {
           return
         }
 
-        hiddenButtonRef.current.innerHTML = ""
+        googleButtonRef.current.innerHTML = ""
 
         window.google.accounts.id.initialize({
           client_id: clientId,
@@ -98,12 +97,12 @@ export function GoogleLoginButton({ clientId, disabled, onCredential }: GoogleLo
           },
         })
 
-        window.google.accounts.id.renderButton(hiddenButtonRef.current, {
+        window.google.accounts.id.renderButton(googleButtonRef.current, {
           type: "standard",
           theme: "outline",
-          size: "medium",
+          size: "large",
           text: "continue_with",
-          width: 240,
+          width: 400,
           shape: "rectangular",
         })
         setIsReady(true)
@@ -120,37 +119,35 @@ export function GoogleLoginButton({ clientId, disabled, onCredential }: GoogleLo
     }
   }, [clientId, onCredential])
 
-  const triggerGoogleLogin = useCallback(() => {
-    const trigger = hiddenButtonRef.current?.querySelector<HTMLElement>('div[role="button"], button')
-    trigger?.click()
-  }, [])
-
   if (scriptError) {
     return <p className="text-center text-sm text-destructive">{VI.auth.login.googleLoadFailed}</p>
   }
 
   return (
-    <>
-      <Button
-        type="button"
-        variant="soft"
-        size="lg"
-        disabled={disabled || !isReady}
-        onClick={triggerGoogleLogin}
+    <div className="relative w-full">
+      {/* Visual custom button — purely decorative, sits behind the real Google button */}
+      <div
+        aria-hidden
         className={cn(
-          "w-full rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-pink-100/70 hover:shadow-[7px_7px_0_0_#1e1b4b] focus-visible:ring-4 focus-visible:ring-pink-300 active:translate-y-0 active:shadow-[3px_3px_0_0_#1e1b4b]",
+          "flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-[#fffbeb] px-4 py-2.5 font-extrabold text-indigo-950 shadow-[5px_5px_0_0_#1e1b4b] transition",
           !isReady && "opacity-70"
         )}
       >
-        <Chrome className="h-4 w-4" aria-hidden />
+        <Chrome className="h-4 w-4" />
         {VI.auth.login.continueWithGoogle}
-      </Button>
+      </div>
 
+      {/* Real Google-rendered button — overlaid on top, fully transparent so user
+          clicks it directly. This avoids programmatic .click() which browsers
+          can silently block in production. */}
       <div
-        ref={hiddenButtonRef}
-        className="pointer-events-none absolute -left-[9999px] top-0 h-px w-px overflow-hidden opacity-0"
-        aria-hidden
+        ref={googleButtonRef}
+        className={cn(
+          "absolute inset-0 overflow-hidden opacity-[0.01]",
+          disabled && "pointer-events-none"
+        )}
+        style={{ cursor: "pointer" }}
       />
-    </>
+    </div>
   )
 }

@@ -27,6 +27,7 @@ import {
   deleteCancellationPolicy,
   type CancellationPolicy
 } from '../api/cancellationPolicy.api';
+import { ImageCropDialog } from '@/features/profile/components/ImageCropDialog';
 
 const { Title, Paragraph, Text } = Typography;
 const { TextArea } = Input;
@@ -37,6 +38,8 @@ export default function ProviderProfileEditPage() {
   const [editingAddressCity, setEditingAddressCity] = useState<string | null>(null);
   const [editingAddressDistrict, setEditingAddressDistrict] = useState<string | null>(null);
   const [addressForm] = Form.useForm<UpsertUserAddressPayload>();
+  const [cropFile, setCropFile] = useState<File | null>(null);
+  const [cropMode, setCropMode] = useState<'avatar' | 'cover' | null>(null);
   const {
     provinceCode,
     setProvinceCode,
@@ -477,10 +480,11 @@ export default function ProviderProfileEditPage() {
                               <input
                                 type="file"
                                 accept="image/*"
-                                onChange={async (e) => {
+                                onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
-                                  await uploadAvatar(file);
+                                  setCropFile(file);
+                                  setCropMode('avatar');
                                   e.target.value = '';
                                 }}
                                 style={{ display: 'none' }}
@@ -556,10 +560,11 @@ export default function ProviderProfileEditPage() {
                               <input
                                 type="file"
                                 accept="image/*"
-                                onChange={async (e) => {
+                                onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
-                                  await uploadCoverImage(file);
+                                  setCropFile(file);
+                                  setCropMode('cover');
                                   e.target.value = '';
                                 }}
                                 style={{ display: 'none' }}
@@ -792,6 +797,29 @@ export default function ProviderProfileEditPage() {
           </Form.Item>
         </Form>
       </Modal>
+
+      <ImageCropDialog
+        open={cropMode !== null}
+        file={cropFile}
+        title={cropMode === 'avatar' ? 'Chỉnh sửa ảnh đại diện' : 'Chỉnh sửa ảnh bìa'}
+        aspect={cropMode === 'avatar' ? 1 : 16 / 6}
+        cropShape={cropMode === 'avatar' ? 'round' : 'rect'}
+        onOpenChange={(open) => {
+          if (!open) {
+            setCropFile(null);
+            setCropMode(null);
+          }
+        }}
+        onConfirm={async (result) => {
+          if (cropMode === 'avatar') {
+            await uploadAvatar(result.file);
+          } else if (cropMode === 'cover') {
+            await uploadCoverImage(result.file);
+          }
+          setCropFile(null);
+          setCropMode(null);
+        }}
+      />
     </DashboardLayout>
   );
 }

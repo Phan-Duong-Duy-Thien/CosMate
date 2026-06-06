@@ -30,6 +30,8 @@ export interface DisputeOrder {
   totalDepositAmount?: number;
   createdAt: string;
   rentDate?: string;
+  cosplayerName?: string;
+  providerName?: string;
 }
 
 // ─── Dispute ─────────────────────────────────────────────────────────────────
@@ -93,8 +95,8 @@ export interface CreateDisputePayload {
 
 export interface ResolveDisputePayload {
   result: string;
-  penaltyAmount: number;
-  penaltyPercent: number;
+  penaltyAmount?: number;
+  penaltyPercent?: number;
   notes: string;
 }
 

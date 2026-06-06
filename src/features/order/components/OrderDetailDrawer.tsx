@@ -755,7 +755,7 @@ export function OrderDetailDrawer({
             items={[
               { key: 'overview', label: 'Tổng quan', children: overviewTab },
               { key: 'rental', label: 'Thuê & dịch vụ', children: rentalTab },
-              { key: 'logistics', label: 'Giao nhận & chứng từ', children: logisticsTab },
+              { key: 'logistics', label: 'Giao nhận & bằng chứng', children: logisticsTab },
             ]}
           />
         ) : (
@@ -765,6 +765,7 @@ export function OrderDetailDrawer({
     <ExtendRentalModal
       open={extendModalOpen}
       onClose={() => setExtendModalOpen(false)}
+      costumeId={costumeId}
       onConfirm={async (extendDays: number, paymentMethod: PaymentMethod) => {
         const detailId = orderDetail?.details?.[0]?.id;
         if (!orderId || !detailId) return;

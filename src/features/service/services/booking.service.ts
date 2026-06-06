@@ -12,6 +12,8 @@ import {
   type ServicePackageFees,
 } from '../utils/serviceOrderPricing'
 
+import { getProviderById } from '@/features/provider/api/providerShop.api'
+
 const servicePackageFeesCache = new Map<number, ServicePackageFees>()
 
 async function loadServicePackageFees(serviceId: number): Promise<ServicePackageFees> {
@@ -39,16 +41,34 @@ async function enrichServiceOrdersForDisplay(orders: ServiceOrder[]): Promise<Se
   )
 
   const serviceIds = new Set<number>()
+  const providerIds = new Set<number>()
   for (const order of normalized) {
+    if (order.providerId > 0 && !order.providerName) {
+      providerIds.add(order.providerId)
+    }
     for (const booking of order.bookings) {
       if (booking.serviceId > 0) serviceIds.add(booking.serviceId)
     }
   }
 
-  await Promise.all([...serviceIds].map((id) => loadServicePackageFees(id)))
+  const providerMap = new Map<number, string>()
+  await Promise.all([
+    ...[...serviceIds].map((id) => loadServicePackageFees(id)),
+    ...[...providerIds].map(async (pId) => {
+      try {
+        const provider = await getProviderById(pId)
+        if (provider?.shopName) {
+          providerMap.set(pId, provider.shopName)
+        }
+      } catch (err) {
+        console.error("Failed to load provider profile", pId, err)
+      }
+    })
+  ])
 
   return normalized.map((order) => ({
     ...order,
+    providerName: order.providerName || providerMap.get(order.providerId) || `Shop #${order.providerId}`,
     payableTotalAmount: resolveServiceOrderPayableTotal(order, servicePackageFeesCache),
   }))
 }

@@ -26,6 +26,7 @@ import cosmateLogo from "@/assets/logo.png"
 import { VI } from "@/shared/i18n/vi"
 import { ChatInboxSidebar } from "./ChatInboxSidebar"
 import { CHAT_UI } from "../constants/chatUi"
+import { toUtcSafeDate } from "@/lib/datetime"
 
 interface ActiveRoom {
   roomId: number
@@ -43,35 +44,51 @@ function computeInitials(fullName: string): string {
 
 function formatMessageTime(isoString: string): string {
   if (!isoString) return ""
-  const date = new Date(isoString)
+  const date = toUtcSafeDate(isoString)
   if (isNaN(date.getTime())) return ""
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+  return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" })
 }
 
 function formatDateSeparator(isoString: string): string {
-  const date = new Date(isoString)
+  const date = toUtcSafeDate(isoString)
   if (isNaN(date.getTime())) return ""
-  const today = new Date()
-  const yesterday = new Date()
-  yesterday.setDate(today.getDate() - 1)
+
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  })
+  
+  const getPartsDate = (d: Date) => {
+    const parts = formatter.formatToParts(d)
+    const val = (type: string) => Number(parts.find(p => p.type === type)?.value)
+    return new Date(val("year"), val("month") - 1, val("day"))
+  }
+  
+  const todayVN = getPartsDate(new Date())
+  const yesterdayVN = new Date(todayVN)
+  yesterdayVN.setDate(todayVN.getDate() - 1)
+  
+  const dateVN = getPartsDate(date)
 
   const isSameDay = (d1: Date, d2: Date) =>
     d1.getFullYear() === d2.getFullYear() &&
     d1.getMonth() === d2.getMonth() &&
     d1.getDate() === d2.getDate()
 
-  if (isSameDay(date, today)) return "Hôm nay"
-  if (isSameDay(date, yesterday)) return "Hôm qua"
+  if (isSameDay(dateVN, todayVN)) return "Hôm nay"
+  if (isSameDay(dateVN, yesterdayVN)) return "Hôm qua"
 
   const days = ["Chủ Nhật", "Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy"]
-  const dayName = days[date.getDay()]
-  const day = date.getDate()
-  const month = date.getMonth() + 1
+  const dayName = days[dateVN.getDay()]
+  const day = dateVN.getDate()
+  const month = dateVN.getMonth() + 1
   return `${dayName}, ${day} tháng ${month}`
 }
 
 function getDateKey(isoString: string): string {
-  const date = new Date(isoString)
+  const date = toUtcSafeDate(isoString)
   if (isNaN(date.getTime())) return ""
   return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`
 }

@@ -41,6 +41,8 @@ export function ConfirmDeliveryModal({
     maxImages,
   } = useConfirmDeliverySession({ orderId, open })
 
+  const [previewMedia, setPreviewMedia] = React.useState<{ url: string; isVideo: boolean } | null>(null)
+
   const { orderDetail, loading: orderDetailLoading } = useOrderDetail(
     open && orderId ? orderId : null
   )
@@ -215,20 +217,67 @@ export function ConfirmDeliveryModal({
             </div>
           ) : (
             <ul className="grid grid-cols-3 gap-2 sm:grid-cols-5">
-              {previewImages.map((img) => (
-                <li
-                  key={img.id}
-                  className="aspect-square overflow-hidden rounded-xl border-[2px] border-indigo-950/30 bg-slate-100"
-                >
-                  <img src={img.url} alt="" className="h-full w-full object-cover" />
-                </li>
-              ))}
+              {previewImages.map((img) => {
+                const isVideo = !!img.mimeType?.startsWith("video/")
+                return (
+                  <li
+                    key={img.id}
+                    onClick={() => setPreviewMedia({ url: img.url, isVideo })}
+                    className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-xl border-[2px] border-indigo-950/30 bg-slate-100 transition-all hover:scale-[1.03]"
+                  >
+                    {isVideo ? (
+                      <video
+                        src={img.url}
+                        className="h-full w-full object-cover"
+                        muted
+                        controls={false}
+                        playsInline
+                      />
+                    ) : (
+                      <img src={img.url} alt="" className="h-full w-full object-cover" />
+                    )}
+                    {isVideo && (
+                      <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-md">
+                          <svg className="ml-0.5 h-4 w-4 fill-indigo-950 text-indigo-950" viewBox="0 0 24 24">
+                            <path d="M8 5v14l11-7z" />
+                          </svg>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
           )}
         </div>
 
         <p className="text-xs font-medium text-indigo-900/55">{VI.profile.orders.confirmDeliveryQr.apiNote}</p>
       </div>
+
+      <Modal
+        open={!!previewMedia}
+        footer={null}
+        onCancel={() => setPreviewMedia(null)}
+        centered
+        destroyOnClose
+        styles={{ body: { padding: 0, overflow: "hidden" } }}
+      >
+        {previewMedia?.isVideo ? (
+          <video
+            src={previewMedia.url}
+            controls
+            autoPlay
+            style={{ width: "100%", maxHeight: "80vh", display: "block", background: "#000" }}
+          />
+        ) : (
+          <img
+            src={previewMedia?.url}
+            alt="Preview"
+            style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", display: "block" }}
+          />
+        )}
+      </Modal>
     </Modal>
   )
 }

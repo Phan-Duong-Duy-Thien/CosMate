@@ -16,7 +16,7 @@ function normalizeToRoleName(role: any): string {
 
 export function getRedirectPath(roles: any[]): string {
   if (!roles || roles.length === 0) {
-    return '/onboarding/role';
+    return '/login';
   }
 
   // Dịch toàn bộ ID số (nếu có) thành chữ để dễ check
@@ -31,10 +31,11 @@ export function getRedirectPath(roles: any[]): string {
     return '/admin';
   }
 
-  // Priority 2: Provider Rental
+  // Priority 2: Provider Rental / Generic Provider
   if (
     normalizedRoles.includes(ROLE.PROVIDER_RENTAL) ||
-    normalizedRoles.includes('PROVIDER_RENTAL')
+    normalizedRoles.includes('PROVIDER_RENTAL') ||
+    normalizedRoles.includes('PROVIDER')
   ) {
     return '/provider-rental';
   }
@@ -68,6 +69,6 @@ export function getRedirectPath(roles: any[]): string {
     return '/staff';
   }
 
-  // No valid role → onboarding
-  return '/onboarding/role';
+  // No valid role → login
+  return '/login';
 }

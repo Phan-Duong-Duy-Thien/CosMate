@@ -19,6 +19,7 @@ export function useProviderGate() {
 
   const handleSubscribe = () => {
     if (!selectedPlanId || !selectedMethod) return;
+    sessionStorage.setItem('cosmate:provider:intended_path', window.location.pathname);
     subscribe({
       subscriptionPlanId: selectedPlanId,
       returnUrl: getReturnUrl(selectedMethod),

@@ -266,7 +266,7 @@ export const VI = {
         totalUsers: "Tổng người dùng",
         activeBookings: "Đơn đặt đang hoạt động",
         totalCostumes: "Tổng trang phục",
-        revenue: "Doanh thu (VND)",
+        revenue: "Doanh thu tháng (VND)",
       },
 
       sections: {
@@ -1103,6 +1103,8 @@ export const VI = {
           "Proxy GHN chưa được cấu hình trên môi trường triển khai. Cần thiết lập VITE_GHN_API_BASE hoặc reverse proxy /ghn-proxy.",
         shippingFeeApproximateHint:
           "Đây chỉ là phí ước tính, có thể có chênh lệch so với phí vận chuyển thực tế.",
+        shippingFeeSourceNote:
+          "Địa chỉ gửi hàng được lấy từ địa chỉ mặc định của shop.",
         shippingFeeResolveFailedHint:
           "Không ước tính được phí. Vui lòng cập nhật địa chỉ: chọn lại Tỉnh/Thành phố và Phường/Xã trong Hồ sơ.",
         carrierNameOther: "Tên đơn vị vận chuyển khác",
@@ -1454,6 +1456,8 @@ export const VI = {
       returnSelectCarrier: "Chọn đơn vị vận chuyển",
       returnAutoTrackingHint:
         "Mã vận đơn sẽ được tạo tự động sau khi bạn gửi trả hàng.",
+      returnShippingFeeSourceNote:
+        "Địa chỉ gửi hàng được lấy từ địa chỉ nhận hàng của đơn hàng.",
       returnImages: "Hình ảnh xác nhận",
       // Validation
       validation: {
@@ -1950,7 +1954,7 @@ export const VI = {
       priceBreakdownHint: "Nhập giá dịch vụ để xem tổng thanh toán.",
       priceBreakdownServiceFee: "Phí dịch vụ",
       priceBreakdownDeposit: "Tiền cọc (theo gói)",
-      priceBreakdownEquipment: "Phí khấu hao thiết bị (theo gói)",
+      priceBreakdownEquipment: "Phụ phí phát sinh",
       priceBreakdownTotal: "Tổng thanh toán",
       priceBreakdownNote: "Tổng thanh toán = phí dịch vụ bạn nhập + các khoản phí cố định trong gói dịch vụ. Đây là số tiền khách thấy trên CosMate.",
       packageFeesTitle: "Phí cố định trong gói",
@@ -1997,8 +2001,8 @@ export const VI = {
         description: "Mô tả dịch vụ",
         descriptionPlaceholder: "Mô tả chi tiết về dịch vụ của bạn...",
         slotDurationHours: "Thời lượng mỗi slot (giờ)",
-        pricePerSlot: "Giá mỗi slot",
-        equipmentDepreciationCost: "Chi phí khấu hao thiết bị",
+        pricePerSlot: "Giá dịch vụ",
+        equipmentDepreciationCost: "Phụ phí phát sinh",
         depositAmount: "Tiền cọc",
         minPrice: "Giá tối thiểu",
 
@@ -2050,7 +2054,7 @@ export const VI = {
         serviceName: "Tên dịch vụ",
         description: "Mô tả",
         slotDuration: "Thời lượng slot",
-        pricePerSlot: "Giá mỗi slot",
+        pricePerSlot: "Giá dịch vụ",
         status: "Trạng thái",
         actions: "Hành động",
       },
@@ -2078,7 +2082,7 @@ export const VI = {
         serviceType: "Loại dịch vụ",
         description: "Mô tả",
         descriptionEmpty: "Không có mô tả",
-        pricePerSlot: "Giá mỗi slot",
+        pricePerSlot: "Giá dịch vụ",
         minPrice: "Giá tối thiểu",
         maxPrice: "Giá tối đa",
         slotDuration: "Thời lượng slot",

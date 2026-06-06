@@ -107,11 +107,11 @@ function DisputeDetailModal({ dispute, open, onClose, onResolve }: { dispute: Di
             </p>
             <p>
               <span className="text-slate-500">{VI.staff.disputes.cosplayerId}:</span>{' '}
-              <span className="font-medium">{dispute.order.cosplayerId}</span>
+              <span className="font-semibold text-slate-800">{dispute.order.cosplayerName || dispute.order.cosplayerId}</span>
             </p>
             <p>
               <span className="text-slate-500">{VI.staff.disputes.providerId}:</span>{' '}
-              <span className="font-medium">{dispute.order.providerId}</span>
+              <span className="font-semibold text-slate-800">{dispute.order.providerName || dispute.order.providerId}</span>
             </p>
             <p>
               <span className="text-slate-500">{VI.staff.disputes.totalAmount}:</span>{' '}

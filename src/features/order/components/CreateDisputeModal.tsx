@@ -71,6 +71,10 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
       message.error(VI.dispute.reasonTooShort);
       return;
     }
+    if (fileList.length === 0) {
+      message.error('Vui lòng đính kèm ít nhất 1 hình ảnh làm bằng chứng.');
+      return;
+    }
 
     // Collect File objects for multipart upload
     const fileObjects: File[] = fileList
@@ -84,7 +88,7 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
   };
 
   // Compute submit button state
-  const isSubmitDisabled = loading || !isReasonValid;
+  const isSubmitDisabled = loading || !isReasonValid || fileList.length === 0;
 
   return (
     <Modal
@@ -133,8 +137,8 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
         {/* Image upload */}
         <div>
           <label className="mb-1.5 block text-sm font-medium text-slate-700">
-            {VI.dispute.imagesLabel}
-            <span className="ml-1 text-xs text-slate-400">({VI.dispute.imagesOptional})</span>
+            {VI.dispute.imagesLabel} <span className="text-red-500">*</span>
+            <span className="ml-1 text-xs text-red-500 font-semibold">(hình ảnh đính kèm là bắt buộc)</span>
           </label>
 
           <Dragger {...uploadProps}>
@@ -146,35 +150,6 @@ export function CreateDisputeModal({ open, orderId, loading, onCancel, onSubmit 
               {`${VI.dispute.imagesHint} (${fileList.length}/3)`}
             </p>
           </Dragger>
-
-          {/* Image preview grid */}
-          {fileList.length > 0 && (
-            <div className="mt-3 grid grid-cols-3 gap-2">
-              {fileList.map((file) => (
-                <div
-                  key={file.uid}
-                  className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-slate-50"
-                >
-                  {file.url || (file.originFileObj && URL.createObjectURL(file.originFileObj)) ? (
-                    <img
-                      src={file.url || (file.originFileObj ? URL.createObjectURL(file.originFileObj) : '')}
-                      alt={file.name || 'preview'}
-                      className="h-full w-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-full items-center justify-center">
-                      <LoadingOutlined className="text-xl text-slate-400" />
-                    </div>
-                  )}
-                  {file.status === 'uploading' && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/20">
-                      <LoadingOutlined className="text-white" />
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
         </div>
 
         {/* Helper text */}

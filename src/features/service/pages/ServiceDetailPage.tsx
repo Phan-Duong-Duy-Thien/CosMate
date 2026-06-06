@@ -133,6 +133,9 @@ export default function ServiceDetailPage() {
       s.minPrice > 0 &&
       s.maxPrice > 0
     ) {
+      if (s.minPrice === s.maxPrice) {
+        return `${s.minPrice.toLocaleString("vi-VN")}đ`
+      }
       return `${s.minPrice.toLocaleString("vi-VN")} – ${s.maxPrice.toLocaleString("vi-VN")}đ`
     }
     if (s.pricePerSlot > 0) {
@@ -294,7 +297,7 @@ export default function ServiceDetailPage() {
                     </span>
                     <div>
                       <p className="text-[10px] font-extrabold uppercase tracking-wide text-indigo-800/65">
-                        Phí khấu hao thiết bị
+                        Phụ phí phát sinh
                       </p>
                       <p className="mt-1 font-extrabold text-indigo-950">
                         {service.equipmentDepreciationCost.toLocaleString("vi-VN")}đ

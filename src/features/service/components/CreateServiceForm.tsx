@@ -100,8 +100,44 @@ export function CreateServiceForm({
     if (mode === 'edit' && editingService) {
       return serviceToFormValues(editingService);
     }
+    if (mode === 'create') {
+      const savedDraft = sessionStorage.getItem(`cosmate_create_service_draft_${serviceType}`);
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (parsed.formValues) {
+            return {
+              ...CREATE_SERVICE_FORM_DEFAULTS,
+              ...parsed.formValues,
+            };
+          }
+        } catch (e) {
+          console.error("Failed to parse saved draft", e);
+        }
+      }
+    }
     return CREATE_SERVICE_FORM_DEFAULTS;
-  }, [mode, editingService]);
+  }, [mode, editingService, serviceType]);
+
+  const saveDraft = (formValues: Partial<ServiceFormValues>, updatedAreas: ServiceArea[]) => {
+    if (mode !== 'create') return;
+    try {
+      const savedDraft = sessionStorage.getItem(`cosmate_create_service_draft_${serviceType}`);
+      let currentValues = {};
+      if (savedDraft) {
+        try {
+          currentValues = JSON.parse(savedDraft).formValues || {};
+        } catch {}
+      }
+      const dataToSave = {
+        formValues: { ...currentValues, ...formValues },
+        areas: updatedAreas,
+      };
+      sessionStorage.setItem(`cosmate_create_service_draft_${serviceType}`, JSON.stringify(dataToSave));
+    } catch (e) {
+      console.error("Failed to save draft", e);
+    }
+  };
 
   const syncMinPriceFromPricingFields = (values: Partial<ServiceFormValues>) => {
     form.setFieldValue(
@@ -162,11 +198,32 @@ export function CreateServiceForm({
         })),
       );
     } else if (mode === 'create') {
+      const savedDraft = sessionStorage.getItem(`cosmate_create_service_draft_${serviceType}`);
+      if (savedDraft) {
+        try {
+          const parsed = JSON.parse(savedDraft);
+          if (Array.isArray(parsed.areas)) {
+            setAreas(parsed.areas);
+            setFiles([]);
+            return;
+          }
+        } catch (e) {
+          console.error("Failed to parse saved draft areas", e);
+        }
+      }
       setAreas([]);
       setFiles([]);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, editingService?.id]);
+
+  // Save areas to draft on changes
+  useEffect(() => {
+    if (mode === 'create') {
+      saveDraft(form.getFieldsValue(), areas);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [areas, mode]);
 
   // Auto-select district when districts are loaded in edit mode
   useEffect(() => {
@@ -187,6 +244,17 @@ export function CreateServiceForm({
   // Prefill service area from shop address only in create mode
   useEffect(() => {
     if (mode !== 'create' || !shopAddress?.city || !shopAddress?.district) return;
+
+    // Check if draft already has areas. If so, don't overwrite with default shop address.
+    const savedDraft = sessionStorage.getItem(`cosmate_create_service_draft_${serviceType}`);
+    if (savedDraft) {
+      try {
+        const parsed = JSON.parse(savedDraft);
+        if (Array.isArray(parsed.areas) && parsed.areas.length > 0) {
+          return;
+        }
+      } catch {}
+    }
 
     const initialArea: ServiceArea = {
       city: shopAddress.city,
@@ -262,6 +330,9 @@ export function CreateServiceForm({
       }
 
       if (ok) {
+        if (mode === 'create') {
+          sessionStorage.removeItem(`cosmate_create_service_draft_${serviceType}`);
+        }
         form.resetFields();
         setFiles([]);
         setAreas([]);
@@ -362,6 +433,7 @@ export function CreateServiceForm({
             ) {
               syncMinPriceFromPricingFields(allValues as ServiceFormValues);
             }
+            saveDraft(allValues as ServiceFormValues, areas);
           }}
         >
           <Form.Item

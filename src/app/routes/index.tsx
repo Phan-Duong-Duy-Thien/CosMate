@@ -16,7 +16,6 @@ import PhotographerRegPage from "@/features/auth/pages/PhotographerRegPage"
 import RegisterRoleSelectPage from "@/features/auth/pages/RegisterRoleSelectPage"
 import ForgotPasswordPage from "@/features/auth/pages/ForgotPasswordPage"
 import ResetPasswordPage from "@/features/auth/pages/ResetPasswordPage"
-import OnboardingRolePage from "@/features/auth/pages/OnboardingRolePage"
 
 import HomePage from "@/features/general/pages/HomePage"
 import PaymentResultPage from "@/features/general/pages/PaymentResultPage"
@@ -156,7 +155,7 @@ export default function AppRoutes() {
       </Route>
 
       {/* Provider Rental Routes (Protected) */}
-      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL]} />}> 
+      <Route element={<ProtectedRoute allowedRoles={[ROLE.PROVIDER_RENTAL, 'PROVIDER']} />}> 
         <Route path="/provider-rental" element={<ProviderHomePage />} />
         <Route element={<ProviderWalletLayout />}>
           <Route path="/provider-rental/wallet" element={<ProviderWalletPage />} />
@@ -238,7 +237,7 @@ export default function AppRoutes() {
           <Route path="/staff/bookings" element={<Navigate to="/staff/orders" replace />} />
           <Route path="/staff/customers" element={<StaffPlaceholderPage title={VI.staff.sidebar.customers} />} />
           <Route path="/staff/reports" element={<AdminReportsPage />} />
-          <Route path="/staff/messages" element={<StaffPlaceholderPage title={VI.staff.sidebar.messages} />} />
+          <Route path="/staff/messages" element={<ProviderMessagesPage />} />
           <Route path="/staff/settings" element={<DashboardProfilePage />} />
           <Route path="/staff/withdraw" element={<StaffWithdrawPage />} />
           <Route path="/staff/disputes" element={<DisputeManagementPage />} />
@@ -251,7 +250,6 @@ export default function AppRoutes() {
       {/* Auth Pages (public) */}
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/reset-password" element={<ResetPasswordPage />} />
-      <Route path="/onboarding/role" element={<OnboardingRolePage />} />
 
       {/* Payment Result Page (standalone) */}
       <Route path="/payment/result" element={<PaymentResultPage />} />

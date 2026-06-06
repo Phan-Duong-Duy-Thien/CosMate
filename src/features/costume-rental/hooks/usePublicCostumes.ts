@@ -55,7 +55,8 @@ export function mapCostumeToItem(
 ): CostumeItem {
   const images = (costume.imageUrls ?? []).map(resolveImageUrl).filter(Boolean)
   const accessoryListLength = costume.accessories?.length ?? 0
-  const { priceMin, priceMax } = computePriceRange(costume)
+  const priceMin = costume.pricePerDay ?? 0
+  const priceMax = costume.pricePerDay ?? 0
 
   return {
     id: String(costume.id),

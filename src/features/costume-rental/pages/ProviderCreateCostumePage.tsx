@@ -35,6 +35,7 @@ export default function ProviderCreateCostumePage() {
   const handlePhase2Finish = async () => {
     try {
       await wizard.handlePhase2Submit()
+      wizard.clearDraft()
       notification.success({
         message: 'Tạo trang phục thành công!',
         description: 'Trang phục đã được lưu. Hệ thống đang định hình trang phục cho việc search hình ảnh.',
@@ -68,7 +69,7 @@ export default function ProviderCreateCostumePage() {
             />
 
             <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              {wizard.phase === 1 && (
+              <div style={{ display: wizard.phase === 1 ? undefined : 'none' }}>
                 <Phase1BasicInfoForm
                   onSubmit={(values) => {
                     if (!provider?.id) {
@@ -85,7 +86,7 @@ export default function ProviderCreateCostumePage() {
                   disabled={wizard.isPhase1Loading || providerLoading || !provider?.id}
                   providerId={provider?.id}
                 />
-              )}
+              </div>
 
               {wizard.phase === 2 && (
                 <Phase2BuilderTabs
@@ -103,6 +104,7 @@ export default function ProviderCreateCostumePage() {
                   onUpdateRentalOption={wizard.updateRentalOption}
                   onRemoveRentalOption={wizard.removeRentalOption}
                   onFinish={handlePhase2Finish}
+                  onBack={wizard.goBackToPhase1}
                   loading={wizard.isPhase2Loading}
                   error={wizard.phase2Error}
                 />

@@ -22,6 +22,7 @@ import {
   sendChatMessage,
 } from "../services/chatSocket.service"
 import { providerSidebarItems, photographSidebarItems, eventStaffSidebarItems } from "@/features/provider/constants/sidebar"
+import { staffSidebarItems } from "@/features/staff/constants/sidebar"
 import { useLocation } from "react-router-dom"
 import { getUserId, getRoles } from "@/features/auth/services/tokenStorage"
 import { useChatMessageStore } from "../hooks/useChatMessageStore"
@@ -36,7 +37,7 @@ import type { DashboardSidebarItem } from "@/app/layouts/DashboardLayout"
 import type { ChatRoomListItem, ChatMessage } from "../types"
 import { ROLE } from "@/types/auth"
 
-function mapSidebar(items: typeof providerSidebarItems): DashboardSidebarItem[] {
+function mapSidebar(items: any[]): DashboardSidebarItem[] {
   return items.map((item) => {
     const Icon = item.icon;
     return {
@@ -268,9 +269,13 @@ export default function ProviderMessagesPage() {
     }
   };
 
+  const isStaff = location.pathname.startsWith("/staff")
+
   // Determine sidebar based on current path
   let sidebarItems: DashboardSidebarItem[]
-  if (location.pathname.startsWith("/provider-photograph")) {
+  if (isStaff) {
+    sidebarItems = mapSidebar(staffSidebarItems)
+  } else if (location.pathname.startsWith("/provider-photograph")) {
     sidebarItems = mapSidebar(photographSidebarItems)
   } else if (location.pathname.startsWith("/provider-event-staff")) {
     sidebarItems = mapSidebar(eventStaffSidebarItems)
@@ -278,18 +283,16 @@ export default function ProviderMessagesPage() {
     sidebarItems = mapSidebar(providerSidebarItems)
   }
 
+  const pageTitle = isStaff ? VI.staff.sidebar.messages : VI.provider.sidebar.messages
+  const brandName = isStaff ? VI.staff.layout.brandName : "CosMate Provider"
+  const brandShort = isStaff ? VI.staff.layout.brandShort : undefined
+
   const canBooking = activeRoom != null && provider != null
   const roles = getRoles()
   const canCreateBooking = canBooking && !roles.includes(ROLE.PROVIDER_RENTAL)
 
-  return (
-    <DashboardLayout
-      title={VI.provider.sidebar.messages}
-      sidebarItems={sidebarItems}
-      brandName="CosMate Provider"
-      showChatButton={false}
-      contentMode="fill"
-    >
+  const content = (
+    <>
       <div className="flex min-h-0 flex-1 flex-col">
         <div className={CHAT_UI.providerDashboardShell}>
         <ChatInboxSidebar
@@ -573,6 +576,23 @@ export default function ProviderMessagesPage() {
           </div>
         </Form>
       </Modal>
+    </>
+  );
+
+  if (isStaff) {
+    return content;
+  }
+
+  return (
+    <DashboardLayout
+      title={pageTitle}
+      sidebarItems={sidebarItems}
+      brandName={brandName}
+      brandShort={brandShort}
+      showChatButton={false}
+      contentMode="fill"
+    >
+      {content}
     </DashboardLayout>
-  )
+  );
 }

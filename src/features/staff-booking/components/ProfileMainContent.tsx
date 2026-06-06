@@ -33,6 +33,9 @@ export const ProfileMainContent: React.FC<ProfileMainContentProps> = ({ portfoli
 
   const formatPrice = (item: ServiceItem): string => {
     if (item.minPrice != null && item.maxPrice != null && item.minPrice > 0 && item.maxPrice > 0) {
+      if (item.minPrice === item.maxPrice) {
+        return `${item.minPrice.toLocaleString('vi-VN')}đ`;
+      }
       return `${item.minPrice.toLocaleString('vi-VN')} - ${item.maxPrice.toLocaleString('vi-VN')}đ`;
     }
     if (item.pricePerSlot > 0) {

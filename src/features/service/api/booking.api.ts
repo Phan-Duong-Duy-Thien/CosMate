@@ -38,6 +38,7 @@ export interface ServiceOrder {
   cosplayerId: number;
   cosplayerName?: string;
   providerId: number;
+  providerName?: string;
   orderType: string;
   status: string;
   /** Tổng từ BE (có thể chưa gồm phí khấu hao). */

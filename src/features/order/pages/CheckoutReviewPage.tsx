@@ -13,7 +13,7 @@ import { CheckoutPolicyModal } from '../components/CheckoutPolicyModal';
 import { CheckoutForcePolicyModal } from '../components/CheckoutForcePolicyModal';
 import type { PaymentMethod } from '../types';
 import { message } from 'antd';
-import { CreditCard, MapPin, ShieldCheck } from 'lucide-react';
+import { CreditCard, MapPin, Plus, ShieldCheck } from 'lucide-react';
 
 const GRADIENT_TITLE =
   'text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text';
@@ -245,6 +245,16 @@ export default function CheckoutReviewPage() {
                       </div>
                     </label>
                   ))}
+
+                  {/* Add new address button */}
+                  <button
+                    type="button"
+                    onClick={navigateToAddAddress}
+                    className="flex w-full items-center justify-center gap-2 rounded-xl border-[3px] border-dashed border-indigo-950/25 bg-white p-4 text-sm font-bold text-cosmate-pink transition-all hover:border-cosmate-pink/50 hover:bg-cosmate-soft-pink/30"
+                  >
+                    <Plus className="h-4 w-4" />
+                    {VI.checkout.address.addNew}
+                  </button>
                 </div>
               )}
             </div>

@@ -21,6 +21,12 @@ export default function StaffProfilePage() {
     return { averageRating: avg, totalReviews: total }
   }, [reviews])
 
+  const positiveRate = useMemo(() => {
+    if (reviews.length === 0) return "—"
+    const positiveCount = reviews.filter((r) => r.rating >= 4).length
+    return `${Math.round((positiveCount / reviews.length) * 100)}%`
+  }, [reviews])
+
   if (loading) {
     return (
       <div className="home-anime flex min-h-screen items-center justify-center bg-[linear-gradient(180deg,#fff7fb_0%,#fdf2f8_45%,#f8fafc_100%)] px-4">
@@ -55,7 +61,7 @@ export default function StaffProfilePage() {
     jobs: provider.completedOrders ?? 0,
     rating: stats.averageRating,
     reviewsCount: stats.totalReviews,
-    responseRate: "95%",
+    responseRate: positiveRate,
     skills: [] as string[],
     verified: provider.verified,
     chatLoading,

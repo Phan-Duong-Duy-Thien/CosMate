@@ -138,20 +138,6 @@ export default function ProviderHomePage() {
                 ))}
               </Row>
 
-              {statistics && statistics.totalOrderItems > 0 && (
-                <Row gutter={[12, 12]} style={{ marginTop: 12 }}>
-                  <Col span={24}>
-                    <Card bordered={false} style={{ borderRadius: 10, boxShadow: '0 1px 3px rgba(0,0,0,0.08)' }}>
-                      <Statistic
-                        title={VI.provider.dashboard.stats.totalOrderItems}
-                        value={statistics.totalOrderItems}
-                        valueStyle={{ fontSize: 18, fontWeight: 600 }}
-                      />
-                    </Card>
-                  </Col>
-                </Row>
-              )}
-
               <Row gutter={[12, 12]} style={{ marginTop: 16 }}>
                 <Col span={24}>
                   <Card

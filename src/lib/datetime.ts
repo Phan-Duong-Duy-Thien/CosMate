@@ -5,25 +5,24 @@
  * - Within last 7 days: show weekday (e.g. "T2", "T3")
  * - Older: show date (e.g. "28 Thg 3")
  */
+export function toUtcSafeDate(isoString: string): Date {
+  if (!isoString) return new Date()
+  let sanitized = isoString.trim()
+  if (
+    sanitized.includes("T") &&
+    !sanitized.endsWith("Z") &&
+    !/[+-]\d{2}:?\d{2}$/.test(sanitized)
+  ) {
+    sanitized += "Z"
+  }
+  return new Date(sanitized)
+}
+
 export function formatChatTime(isoString: string): string {
-  const date = new Date(isoString)
+  const date = toUtcSafeDate(isoString)
   if (isNaN(date.getTime())) return ""
 
-  const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const diffDays = Math.round((todayStart.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000))
-
-  if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-  }
-  if (diffDays === 1) {
-    return "Yesterday"
-  }
-  if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: "short" })
-  }
-  return date.toLocaleDateString([], { month: "short", day: "numeric" })
+  return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" })
 }
 
 /**
@@ -31,22 +30,36 @@ export function formatChatTime(isoString: string): string {
  * Same logic as formatChatTime but always shows something compact.
  */
 export function formatRoomTime(isoString: string): string {
-  const date = new Date(isoString)
+  const date = toUtcSafeDate(isoString)
   if (isNaN(date.getTime())) return ""
 
-  const now = new Date()
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-  const dateStart = new Date(date.getFullYear(), date.getMonth(), date.getDate())
-  const diffDays = Math.round((todayStart.getTime() - dateStart.getTime()) / (24 * 60 * 60 * 1000))
+  // Convert both dates to Ho Chi Minh timezone representation to compute diffDays accurately
+  const formatter = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  })
+  
+  const nowParts = formatter.formatToParts(new Date())
+  const dateParts = formatter.formatToParts(date)
+  
+  const getPartVal = (parts: Intl.DateTimeFormatPart[], type: string) => 
+    Number(parts.find(p => p.type === type)?.value)
+    
+  const nowVN = new Date(getPartVal(nowParts, "year"), getPartVal(nowParts, "month") - 1, getPartVal(nowParts, "day"))
+  const dateVN = new Date(getPartVal(dateParts, "year"), getPartVal(dateParts, "month") - 1, getPartVal(dateParts, "day"))
+  
+  const diffDays = Math.round((nowVN.getTime() - dateVN.getTime()) / (24 * 60 * 60 * 1000))
 
   if (diffDays === 0) {
-    return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
+    return date.toLocaleTimeString("vi-VN", { hour: "2-digit", minute: "2-digit", timeZone: "Asia/Ho_Chi_Minh" })
   }
   if (diffDays === 1) {
     return "Yesterday"
   }
   if (diffDays < 7) {
-    return date.toLocaleDateString([], { weekday: "short" })
+    return date.toLocaleDateString("vi-VN", { weekday: "short", timeZone: "Asia/Ho_Chi_Minh" })
   }
-  return date.toLocaleDateString([], { month: "short", day: "numeric" })
+  return date.toLocaleDateString("vi-VN", { month: "short", day: "numeric", timeZone: "Asia/Ho_Chi_Minh" })
 }

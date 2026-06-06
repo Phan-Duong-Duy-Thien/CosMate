@@ -24,8 +24,30 @@ import { VI } from '@/shared/i18n/vi'
 import { notifyTokenChanged } from '@/shared/sync/dataSync'
 import { mapGenerateDescriptionError } from '../../utils/costumeAiErrors'
 import { useProviderMediaQrSession } from '../../hooks/useProviderMediaQrSession'
+import { WIZARD_FORM_STORAGE_KEY } from '../../hooks/useCreateCostumeWizard'
 
 const { TextArea } = Input
+
+const processImageWeb = async (file: File): Promise<File> => {
+  if (file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic') {
+    try {
+      const heic2anyModule = await import('heic2any')
+      const heic2any = heic2anyModule.default
+      const convertedBlob = await heic2any({
+        blob: file,
+        toType: 'image/jpeg',
+        quality: 0.9,
+      })
+      const blob = Array.isArray(convertedBlob) ? convertedBlob[0] : convertedBlob
+      const newName = file.name.replace(/\.heic$/i, '.jpg')
+      return new File([blob], newName, { type: 'image/jpeg' })
+    } catch (error) {
+      console.error('Failed to convert HEIC image', error)
+      return file
+    }
+  }
+  return file
+}
 
 const SIZE_OPTIONS: CostumeSizeOption[] = ['S', 'M', 'L', 'XL', 'FREESIZE']
 const MODERATION_ERROR_MESSAGE = 'Ảnh của bạn vi phạm tiêu chuẩn cộng đồng, xin hãy dùng ảnh khác'
@@ -83,6 +105,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
   const [videoFileList, setVideoFileList] = useState<UploadFile[]>([])
   const [localImageFileList, setLocalImageFileList] = useState<UploadFile[]>([])
   const [qrPreviewOpen, setQrPreviewOpen] = useState(false)
+  const [previewMedia, setPreviewMedia] = useState<{ url: string; isVideo: boolean } | null>(null)
   const {
     qrValue,
     sessionLoading,
@@ -95,6 +118,17 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     removeImageItem,
     maxImages,
   } = useProviderMediaQrSession(true, localImageFileList.length)
+
+  // Restore Phase 1 form values from sessionStorage on mount
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(WIZARD_FORM_STORAGE_KEY)
+      if (raw) {
+        const saved = JSON.parse(raw)
+        form.setFieldsValue(saved)
+      }
+    } catch { /* ignore parse errors */ }
+  }, [form])
 
   const watchedName = Form.useWatch('name', form)
   const watchedDescription = Form.useWatch('description', form) ?? ''
@@ -155,28 +189,40 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     void fetchCharacters()
   }, [])
 
-  const qrImagesToFiles = async (): Promise<File[]> => {
-    const files: File[] = []
-    for (const qrImage of qrImageItems) {
-      const blobRes = await fetch(qrImage.url)
+  const getSplitQrMedia = async (): Promise<{ qrFiles: File[], qrVideoFile: File | null }> => {
+    const qrFiles: File[] = []
+    let qrVideoFile: File | null = null
+    for (const qrMedia of qrImageItems) {
+      const blobRes = await fetch(qrMedia.url)
       const blob = await blobRes.blob()
-      const ext = blob.type.includes('png') ? 'png' : 'jpg'
-      files.push(
-        new File([blob], `provider-qr-image-${qrImage.id}.${ext}`, {
-          type: blob.type || 'image/jpeg',
-        }),
-      )
+      const isVideo = blob.type.startsWith('video/')
+      let ext = 'jpg'
+      if (isVideo) {
+        ext = blob.type.includes('quicktime') || blob.type.includes('mov') ? 'mov' : 'mp4'
+      } else if (blob.type.includes('png')) {
+        ext = 'png'
+      }
+      const file = new File([blob], `provider-qr-media-${qrMedia.id}.${ext}`, {
+        type: blob.type || (isVideo ? 'video/mp4' : 'image/jpeg'),
+      })
+      if (isVideo) {
+        if (!qrVideoFile) {
+          qrVideoFile = file
+        }
+      } else {
+        qrFiles.push(file)
+      }
     }
-    return files
+    return { qrFiles, qrVideoFile }
   }
 
   const localImagesToFiles = (): File[] =>
     localImageFileList
-      .map((file) => file.originFileObj)
+      .map((file) => file.originFileObj as File)
       .filter((file): file is File => file !== undefined)
 
   const getAllImageFiles = async (): Promise<File[]> => {
-    const qrFiles = await qrImagesToFiles()
+    const { qrFiles } = await getSplitQrMedia()
     return [...localImagesToFiles(), ...qrFiles]
   }
 
@@ -190,23 +236,38 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         message.warning(`Tối đa ${maxImages} ảnh (QR + máy tính).`)
         return Upload.LIST_IGNORE
       }
-      if (!file.thumbUrl && file.type.startsWith('image/')) {
-        file.thumbUrl = URL.createObjectURL(file)
-      }
-      return false
-    },
-    onChange: ({ fileList }) => {
-      const maxLocal = Math.max(0, maxImages - qrImageItems.length)
-      const next = fileList.slice(0, maxLocal)
-      setLocalImageFileList((prev) => {
-        const removed = prev.filter((item) => !next.some((n) => n.uid === item.uid))
-        removed.forEach((item) => {
-          if (item.thumbUrl?.startsWith('blob:')) {
-            URL.revokeObjectURL(item.thumbUrl)
+
+      void (async () => {
+        let processedFile = file
+        const isHeic = file.name.toLowerCase().endsWith('.heic') || file.type === 'image/heic'
+        
+        if (isHeic) {
+          const hide = message.loading('Đang xử lý ảnh HEIC...', 0)
+          try {
+            processedFile = await processImageWeb(file)
+          } finally {
+            hide()
           }
+        }
+
+        const thumbUrl = URL.createObjectURL(processedFile)
+
+        setLocalImageFileList((prev) => {
+          const maxLocal = Math.max(0, maxImages - qrImageItems.length)
+          if (prev.length >= maxLocal) return prev
+
+          const newUploadFile: UploadFile = {
+            uid: `local-${Date.now()}-${Math.random()}`,
+            name: processedFile.name,
+            status: 'done',
+            originFileObj: processedFile,
+            thumbUrl: thumbUrl,
+          }
+          return [...prev, newUploadFile].slice(0, maxLocal)
         })
-        return next
-      })
+      })()
+
+      return false
     },
   }
 
@@ -333,7 +394,14 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
     setModerationError(null)
 
     try {
-      const imageFiles = await getAllImageFiles()
+      const { qrFiles, qrVideoFile } = await getSplitQrMedia()
+      const imageFiles = [...localImagesToFiles(), ...qrFiles]
+      const videoFile = values.videoFiles?.fileList?.[0]?.originFileObj ?? qrVideoFile ?? null
+
+      if (imageFiles.length === 0) {
+        message.error('Vui lòng thêm ít nhất 1 hình ảnh (từ máy tính hoặc QR).')
+        return
+      }
 
       const submitPayload = {
         name: values.name,
@@ -348,7 +416,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         gender: values.gender,
         imageFiles,
         rentalOptions: null,
-        videoFile: values.videoFiles?.fileList?.[0]?.originFileObj ?? null,
+        videoFile,
       }
       await onSubmit(submitPayload)
     } catch (err: unknown) {
@@ -373,6 +441,13 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
         layout="vertical"
         initialValues={{ characterIds: [] }}
         onFinish={handleFinish}
+        onValuesChange={(_, allValues) => {
+          try {
+            // Exclude non-serializable fields (File objects)
+            const { videoFiles, ...serializable } = allValues
+            sessionStorage.setItem(WIZARD_FORM_STORAGE_KEY, JSON.stringify(serializable))
+          } catch { /* ignore quota errors */ }
+        }}
         disabled={disabled || loading}
         style={{ maxWidth: 640, margin: '0 auto' }}
       >
@@ -409,7 +484,7 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
               filterOption={(input, option) => {
                 const keyword = input.toLowerCase().trim()
                 if (!keyword) return true
-                return String(option?.title ?? '').toLowerCase().includes(keyword)
+                return String((option as any)?.title ?? '').toLowerCase().includes(keyword)
               }}
               options={characterOptions}
               onChange={(nextValue) => {
@@ -509,19 +584,25 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </div>
 
             <div className="mt-4 rounded-lg border border-border bg-background p-3">
-              <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Ảnh đã chọn</p>
+              <p className="mb-2 text-xs font-semibold uppercase text-muted-foreground">Media đã chọn</p>
               {totalImageCount === 0 ? (
                 <div className="flex min-h-[84px] items-center justify-center gap-2 text-xs text-muted-foreground">
                   <ImageIcon className="h-4 w-4" />
-                  <span>Chưa có ảnh — hãy quét QR hoặc chọn từ máy tính</span>
+                  <span>Chưa có ảnh/video — hãy quét QR hoặc chọn từ máy tính</span>
                 </div>
               ) : (
-                <AntImage.PreviewGroup>
-                  <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
-                    {localImageFileList.map((file) => (
+                <ul className="grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {localImageFileList.map((file) => {
+                    const previewUrl = file.thumbUrl || (file.originFileObj as any)?.thumbUrl || file.url
+                    return (
                       <li
                         key={file.uid}
-                        className="group relative aspect-square overflow-hidden rounded-md border border-border"
+                        onClick={() => {
+                          if (previewUrl) {
+                            setPreviewMedia({ url: previewUrl, isVideo: false })
+                          }
+                        }}
+                        className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-md border border-border transition-all hover:scale-[1.02]"
                       >
                         <Button
                           danger
@@ -536,36 +617,61 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
                             removeLocalImage(file.uid)
                           }}
                         />
-                        {file.thumbUrl ? (
-                          <AntImage
-                            src={file.thumbUrl}
+                        {previewUrl ? (
+                          <img
+                            src={previewUrl}
                             alt=""
-                            className="!h-full !w-full !object-cover"
-                            rootClassName="!h-full !w-full"
+                            className="h-full w-full object-cover"
                           />
                         ) : null}
                       </li>
-                    ))}
-                    {qrImageItems.map((item) => (
-                      <li key={item.id} className="group relative aspect-square overflow-hidden rounded-md border border-border">
+                    )
+                  })}
+                  {qrImageItems.map((item) => {
+                    const isVideo = item.mimeType?.startsWith('video/')
+                    return (
+                      <li
+                        key={item.id}
+                        onClick={() => setPreviewMedia({ url: item.url, isVideo })}
+                        className="group relative aspect-square cursor-zoom-in overflow-hidden rounded-md border border-border transition-all hover:scale-[1.02]"
+                      >
                         <Button
                           danger
                           type="primary"
                           size="small"
                           shape="circle"
                           icon={<CloseOutlined />}
-                          className="!absolute !right-1 !top-1 !z-10 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
+                          className="!absolute !right-1 !top-1 !z-20 !h-6 !w-6 !min-w-0 !opacity-90 md:!opacity-0 md:group-hover:!opacity-100"
                           onClick={(event) => {
                             event.preventDefault()
                             event.stopPropagation()
                             removeImageItem(item.id)
                           }}
                         />
-                        <AntImage src={item.url} alt="" className="!h-full !w-full !object-cover" rootClassName="!h-full !w-full" />
+                        {isVideo ? (
+                          <div className="relative h-full w-full">
+                            <video
+                              src={item.url}
+                              className="h-full w-full object-cover"
+                              muted
+                              controls={false}
+                              playsInline
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                              <div className="flex h-8 w-8 items-center justify-center rounded-full bg-white/80 shadow-md">
+                                <svg className="ml-0.5 h-4 w-4 fill-indigo-950 text-indigo-950" viewBox="0 0 24 24">
+                                  <path d="M8 5v14l11-7z" />
+                                </svg>
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <img src={item.url} alt="" className="h-full w-full object-cover" />
+                        )}
                       </li>
-                    ))}
-                  </ul>
-                </AntImage.PreviewGroup>
+                    )
+                  })}
+                </ul>
               )}
             </div>
           </div>
@@ -645,26 +751,108 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
 
         <Row gutter={12}>
           <Col span={12}>
-            <Form.Item label="Chiều cao tối thiểu (cm)" name="heightMin">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
+            <Form.Item
+              label="Chiều cao tối thiểu (cm)"
+              name="heightMin"
+              tooltip="Chiều cao hợp lệ: lớn hơn 100cm và nhỏ hơn 200cm."
+              rules={[
+                {
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value <= 100) {
+                      return Promise.reject(new Error('Chiều cao tối thiểu phải lớn hơn 100cm'));
+                    }
+                    if (value >= 200) {
+                      return Promise.reject(new Error('Chiều cao tối thiểu phải nhỏ hơn 200cm'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <InputNumber min={101} max={199} style={{ width: '100%' }} placeholder="Ví dụ: 145" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Chiều cao tối đa (cm)" name="heightMax">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
+            <Form.Item
+              label="Chiều cao tối đa (cm)"
+              name="heightMax"
+              tooltip="Chiều cao hợp lệ: lớn hơn 100cm và nhỏ hơn 200cm."
+              dependencies={['heightMin']}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value >= 200) {
+                      return Promise.reject(new Error('Chiều cao tối đa phải nhỏ hơn 200cm'));
+                    }
+                    if (value <= 100) {
+                      return Promise.reject(new Error('Chiều cao tối đa phải lớn hơn 100cm'));
+                    }
+                    const minHeight = getFieldValue('heightMin');
+                    if (minHeight !== undefined && minHeight !== null && minHeight !== '' && value < minHeight) {
+                      return Promise.reject(new Error('Chiều cao tối đa không được nhỏ hơn chiều cao tối thiểu'));
+                    }
+                    return Promise.resolve();
+                  }
+                })
+              ]}
+            >
+              <InputNumber min={101} max={199} style={{ width: '100%' }} placeholder="Ví dụ: 155" />
             </Form.Item>
           </Col>
         </Row>
 
         <Row gutter={12}>
           <Col span={12}>
-            <Form.Item label="Cân nặng tối thiểu (kg)" name="weightMin">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
+            <Form.Item
+              label="Cân nặng tối thiểu (kg)"
+              name="weightMin"
+              tooltip="Cân nặng hợp lệ: từ 35kg đến 120kg."
+              rules={[
+                {
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value < 35) {
+                      return Promise.reject(new Error('Cân nặng tối thiểu phải từ 35kg trở lên'));
+                    }
+                    if (value > 120) {
+                      return Promise.reject(new Error('Cân nặng tối thiểu phải nhỏ hơn hoặc bằng 120kg'));
+                    }
+                    return Promise.resolve();
+                  }
+                }
+              ]}
+            >
+              <InputNumber min={35} max={120} style={{ width: '100%' }} placeholder="Ví dụ: 40" />
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item label="Cân nặng tối đa (kg)" name="weightMax">
-              <InputNumber min={1} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
+            <Form.Item
+              label="Cân nặng tối đa (kg)"
+              name="weightMax"
+              tooltip="Cân nặng hợp lệ: từ 35kg đến 120kg."
+              dependencies={['weightMin']}
+              rules={[
+                ({ getFieldValue }) => ({
+                  validator(_, value) {
+                    if (value === undefined || value === null || value === '') return Promise.resolve();
+                    if (value > 120) {
+                      return Promise.reject(new Error('Cân nặng tối đa phải nhỏ hơn hoặc bằng 120kg'));
+                    }
+                    if (value < 35) {
+                      return Promise.reject(new Error('Cân nặng tối đa phải từ 35kg trở lên'));
+                    }
+                    const minWeight = getFieldValue('weightMin');
+                    if (minWeight !== undefined && minWeight !== null && minWeight !== '' && value < minWeight) {
+                      return Promise.reject(new Error('Cân nặng tối đa không được nhỏ hơn cân nặng tối thiểu'));
+                    }
+                    return Promise.resolve();
+                  }
+                })
+              ]}
+            >
+              <InputNumber min={35} max={120} style={{ width: '100%' }} placeholder="Ví dụ: 55" />
             </Form.Item>
           </Col>
         </Row>
@@ -682,8 +870,18 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
           name="rentDiscount"
           tooltip="Phần trăm giảm giá áp dụng cho các ngày thuê tiếp theo (từ ngày thứ 2 trở đi). Ví dụ: 20% nghĩa là từ ngày 2, khách chỉ trả 80% giá gốc/ngày."
           extra="0% = không giảm giá | 50% = từ ngày 2 chỉ trả nửa giá"
+          rules={[
+            {
+              validator(_, value) {
+                if (value !== undefined && value !== null && value >= 75) {
+                  return Promise.reject(new Error('Giảm giá thuê phải nhỏ hơn 75%'))
+                }
+                return Promise.resolve()
+              }
+            }
+          ]}
         >
-          <InputNumber min={0} max={100} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
+          <InputNumber min={0} max={74} style={{ width: '100%' }} placeholder="Ví dụ: 20" addonAfter="%" />
         </Form.Item>
 
         <Form.Item label="Tiền đặt cọc (VNĐ)" name="depositAmount">
@@ -787,6 +985,30 @@ export default function Phase1BasicInfoForm({ onSubmit, loading, error, disabled
             </Upload>
           </Form.Item>
         </Form>
+      </Modal>
+
+      <Modal
+        open={!!previewMedia}
+        footer={null}
+        onCancel={() => setPreviewMedia(null)}
+        centered
+        destroyOnClose
+        styles={{ body: { padding: 0, overflow: "hidden" } }}
+      >
+        {previewMedia?.isVideo ? (
+          <video
+            src={previewMedia.url}
+            controls
+            autoPlay
+            style={{ width: "100%", maxHeight: "80vh", display: "block", background: "#000" }}
+          />
+        ) : (
+          <img
+            src={previewMedia?.url}
+            alt="Preview"
+            style={{ width: "100%", maxHeight: "80vh", objectFit: "contain", display: "block" }}
+          />
+        )}
       </Modal>
     </>
   )
