@@ -692,26 +692,12 @@ export default function PurchaseHistoryPage() {
                 >
                   {returningOrderId === order.id ? VI.profile.orders.actionProcessing : VI.profile.orders.actionReturn}
                 </button>
-<<<<<<< Updated upstream
-                <button
-                  type="button"
-                  onClick={() => {
-                    setExtendOrderId(order.id)
-                    setExtendCostumeId(order.costumeId)
-                    setExtendModalOpen(true)
-                  }}
-                  disabled={isExtending}
-                  className="flex items-center gap-1 rounded-xl border-[2px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-3 py-1.5 text-sm font-bold text-white transition-colors hover:brightness-110 disabled:opacity-50"
-                >
-                  <RotateCcw className="h-3.5 w-3.5" />
-                  {VI.provider.orders.tabs.extending}
-                </button>
-=======
                 {order.status !== 'OVERDUE' && (
                   <button
                     type="button"
                     onClick={() => {
                       setExtendOrderId(order.id)
+                      setExtendCostumeId(order.costumeId)
                       setExtendModalOpen(true)
                     }}
                     disabled={isExtending}
@@ -721,7 +707,6 @@ export default function PurchaseHistoryPage() {
                     {VI.provider.orders.tabs.extending}
                   </button>
                 )}
->>>>>>> Stashed changes
               </>
             )}
             {isCompleted && (
