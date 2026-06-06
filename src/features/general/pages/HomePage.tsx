@@ -7,7 +7,6 @@ import { HomeAiPromoCards } from "../components/home/HomeAiPromoCards"
 import { ProductSection } from "../components/home/ProductSection"
 import { QuizModal } from "../components/home/QuizModal"
 import { ShopCarousel } from "../components/home/ShopCarousel"
-import { TagChips } from "../components/home/TagChips"
 import { bannerSlides, shops as mockShops, tagList } from "../mocks/home.mock"
 import type { BannerSlide, TagKey, UIState } from "./home.types"
 import { useFeaturedCostumes } from "@/features/costume-rental/hooks/useFeaturedCostumes"
@@ -107,11 +106,6 @@ const HomePage = () => {
         />
         <section className="relative mt-3 py-6 md:mt-5 md:py-10">
           <div className="w-full">
-            <TagChips
-              tags={tagList}
-              activeTag={activeTag}
-              onTagChange={setActiveTag}
-            />
 
             {displayState === "loading" && <HomeSkeleton />}
 
