@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react"
 import { notification } from "antd"
+import axios from "axios"
 
 import { ARCHETYPE_PROFILES } from "../constants/archetypes"
 import { FALLBACK_STAGE1_QUESTIONS, FALLBACK_STAGE2_QUESTIONS } from "../constants/stageQuestions"
@@ -87,6 +88,7 @@ function clearDraft() {
 export type UseStyleQuizOptions = {
   assertCanUse?: () => boolean
   handleApiError?: (error: unknown) => boolean
+  onUnauthorized?: () => void
 }
 
 export function useStyleQuiz(options?: UseStyleQuizOptions) {
@@ -158,7 +160,12 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
         setStage1Questions(stage1Data.length ? stage1Data : FALLBACK_STAGE1_QUESTIONS)
       } catch (err) {
         setStage1Questions(FALLBACK_STAGE1_QUESTIONS)
-        setError(mapQuizError(err))
+        const is403 = axios.isAxiosError(err) && (err.response?.status === 403 || err.response?.status === 401)
+        if (is403 && options?.onUnauthorized) {
+          options.onUnauthorized()
+        } else {
+          setError(mapQuizError(err))
+        }
       } finally {
         setSurveyLoading(false)
       }
@@ -380,9 +387,14 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
       setScreen("result")
       notification.success({ description: "AI đã hoàn thành phân tích và trả kết quả!" })
     } catch (err) {
-      const msg = mapQuizError(err)
-      setError(msg)
-      notification.error({ description: msg })
+      const is403 = axios.isAxiosError(err) && (err.response?.status === 403 || err.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        const msg = mapQuizError(err)
+        setError(msg)
+        notification.error({ description: msg })
+      }
       setScreen("checkpoint")
     } finally {
       setLoading(false)
@@ -473,9 +485,14 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
         setScreen("quiz")
         return
       }
-      const msg = mapQuizError(err)
-      setError(msg)
-      notification.error({ description: msg })
+      const is403 = axios.isAxiosError(err) && (err.response?.status === 403 || err.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        const msg = mapQuizError(err)
+        setError(msg)
+        notification.error({ description: msg })
+      }
       setScreen("quiz")
     } finally {
       setLoading(false)
@@ -491,9 +508,14 @@ export function useStyleQuiz(options?: UseStyleQuizOptions) {
     try {
       await runRecommend(archetypeId, "", "mid_budget", preferredGender)
     } catch (err) {
-      const msg = mapQuizError(err)
-      setError(msg)
-      notification.error({ description: msg })
+      const is403 = axios.isAxiosError(err) && (err.response?.status === 403 || err.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        const msg = mapQuizError(err)
+        setError(msg)
+        notification.error({ description: msg })
+      }
     } finally {
       setLoading(false)
     }

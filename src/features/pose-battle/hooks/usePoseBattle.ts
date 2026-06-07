@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react"
 import { notification } from "antd"
+import axios from "axios"
 
 import { POSE_TIPS } from "../constants/poseBattle.constants"
 import {
@@ -15,6 +16,7 @@ import type { PoseHistoryItem, PoseScoringResult } from "../types"
 export type UsePoseBattleOptions = {
   assertCanUse?: () => boolean
   handleApiError?: (error: unknown) => boolean
+  onUnauthorized?: () => void
 }
 
 export function usePoseBattle(options?: UsePoseBattleOptions) {
@@ -39,7 +41,12 @@ export function usePoseBattle(options?: UsePoseBattleOptions) {
       const response = await getPoseHistory(keyword)
       setHistory(response)
     } catch (error) {
-      notification.error({ description: mapPoseError(error) })
+      const is403 = axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        notification.error({ description: mapPoseError(error) })
+      }
     } finally {
       setHistoryLoading(false)
     }
@@ -83,7 +90,12 @@ export function usePoseBattle(options?: UsePoseBattleOptions) {
       notification.success({ description: "Đã chấm điểm xong. Kết quả đã lưu vào lịch sử Pose Battle." })
     } catch (error) {
       if (options?.handleApiError?.(error)) return
-      notification.error({ description: mapPoseError(error) })
+      const is403 = axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        notification.error({ description: mapPoseError(error) })
+      }
     } finally {
       setLoading(false)
     }
@@ -95,7 +107,12 @@ export function usePoseBattle(options?: UsePoseBattleOptions) {
       notification.success({ description: "Đã cập nhật tên nhân vật thành công." })
       await loadHistory(searchKeyword)
     } catch (error) {
-      notification.error({ description: mapPoseError(error) })
+      const is403 = axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        notification.error({ description: mapPoseError(error) })
+      }
       throw error
     }
   }
@@ -106,7 +123,12 @@ export function usePoseBattle(options?: UsePoseBattleOptions) {
       notification.success({ description: "Đã xóa lịch sử chấm điểm thành công." })
       await loadHistory(searchKeyword)
     } catch (error) {
-      notification.error({ description: mapPoseError(error) })
+      const is403 = axios.isAxiosError(error) && (error.response?.status === 403 || error.response?.status === 401)
+      if (is403 && options?.onUnauthorized) {
+        options.onUnauthorized()
+      } else {
+        notification.error({ description: mapPoseError(error) })
+      }
       throw error
     }
   }

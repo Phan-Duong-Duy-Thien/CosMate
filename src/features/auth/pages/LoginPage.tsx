@@ -30,7 +30,13 @@ export default function LoginPage() {
   const completeLogin = useCallback(
     (roles: string[]) => {
       refreshProfile()
-      navigate(getRedirectPath(roles))
+      const searchParams = new URLSearchParams(window.location.search)
+      const redirect = searchParams.get("redirect")
+      if (redirect && redirect.startsWith("/")) {
+        navigate(redirect)
+      } else {
+        navigate(getRedirectPath(roles))
+      }
     },
     [navigate, refreshProfile]
   )

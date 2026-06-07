@@ -2,6 +2,8 @@ import { Alert, Input, Modal, Progress, Select, Spin, Tooltip } from "antd"
 import { useMemo, useState } from "react"
 import { useNavigate } from "react-router-dom"
 
+import { getUserId } from "@/features/auth/services/tokenStorage"
+
 import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
@@ -59,10 +61,12 @@ const QUIZ_GRADIENT_CTA_CLASSNAME =
 
 export default function StyleQuizPage() {
   const navigate = useNavigate()
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const tokenGate = useAiTokenGate({ feature: "cosplayer.styleQuiz" })
   const quiz = useStyleQuiz({
     assertCanUse: tokenGate.assertCanUse,
     handleApiError: tokenGate.handleApiError,
+    onUnauthorized: () => setShowLoginModal(true),
   })
 
   const [sortBy, setSortBy] = useState<SortValue>("similarity")
@@ -97,6 +101,61 @@ export default function StyleQuizPage() {
 
       <Modal open={quiz.showResumeModal} title="Tiếp tục bài quiz đang làm dở?" okText="Tiếp tục" cancelText="Bắt đầu mới" onOk={quiz.restoreDraft} onCancel={quiz.discardDraftAndStartNew} closable={false} maskClosable={false}>
         <p>Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục không?</p>
+      </Modal>
+
+      <Modal
+        open={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
+        footer={null}
+        closable={true}
+        centered
+        width={420}
+        styles={{
+          mask: {
+            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(30, 27, 75, 0.4)",
+          },
+          content: {
+            borderRadius: "24px",
+            border: "4px solid #1e1b4b",
+            backgroundColor: "#fffbeb",
+            boxShadow: "8px 8px 0px 0px rgba(30, 27, 75, 0.35)",
+            padding: "28px 24px 24px 24px",
+          }
+        }}
+      >
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 text-3xl shadow-[4px_4px_0_0_#1e1b4b]">
+            🐱
+          </div>
+          
+          <h3 className="text-xl font-black text-indigo-950">
+            Yêu cầu đăng nhập
+          </h3>
+          
+          <p className="text-sm font-semibold text-indigo-950/70 leading-relaxed">
+            Bạn cần đăng nhập tài khoản Cosplayer để sử dụng tính năng này và lưu lịch sử nhé!
+          </p>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/login?redirect=" + encodeURIComponent(window.location.pathname));
+              }}
+              className="group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-sm font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#1e1b4b] active:translate-y-px"
+            >
+              Đăng nhập ngay
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLoginModal(false)}
+              className="inline-flex h-11 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-px"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
       </Modal>
 
       {quiz.error && <Alert type="error" description={quiz.error} showIcon />}
@@ -140,11 +199,6 @@ export default function StyleQuizPage() {
             })}
           </div>
 
-          <div className="rounded-2xl border border-dashed border-cosmate-pink/30 bg-cosmate-soft-pink/25 p-4">
-            <p className="mb-2 text-sm font-semibold text-cosmate-mauve">Câu trả lời khác</p>
-            <Input.TextArea value={quiz.currentCustomAnswer} onChange={(event) => quiz.setCustomAnswer(event.target.value)} placeholder="Nhập suy nghĩ riêng của bạn nếu không thấy option phù hợp..." autoSize={{ minRows: 2, maxRows: 4 }} className="!rounded-2xl border-cosmate-pink/30" />
-          </div>
-
           {quiz.isQuizSubmitStep && (
             <p className="text-center text-xs font-bold text-indigo-800/75">
               {VI.profile.token.costPerUse(tokenGate.featureLabel, tokenGate.cost)}
@@ -154,10 +208,16 @@ export default function StyleQuizPage() {
           <div className="flex justify-center">
             <button
               type="button"
-              onClick={quiz.next}
+              onClick={() => {
+                if (!getUserId()) {
+                  setShowLoginModal(true)
+                } else {
+                  quiz.next()
+                }
+              }}
               disabled={
                 (quiz.selectedOptionIndex === undefined && !quiz.currentCustomAnswer.trim()) ||
-                (quiz.isQuizSubmitStep && (tokenGate.loading || !tokenGate.canUse))
+                (quiz.isQuizSubmitStep && (tokenGate.loading || (tokenGate.canUse === false && !!getUserId())))
               }
               className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}
             >
@@ -210,10 +270,30 @@ export default function StyleQuizPage() {
           </div>
 
           <div className="flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <button type="button" onClick={quiz.viewResultNow} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}>
+            <button
+              type="button"
+              onClick={() => {
+                if (!getUserId()) {
+                  setShowLoginModal(true)
+                } else {
+                  quiz.viewResultNow()
+                }
+              }}
+              className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-11")}
+            >
               Xem kết quả ngay
             </button>
-            <button type="button" onClick={quiz.continueDeepAnalysis} className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}>
+            <button
+              type="button"
+              onClick={() => {
+                if (!getUserId()) {
+                  setShowLoginModal(true)
+                } else {
+                  quiz.continueDeepAnalysis()
+                }
+              }}
+              className={cn(QUIZ_GRADIENT_CTA_CLASSNAME)}
+            >
               <span
                 aria-hidden
                 className="pointer-events-none absolute right-2 top-1 text-xs text-white/90 transition-all duration-300 group-hover:scale-110"
@@ -247,7 +327,17 @@ export default function StyleQuizPage() {
                     {filteredResults.length} gợi ý và {quiz.totalUsers} người cùng tính cách với bạn đã được kiểm tra
                   </span>
                 </div>
-                <button type="button" onClick={quiz.restart} className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-auto px-4 py-2")}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!getUserId()) {
+                      setShowLoginModal(true)
+                    } else {
+                      quiz.restart()
+                    }
+                  }}
+                  className={cn(QUIZ_PRIMARY_CTA_CLASSNAME, "h-auto px-4 py-2")}
+                >
                   Làm lại quiz
                 </button>
               </div>

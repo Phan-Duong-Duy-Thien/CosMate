@@ -1,7 +1,8 @@
 import { useDeferredValue, useEffect, useMemo, useState } from "react"
-import { Empty, Input, Pagination, Popconfirm, Spin, Tag, Upload, notification } from "antd"
+import { Empty, Input, Modal, Pagination, Popconfirm, Spin, Tag, Upload, notification } from "antd"
 import type { UploadProps } from "antd"
 import { ClockCircleOutlined, DeleteOutlined, ShareAltOutlined, UploadOutlined } from "@ant-design/icons"
+import { useNavigate } from "react-router-dom"
 
 import { VI } from "@/shared/i18n/vi"
 import { Button } from "@/shared/components/Button"
@@ -9,6 +10,7 @@ import { Card } from "@/shared/components/Card"
 import AILoadingMascot from "@/shared/components/AILoadingMascot"
 import { AiTokenEmptyState } from "@/features/profile/components/AiTokenEmptyState"
 import { useAiTokenGate } from "@/features/profile/hooks/useAiTokenGate"
+import { getUserId } from "@/features/auth/services/tokenStorage"
 import { usePoseBattle } from "../hooks/usePoseBattle"
 import PoseResultOverlay from "../components/PoseResultOverlay"
 import type { PoseHistoryItem } from "../types"
@@ -36,6 +38,8 @@ function cleanAiComment(raw: string) {
 }
 
 export default function PoseBattlePage() {
+  const navigate = useNavigate()
+  const [showLoginModal, setShowLoginModal] = useState(false)
   const tokenGate = useAiTokenGate({ feature: "cosplayer.poseScore" })
   const {
     referenceImage,
@@ -56,6 +60,7 @@ export default function PoseBattlePage() {
   } = usePoseBattle({
     assertCanUse: tokenGate.assertCanUse,
     handleApiError: tokenGate.handleApiError,
+    onUnauthorized: () => setShowLoginModal(true),
   })
 
   const [historyOverlayResult, setHistoryOverlayResult] = useState<PoseHistoryItem | null>(null)
@@ -172,8 +177,14 @@ export default function PoseBattlePage() {
               </span>
               <button
                 type="button"
-                onClick={submit}
-                disabled={loading || tokenGate.loading || !tokenGate.canUse}
+                onClick={() => {
+                  if (!getUserId()) {
+                    setShowLoginModal(true)
+                  } else {
+                    submit()
+                  }
+                }}
+                disabled={loading || tokenGate.loading || (tokenGate.canUse === false && !!getUserId())}
                 className="group relative rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-r from-fuchsia-200 via-pink-200 to-amber-200 px-4 py-2 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0px_#312e81] transition-all duration-300 hover:-translate-y-0.5 hover:bg-fuchsia-300 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? "Đang chấm..." : "Chấm điểm"}
@@ -355,6 +366,61 @@ export default function PoseBattlePage() {
           onClose={() => setHistoryOverlayResult(null)}
         />
       )}
+
+      <Modal
+        open={showLoginModal}
+        onCancel={() => setShowLoginModal(false)}
+        footer={null}
+        closable={true}
+        centered
+        width={420}
+        styles={{
+          mask: {
+            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(30, 27, 75, 0.4)",
+          },
+          content: {
+            borderRadius: "24px",
+            border: "4px solid #1e1b4b",
+            backgroundColor: "#fffbeb",
+            boxShadow: "8px 8px 0px 0px rgba(30, 27, 75, 0.35)",
+            padding: "28px 24px 24px 24px",
+          }
+        }}
+      >
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 text-3xl shadow-[4px_4px_0_0_#1e1b4b]">
+            🐱
+          </div>
+          
+          <h3 className="text-xl font-black text-indigo-950">
+            Yêu cầu đăng nhập
+          </h3>
+          
+          <p className="text-sm font-semibold text-indigo-950/70 leading-relaxed">
+            Bạn cần đăng nhập tài khoản Cosplayer để sử dụng tính năng này và lưu lịch sử nhé!
+          </p>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                navigate("/login?redirect=" + encodeURIComponent(window.location.pathname));
+              }}
+              className="group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-sm font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#1e1b4b] active:translate-y-px"
+            >
+              Đăng nhập ngay
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowLoginModal(false)}
+              className="inline-flex h-11 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-px"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      </Modal>
     </section>
   )
 }
