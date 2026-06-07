@@ -88,6 +88,18 @@ export default function ProviderProfileEditPage() {
   const handleSavePolicyRow = async (idx: number) => {
     const policy = policies[idx];
     if (!profile?.id) return;
+
+    // Validate penalty values order: further away (larger minHoursBefore) must have smaller or equal penaltyValue
+    const sorted = [...policies].sort((a, b) => a.minHoursBefore - b.minHoursBefore);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (Number(sorted[i].penaltyValue) < Number(sorted[i + 1].penaltyValue)) {
+        message.error(
+          `Mức phạt của khoảng thời gian xa hơn không được lớn hơn khoảng thời gian gần hơn. (Ví dụ: mức phạt trước ${sorted[i + 1].minHoursBefore}h không được lớn hơn mức phạt từ ${sorted[i].minHoursBefore}h đến ${sorted[i].maxHoursBefore}h).`
+        );
+        return;
+      }
+    }
+
     const payload = {
       providerId: profile.id,
       minHoursBefore: Number(policy.minHoursBefore),
@@ -640,11 +652,7 @@ export default function ProviderProfileEditPage() {
                                 value={policy.minHoursBefore}
                                 placeholder="Từ (giờ)"
                                 style={{ width: '100%' }}
-                                onChange={(val) => {
-                                  const next = [...policies];
-                                  next[idx].minHoursBefore = val ?? 0;
-                                  setPolicies(next);
-                                }}
+                                disabled
                               />
                             </Form.Item>
                           </Col>
@@ -655,11 +663,7 @@ export default function ProviderProfileEditPage() {
                                 value={policy.maxHoursBefore}
                                 placeholder="Đến (giờ)"
                                 style={{ width: '100%' }}
-                                onChange={(val) => {
-                                  const next = [...policies];
-                                  next[idx].maxHoursBefore = val ?? 0;
-                                  setPolicies(next);
-                                }}
+                                disabled
                               />
                             </Form.Item>
                           </Col>
@@ -680,42 +684,16 @@ export default function ProviderProfileEditPage() {
                             </Form.Item>
                           </Col>
                           <Col xs={6} style={{ paddingTop: idx === 0 ? 30 : 6 }}>
-                            <Space>
-                              <Button
-                                type="primary"
-                                size="small"
-                                onClick={() => handleSavePolicyRow(idx)}
-                              >
-                                Lưu
-                              </Button>
-                              <Popconfirm
-                                title="Bạn chắc chắn muốn xóa quy định này?"
-                                onConfirm={() => handleDeletePolicyRow(idx)}
-                                okText="Xóa"
-                                cancelText="Hủy"
-                                okButtonProps={{ danger: true }}
-                              >
-                                <Button
-                                  type="primary"
-                                  danger
-                                  size="small"
-                                >
-                                  Xóa
-                                </Button>
-                              </Popconfirm>
-                            </Space>
+                            <Button
+                              type="primary"
+                              size="small"
+                              onClick={() => handleSavePolicyRow(idx)}
+                            >
+                              Lưu
+                            </Button>
                           </Col>
                         </Row>
                       ))}
-
-                      <Button
-                        type="dashed"
-                        onClick={() => setPolicies([...policies, { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }])}
-                        icon={<Plus size={14} />}
-                        style={{ width: '100%', marginTop: 12 }}
-                      >
-                        Thêm quy định hủy hàng
-                      </Button>
                     </div>
                   )}
                 </div>

@@ -128,8 +128,9 @@ export default function ProviderProfileCompletionPage() {
   };
 
   const [policies, setPolicies] = useState<CancellationPolicy[]>([
-    { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 100, description: '' },
-    { minHoursBefore: 24, maxHoursBefore: 72, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }
+    { minHoursBefore: 0, maxHoursBefore: 72, penaltyType: 'PERCENT', penaltyValue: 100, description: '' },
+    { minHoursBefore: 72, maxHoursBefore: 168, penaltyType: 'PERCENT', penaltyValue: 50, description: '' },
+    { minHoursBefore: 168, maxHoursBefore: 9999, penaltyType: 'PERCENT', penaltyValue: 30, description: '' }
   ]);
   const [savingPolicies, setSavingPolicies] = useState(false);
 
@@ -148,6 +149,18 @@ export default function ProviderProfileCompletionPage() {
       message.error('Không tìm thấy ID nhà cung cấp.');
       return;
     }
+
+    // Validate penalty values order: further away (larger minHoursBefore) must have smaller or equal penaltyValue
+    const sorted = [...policies].sort((a, b) => a.minHoursBefore - b.minHoursBefore);
+    for (let i = 0; i < sorted.length - 1; i++) {
+      if (Number(sorted[i].penaltyValue) < Number(sorted[i + 1].penaltyValue)) {
+        message.error(
+          `Mức phạt của khoảng thời gian xa hơn không được lớn hơn khoảng thời gian gần hơn. (Ví dụ: mức phạt trước ${sorted[i + 1].minHoursBefore}h không được lớn hơn mức phạt từ ${sorted[i].minHoursBefore}h đến ${sorted[i].maxHoursBefore}h).`
+        );
+        return;
+      }
+    }
+
     setSavingPolicies(true);
     try {
       // 1. Fetch any existing policies for this provider and clean them up
@@ -721,11 +734,7 @@ export default function ProviderProfileCompletionPage() {
                         value={policy.minHoursBefore}
                         placeholder="Từ (giờ)"
                         style={{ width: '100%' }}
-                        onChange={(val) => {
-                          const next = [...policies];
-                          next[idx].minHoursBefore = val ?? 0;
-                          setPolicies(next);
-                        }}
+                        disabled
                       />
                     </Form.Item>
                   </Col>
@@ -736,54 +745,28 @@ export default function ProviderProfileCompletionPage() {
                         value={policy.maxHoursBefore}
                         placeholder="Đến (giờ)"
                         style={{ width: '100%' }}
-                        onChange={(val) => {
-                          const next = [...policies];
-                          next[idx].maxHoursBefore = val ?? 0;
-                          setPolicies(next);
-                        }}
+                        disabled
                       />
                     </Form.Item>
                   </Col>
                   <Col xs={8}>
                     <Form.Item label={idx === 0 ? "Phạt (%)" : ""} style={{ marginBottom: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
-                        <InputNumber
-                          min={0}
-                          max={100}
-                          value={policy.penaltyValue}
-                          placeholder="Phạt (%)"
-                          style={{ width: '70%' }}
-                          onChange={(val) => {
-                            const next = [...policies];
-                            next[idx].penaltyValue = val ?? 0;
-                            setPolicies(next);
-                          }}
-                        />
-                        {policies.length > 1 && (
-                          <Button
-                            type="text"
-                            danger
-                            icon={<Trash2 size={16} />}
-                            style={{ marginLeft: 8 }}
-                            onClick={() => {
-                              setPolicies(policies.filter((_, i) => i !== idx));
-                            }}
-                          />
-                        )}
-                      </div>
+                      <InputNumber
+                        min={0}
+                        max={100}
+                        value={policy.penaltyValue}
+                        placeholder="Phạt (%)"
+                        style={{ width: '100%' }}
+                        onChange={(val) => {
+                          const next = [...policies];
+                          next[idx].penaltyValue = val ?? 0;
+                          setPolicies(next);
+                        }}
+                      />
                     </Form.Item>
                   </Col>
                 </Row>
               ))}
-
-              <Button
-                type="dashed"
-                onClick={() => setPolicies([...policies, { minHoursBefore: 0, maxHoursBefore: 24, penaltyType: 'PERCENT', penaltyValue: 50, description: '' }])}
-                icon={<Plus size={14} />}
-                style={{ width: '100%', marginTop: 12 }}
-              >
-                Thêm quy định hủy hàng
-              </Button>
             </div>
 
 
