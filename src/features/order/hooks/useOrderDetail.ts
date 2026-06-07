@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { fetchOrderDetail } from '../services/order.service';
 import type { OrderDetail } from '../types';
+import { enrichOrderDetailWithExtends } from '../utils/enrichOrderWithExtends';
 
 interface UseOrderDetailResult {
   orderDetail: OrderDetail | null;
@@ -27,7 +28,8 @@ export function useOrderDetail(orderId: number | null): UseOrderDetailResult {
     try {
       setLoading(true);
       setError(null);
-      const data = await fetchOrderDetail(orderId);
+      let data = await fetchOrderDetail(orderId);
+      data = await enrichOrderDetailWithExtends(data);
       setOrderDetail(data);
     } catch (err) {
       console.error('Failed to fetch order detail:', err);

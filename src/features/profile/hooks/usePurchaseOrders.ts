@@ -5,6 +5,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { getUserId } from '@/features/auth/services/tokenStorage';
 import { getOrdersByUserId, getAllOrdersByUserId } from '@/features/order/api/order.api';
+import { enrichOrdersWithExtends } from '@/features/order/utils/enrichOrderWithExtends';
 import {
   confirmDeliveryOrder,
   returnCosplayerOrder,
@@ -158,6 +159,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
           fetchedOrders = fetchedOrders.filter((o) => o.orderType === 'RENT_COSTUME');
           fetchedTotal = fetchedOrders.length;
         }
+        fetchedOrders = await enrichOrdersWithExtends(fetchedOrders);
 
         applyOrdersFromFetch(fetchedOrders);
         setIsPaginated(fetchedPaginated);
@@ -230,6 +232,7 @@ export function usePurchaseOrders(tab: OrderTab = 'all'): UsePurchaseOrdersResul
 
     try {
       let fetchedOrders = await getAllOrdersByUserId(userId);
+      fetchedOrders = await enrichOrdersWithExtends(fetchedOrders);
       const costumeOrders = applyOrdersFromFetch(fetchedOrders);
       await loadCostumeImages(costumeOrders);
     } catch (err) {

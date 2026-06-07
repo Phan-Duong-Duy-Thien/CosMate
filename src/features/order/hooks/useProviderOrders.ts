@@ -21,6 +21,7 @@ import { usePendingListMutation } from '@/shared/hooks/usePendingListMutation';
 import { scheduleBackgroundRefetch } from '@/shared/sync/pendingListMerge';
 import { DATA_SYNC_EVENTS } from '@/shared/sync/dataSync';
 import type { OrderItem, OrderStatus } from '../types';
+import { enrichOrdersWithExtends } from '../utils/enrichOrderWithExtends';
 
 // Fixed status tabs configuration
 export const ORDER_STATUS_TABS: Array<{ key: OrderStatus | 'ALL'; label: string }> = [
@@ -101,6 +102,7 @@ export function useProviderOrders() {
         const result = await fetchProviderOrders(providerId);
         let costumeOrders = result.filter((o) => o.orderType === 'RENT_COSTUME');
         costumeOrders = await enrichOrderCosplayerNames(costumeOrders);
+        costumeOrders = await enrichOrdersWithExtends(costumeOrders);
 
         const unexpected = result.filter((o) => o.orderType !== 'RENT_COSTUME');
         if (unexpected.length > 0) {
