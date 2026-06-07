@@ -256,6 +256,11 @@ export default function PurchaseHistoryPage() {
   const [returnModalOpen, setReturnModalOpen] = useState(false)
   const [returnOrderId, setReturnOrderId] = useState<number | null>(null)
 
+  // ── Early return confirmation modal state ────────────────────────────────────
+  const [showEarlyReturnModal, setShowEarlyReturnModal] = useState(false)
+  const [earlyReturnOrderId, setEarlyReturnOrderId] = useState<number | null>(null)
+  const [earlyReturnDays, setEarlyReturnDays] = useState<number>(0)
+
   // ── Detail drawer state ─────────────────────────────────────────────────────
   const [detailDrawerOpen, setDetailDrawerOpen] = useState(false)
   const [detailOrderId, setDetailOrderId] = useState<number | null>(null)
@@ -420,16 +425,9 @@ export default function PurchaseHistoryPage() {
         const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
         if (diffDays > 0) {
-          Modal.confirm({
-            title: 'Xác nhận trả hàng sớm',
-            content: `Bạn còn ${diffDays} ngày trước khi tới ngày trả hàng, bạn vẫn tiếp tục thủ tục trả hàng chứ?`,
-            okText: 'Tiếp tục',
-            cancelText: 'Hủy',
-            onOk: () => {
-              setReturnOrderId(orderId)
-              setReturnModalOpen(true)
-            }
-          })
+          setEarlyReturnOrderId(orderId)
+          setEarlyReturnDays(diffDays)
+          setShowEarlyReturnModal(true)
           return
         }
       }
@@ -1431,6 +1429,75 @@ export default function PurchaseHistoryPage() {
         }}
         loading={isExtending}
       />
+
+      <Modal
+        open={showEarlyReturnModal}
+        onCancel={() => {
+          setShowEarlyReturnModal(false)
+          setEarlyReturnOrderId(null)
+          setEarlyReturnDays(0)
+        }}
+        footer={null}
+        closable={false}
+        centered
+        width={420}
+        styles={{
+          mask: {
+            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(30, 27, 75, 0.4)",
+          },
+          content: {
+            borderRadius: "24px",
+            border: "4px solid #1e1b4b",
+            backgroundColor: "#fffbeb",
+            boxShadow: "8px 8px 0px 0px rgba(30, 27, 75, 0.35)",
+            padding: "28px 24px 24px 24px",
+          }
+        }}
+      >
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-amber-100 text-3xl shadow-[4px_4px_0_0_#1e1b4b]">
+            ⏰
+          </div>
+          
+          <h3 className="text-xl font-black text-indigo-950">
+            Xác nhận trả hàng sớm
+          </h3>
+          
+          <p className="text-sm font-semibold text-indigo-950/70 leading-relaxed">
+            Bạn còn <span className="font-extrabold text-pink-600">{earlyReturnDays} ngày</span> trước khi tới ngày hạn trả. Bạn vẫn tiếp tục chứ?
+          </p>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                if (earlyReturnOrderId) {
+                  setReturnOrderId(earlyReturnOrderId)
+                  setReturnModalOpen(true)
+                }
+                setShowEarlyReturnModal(false)
+                setEarlyReturnOrderId(null)
+                setEarlyReturnDays(0)
+              }}
+              className="group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-sm font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#1e1b4b] active:translate-y-px"
+            >
+              Tiếp tục
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setShowEarlyReturnModal(false)
+                setEarlyReturnOrderId(null)
+                setEarlyReturnDays(0)
+              }}
+              className="inline-flex h-11 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-px"
+            >
+              Hủy
+            </button>
+          </div>
+        </div>
+      </Modal>
     </section>
   )
 }

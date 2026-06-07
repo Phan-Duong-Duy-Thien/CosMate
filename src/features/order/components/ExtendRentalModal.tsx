@@ -7,10 +7,10 @@
  */
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent } from '@/shared/components/Dialog';
-import { Button } from '@/shared/components/Button';
 import type { PaymentMethod } from '@/features/order/utils/paymentReturnUrls';
 import { VI } from '@/shared/i18n/vi';
 import { cn } from '@/lib/utils';
+import { getUserId } from '@/features/auth/services/tokenStorage';
 
 import { useCostumeBasicInfo } from '@/features/order/hooks/useCostumeBasicInfo';
 
@@ -100,20 +100,20 @@ export function ExtendRentalModal({
 
   return (
     <Dialog open={open} onOpenChange={onClose} overlayClassName="!z-[1100]">
-      <DialogContent className="max-w-md" onClose={onClose}>
+      <DialogContent className="max-w-md rounded-[24px] border-[4px] border-indigo-950 bg-[#fffbeb] p-6 shadow-[8px_8px_0_0_rgba(30,27,75,0.35)]" onClose={onClose}>
         {/* Title */}
         <div className="pr-6">
-          <h2 className="text-lg font-bold text-slate-900">
+          <h2 className="text-xl font-black text-indigo-950">
             {VI.order.extend.title}
           </h2>
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm font-semibold text-slate-500">
             {VI.order.extend.subtitle}
           </p>
         </div>
 
         {/* Extend days input */}
         <div className="mt-4">
-          <label className="mb-1 block text-sm font-medium text-slate-700">
+          <label className="mb-1.5 block text-sm font-bold text-indigo-950">
             {VI.order.extend.extendDaysLabel}
           </label>
           <input
@@ -122,7 +122,7 @@ export function ExtendRentalModal({
             max={365}
             value={extendDays}
             onChange={(e) => setExtendDays(Math.max(1, parseInt(e.target.value) || 1))}
-            className="h-10 w-full rounded-full border border-slate-200 bg-white px-4 text-sm text-slate-700 shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pink-200 focus-visible:ring-offset-2"
+            className="h-11 w-full rounded-xl border-[3px] border-indigo-950 bg-white px-4 text-sm font-bold text-slate-800 shadow-[3px_3px_0_0_rgba(30,27,75,0.2)] outline-none transition-all focus:border-pink-500 focus:shadow-[3px_3px_0_0_#ec4899]"
           />
           {extendDays < 1 && (
             <p className="mt-1 text-xs text-red-500">
@@ -140,34 +140,36 @@ export function ExtendRentalModal({
             : 0;
 
           return (
-            <div className="mt-4 rounded-2xl border-2 border-slate-200 bg-slate-50 p-4 shadow-sm space-y-2">
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-semibold text-slate-600">Đơn giá thuê gốc:</span>
-                <span className="font-bold text-slate-800">{formatVnd(activePricePerDay)}/ngày</span>
+            <div className="mt-4 rounded-2xl border-[3px] border-indigo-950 bg-gradient-to-br from-pink-50/50 via-white to-violet-50/50 p-4 shadow-[4px_4px_0_0_rgba(30,27,75,0.2)] space-y-2">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-600">
+                <span>Đơn giá thuê gốc:</span>
+                <span className="text-slate-800">{formatVnd(activePricePerDay)}/ngày</span>
               </div>
               {rentDiscount > 0 && (
                 <>
-                  <div className="flex items-center justify-between text-sm text-green-600">
-                    <span className="font-semibold">Ưu đãi giảm giá thuê:</span>
-                    <span className="font-bold">Giảm {rentDiscount}% từ ngày thứ 2</span>
+                  <div className="flex items-center justify-between text-xs font-bold text-green-600">
+                    <span>Ưu đãi giảm giá thuê:</span>
+                    <span>Giảm {rentDiscount}% từ ngày thứ 2</span>
                   </div>
                   {extendDays > 1 && (
-                    <div className="flex items-center justify-between text-xs text-slate-500 pl-4">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 pl-3">
                       <span>• Ngày 1:</span>
                       <span>{formatVnd(activePricePerDay)}</span>
                     </div>
                   )}
                   {extendDays > 1 && (
-                    <div className="flex items-center justify-between text-xs text-slate-500 pl-4">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500 pl-3">
                       <span>• Từ ngày thứ 2 ({extendDays - 1} ngày):</span>
                       <span>{formatVnd(discountedPrice)}/ngày</span>
                     </div>
                   )}
                 </>
               )}
-              <div className="mt-2 flex items-center justify-between border-t border-slate-200 pt-2 text-base font-extrabold text-transparent bg-gradient-to-r from-pink-600 to-violet-700 bg-clip-text">
+              <div className="mt-2 flex items-center justify-between border-t-[2px] border-dashed border-indigo-950/20 pt-2 text-sm font-black text-indigo-950">
                 <span>Phí gia hạn tạm tính:</span>
-                <span>{formatVnd(totalExtendPrice)}</span>
+                <span className="bg-gradient-to-r from-fuchsia-600 via-pink-600 to-orange-500 bg-clip-text text-transparent text-base">
+                  {formatVnd(totalExtendPrice)}
+                </span>
               </div>
             </div>
           );
@@ -175,7 +177,7 @@ export function ExtendRentalModal({
 
         {/* Payment method selection */}
         <div className="mt-4 space-y-2">
-          <label className="block text-sm font-medium text-slate-700">
+          <label className="block text-sm font-bold text-indigo-950">
             {VI.order.extend.paymentMethodLabel}
           </label>
           {PAYMENT_OPTIONS.map((option) => {
@@ -186,46 +188,36 @@ export function ExtendRentalModal({
                 type="button"
                 onClick={() => setSelectedPayment(option.value)}
                 className={cn(
-                  'flex w-full items-center gap-3 rounded-2xl border-2 p-4 text-left transition-all',
+                  'flex w-full items-center gap-3 rounded-2xl border-[3px] border-indigo-950 p-3.5 text-left transition-all hover:-translate-y-0.5 active:translate-y-px',
                   isSelected
-                    ? option.selectedBg
-                    : 'border-slate-100 bg-white hover:border-slate-200'
+                    ? 'bg-[#fffbeb] shadow-[3px_3px_0_0_#1e1b4b]'
+                    : 'bg-white opacity-85 shadow-[1px_1px_0_0_rgba(30,27,75,0.2)] border-indigo-950/20 hover:opacity-100 hover:border-indigo-950/40'
                 )}
               >
                 {/* Icon */}
                 <div
-                  className={cn(
-                    'flex h-11 w-11 shrink-0 items-center justify-center rounded-xl',
-                    isSelected ? option.bgColor : 'bg-slate-50'
-                  )}
+                  className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border-[2px] border-indigo-950 bg-white shadow-[2px_2px_0_0_rgba(30,27,75,0.25)]"
                 >
                   <span className="text-2xl">{option.icon}</span>
                 </div>
 
                 {/* Text */}
                 <div className="min-w-0 flex-1">
-                  <p
-                    className={cn(
-                      'font-semibold',
-                      isSelected ? option.color : 'text-slate-800'
-                    )}
-                  >
+                  <p className="text-sm font-extrabold text-indigo-950">
                     {option.label}
                   </p>
-                  <p className="mt-0.5 text-xs text-slate-500">{option.desc}</p>
+                  <p className="mt-0.5 text-xs font-semibold text-slate-500 leading-normal">{option.desc}</p>
                 </div>
 
                 {/* Radio indicator */}
                 <div
                   className={cn(
-                    'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2',
-                    isSelected
-                      ? 'border-purple-500 bg-purple-500'
-                      : 'border-slate-300 bg-white'
+                    'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-[2px] border-indigo-950 bg-white',
+                    isSelected && 'bg-pink-500'
                   )}
                 >
                   {isSelected && (
-                    <div className="h-2 w-2 rounded-full bg-white" />
+                    <div className="h-1.5 w-1.5 rounded-full bg-white" />
                   )}
                 </div>
               </button>
@@ -234,29 +226,33 @@ export function ExtendRentalModal({
         </div>
 
         {/* Footer actions */}
-        <div className="mt-5 flex items-center justify-end gap-3">
-          <Button
+        <div className="mt-6 flex items-center justify-end gap-3">
+          <button
             type="button"
-            variant="outline"
-            size="sm"
             onClick={onClose}
             disabled={loading}
+            className="inline-flex h-11 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white px-5 text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
           >
             {VI.common.actions.cancel}
-          </Button>
-          <Button
+          </button>
+          <button
             type="button"
-            size="sm"
             disabled={!isValid || loading}
-            loading={loading}
             onClick={handleConfirm}
+            className="group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 px-5 text-sm font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#1e1b4b] active:translate-y-px disabled:pointer-events-none disabled:opacity-50"
           >
-            {loading
-              ? VI.order.extend.btnProcessing
-              : VI.order.extend.btnConfirm}
-          </Button>
+            {loading ? (
+              <>
+                <span className="animate-spin inline-block h-4 w-4 border-2 border-white border-t-transparent rounded-full mr-1" />
+                {VI.order.extend.btnProcessing}
+              </>
+            ) : (
+              VI.order.extend.btnConfirm
+            )}
+          </button>
         </div>
       </DialogContent>
     </Dialog>
   );
 }
+

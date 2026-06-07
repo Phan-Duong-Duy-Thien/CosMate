@@ -1734,6 +1734,7 @@ export const VI = {
         RETURNED: "Đã trả hàng",
         PREPARING: "Đang chuẩn bị",
         IN_TRANSIT: "Đang vận chuyển",
+        IN_USE: "Ảnh nhận hàng",
       },
     },
     actions: {
