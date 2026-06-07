@@ -295,10 +295,9 @@ export async function completeOrder(orderId: number): Promise<OrderItem> {
  * @param orderId - The order ID
  */
 export async function cancelOrder(orderId: number): Promise<void> {
-  const response = await axiosInstance.post<ApiResponse<string>>(
+  await axiosInstance.post<ApiResponse<string>>(
     `/api/orders/${orderId}/cancel`
   );
-  return response.data.result;
 }
 
 /**
