@@ -8,6 +8,8 @@ import { cn } from "@/lib/utils"
 import { VI } from "@/shared/i18n/vi"
 import { useAISearch, type AISearchResultItem } from "@/features/search/hooks/useAISearch"
 
+import AILoadingMascot from "@/shared/components/AILoadingMascot"
+
 interface AISearchBarProps {
   onSearchCompleted?: (results: AISearchResultItem[]) => void
   canUse?: boolean
@@ -250,9 +252,9 @@ export default function AISearchBar({
       </div>
 
       {isLoading && (
-        <p className="relative mt-4 border-t-2 border-indigo-950/10 pt-3 text-center text-sm font-bold text-cosmate-pink">
-          Bé Mèo AI đang tìm trang phục phù hợp…
-        </p>
+        <div className="mt-4 border-t-2 border-indigo-950/10 pt-4">
+          <AILoadingMascot type="search" variant="inline" />
+        </div>
       )}
     </div>
   )

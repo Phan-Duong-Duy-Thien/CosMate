@@ -19,6 +19,7 @@ import { applyFormValidationErrors } from '@/shared/utils/formValidation'
 import { getCharacters } from '@/features/admin/api/adminCharacters.api'
 import { createCharacterRequest } from '../../api/characterRequests.api'
 import { VI } from '@/shared/i18n/vi'
+import AILoadingMascot from '@/shared/components/AILoadingMascot'
 
 const { Dragger } = Upload
 const { TextArea } = Input
@@ -270,17 +271,7 @@ export default function EditBasicInfoForm({
       )}
 
       {moderationError && (
-        <Form.Item>
-          <Alert
-            type="error"
-            showIcon={false}
-            description={
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                <span>{MODERATION_ERROR_MESSAGE}</span>
-              </div>
-            }
-          />
-        </Form.Item>
+        <AILoadingMascot type="moderation" onClose={() => setModerationError(null)} />
       )}
 
       <Form.Item
