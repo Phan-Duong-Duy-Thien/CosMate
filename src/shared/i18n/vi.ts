@@ -18,6 +18,20 @@
 
 export const VI = {
   /**
+   * Overdue order lock translations
+   */
+  overdueLock: {
+    title: "Tài khoản tạm khóa",
+    subtitle: "Bạn có đơn hàng thuê quá hạn trả",
+    message: "Để tiếp tục sử dụng đầy đủ các tính năng của CosMate, vui lòng thực hiện thủ tục trả hàng cho các đơn thuê đã quá hạn dưới đây.",
+    orderLabel: "Đơn hàng quá hạn",
+    orderCode: "Mã đơn",
+    statusOverdue: "Quá hạn",
+    ctaButton: "Thực hiện trả hàng ngay",
+    warningNote: "Tài khoản của bạn sẽ bị giới hạn các tính năng khác cho đến khi các đơn hàng quá hạn được xử lý.",
+  },
+
+  /**
    * Notification
    */
   notification: {

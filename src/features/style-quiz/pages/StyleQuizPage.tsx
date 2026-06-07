@@ -99,8 +99,57 @@ export default function StyleQuizPage() {
         />
       )}
 
-      <Modal open={quiz.showResumeModal} title="Tiếp tục bài quiz đang làm dở?" okText="Tiếp tục" cancelText="Bắt đầu mới" onOk={quiz.restoreDraft} onCancel={quiz.discardDraftAndStartNew} closable={false} maskClosable={false}>
-        <p>Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục không?</p>
+      <Modal
+        open={quiz.showResumeModal}
+        footer={null}
+        closable={false}
+        maskClosable={false}
+        centered
+        width={420}
+        styles={{
+          mask: {
+            backdropFilter: "blur(4px)",
+            backgroundColor: "rgba(30, 27, 75, 0.4)",
+          },
+          content: {
+            borderRadius: "24px",
+            border: "4px solid #1e1b4b",
+            backgroundColor: "#fffbeb",
+            boxShadow: "8px 8px 0px 0px rgba(30, 27, 75, 0.35)",
+            padding: "28px 24px 24px 24px",
+          }
+        }}
+      >
+        <div className="text-center space-y-4">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-[3px] border-indigo-950 bg-pink-100 text-3xl shadow-[4px_4px_0_0_#1e1b4b]">
+            📝
+          </div>
+          
+          <h3 className="text-xl font-black text-indigo-950">
+            Tiếp tục làm bài quiz?
+          </h3>
+          
+          <p className="text-sm font-semibold text-indigo-950/70 leading-relaxed">
+            Bạn đang làm dở bài Quiz trước đó. Bạn có muốn tiếp tục hay bắt đầu một bài mới không?
+          </p>
+
+          <div className="flex flex-col gap-2 pt-2">
+            <button
+              type="button"
+              onClick={quiz.restoreDraft}
+              className="group relative inline-flex h-11 items-center justify-center gap-2 rounded-xl border-[3px] border-indigo-950 bg-gradient-to-r from-pink-500 to-fuchsia-600 text-sm font-extrabold text-white shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#1e1b4b] active:translate-y-px"
+            >
+              Tiếp tục
+            </button>
+            <button
+              type="button"
+              onClick={quiz.discardDraftAndStartNew}
+              className="inline-flex h-11 items-center justify-center rounded-xl border-[3px] border-indigo-950 bg-white text-sm font-extrabold text-indigo-950 shadow-[4px_4px_0_0_#1e1b4b] transition hover:-translate-y-0.5 hover:bg-slate-50 active:translate-y-px"
+            >
+              Bắt đầu mới
+            </button>
+          </div>
+        </div>
       </Modal>
 
       <Modal
