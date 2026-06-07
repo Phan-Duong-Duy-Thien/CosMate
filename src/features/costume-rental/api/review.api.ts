@@ -33,7 +33,7 @@ export async function createReview(params: CreateReviewParams): Promise<CreateRe
 
   if (images && images.length > 0) {
     images.forEach((file) => {
-      formData.append("images", file)
+      formData.append("files", file)
     })
   }
 
@@ -71,6 +71,7 @@ export interface ReviewItem {
   aiSentiment?: string | null
   isSpamOrToxic?: boolean | null
   aiSummary?: string | null
+  isConflicting?: boolean | null
 }
 
 export interface ReplyToReviewPayload {

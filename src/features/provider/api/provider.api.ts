@@ -108,6 +108,7 @@ export interface ProviderReview {
   aiSentiment?: string | null;
   isSpamOrToxic?: boolean | null;
   aiSummary?: string | null;
+  isConflicting?: boolean | null;
 }
 
 /** Detail payload (GET by id) — may include reviewer fields from backend */
